@@ -409,6 +409,17 @@ export function readLane(diveId: string, lane: string): any | null {
   try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
 }
 
+/** Where a lane's output for this dive is saved (out/<name>-<diveId>.json). */
+export function laneFile(diveId: string, name: string): string {
+  return path.join(OUT, `${name}-${diveId}.json`);
+}
+
+/** Like readLane, but tells a missing file (undefined) from one that will not read (it throws). */
+export function readLaneStrict(diveId: string, name: string): any {
+  const file = laneFile(diveId, name);
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : undefined;
+}
+
 /** Saves a lane's output for this dive (out/<name>-<diveId>.json). */
 export function writeLane(diveId: string, name: string, data: any, space?: number | string): void {
   fs.mkdirSync(OUT, { recursive: true });

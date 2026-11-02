@@ -1,13 +1,15 @@
 // H / plan — the search phrases and towns both H lanes use for one company, picked once
 // by the LLM and stored in out/H-plan-<diveId>.json, so ranks stay comparable between runs
 // (round 2 showed the LLM picking new trade words every run). Delete the file to re-pick.
-import { readLane, writeLane, type Ctx } from '../lib.ts';
+import { laneFile, readLaneStrict, writeLane, type Ctx } from '../lib.ts';
 
 export type HPlan = { trades: string[]; areas: string[]; offices: string[]; picked_at: string };
 
 export async function getPlan(ctx: Ctx, dive: any): Promise<HPlan> {
-  const cached = readLane(ctx.diveId, 'H-plan');
-  if (cached) return cached;
+  try {
+    const cached = readLaneStrict(ctx.diveId, 'H-plan');
+    if (cached !== undefined) return cached;
+  } catch (e) { ctx.warn(`could not read ${laneFile(ctx.diveId, 'H-plan')}: ${(e as Error).message}`); }
 
   const r = dive.result ?? {};
   const id = r.identity ?? {};

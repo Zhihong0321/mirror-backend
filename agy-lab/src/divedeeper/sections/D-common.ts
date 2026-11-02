@@ -7,7 +7,7 @@
 //      about / why-choose / credentials pages, and the logo alt texts on the homepage.
 // One LLM call turns that into a short, de-duplicated claim list. Every step falls back:
 // a dead page or a bad LLM answer logs a warning and the list is built from what is left.
-import { readLane, writeLane, type Ctx } from '../lib.ts';
+import { readLaneStrict, writeLane, type Ctx } from '../lib.ts';
 
 export type Verdict = 'verified' | 'contradicted' | 'not found' | "can't check automatically";
 
@@ -115,11 +115,13 @@ function filterOnly(set: ClaimSet): ClaimSet {
  *  Stored once per dive in out/D-claims-<id>.json so reruns check the same claims; D_FRESH_CLAIMS=1 rebuilds it. */
 export async function extractClaims(ctx: Ctx, dive: any): Promise<ClaimSet> {
   if (!process.env.D_FRESH_CLAIMS) {
-    const cached = readLane(ctx.diveId, 'D-claims') as ClaimSet | null;
-    if (cached) {
-      ctx.log(`claim list from D-claims-${ctx.diveId}.json (${cached.claims.length} claims, extracted ${cached.extracted_at})`);
-      return filterOnly({ ...cached, cached: true });
-    }
+    try {
+      const cached = readLaneStrict(ctx.diveId, 'D-claims') as ClaimSet | undefined;
+      if (cached !== undefined) {
+        ctx.log(`claim list from D-claims-${ctx.diveId}.json (${cached.claims.length} claims, extracted ${cached.extracted_at})`);
+        return filterOnly({ ...cached, cached: true });
+      }
+    } catch (e) { ctx.warn(`claim cache unreadable (${(e as Error).message}); extracting again`); }
   }
   const r = dive.result ?? {};
   const src = (ids: number[]) => (ids ?? []).map((i) => r.sources?.find((s: any) => s.id === i)?.url).filter(Boolean);
