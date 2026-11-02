@@ -32,6 +32,7 @@
 // Errors carry Pi's codes (rate_limit, timeout, length, empty, failed,
 // not_configured), so callers treat both engines alike.
 
+import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import * as pi from './pi.ts';
 import * as vault from './vault.ts';
@@ -264,7 +265,7 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
   } catch (cause) {
     const name = (cause as Error).name;
     if (name === 'TimeoutError' || name === 'AbortError') throw fail('timeout', `${c.model} gave no answer within ${Math.round((opts.timeoutMs ?? 0) / 1000)}s`);
-    throw fail('failed', `${c.model} unreachable: ${(cause as Error).message}`);
+    throw fail('failed', `${c.model} unreachable: ${netError(cause)}`);
   }
   let raw: string;
   try {

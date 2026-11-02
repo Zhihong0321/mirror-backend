@@ -13,6 +13,7 @@
 // it holds its own Tavily keys, so its calls carry only the proxy token. Its
 // "usage" is the proxy's GET /usage/tavily totals, and a PROXY_NO_KEY answer
 // rests it for the proxy's retry-after.
+import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
 import { isProxy, noKeyRestMs, parseProxy, proxy, setProxy, usage, withProxy } from './proxy.ts';
@@ -315,7 +316,7 @@ async function searchOnce(
     throw fail(
       name === 'TimeoutError' || name === 'AbortError'
         ? 'tavily search timed out'
-        : `upstream error: ${(cause as Error)?.message ?? cause}`,
+        : `upstream error: ${netError(cause)}`,
       'timeout',
     );
   }
@@ -403,7 +404,7 @@ async function requestPool(
       });
     } catch (cause) {
       lease.release();
-      throw fail(`tavily /${path} unreachable: ${(cause as Error).message}`, 'timeout');
+      throw fail(`tavily /${path} unreachable: ${netError(cause)}`, 'timeout');
     }
     const raw = await res.text();
     const noKey = noKeyRestMs(res, raw);
@@ -451,7 +452,7 @@ export async function requestWithKey<T = Record<string, any>>(
     });
   } catch (cause) {
     const name = cause instanceof Error ? cause.name : '';
-    const err = fail(name === 'TimeoutError' || name === 'AbortError' ? `tavily ${path} timed out` : `upstream error: ${(cause as Error)?.message ?? cause}`, 'timeout');
+    const err = fail(name === 'TimeoutError' || name === 'AbortError' ? `tavily ${path} timed out` : `upstream error: ${netError(cause)}`, 'timeout');
     opts.log?.push(call.done({ ok: false, note: err.message.slice(0, 200) }));
     throw err;
   }

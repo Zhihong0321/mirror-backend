@@ -7,6 +7,7 @@
 // plan allows about 50 queries a second (seen 2026-10-24), so calls are spaced 0.1 s and a
 // 429/402 moves on to the next key.
 
+import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
 import * as vault from './vault.ts';
@@ -94,8 +95,8 @@ export async function searchRaw(
         headers: { 'X-Subscription-Token': key, accept: 'application/json' },
       });
     } catch (err) {
-      onCall(call.done({ ok: false, note: (err as Error).message.slice(0, 200) }));
-      throw err;
+      onCall(call.done({ ok: false, note: netError(err).slice(0, 200) }));
+      throw Object.assign(new Error(`brave ${kind} unreachable: ${netError(err)}`), { cause: err });
     }
     if (res.status === 429 || res.status === 402) {
       lastErr = `HTTP ${res.status} ${(await res.text()).slice(0, 200)}`;

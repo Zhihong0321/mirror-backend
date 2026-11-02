@@ -3,6 +3,7 @@
 // Exa has no usage endpoint to read, so a key rests on the error that says it is
 // spent: out of credits or refused rests it for a day, a rate limit for a minute,
 // and the hub counts each key's spend itself from the costDollars on each answer.
+import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
 import { createKeyPool, type Lease, type SearchHit } from './tavily.ts';
@@ -151,7 +152,7 @@ async function requestOnce(path: string, body: Record<string, unknown>, apiKey: 
     });
   } catch (cause) {
     const name = cause instanceof Error ? cause.name : '';
-    throw fail(name === 'TimeoutError' || name === 'AbortError' ? `exa ${path} timed out` : `upstream error: ${(cause as Error)?.message ?? cause}`, 'timeout');
+    throw fail(name === 'TimeoutError' || name === 'AbortError' ? `exa ${path} timed out` : `upstream error: ${netError(cause)}`, 'timeout');
   }
   const raw = await res.text();
   const noKey = noKeyRestMs(res, raw);
