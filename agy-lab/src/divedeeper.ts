@@ -164,28 +164,16 @@ async function execute(id: number): Promise<void> {
     if (!row.dive_id) throw new Error('no company-dive linked to this run');
     const lanes: Record<string, LaneResult> = row.lanes ?? {};
 
-    // 1. Wait for the company-dive (it runs in its own queue, one at a time). One cut off by a
-    //    restart before any lane ran is started again once.
-    let diveId = row.dive_id;
+    // 1. Wait for the company-dive (it runs in its own queue). An incomplete one is still being
+    //    tried, and one cut off by a restart is queued again, so both are waited for.
+    const diveId = row.dive_id;
     let dive = await diveRow(diveId);
-    for (let restarted = false; ;) {
-      if (dive && !['done', 'partial', 'failed'].includes(dive.status)) {
-        await say('waiting_dive', `Waiting for company-dive #${diveId} to finish`, { status: 'waiting_dive' });
-        while (dive && !['done', 'partial', 'failed'].includes(dive.status)) {
-          await sleep(DIVE_POLL_MS);
-          dive = await diveRow(diveId);
-        }
-      }
-      if (dive?.status === 'failed' && !restarted && !Object.keys(lanes).length) {
-        restarted = true;
-        const started = await startDive(row.company);
-        if ('error' in started) throw new Error(`company-dive #${diveId} failed (${dive.error ?? 'no reason'}) and a new one could not start: ${started.error}`);
-        await say('waiting_dive', `Company-dive #${diveId} failed (${dive.error ?? 'no reason'}); started #${started.id}`, { dive_id: started.id });
-        diveId = started.id;
+    if (dive && !['done', 'partial', 'failed'].includes(dive.status)) {
+      await say('waiting_dive', `Waiting for company-dive #${diveId} to finish`, { status: 'waiting_dive' });
+      while (dive && !['done', 'partial', 'failed'].includes(dive.status)) {
+        await sleep(DIVE_POLL_MS);
         dive = await diveRow(diveId);
-        continue;
       }
-      break;
     }
     if (!dive) throw new Error(`company-dive #${diveId} not found`);
     if (dive.status === 'failed' || !dive.result) throw new Error(`company-dive #${diveId} ${dive.status}: ${dive.error ?? 'no research saved'}`);

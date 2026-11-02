@@ -759,7 +759,7 @@ export const document = {
           expected_minutes: { type: 'string', example: '5-10' },
         },
       },
-      CompanyDiveStatus: { type: 'string', enum: ['queued', 'running', 'done', 'partial', 'failed'], description: 'partial = finished, but a step used a fallback.' },
+      CompanyDiveStatus: { type: 'string', enum: ['queued', 'running', 'done', 'incomplete', 'partial', 'failed'], description: 'incomplete = a step failed after its backups; the dive runs again on its own (retry_at). failed = still incomplete after every try, or nothing to find. partial = older dives only (a step used a fallback).' },
       CompanyDiveList: {
         type: 'object',
         properties: {

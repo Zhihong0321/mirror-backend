@@ -35,10 +35,16 @@
 // After the research, the Exa people step (companydive-people.ts) runs on its own
 // unless the request said people: false. The dive stays 'running' at stage
 // 'people' until it ends, so one status covers the whole report.
+//
+// Complete or not published: a search that fails falls back to Exa, and anything that
+// still fails after its backups (a search, a page read, an LLM step, the people step,
+// the dossier) is a warning. A dive with any warning is 'incomplete', not 'done': its
+// result is not saved and it runs again on its own (RETRY_AFTER_MS), up to MAX_TRIES
+// times, then it is 'failed'. A dive cut off by a restart is queued again.
 
 import crypto from 'node:crypto';
 import type http from 'node:http';
-import { brave, llm, tavily } from './core/index.ts';
+import { brave, exa, llm, tavily } from './core/index.ts';
 import * as reportdb from './reportdb.ts';
 import { diveCalls, diveUsage, price, PRICES, type ApiCall } from './cost.ts';
 import * as countries from './countries.ts';
@@ -140,7 +146,7 @@ export async function budgetedCall(
     // Search and map stay with Tavily — they are search, not page reads.
     const out = path === 'extract'
       ? await readPages((body.urls as string[]) ?? [])
-      : await request(path, body);
+      : await request(path, body, { timeoutMs: path === 'map' ? 120_000 : 60_000 });
     const credits = Number(out.usage?.credits ?? 0);
     budget.calls.push({ n: budget.used + 1, at, path, label, credits, ms: Date.now() - started, ok: true, usd: credits * PRICES.tavilyCredit,
       via: path === 'extract' ? (out as pagefetch.ExtractAnswer).worker ?? via : via });
@@ -511,6 +517,22 @@ async function dive(company: string, country: string, progress: Progress, budget
   const warn: Warn = async (msg) => { warnings.push(msg); await say('warn', msg); };
   const T = (path: 'search' | 'extract' | 'map', body: Record<string, unknown>, label: string) =>
     budgetedCall(budget, path, body, label);
+  /** A Tavily search, or the same query on Exa when Tavily fails; throws only when both did. */
+  const search = async (body: Record<string, unknown>, label: string): Promise<Record<string, any>> => {
+    try {
+      return await T('search', body, label);
+    } catch (err) {
+      if (err instanceof BudgetSpent) throw err;
+      try {
+        const hits = await exa.search(String(body.query), { numResults: Number(body.max_results ?? 8), timeoutMs: 45_000, what: label,
+          ...(Array.isArray(body.include_domains) ? { includeDomains: body.include_domains as string[] } : {}) });
+        await say(label.startsWith('T1 ') ? 'discover' : 'fill', `${label}: Tavily failed (${(err as Error).message.slice(0, 120)}); Exa answered`);
+        return { results: hits.map((h) => ({ url: h.url, title: h.title, content: h.content })) };
+      } catch (err2) {
+        throw new Error(`Tavily: ${(err as Error).message.slice(0, 150)} | Exa: ${(err2 as Error).message.slice(0, 150)}`);
+      }
+    }
+  };
 
   const addSearchResults = (out: Record<string, any>, found: string) => {
     for (const r of out.results ?? []) {
@@ -537,11 +559,21 @@ async function dive(company: string, country: string, progress: Progress, budget
   await say('discover', `Brave sweep for "${company}" (short name "${short}")`);
   const braveQueries = discoveryQueries(company, short, country, pack);
   // All eight at once; the results join the ledger in query order, so source ids stay stable.
+  // A Brave query that fails is asked of Exa; only both failing is a warning.
   const braveOut = await Promise.all(braveQueries.map(([label, query, kind]) =>
     brave.search(query, { country: cc, kind, onCall: (c) => counts.braveLog.push({ ...c, what: `${label}: ${c.what}` }) })
-      .then((hits) => ({ label, hits, err: null }), (err: Error) => ({ label, hits: [], err }))));
-  for (const { label, hits, err } of braveOut) {
-    if (err) { await say('discover', `Brave ${label} failed: ${err.message}`); continue; }
+      .then((hits) => ({ label, query, hits, err: null }), (err: Error) => ({ label, query, hits: [], err }))));
+  for (const { label, query, hits, err } of braveOut) {
+    if (err) {
+      try {
+        const got = await exa.search(query, { numResults: 10, timeoutMs: 45_000, what: `brave fallback ${label}` });
+        for (const h of got) ledger.add(h.url, h.title, h.content ? [h.content] : [], `exa:${label}`);
+        await say('discover', `Brave ${label} failed (${err.message.slice(0, 120)}); Exa: ${got.length} results`);
+      } catch (err2) {
+        await warn(`discovery search ${label} failed on Brave and Exa: ${err.message.slice(0, 120)} | ${(err2 as Error).message.slice(0, 120)}`);
+      }
+      continue;
+    }
     counts.brave++;
     for (const h of hits) ledger.add(h.url, h.title, h.snippets, `brave:${label}`);
     await say('discover', `Brave ${label}: ${hits.length} results`);
@@ -549,7 +581,7 @@ async function dive(company: string, country: string, progress: Progress, budget
 
   let t1Answer = '';
   try {
-    const out = await T('search', {
+    const out = await search({
       query: `${company} ${country} company profile`,
       search_depth: 'advanced', max_results: 20, include_answer: 'advanced', include_raw_content: 'markdown',
       ...(tavilyCountry ? { country: tavilyCountry } : {}),
@@ -558,9 +590,10 @@ async function dive(company: string, country: string, progress: Progress, budget
     addSearchResults(out, 'tavily:T1');
     await say('discover', `Tavily T1: ${(out.results ?? []).length} results; ${ledger.sources.length} unique URLs in total`);
   } catch (err) {
-    await say('discover', `Tavily T1 failed: ${(err as Error).message}`);
+    await warn(`T1 big picture search failed: ${(err as Error).message}`);
   }
-  if (!ledger.sources.length) throw new Error('Discovery found nothing: no Brave or Tavily results');
+  // Nothing found while every engine answered is the company's answer; found nothing because engines failed is worth another try.
+  if (!ledger.sources.length) throw Object.assign(new Error('Discovery found nothing: no Brave, Exa or Tavily results'), { retryable: warnings.length > 0 });
 
   // 2. triage -------------------------------------------------------------
   await say('triage', `LLM triage of ${ledger.sources.length} URLs`);
@@ -607,10 +640,10 @@ async function dive(company: string, country: string, progress: Progress, budget
   await Promise.all([
     ownPages.length && T('extract', { urls: ownPages, extract_depth: 'advanced', format: 'markdown' }, 'T3 official pages')
       .then((out) => { addExtractResults(out, 'tavily:T3'); return say('read', `Tavily T3: read ${(out.results ?? []).length} of ${ownPages.length} official pages`); })
-      .catch((err) => say('read', `Tavily T3 failed: ${err.message}`)),
+      .catch((err) => warn(`reading the official pages failed: ${err.message}`)),
     thirdParty.length && T('extract', { urls: thirdParty.map((s) => s.url), extract_depth: 'advanced', format: 'markdown' }, 'T4 third-party pages')
       .then((out) => { addExtractResults(out, 'tavily:T4'); return say('read', `Tavily T4: read ${(out.results ?? []).length} of ${thirdParty.length} third-party pages`); })
-      .catch((err) => say('read', `Tavily T4 failed: ${err.message}`)),
+      .catch((err) => warn(`reading the third-party pages failed: ${err.message}`)),
   ]);
 
   // 4. analyse ------------------------------------------------------------
@@ -639,7 +672,7 @@ async function dive(company: string, country: string, progress: Progress, budget
     if (Array.isArray(s.include_domains) && s.include_domains.length) body.include_domains = s.include_domains.map(String).slice(0, 10);
     if (['day', 'week', 'month', 'year'].includes(s.time_range)) body.time_range = s.time_range;
     if (tavilyCountry && body.topic === 'general' && !body.include_domains) body.country = tavilyCountry;
-    const out = await T('search', body, `${label} ${String(s.query).slice(0, 60)}`);
+    const out = await search(body, `${label} ${String(s.query).slice(0, 60)}`);
     addSearchResults(out, `tavily:${label}`);
     if (out.answer) summaries.push(`Search "${s.query}" summary (machine-written, unverified): ${out.answer}`);
     return (out.results ?? []).length;
@@ -649,7 +682,7 @@ async function dive(company: string, country: string, progress: Progress, budget
       const label = `T${budget.used + 1 + j}`;
       return gapSearch(s, label)
         .then((n) => say('fill', `${label} "${s.query}": ${n} results`))
-        .catch((err) => say('fill', `${label} "${s.query}" failed: ${err.message}`));
+        .catch((err) => (err instanceof BudgetSpent ? say('fill', `${label} skipped: ${err.message}`) : warn(`gap search "${s.query}" failed: ${err.message}`)));
     }));
   }
   // Everything the gap searches returned is in scope: the queries were about this company.
@@ -683,7 +716,7 @@ async function dive(company: string, country: string, progress: Progress, budget
         }
       } catch (err) {
         if (err instanceof BudgetSpent) break;
-        await say('reflect', `${label} failed: ${(err as Error).message}`);
+        await warn(`reserve call ${label} failed: ${(err as Error).message}`);
       }
     }
     const reserveNew = ledger.sources.filter((s) => !beforeReserve.has(`${s.id}:${s.contentKind}`) && s.contentKind !== 'none');
@@ -707,10 +740,18 @@ async function dive(company: string, country: string, progress: Progress, budget
     let prompt = countries.withNotes(pack, 'write', dossierPrompt(company, country, identity, facts, contradictions, gaps, sourceIndex));
     // With no facts (analysis fell back), the dossier reads the material itself.
     if (!facts.length) prompt += `\n\nNo facts were extracted, so write from this material instead, citing its [id]s:\n${corpus(relevantSources(), 100_000)}`;
-    let dossier: string;
-    try {
-      dossier = await ask(prompt, { step: 'dossier', uses });
-    } catch (err) {
+    let dossier = '';
+    let lastErr: unknown = null;
+    for (let t = 1; t <= 3 && !dossier; t++) {
+      try {
+        dossier = await ask(prompt, { step: t > 1 ? `dossier:retry${t - 1}` : 'dossier', uses });
+      } catch (err) {
+        lastErr = err;
+        if (t < 3) { await say('write', `dossier try ${t} failed: ${(err as Error).message.slice(0, 160)}`); await new Promise((r) => setTimeout(r, t * 60_000)); }
+      }
+    }
+    if (!dossier) {
+      const err = lastErr as Error;
       // The writing failed, not the research: the collected facts are the output.
       await warn(`dossier: ${(err as Error).message}; the facts are shown instead`);
       const sections = TOPICS.map((t) => {
@@ -748,6 +789,8 @@ export type DiveRow = {
   log: Array<{ at: string; stage: string; msg: string }>; result: DiveResult | null; dossier: string | null; error: string | null;
   tavily_calls: number; tavily_credits: number; brave_calls: number; llm_calls: number;
   created_at: string; finished_at: string | null;
+  /** Tries so far, and when an incomplete dive runs again. */
+  tries?: number; retry_at?: string | null;
 };
 
 let tableReady: Promise<unknown> | null = null;
@@ -775,7 +818,10 @@ function ensureTable(): Promise<unknown> {
     alter table company_dive add column if not exists options jsonb not null default '{}'::jsonb;
     -- The company UID (company-uid.ts) this report belongs to: one company, many reports on different dates.
     alter table company_dive add column if not exists company_uid text;
-    create index if not exists company_dive_uid_idx on company_dive (company_uid, created_at desc);`)
+    create index if not exists company_dive_uid_idx on company_dive (company_uid, created_at desc);
+    -- A dive that is not complete runs again at retry_at (execute, notComplete).
+    alter table company_dive add column if not exists tries int not null default 0;
+    alter table company_dive add column if not exists retry_at timestamptz;`)
     .then(async () => {
       // Dives from before public links get one now.
       const old = await reportdb.sql<{ id: string }>(`select id from company_dive where public_id is null`);
@@ -828,11 +874,41 @@ export function onFinished(fn: (id: number) => void): void {
   finishedHooks.push(fn);
 }
 
+/** A dive that is not complete runs again this long after its last try: soon at first, then every 30 min. */
+const RETRY_AFTER_MS = [60_000, 180_000, 1_800_000, 1_800_000, 1_800_000];
+/** Tries in all, the first included; after the last one an incomplete dive is failed. */
+export const MAX_TRIES = RETRY_AFTER_MS.length + 1;
+/** The longest one try may take; past it the try counts as incomplete. The slowest dive seen took under 10 minutes. */
+const DIVE_LIMIT_MS = 40 * 60_000;
+
+/** Not complete: try again later, or fail when the tries are used up. */
+async function notComplete(id: number, tries: number, reason: string, log: DiveRow['log'], stats?: DiveStats): Promise<void> {
+  const wait = RETRY_AFTER_MS[tries - 1];
+  const at = new Date().toISOString();
+  const counts = stats ? {
+    tavily_calls: stats.tavily.length, tavily_credits: stats.tavily.reduce((n, c) => n + c.credits, 0), brave_calls: stats.braveCalls, llm_calls: stats.llmCalls,
+  } : {};
+  if (wait === undefined) {
+    const message = `incomplete after ${tries} tries: ${reason}`;
+    log.push({ at, stage: 'failed', msg: message });
+    console.error(`[company-dive ${id}] ${message}`);
+    await updateRow(id, { status: 'failed', stage: 'failed', error: message, log, retry_at: null, finished_at: at, ...counts });
+    return;
+  }
+  const retryAt = new Date(Date.now() + wait).toISOString();
+  const message = `Not complete (try ${tries} of ${MAX_TRIES}): ${reason}. Next try in ${Math.round(wait / 60_000)} min.`;
+  log.push({ at, stage: 'incomplete', msg: message });
+  console.warn(`[company-dive ${id}] ${message}`);
+  await updateRow(id, { status: 'incomplete', stage: 'incomplete', error: message, log, retry_at: retryAt, ...counts });
+}
+
 async function execute(id: number): Promise<void> {
   const row = (await reportdb.sql<DiveRow>(`select * from company_dive where id = $1`, [id])).rows[0];
   if (!row) return;
-  const log: DiveRow['log'] = [];
-  await updateRow(id, { status: 'running', stage: 'discover' });
+  const tries = (row.tries ?? 0) + 1;
+  // Each try keeps the earlier tries' lines, so the log tells the whole story.
+  const log: DiveRow['log'] = [...(row.log ?? [])];
+  await updateRow(id, { status: 'running', stage: 'discover', tries, retry_at: null, error: null });
   // Once the research is saved the stage stays 'done'; the dossier only adds log lines.
   let saved = false;
   const progress = async (stage: string, msg: string) => {
@@ -840,6 +916,8 @@ async function execute(id: number): Promise<void> {
     console.log(`[company-dive ${id}] ${stage}: ${msg}`);
     await updateRow(id, saved ? { log } : { stage, log }).catch((err) => console.error(`[company-dive ${id}] log write failed`, err));
   };
+  if (tries > 1) await progress('discover', `Try ${tries} of ${MAX_TRIES}`);
+  let timer: NodeJS.Timeout | undefined;
   try {
     // Loaded here, not at the top: companydive-people imports this module.
     const people = row.options?.people !== false ? await import('./companydive-people.ts') : null;
@@ -848,11 +926,18 @@ async function execute(id: number): Promise<void> {
       await progress('people', `People step ${found.status}: ${found.people.length} people linked`);
       return found;
     });
-    const { result, writeDossier } = await run(row.company, row.country, progress, alongside);
-    // 'partial': it finished, but a stage fell back; result.warnings says which.
-    const finalStatus = result.warnings.length ? 'partial' : 'done';
+    const late = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`the try did not finish within ${DIVE_LIMIT_MS / 60_000} min (last stage: ${log[log.length - 1]?.stage ?? 'none'})`)), DIVE_LIMIT_MS);
+    });
+    late.catch(() => {}); // raced twice below; never an unhandled rejection in between
+    const { result, writeDossier } = await Promise.race([run(row.company, row.country, progress, alongside), late]);
+    // Something failed after its backups: no result is saved, and the dive runs again.
+    if (result.warnings.length) {
+      await notComplete(id, tries, result.warnings.join('; ').slice(0, 1500), log, { tavily: result.tavily, llmCalls: result.llm.length, braveCalls: result.braveCalls });
+      return;
+    }
     await updateRow(id, {
-      status: finalStatus, stage: 'done', log, result,
+      status: 'done', stage: 'done', log, result, error: null,
       tavily_calls: result.tavily.length,
       tavily_credits: result.tavily.reduce((n, c) => n + c.credits, 0),
       brave_calls: result.braveCalls,
@@ -862,24 +947,31 @@ async function execute(id: number): Promise<void> {
     saved = true;
     for (const fn of finishedHooks) { try { fn(id); } catch (err) { console.error(`[company-dive ${id}] finish hook failed`, err); } }
     // The write-up's LLM call joins result.llm, so the result is saved again with it.
-    const dossier = await writeDossier();
+    const dossier = await Promise.race([writeDossier(), late]);
+    // A dossier that fell back to the bare facts after its tries is not the report: run the dive again.
+    if (result.warnings.length) {
+      saved = false;
+      await notComplete(id, tries, result.warnings.join('; ').slice(0, 1500), log);
+      return;
+    }
     await updateRow(id, { dossier, log, result, llm_calls: result.llm.length });
   } catch (err) {
     // The research is saved and the preview has it; a dossier that could not be stored fails nothing.
     if (saved) { console.error(`[company-dive ${id}] dossier save failed`, err); return; }
     const message = (err as Error).message;
     const stats = (err as { stats?: DiveStats }).stats;
-    log.push({ at: new Date().toISOString(), stage: 'failed', msg: message });
-    console.error(`[company-dive ${id}] failed`, err);
-    await updateRow(id, {
-      status: 'failed', error: message, log, finished_at: new Date().toISOString(),
-      ...(stats ? {
-        tavily_calls: stats.tavily.length,
-        tavily_credits: stats.tavily.reduce((n, c) => n + c.credits, 0),
-        brave_calls: stats.braveCalls,
-        llm_calls: stats.llmCalls,
-      } : {}),
-    });
+    console.error(`[company-dive ${id}] try ${tries} failed`, err);
+    if ((err as { retryable?: boolean }).retryable === false) {
+      log.push({ at: new Date().toISOString(), stage: 'failed', msg: message });
+      await updateRow(id, {
+        status: 'failed', error: message, log, finished_at: new Date().toISOString(),
+        ...(stats ? { tavily_calls: stats.tavily.length, tavily_credits: stats.tavily.reduce((n, c) => n + c.credits, 0), brave_calls: stats.braveCalls, llm_calls: stats.llmCalls } : {}),
+      });
+      return;
+    }
+    await notComplete(id, tries, message, log, stats);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -914,15 +1006,40 @@ export function setRunningForTests(at: number | null): void {
   if (at !== null) runningSince.set(-1, at);
 }
 
-/** Dives live only in this process, so one still queued or running at boot was cut off by a restart. */
-export async function failInterrupted(): Promise<void> {
+const RETRY_SWEEP_MS = 60_000;
+
+function queue(id: number): void {
+  if (!waiting.includes(id)) waiting.push(id);
+  pump();
+}
+
+/**
+ * Dives live only in this process, so one still queued or running at boot was cut off by a
+ * restart: it is queued again (a try cut off this way does not count). Then incomplete dives
+ * run again when their retry_at comes.
+ */
+export async function resumeInterrupted(): Promise<void> {
   if (!reportdb.configured()) return;
   await ensureTable();
   // Cut off in the people step: the research is saved, so the report stands.
   await reportdb.sql(`update company_dive set status = 'done', stage = 'done', finished_at = now()
                        where status = 'running' and stage = 'people' and dossier is not null`);
-  await reportdb.sql(`update company_dive set status = 'failed', error = 'interrupted by a restart', finished_at = now()
-                       where status in ('queued', 'running')`);
+  const out = await reportdb.sql<{ id: string }>(`update company_dive set status = 'queued', stage = '', tries = case when status = 'running' then greatest(tries - 1, 0) else tries end
+                                                   where status in ('queued', 'running') returning id`);
+  const ids = out.rows.map((r) => Number(r.id)).sort((a, b) => a - b);
+  if (ids.length) console.log(`[company-dive] resuming ${ids.length} dive(s) cut off by the restart: ${ids.join(', ')}`);
+  for (const id of ids) queue(id);
+  setInterval(() => { void retryDue(); }, RETRY_SWEEP_MS).unref();
+}
+
+async function retryDue(): Promise<void> {
+  try {
+    const due = await reportdb.sql<{ id: string }>(`update company_dive set status = 'queued', stage = '', retry_at = null
+                                                     where status = 'incomplete' and retry_at is not null and retry_at <= now() returning id`);
+    for (const r of due.rows) queue(Number(r.id));
+  } catch (err) {
+    console.warn(`[company-dive] retry sweep failed: ${(err as Error).message}`);
+  }
 }
 
 // ---------------------------------------------------------------- HTTP
@@ -1006,7 +1123,7 @@ export function publicView(row: DiveRow): Record<string, unknown> {
     country: row.country,
     status: row.status,
     stage: row.stage,
-    error: row.status === 'failed' ? row.error : null,
+    error: row.status === 'failed' || row.status === 'incomplete' ? row.error : null,
     created_at: row.created_at,
     finished_at: row.finished_at,
     log: (row.log ?? []).map((l) => ({ at: l.at, stage: l.stage, msg: l.msg })),

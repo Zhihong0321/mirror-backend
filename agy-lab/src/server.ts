@@ -524,11 +524,11 @@ server.listen(PORT, '0.0.0.0', () => {
   // Age 0 at boot: this process owns no run yet, so anything non-terminal was
   // stranded by the restart that just happened.
   reapAbandonedRuns(0);
-  // Dive-deeper runs resume after the company dives are closed: a run whose dive the restart
-  // cut off starts that dive again (divedeeper.ts execute).
-  void companyDive.failInterrupted()
-    .then(() => companyDivePeople.failInterrupted())
-    .catch((err: Error) => console.warn('could not close interrupted company dives: ' + err.message))
+  // Company dives cut off by the restart are queued again, then dive-deeper runs resume
+  // (a run waiting on its company dive keeps waiting).
+  void companyDivePeople.failInterrupted()
+    .then(() => companyDive.resumeInterrupted())
+    .catch((err: Error) => console.warn('could not resume interrupted company dives: ' + err.message))
     .then(() => diveDeeper.resumeInterrupted())
     .catch((err: Error) => console.warn('could not resume interrupted dive-deeper runs: ' + err.message))
     .finally(() => diveDeeper.startPreviewWorker());
