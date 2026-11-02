@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the x lane, in the USER domain (a LaunchAgent).
+
+  WHY AN AGENT, NOT THE DAEMON. Two separate reasons, either one sufficient.
+  ego lite is a GUI app and will not start without an Aqua session, the same wall
+  the ask lane hits. And `xw` runs the Claude CLI, whose credential is an OAuth
+  login sitting in the login keychain -- which a system-domain process cannot
+  unlock. The daemon would fail both halves of this job, silently, at 3am.
+
+  AND A THIRD REASON THIS LANE HAS ALONE. grok.com puts an age-confirmation modal
+  in the way, once per ego lite task space, and x-recon will not click it -- an age
+  attestation is a statement about a person, not a checkbox a job may tick. That
+  gate is cleared by a human at this machine or not at all, so there is no version
+  of this lane that runs somewhere nobody is sitting.
+
+  THE PRICE. An agent starts at login, not at boot, so this needs Automatic login
+  on and FileVault off, exactly as com.eternalgy.gmapworker.ask.plist explains.
+
+  PATH carries __HOME__/.local/bin because `claude` and `ego-browser` are both
+  installed there, and /usr/bin because `xw` uses `jq`. A launchd job inherits
+  no PATH worth having.
+
+  Install it with the sed line in README.md -- launchd does not expand ~, so
+  __HOME__ and __NODE__ must be real paths before this file is loaded.
+
+  WORKER_TYPES pins this process to the x lane alone. One Grok ask is 40-120s and
+  a lead may spend four of them, so it must not share a lane with the wrapper
+  types that answer in seconds. It drives a different ego lite task space from the
+  fb lane, so the two do not contend for a browser.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.gmapworker.x</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/worker/macmini.mjs</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-x.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-x.log</string>
+
+  <!--
+    No LAB_TOKEN here. macmini.mjs reads it from ~/.gmap-worker.env at chmod 600,
+    for the same reason every other lane does: a plist is readable by every
+    process on the box.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+    <key>WORKER_NAME</key>
+    <string>macmini-x</string>
+    <key>WORKER_TYPES</key>
+    <string>x.subject,x.company,x.probe</string>
+  </dict>
+</dict>
+</plist>

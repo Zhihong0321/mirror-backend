@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the fb lane, in the USER domain (a LaunchAgent).
+
+  WHY AN AGENT, NOT THE DAEMON. Two separate reasons, either one sufficient.
+  ego lite is a GUI app and will not start without an Aqua session, the same wall
+  the ask lane hits. And `fbw` runs the Claude CLI, whose credential is an OAuth
+  login sitting in the login keychain -- which a system-domain process cannot
+  unlock. The daemon would fail both halves of this job, silently, at 3am.
+
+  THE PRICE. An agent starts at login, not at boot, so this needs Automatic login
+  on and FileVault off, exactly as com.eternalgy.gmapworker.ask.plist explains.
+
+  PATH carries __HOME__/.local/bin because `claude` and `ego-browser` are both
+  installed there, and /usr/bin because `fbw` uses `jq`. A launchd job inherits
+  no PATH worth having.
+
+  Install it with the sed line in README.md -- launchd does not expand ~, so
+  __HOME__ and __NODE__ must be real paths before this file is loaded.
+
+  WORKER_TYPES pins this process to the fb lane alone. A lead holds ego lite's
+  single crawl space for one to two minutes, so it must not share a lane with the
+  wrapper types that answer in seconds.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.gmapworker.fb</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/worker/macmini.mjs</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-fb.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-fb.log</string>
+
+  <!--
+    No LAB_TOKEN here. macmini.mjs reads it from ~/.gmap-worker.env at chmod 600,
+    for the same reason every other lane does: a plist is readable by every
+    process on the box.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+    <key>WORKER_NAME</key>
+    <string>macmini-fb</string>
+    <key>WORKER_TYPES</key>
+    <string>fb.company,fb.person,fb.discover,fb.probe</string>
+  </dict>
+</dict>
+</plist>

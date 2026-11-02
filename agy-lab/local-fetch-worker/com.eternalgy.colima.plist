@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Keeps the Colima VM up, which is what the Crawl4AI container runs in. Install
+  it with the sed line in README.md: launchd does not expand ~, so __HOME__ must
+  be a real path first.
+
+  WHY NOT KeepAlive. `colima start` brings the VM up and exits — it is not a
+  daemon to supervise. Under KeepAlive launchd would read every successful start
+  as a crash and spin. So this runs at load and then every 5 minutes;
+  `colima start` on a VM that is already running is a no-op that costs a second,
+  and on one that died is the restart. The container itself is
+  `--restart unless-stopped`, so Docker brings it back inside the VM.
+
+  --network-host-addresses is NOT optional. Without it Colima cannot honour the
+  container's `-p 127.0.0.1:11235:11235` and forwards the crawler to 0.0.0.0 on
+  this Mac instead — an open page-fetcher on the home network, on the one IP
+  whose good standing the whole Mac mini premise depends on. Verify after any
+  change with:  lsof -nP -iTCP:11235 -sTCP:LISTEN
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.colima</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/colima</string>
+    <string>start</string>
+    <string>--network-host-addresses</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>300</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/.local-fetch-worker/colima.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/.local-fetch-worker/colima.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+  </dict>
+</dict>
+</plist>

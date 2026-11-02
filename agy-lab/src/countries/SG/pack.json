@@ -1,0 +1,18 @@
+{
+  "code": "SG", "country": "Singapore", "status": "live",
+  "names": ["singapore", "republic of singapore"], "languages": ["en"],
+  "search": {"tavily_country": "singapore", "exa_location": "SG"},
+  "discover": [
+    {"label": "company-directory", "query": "site:companies.sg \"{short}\"", "kind": "web"},
+    {"label": "sgpbusiness", "query": "site:sgpbusiness.com \"{short}\"", "kind": "web"},
+    {"label": "uen", "query": "\"{short}\" Singapore UEN", "kind": "web"},
+    {"label": "sg-directors", "query": "\"{short}\" Singapore director CEO", "kind": "web"}
+  ],
+  "walled": [],
+  "notes": {
+    "triage": "Match the legal name and UEN; distinguish similarly named group companies.",
+    "analyse": "Search include_domains [\"companies.sg\"] for name or UEN; its records are secondary.",
+    "reflect": "", "facts": "", "write": "Identify the UEN and registered entity, distinguishing it from its group.",
+    "people": "Search the exact legal name with director or CEO; verify the person belongs to the correct entity."
+  }
+}

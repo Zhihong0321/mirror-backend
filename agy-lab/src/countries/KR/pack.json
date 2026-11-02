@@ -1,0 +1,31 @@
+{
+  "code": "KR",
+  "country": "South Korea",
+  "status": "live",
+  "names": ["south korea", "korea", "republic of korea", "rok", "s. korea", "s korea", "south-korea", "korea, republic of", "republic of s. korea", "kr"],
+  "languages": ["en", "ko"],
+  "search": {
+    "brave_country": "KR",
+    "tavily_country": "south korea",
+    "exa_location": "KR"
+  },
+  "discover": [
+    { "label": "dart", "query": "site:dart.fss.or.kr \"{short}\"", "kind": "web" },
+    { "label": "bizno", "query": "site:bizno.net \"{short}\"", "kind": "web" },
+    { "label": "kind", "query": "site:kind.krx.co.kr \"{short}\"", "kind": "web" },
+    { "label": "brn", "query": "\"{short}\" 사업자등록번호", "kind": "web" },
+    { "label": "ceo", "query": "\"{short}\" 대표이사", "kind": "web" },
+    { "label": "jobs-ko", "query": "site:saramin.co.kr \"{short}\"", "kind": "web" },
+    { "label": "reviews-ko", "query": "site:jobplanet.co.kr \"{short}\"", "kind": "web" },
+    { "label": "news-ko", "query": "\"{short}\" {country}", "kind": "news" }
+  ],
+  "walled": ["iros.go.kr", "cretop.com", "hometax.go.kr"],
+  "notes": {
+    "triage": "Korean legal names use 주식회사, (주) before or after the name, or an English suffix such as Inc. or CO,.LTD. Keep the Hangul name in aliases. Two IDs: 사업자등록번호 (business registration number) is 10 digits, XXX-XX-XXXXX, for example 124-81-00998. 법인등록번호 (corporate registration number) is 13 digits, XXXXXX-XXXXXXX, for example 130111-0006246. A 6-digit stock code such as 005930 is neither ID. A 통신판매업 신고번호 (mail-order report number, such as 2012-경기성남-1092) is not the company number. Lookalikes are common: 삼성전자, 삼성전자서비스 and 삼성전자판매 are different companies, and job ads are often dealers.",
+    "analyse": "For a company that files, search include_domains [\"dart.fss.or.kr\"] for the 기업개황 (company overview): Hangul and English names, 대표자명 (representative), both numbers, address, phone, homepage and founding date. Search include_domains [\"bizno.net\"] with the Hangul name or the 10-digit number for status, industry, headcount and address. Prefer the company site or DART when bizno disagrees. For a listed company, search include_domains [\"kind.krx.co.kr\"] for 대표이사, 종업원수 (headcount) and the summary accounts. Officer lists are on OpenDART's 공시정보 활용마당 (opendart.fss.or.kr), item 임원 현황. Do not open iros.go.kr, cretop.com or hometax.go.kr. A missing tax-status page is not evidence the business is closed. Plan some searches with the Hangul name plus 대표이사 or 사업자등록번호.",
+    "reflect": "If either number is still missing, search the exact Hangul legal name on dart.fss.or.kr and bizno.net. A footer 통신판매업 number identifies the seller; the 사업자등록번호 is the 10-digit number printed beside it.",
+    "facts": "Record both numbers exactly as printed, hyphens included. When a directory and the company site disagree on phone, mail-order number or address, keep both and name each page.",
+    "write": "In Identity and registration, name the 사업자등록번호 and, for a corporation, the 법인등록번호, the issuer (National Tax Service for the first, the court registry for the second), and the DART or KIND page when one was found. Say the court registry extract was not read when iros.go.kr was not opened.",
+    "people": "대표이사 and 대표자 mean the representative director. They are on the DART 기업개황, the website footer and KIND. For a filing company, OpenDART 임원 현황 lists officers. Jobplanet shows a score without a login; the review text needs a membership, so do not invent people from it. Do not take people from a lookalike affiliate or from a dealer job ad."
+  }
+}

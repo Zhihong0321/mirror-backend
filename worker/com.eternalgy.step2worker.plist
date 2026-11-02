@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the Mac mini's Step 2 Worker. Install it with the sed line in
+  README.md — launchd does not expand ~, so __HOME__ and __NODE__ must be real
+  paths before this file is loaded. __NODE__ must be Node 24 or newer: worker.ts
+  is run as TypeScript, with no build step.
+
+  KeepAlive is unconditional, like the Maps workers: this should be running
+  whenever the mini is up, and the only correct response to it not running is to
+  start it again. With no step-2 job on the hub the worker just asks again every
+  minute, so running all day costs nothing. ThrottleInterval keeps a
+  crash-on-boot from becoming a spin.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.step2worker</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/agy-lab/step2-worker/worker.ts</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools/agy-lab/step2-worker</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/.step2-worker/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/.step2-worker/launchd.log</string>
+
+  <!--
+    No LAB_TOKEN here. A plist is world-readable; the token is a root shell on
+    the lab container. worker.ts reads it from ~/.step2-worker/worker.env, which
+    is chmod 600. The worker's own log is ~/.step2-worker/worker.log.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

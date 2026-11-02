@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the ads lane, in the USER domain (a LaunchAgent).
+
+  WHY AN AGENT, NOT THE DAEMON. ego lite is a GUI app and will not start without
+  an Aqua session. That alone settles it. Unlike the fb lane there is no keychain
+  argument here, because `ads` calls no model at all -- it is a deterministic
+  crawl of two public ad libraries -- but the GUI wall is enough on its own.
+
+  THE PRICE. An agent starts at login, not at boot, so this needs Automatic login
+  on and FileVault off, exactly as com.eternalgy.gmapworker.ask.plist explains.
+
+  PATH carries __HOME__/.local/bin for `ego-browser`, the node directory for the
+  `node` that builds the contact sheet, and /usr/bin for `jq` and `sips`. `sips`
+  is what shrinks each creative before it travels back inside the job result.
+
+  Install it with the sed line in README.md -- launchd does not expand ~, so
+  __HOME__ and __NODE__ must be real paths before this file is loaded.
+
+  WORKER_TYPES is the whole lane definition for this process -- it OVERRIDES the
+  LANES table in macmini.mjs entirely (see the `if (pinned.length)` branch there).
+  Adding a type to that table without adding it here does nothing: the worker
+  restarts, logs the old two types, and every job of the new type sits unclaimed.
+  That happened once with ads.market. Both places, every time.
+
+  WORKER_TYPES pins this process to the ads lane alone. Google's transparency
+  centre costs one page load per ad, so a single job can hold ego lite's ads
+  crawl space for four to six minutes; it must not sit in front of anything that
+  answers in seconds.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.gmapworker.ads</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/worker/macmini.mjs</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-ads.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker-ads.log</string>
+
+  <!--
+    No LAB_TOKEN here. macmini.mjs reads it from ~/.gmap-worker.env at chmod 600,
+    for the same reason every other lane does: a plist is readable by every
+    process on the box.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+    <key>WORKER_NAME</key>
+    <string>macmini-ads</string>
+    <key>WORKER_TYPES</key>
+    <string>ads.company,ads.market,ads.probe</string>
+  </dict>
+</dict>
+</plist>

@@ -1,0 +1,24 @@
+{
+  "code": "XX",
+  "country": "Country name in English",
+  "status": "draft",
+  "names": ["country name in lowercase", "other spellings people type"],
+  "languages": ["en"],
+  "search": {
+    "brave_country": "XX",
+    "tavily_country": "country name as tavily spells it",
+    "exa_location": "XX"
+  },
+  "discover": [
+    { "label": "registry-id", "query": "\"{short}\" registration number", "kind": "web" }
+  ],
+  "walled": [],
+  "notes": {
+    "triage": "",
+    "analyse": "",
+    "reflect": "",
+    "facts": "",
+    "write": "",
+    "people": ""
+  }
+}

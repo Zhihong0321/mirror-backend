@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the home worker. Install it with the sed line in README.md —
+  launchd does not expand ~, so __HOME__ and __NODE__ must be real paths before
+  this file is loaded.
+
+  KeepAlive is unconditional on purpose: this process is supposed to be running
+  every second of every day, and the only correct response to it not running is
+  to start it again. ThrottleInterval keeps a crash-on-boot from becoming a spin.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.gmapworker</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/worker/macmini.mjs</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker.log</string>
+
+  <!--
+    No LAB_TOKEN here. A plist is world-readable; the token is a root shell on
+    the lab container. macmini.mjs reads it from ~/.gmap-worker.env, which is
+    chmod 600.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

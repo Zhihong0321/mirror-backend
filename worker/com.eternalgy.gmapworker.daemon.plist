@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd job for the home worker, in the SYSTEM domain.
+
+  WHY A DAEMON AND NOT AN AGENT. A LaunchAgent in ~/Library/LaunchAgents starts
+  when a user logs in. A Mac mini that reboots at 3am and sits at the login
+  window runs no agent, and the failure is invisible: the worker log has no new
+  line, and every job simply stays `pending`. A LaunchDaemon starts at boot with
+  nobody logged in, which is the only thing that makes "always on" true.
+
+  UserName is set because the token lives in ~/.gmap-worker.env at chmod 600.
+  Running as root would read it fine and would also mean a Maps scan, and every
+  browser it drives, runs as root. It runs as the human instead.
+
+  Install it with the sed line in README.md — launchd does not expand ~, so
+  __HOME__, __NODE__ and __USER__ must be real paths before this file is loaded.
+
+  KeepAlive is unconditional on purpose: this process is supposed to be running
+  every second of every day, and the only correct response to it not running is
+  to start it again. ThrottleInterval keeps a crash-on-boot from becoming a spin.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.eternalgy.gmapworker</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__HOME__/automation-tools/worker/macmini.mjs</string>
+  </array>
+
+  <key>UserName</key>
+  <string>__USER__</string>
+  <key>GroupName</key>
+  <string>staff</string>
+
+  <key>WorkingDirectory</key>
+  <string>__HOME__/automation-tools</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/gmap-worker.log</string>
+
+  <!--
+    No LAB_TOKEN here. This file lives in /Library/LaunchDaemons and is
+    world-readable; the token is a root shell on the lab container.
+    macmini.mjs reads it from ~/.gmap-worker.env, which is chmod 600.
+  -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+
+    <!--
+      This daemon is the SCAN worker, and only that.
+
+      A daemon has no GUI session, and ego lite will not start without one, so
+      the fb, x and ads lanes cannot run here. But a claim with no types asks for
+      ANY job, so without this line the daemon would take an fb.* job off the
+      queue and fail it with "no handler", stealing it from the worker that could
+      have answered. WORKER_TYPES collapses this process to the one lane it can
+      actually serve.
+    -->
+    <key>WORKER_TYPES</key>
+    <string>ping,gmap.scan</string>
+  </dict>
+</dict>
+</plist>
