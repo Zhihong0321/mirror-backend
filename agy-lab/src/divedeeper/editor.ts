@@ -11,7 +11,7 @@ export type Area = 'contact' | 'understanding' | 'voice' | 'credibility' | 'asse
 export const AREAS: { id: Area; title: string; lanes: string[] }[] = [
   { id: 'contact', title: 'Contact and reachability', lanes: ['R-contacts', 'C-merged'] },
   { id: 'understanding', title: 'How the internet understands you', lanes: ['B-brand', 'G-fixed', 'G-grounded', 'H-maps', 'H-web', 'C-merged'] },
-  { id: 'voice', title: 'Reviews, discussion and news', lanes: ['E-maps', 'N-news'] },
+  { id: 'voice', title: 'Reviews, discussion and news', lanes: ['N-news'] },
   { id: 'credibility', title: 'Credibility and official records', lanes: ['K-credibility', 'D-registry', 'C-merged'] },
   { id: 'assets', title: 'Digital assets', lanes: ['A-assets', 'C-merged'] },
   { id: 'speed', title: 'Website speed and quality', lanes: ['W-speed', 'C-merged'] },
