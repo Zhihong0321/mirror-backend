@@ -1,17 +1,13 @@
 // H / plan — the search phrases and towns both H lanes use for one company, picked once
 // by the LLM and stored in out/H-plan-<diveId>.json, so ranks stay comparable between runs
 // (round 2 showed the LLM picking new trade words every run). Delete the file to re-pick.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx } from '../lib.ts';
+import { readLane, writeLane, type Ctx } from '../lib.ts';
 
 export type HPlan = { trades: string[]; areas: string[]; offices: string[]; picked_at: string };
 
 export async function getPlan(ctx: Ctx, dive: any): Promise<HPlan> {
-  const file = path.join(OUT, `H-plan-${ctx.diveId}.json`);
-  try {
-    if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch (e) { ctx.warn(`could not read ${file}: ${(e as Error).message}`); }
+  const cached = readLane(ctx.diveId, 'H-plan');
+  if (cached) return cached;
 
   const r = dive.result ?? {};
   const id = r.identity ?? {};
@@ -32,7 +28,6 @@ export async function getPlan(ctx: Ctx, dive: any): Promise<HPlan> {
   if (!plan.trades.length) { ctx.warn('no trades from the LLM; falling back to the industry'); plan.trades = [String(id.industry ?? 'company').split(/[,(]/)[0].trim()]; }
   if (!plan.areas.length) { ctx.warn('no areas from the LLM; falling back to the HQ town'); plan.areas = [town]; }
   if (!plan.offices.length) plan.offices = [plan.areas[0]];
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(plan, null, 2));
+  writeLane(ctx.diveId, 'H-plan', plan, 2);
   return plan;
 }

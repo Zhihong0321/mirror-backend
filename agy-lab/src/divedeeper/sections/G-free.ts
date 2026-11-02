@@ -10,17 +10,16 @@
 //      at different temperatures ask exactly the same things.
 // Limit: answers reflect training data unless the model searches by itself (gpt-6.1-sol does;
 // see `searched` on each answer).
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { ANSWER_MODELS, ANSWER_TEMP, JUDGE_MODEL, MAX_PROMPTS, usageByModel, askAndJudge, findingsFrom, profileOf, signatures, type Profile, type Prompt } from './G-shared.ts';
 
 async function customerPrompts(ctx: Ctx, dive: any, p: Profile): Promise<Prompt[]> {
   if (process.env.DD_G_REUSE) {
-    try {
-      const prev = JSON.parse(fs.readFileSync(path.join(OUT, `G-free-${ctx.diveId}.json`), 'utf8'));
-      if (prev.notes?.prompts?.length) { ctx.log(`reusing ${prev.notes.prompts.length} prompts from the last run`); return prev.notes.prompts; }
-    } catch { /* fall through and generate */ }
+    const prev = readLane(ctx.diveId, 'G-free');
+    if (prev?.notes?.prompts?.length) {
+      ctx.log(`reusing ${prev.notes.prompts.length} prompts from the last run`);
+      return prev.notes.prompts;
+    }
     ctx.warn('DD_G_REUSE set but no previous prompts found; generating new ones');
   }
   const services = (dive.result?.facts ?? []).filter((f: any) => f.topic === 'products_services').slice(0, 6).map((f: any) => '- ' + f.fact).join('\n');

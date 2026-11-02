@@ -7,9 +7,7 @@
 // (the phone, website and address questions share one contact search).
 // Env: DD_G_TEMP, DD_G_MAX, DD_G_MODELS, DD_G_JUDGE; DD_G_REUSE=1 reuses the search results
 // saved in the last out/G-grounded-<id>.json (0 Exa calls), to compare two runs on the same evidence.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { ANSWER_MODELS, ANSWER_TEMP, BRIEF, JUDGE_MODEL, MAX_PROMPTS, usageByModel, askAndJudge, checkDomains, findingsFrom, profileOf, signatures, type Prompt } from './G-shared.ts';
 import { fixedQuestions } from './G-fixed.ts';
 
@@ -24,11 +22,13 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const queries = [...new Set(prompts.map(queryOf))];
   const results = new Map<string, any[]>();
   if (process.env.DD_G_REUSE) {
-    try {
-      const prev = JSON.parse(fs.readFileSync(path.join(OUT, `G-grounded-${ctx.diveId}.json`), 'utf8'));
+    const prev = readLane(ctx.diveId, 'G-grounded');
+    if (prev) {
       for (const [q, r] of Object.entries(prev.notes?.search_results ?? {})) results.set(q, r as any[]);
       ctx.log(`reusing search results for ${results.size} queries`);
-    } catch { ctx.warn('DD_G_REUSE set but no previous search results; searching'); }
+    } else {
+      ctx.warn('DD_G_REUSE set but no previous search results; searching');
+    }
   }
   for (const q of queries) {
     if (results.has(q)) continue;

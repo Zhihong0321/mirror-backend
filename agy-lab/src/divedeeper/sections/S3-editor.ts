@@ -8,18 +8,11 @@
 //   2. takes proof screenshots of the worst website problems, with the problem outlined.
 // The verdict, the stories and the rest of the analysis are S4's (sections/S4-analysis.ts).
 // Every step falls back: no LLM answer keeps the lane's own wording, no browser means no shots.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES, resolve, type Item } from '../editor.ts';
 import { takeShots, type ShotAsk } from '../shots.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
-
-function stage(diveId: string, lane: string): any | null {
-  const file = path.join(OUT, `${lane}-${diveId}.json`);
-  try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
-}
 
 async function askJson(ctx: Ctx, prompt: string, label: string, attempts = 2): Promise<any> {
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -51,7 +44,7 @@ export function shotAsks(R: ReturnType<typeof resolve>, ownSite: string | null):
 }
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult'].map((l) => [l, stage(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the report skips what it covers`);
   const R = resolve(dive, L);
   const now = ctx.now();

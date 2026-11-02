@@ -16,12 +16,9 @@
 //    become "[image]", inline tags do not add spaces, JS counters show their target value, review and
 //    cookie widgets are removed. At most 5 issues a page; a finding is kept only when its exact quote is in
 //    the page text. One cross-page call compares exact-quoted claims across pages and domains.
-import fs from 'node:fs';
-import path from 'node:path';
 import tls from 'node:tls';
 import dns from 'node:dns/promises';
-import type { Ctx, Finding } from '../lib.ts';
-import { OUT } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 
 const PER_DOMAIN = Number(process.env.C_PER_DOMAIN ?? 15);
 const TOTAL_PAGES = Number(process.env.C_TOTAL_PAGES ?? 50);
@@ -440,7 +437,12 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }
   const divePhones = new Set(phonesIn(JSON.stringify(r.facts ?? []) + ' ' + JSON.stringify(r.people ?? [])));
   let mapsListings: any[] | null = null;
-  try { mapsListings = JSON.parse(fs.readFileSync(path.join(OUT, `H-maps-${ctx.diveId}.json`), 'utf8')).notes?.listings ?? []; } catch { ctx.warn(`no H-maps-${ctx.diveId}.json; Maps phones NOT checked`); }
+  const mapsData = readLane(ctx.diveId, 'H-maps');
+  if (mapsData) {
+    mapsListings = mapsData.notes?.listings ?? [];
+  } else {
+    ctx.warn(`no H-maps-${ctx.diveId}.json; Maps phones NOT checked`);
+  }
   const mapsPhones = new Set((mapsListings ?? []).map((l) => normPhone(String(l.phone ?? ''))).filter(Boolean));
   if (sitePhones.size) for (const l of mapsListings ?? []) {
     const n = normPhone(String(l.phone ?? ''));
