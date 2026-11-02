@@ -43,6 +43,7 @@
 // times, then it is 'failed'. A dive cut off by a restart is queued again.
 
 import crypto from 'node:crypto';
+import dns from 'node:dns';
 import type http from 'node:http';
 import { brave, exa, llm, tavily } from './core/index.ts';
 import * as reportdb from './reportdb.ts';
@@ -276,6 +277,29 @@ export function urlKey(raw: string): string {
 
 export function hostOf(raw: string): string {
   try { return new URL(raw).hostname.toLowerCase().replace(/^www\./, ''); } catch { return ''; }
+}
+
+type Lookup = (host: string) => Promise<unknown>;
+const dnsLookup: Lookup = (host) => dns.promises.lookup(host);
+
+/**
+ * The official domains, checked. Triage lists every domain it saw the company use, stale ones
+ * too: Signmastr's list was ["signmastr.com", "signmastr.com.my"], the first does not resolve, and
+ * the company UID and every dive-deeper lane took it. A domain that does not resolve is dropped;
+ * the site triage picked to read comes first, then the domains most sources sit on. If none
+ * resolves (DNS itself down), the list is kept as it was.
+ */
+export async function liveDomains(domains: string[], mapDomain: string, urls: string[], lookup: Lookup = dnsLookup): Promise<string[]> {
+  const norm = (d: string) => hostOf('https://' + String(d).trim().replace(/^https?:\/\//i, ''));
+  const all = [...new Set([mapDomain, ...domains].map(norm).filter(Boolean))];
+  const ok = await Promise.all(all.map((d) => Promise.race([
+    lookup(d).then(() => true, () => false),
+    new Promise<boolean>((r) => setTimeout(() => r(false), 5_000).unref()),
+  ])));
+  const live = all.filter((_, i) => ok[i]);
+  if (!live.length) return domains;
+  const count = (d: string) => urls.filter((u) => { const h = hostOf(u); return h === d || h.endsWith('.' + d); }).length;
+  return live.sort((a, b) => Number(b === mapDomain) - Number(a === mapDomain) || count(b) - count(a));
 }
 
 export class Ledger {
@@ -612,6 +636,10 @@ async function dive(asked: string, country: string, progress: Progress, budget: 
   const relevant = new Set(ids(tri.relevant_ids, ledger));
   let gaps: string[] = Array.isArray(tri.gaps) ? tri.gaps.map(String) : [];
   const mapDomain = typeof tri.map_domain === 'string' && tri.map_domain.trim() ? hostOf('https://' + tri.map_domain.replace(/^https?:\/\//, '')) : '';
+  const named = identity.official_domains ?? [];
+  identity.official_domains = await liveDomains(named, mapDomain, ledger.sources.map((s) => s.url));
+  const dropped = named.filter((d) => !identity.official_domains!.includes(hostOf('https://' + String(d).replace(/^https?:\/\//i, ''))));
+  if (dropped.length) await say('triage', `Dropped official domain(s) that do not resolve: ${dropped.join(', ')}`);
   const thirdParty = ids(tri.extract_ids, ledger)
     .map((id) => ledger.byId(id)!)
     .filter((s) => s.contentKind === 'none' && !isWalled(hostOf(s.url)) && (!mapDomain || hostOf(s.url) !== mapDomain))
@@ -647,7 +675,14 @@ async function dive(asked: string, country: string, progress: Progress, budget: 
 
   await Promise.all([
     ownPages.length && T('extract', { urls: ownPages, extract_depth: 'advanced', format: 'markdown' }, 'T3 official pages')
-      .then((out) => { addExtractResults(out, 'tavily:T3'); return say('read', `Tavily T3: read ${(out.results ?? []).length} of ${ownPages.length} official pages`); })
+      .then((out) => {
+        addExtractResults(out, 'tavily:T3');
+        // Without one page of the company's own site the dossier would be written from third parties only.
+        if (!(out.results ?? []).length) {
+          return warn(`none of the ${ownPages.length} official pages could be read: ${String(out.failed_results?.[0]?.error ?? 'no reason given').slice(0, 160)}`);
+        }
+        return say('read', `Tavily T3: read ${(out.results ?? []).length} of ${ownPages.length} official pages`);
+      })
       .catch((err) => warn(`reading the official pages failed: ${err.message}`)),
     thirdParty.length && T('extract', { urls: thirdParty.map((s) => s.url), extract_depth: 'advanced', format: 'markdown' }, 'T4 third-party pages')
       .then((out) => { addExtractResults(out, 'tavily:T4'); return say('read', `Tavily T4: read ${(out.results ?? []).length} of ${thirdParty.length} third-party pages`); })
@@ -886,6 +921,8 @@ export function onFinished(fn: (id: number) => void): void {
 const RETRY_AFTER_MS = [60_000, 180_000, 1_800_000, 1_800_000, 1_800_000];
 /** Tries in all, the first included; after the last one an incomplete dive is failed. */
 export const MAX_TRIES = RETRY_AFTER_MS.length + 1;
+/** How long after try `tries` (1-based) the next one runs, or null when it was the last. */
+export const nextTry = (tries: number): number | null => RETRY_AFTER_MS[tries - 1] ?? null;
 /** The longest one try may take; past it the try counts as incomplete. The slowest dive seen took under 10 minutes. */
 const DIVE_LIMIT_MS = 40 * 60_000;
 
@@ -911,12 +948,12 @@ async function giveUid(id: number, row: DiveRow, result: DiveResult): Promise<vo
 
 /** Not complete: try again later, or fail when the tries are used up. */
 async function notComplete(id: number, tries: number, reason: string, log: DiveRow['log'], stats?: DiveStats): Promise<void> {
-  const wait = RETRY_AFTER_MS[tries - 1];
+  const wait = nextTry(tries);
   const at = new Date().toISOString();
   const counts = stats ? {
     tavily_calls: stats.tavily.length, tavily_credits: stats.tavily.reduce((n, c) => n + c.credits, 0), brave_calls: stats.braveCalls, llm_calls: stats.llmCalls,
   } : {};
-  if (wait === undefined) {
+  if (wait === null) {
     const message = `incomplete after ${tries} tries: ${reason}`;
     log.push({ at, stage: 'failed', msg: message });
     console.error(`[company-dive ${id}] ${message}`);

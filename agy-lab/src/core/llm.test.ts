@@ -243,7 +243,7 @@ test('a lane whose stream goes silent fails after the idle limit and the call mo
   const out = await chat('x', { step: 's', fetchImpl, log, fallback: false, idleMs: 50 });
   assert.equal(out.answer, 'done');
   assert.equal(out.lane, 'Vectide');
-  assert.match(String(log[0]!.note), /sent nothing for/);
+  assert.match(String(log[0]!.note), /sent no answer for/);
 });
 
 test('a stream that keeps arriving is not cut off by the idle limit', async () => {
@@ -262,4 +262,27 @@ test('a stream that keeps arriving is not cut off by the idle limit', async () =
   }));
   const out = await chat('x', { step: 's', fetchImpl: (async () => slow()) as unknown as typeof fetch, fallback: false, idleMs: 60 });
   assert.equal(out.answer, 'hello');
+});
+
+test('a lane that keeps the stream open with keep-alive lines but no answer fails, and the call moves on', async () => {
+  resetForTests();
+  setLanesForTests([
+    { url: 'https://h.example/v1', key: 'h', model: 'deepseek-v4.1-flash-1017', label: 'Hive', first: true },
+    { url: 'https://v.example/v1', key: 'v', model: 'deepseek-v4.1-flash-1017', label: 'Vectide' },
+  ]);
+  // The 2026-11-02 stall: bytes keep arriving (so a plain idle timer never fires), the answer never does.
+  let pinger: NodeJS.Timeout | undefined;
+  const pings = () => new Response(new ReadableStream({
+    start(c) { pinger = setInterval(() => { try { c.enqueue(new TextEncoder().encode(': keep-alive\n\n')); } catch { clearInterval(pinger); } }, 10); },
+    cancel() { clearInterval(pinger); },
+  }));
+  const fetchImpl = (async (url: string) => url.startsWith('https://h.') ? pings() : okAnswer('done')) as unknown as typeof fetch;
+  const log: import('../cost.ts').ApiCall[] = [];
+  try {
+    const out = await chat('x', { step: 's', fetchImpl, log, fallback: false, idleMs: 80 });
+    assert.equal(out.lane, 'Vectide');
+    assert.match(String(log[0]!.note), /sent no answer for/);
+  } finally {
+    clearInterval(pinger);
+  }
 });

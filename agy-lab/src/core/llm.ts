@@ -26,7 +26,9 @@
 //    twice, never instead of a lane that would answer.
 // 6. No timeout and no max_tokens of ours unless the caller passes one: answers
 //    stream, so a model that is still thinking keeps the connection alive. A
-//    stream that goes silent for IDLE_MS (idle.ts) fails and moves to the next lane.
+//    stream that sends no answer for IDLE_MS (idle.ts) fails and moves to the next lane.
+//    Only answer data counts: a lane that keeps the stream open with keep-alive bytes
+//    and no answer held calls for 15+ minutes on 2026-11-02 (dive-deeper #11, #13).
 // 7. Every attempt is one ApiCall in the caller's log: lane, model, tokens, USD,
 //    time, ok or failed, so a run shows which lane served each call.
 //
@@ -243,6 +245,11 @@ type Message = { role: 'system' | 'user'; content: string };
 type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number };
 type Answer = { answer: string; tokensIn: number; tokensOut: number };
 
+/** A chunk that carries part of the answer: content or reasoning text, the finish, the usage, or a
+ *  plain JSON body. Keep-alive comments and empty events are not progress. */
+export const answerProgress = (chunk: string): boolean =>
+  /"(content|reasoning_content|reasoning)"\s*:\s*"[^"]|"finish_reason"\s*:\s*"|"usage"\s*:\s*\{|"error"\s*:/.test(chunk) || /^\s*\{/.test(chunk);
+
 /**
  * One chat request, streamed: the reply is the content deltas, reasoning deltas
  * are dropped, and the usage chunk at the end gives the tokens. A server that
@@ -251,7 +258,7 @@ type Answer = { answer: string; tokensIn: number; tokensOut: number };
 async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchImpl: FetchImpl, out: { tokensIn: number; tokensOut: number }): Promise<string> {
   const idleMs = opts.idleMs ?? IDLE_MS;
   const guard = idleGuard(idleMs);
-  const silent = () => fail('timeout', `${c.model} sent nothing for ${Math.round(idleMs / 1000)}s`);
+  const silent = () => fail('timeout', `${c.model} sent no answer for ${Math.round(idleMs / 1000)}s`);
   let res: Response;
   try {
     res = await fetchImpl(c.url + '/chat/completions', {
@@ -277,7 +284,7 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
   let raw: string;
   try {
     guard.touch();
-    raw = await readText(res, guard);
+    raw = await readText(res, guard, answerProgress);
   } catch (cause) {
     if (guard.idled) throw silent();
     const name = (cause as Error).name;

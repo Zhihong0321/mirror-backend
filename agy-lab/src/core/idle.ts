@@ -23,8 +23,11 @@ export function idleGuard(idleMs = IDLE_MS): IdleGuard {
   };
 }
 
-/** The whole body as text, touching the guard on every chunk; stops when the guard fires. */
-export async function readText(res: Response, guard: IdleGuard): Promise<string> {
+/**
+ * The whole body as text, touching the guard on every chunk that counts as progress (any chunk,
+ * unless `progress` says otherwise); stops when the guard fires.
+ */
+export async function readText(res: Response, guard: IdleGuard, progress: (chunk: string) => boolean = () => true): Promise<string> {
   const body = res.body;
   if (!body || typeof body.getReader !== 'function') return await res.text();
   const reader = body.getReader();
@@ -37,8 +40,9 @@ export async function readText(res: Response, guard: IdleGuard): Promise<string>
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
-      guard.touch();
-      out += decoder.decode(value, { stream: true });
+      const text = decoder.decode(value, { stream: true });
+      if (progress(text)) guard.touch();
+      out += text;
     }
   } finally {
     guard.signal.removeEventListener('abort', stop);
