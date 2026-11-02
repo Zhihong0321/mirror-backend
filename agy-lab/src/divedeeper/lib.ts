@@ -72,6 +72,7 @@ async function httpsWithCa(url: string, init: { method?: string; headers: Record
       res.on('error', reject);
     });
     req.on('error', reject);
+    req.setTimeout(PAGE_TIMEOUT_MS, () => req.destroy(new Error(`no answer within ${PAGE_TIMEOUT_MS / 1000}s`)));
     if (init.body) req.write(init.body);
     req.end();
   });
@@ -126,6 +127,11 @@ export type Meter = {
   calls: ApiCall[];
 };
 
+/** A website read by the hub itself: given up after this long in all (a server can trickle bytes for ever). */
+const PAGE_TIMEOUT_MS = 60_000;
+/** A search engine's answer: given up after this long, then the next engine is asked. */
+const SEARCH_TIMEOUT_MS = 45_000;
+
 /** Marks the gmap.scan jobs the dive-deeper queues. */
 const MAPS_SOURCE = 'dive.deeper';
 const MAPS_TIMEOUT_MS = 300_000;
@@ -161,6 +167,17 @@ export function makeCtx(diveId: string, section: string, lane: string) {
   };
   const log = (msg: string) => console.log(`  ${msg}`);
 
+  /** Calls still waiting for an answer, so a lane that runs out of time can say on what (runner.ts). */
+  const inFlight = new Map<number, { what: string; since: number }>();
+  let nextCall = 0;
+  async function track<T>(what: string, work: Promise<T>): Promise<T> {
+    const n = nextCall++;
+    inFlight.set(n, { what: what.slice(0, 160), since: Date.now() });
+    try { return await work; } finally { inFlight.delete(n); }
+  }
+  const waitingOn = (): string[] => [...inFlight.values()].sort((a, b) => a.since - b.since)
+    .map((c) => `${c.what} (${Math.round((Date.now() - c.since) / 1000)}s)`);
+
   /** One chat call through the app's LLM router (core/llm.ts); '' when every lane and MiniMax failed. */
   async function llm(prompt: string, opts: { model?: string; system?: string; temperature?: number; label?: string } = {}): Promise<string> {
     const model = opts.model ?? DEFAULT_MODEL;
@@ -168,7 +185,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     meter.llm.byModel[model] = (meter.llm.byModel[model] ?? 0) + 1;
     meter.llm.promptChars += prompt.length + (opts.system?.length ?? 0);
     try {
-      const out = await core.llm.chat(prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, log: meter.calls });
+      const out = await track(`llm ${model}`, core.llm.chat(prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, log: meter.calls }));
       meter.llm.answerChars += out.answer.length;
       meter.llm.tokensIn += out.tokensIn;
       meter.llm.tokensOut += out.tokensOut;
@@ -195,7 +212,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
       return null;
     }
     const job = jobs.create('gmap.scan', { keyword, place, max, source: MAPS_SOURCE }, MAPS_TIMEOUT_MS);
-    const settled = await jobs.wait(job.id, MAPS_TIMEOUT_MS + 5_000);
+    const settled = await track(`maps ${what}`, jobs.wait(job.id, MAPS_TIMEOUT_MS + 5_000));
     const result = settled?.result as { businesses?: MapsRow[]; blocked?: boolean; blockedReason?: string | null } | null | undefined;
     if (!settled || settled.status !== 'done' || !result || result.blocked || !Array.isArray(result.businesses)) {
       warn(`maps ${what}: ${settled?.error ?? (result?.blocked ? 'blocked: ' + (result.blockedReason ?? 'no reason') : settled ? 'no businesses in the answer' : 'no answer in time')}`.slice(0, 300));
@@ -205,7 +222,9 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     return result.businesses;
   }
 
-  /** Exa search (core/exa.ts, the hub's key pool). `text: true` adds page text (capped by Exa's own maxCharacters). */
+  /** Exa search (core/exa.ts, the hub's key pool). `text: true` adds page text (capped by Exa's own maxCharacters).
+   *  When every Exa key fails, Tavily and then Brave answer instead (their snippets as `text`), so a
+   *  lane gets results whenever any engine is up; only all three failing counts as a failed call. */
   async function exa(query: string, opts: { numResults?: number; text?: boolean | number; type?: string; category?: string; includeDomains?: string[]; excludeDomains?: string[]; startPublishedDate?: string } = {}): Promise<any[]> {
     meter.exa.calls++;
     const body = {
@@ -218,29 +237,67 @@ export function makeCtx(diveId: string, section: string, lane: string) {
       ...(opts.startPublishedDate ? { startPublishedDate: opts.startPublishedDate } : {}),
       ...(opts.text ? { contents: { text: typeof opts.text === 'number' ? { maxCharacters: opts.text } : true } } : {}),
     };
+    const errors: string[] = [];
     try {
-      const out = await core.exa.request('search', body, { log: meter.calls, what: query });
+      const out = await track(`exa ${query}`, core.exa.request('search', body, { log: meter.calls, what: query, timeoutMs: SEARCH_TIMEOUT_MS }));
       const results = out.results ?? [];
       meter.exa.results += results.length;
       if (out.costDollars?.total != null) { meter.exa.priced++; meter.exa.dollars += Number(out.costDollars.total); }
       return results;
     } catch (e) {
-      warn(`exa failed: ${(e as Error).message.slice(0, 200)}`);
-      meter.exa.failed++;
-      return [];
+      errors.push(`exa: ${(e as Error).message.slice(0, 150)}`);
     }
+    // The fallbacks know no domain filter of their own: site: does the same job.
+    const q = opts.includeDomains?.length ? `${query} ${opts.includeDomains.map((d) => 'site:' + d).join(' OR ')}` : query;
+    const drop = (url: string) => (opts.excludeDomains ?? []).some((d) => {
+      try { const h = new URL(url).hostname.replace(/^www\./, ''); return h === d || h.endsWith('.' + d); } catch { return false; }
+    });
+    try {
+      const hits = await track(`tavily ${q}`, core.tavily.search(q, { maxResults: opts.numResults ?? 10, depth: 'advanced', timeoutMs: SEARCH_TIMEOUT_MS, log: meter.calls, what: query }));
+      log(`exa failed, Tavily answered: ${query}`);
+      return hits.filter((h) => !drop(h.url)).map((h) => ({ url: h.url, title: h.title, text: h.content }));
+    } catch (e) {
+      errors.push(`tavily: ${(e as Error).message.slice(0, 150)}`);
+    }
+    try {
+      const rows = await track(`brave ${q}`, core.brave.searchRaw(q, { count: opts.numResults ?? 10, country: 'MY', log: meter.calls }));
+      log(`exa and Tavily failed, Brave answered: ${query}`);
+      return rows.filter((r) => !drop(String(r.url))).map((r) => ({ url: r.url, title: r.title, text: [r.description, ...(r.extra_snippets ?? [])].filter(Boolean).join(' '), publishedDate: r.page_age ?? null }));
+    } catch (e) {
+      errors.push(`brave: ${(e as Error).message.slice(0, 150)}`);
+    }
+    warn(`search failed on every engine: ${errors.join(' | ')}`);
+    meter.exa.failed++;
+    return [];
   }
 
-  /** Brave web search (core/brave.ts); returns web.results (title, url, description, age...). */
+  /** Brave web search (core/brave.ts); returns web.results (title, url, description, age...).
+   *  When Brave fails, Exa and then Tavily answer in Brave's shape; only all three failing counts as a failed call. */
   async function brave(query: string, opts: { count?: number; country?: string } = {}): Promise<any[]> {
     meter.brave.calls++;
+    const errors: string[] = [];
     try {
-      return await core.brave.searchRaw(query, { count: opts.count ?? 20, country: opts.country ?? 'MY', extraSnippets: false, log: meter.calls });
+      return await track(`brave ${query}`, core.brave.searchRaw(query, { count: opts.count ?? 20, country: opts.country ?? 'MY', extraSnippets: false, log: meter.calls }));
     } catch (e) {
-      warn(`brave failed: ${(e as Error).message.slice(0, 200)}`);
-      meter.brave.failed++;
-      return [];
+      errors.push(`brave: ${(e as Error).message.slice(0, 150)}`);
     }
+    try {
+      const hits = await track(`exa ${query}`, core.exa.search(query, { numResults: Math.min(opts.count ?? 20, 25), timeoutMs: SEARCH_TIMEOUT_MS, log: meter.calls, what: query }));
+      log(`brave failed, Exa answered: ${query}`);
+      return hits.map((h) => ({ url: h.url, title: h.title, description: h.content }));
+    } catch (e) {
+      errors.push(`exa: ${(e as Error).message.slice(0, 150)}`);
+    }
+    try {
+      const hits = await track(`tavily ${query}`, core.tavily.search(query, { maxResults: Math.min(opts.count ?? 20, 20), depth: 'advanced', timeoutMs: SEARCH_TIMEOUT_MS, log: meter.calls, what: query }));
+      log(`brave and Exa failed, Tavily answered: ${query}`);
+      return hits.map((h) => ({ url: h.url, title: h.title, description: h.content }));
+    } catch (e) {
+      errors.push(`tavily: ${(e as Error).message.slice(0, 150)}`);
+    }
+    warn(`search failed on every engine: ${errors.join(' | ')}`);
+    meter.brave.failed++;
+    return [];
   }
 
   /**
@@ -252,7 +309,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
   async function read(url: string): Promise<{ url: string; finalUrl: string; status: number; text: string; via: string; error?: string }> {
     const c = call('fetch', url);
     try {
-      const out = await pagefetch.read([url]);
+      const out = await track(`fetch worker ${url}`, pagefetch.read([url]));
       const row = out.results[0];
       if (row?.raw_content) {
         meter.http.calls++;
@@ -276,12 +333,14 @@ export function makeCtx(diveId: string, section: string, lane: string) {
       const headers = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36', ...(init.headers as Record<string, string>) };
       const ca = extraCaFor(url);
       if (ca) {
-        const r = await httpsWithCa(url, { method: init.method, headers, body: init.body as string | undefined }, ca);
+        const r = await track(`page ${url}`, httpsWithCa(url, { method: init.method, headers, body: init.body as string | undefined }, ca));
         c.done({ ok: true, note: `HTTP ${r.status}` });
         return { url, finalUrl: r.url, status: r.status, ms: Date.now() - t, headers: r.headers, html: r.text };
       }
-      const res = await fetch(url, { redirect: 'follow', ...init, headers });
-      const html = await res.text();
+      const { res, html } = await track(`page ${url}`, (async () => {
+        const res = await fetch(url, { redirect: 'follow', ...init, headers, signal: AbortSignal.timeout(PAGE_TIMEOUT_MS) });
+        return { res, html: await res.text() };
+      })());
       c.done({ ok: true, note: `HTTP ${res.status}` });
       return { url, finalUrl: res.url, status: res.status, ms: Date.now() - t, headers: Object.fromEntries(res.headers), html };
     } catch (e) {
@@ -292,7 +351,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     }
   }
 
-  return { diveId, section, lane, warnings, meter, warn, log, call, llm, mapsSearch, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
+  return { diveId, section, lane, warnings, meter, warn, log, call, track, waitingOn, llm, mapsSearch, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
 }
 
 /** First JSON object or array in a model answer, or null. Never throws. */

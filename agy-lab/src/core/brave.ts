@@ -93,6 +93,7 @@ export async function searchRaw(
     try {
       res = await fetchImpl(`${BASE}/${kind}/search?${params}`, {
         headers: { 'X-Subscription-Token': key, accept: 'application/json' },
+        signal: AbortSignal.timeout(30_000),
       });
     } catch (err) {
       onCall(call.done({ ok: false, note: netError(err).slice(0, 200) }));

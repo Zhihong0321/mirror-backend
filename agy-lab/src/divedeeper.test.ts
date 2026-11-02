@@ -4,7 +4,10 @@ import { enabled, handle, handlePage, handlePublic, previewAuto } from './divede
 import { buildReport } from './divedeeper/report-html.ts';
 import { buildPreview } from './divedeeper/preview-html.ts';
 import { editPreview } from './divedeeper/preview-editor.ts';
-import { runLane } from './divedeeper/runner.ts';
+import fs from 'node:fs';
+import path from 'node:path';
+import { runLane, serviceFailures } from './divedeeper/runner.ts';
+import { SECTIONS, makeCtx } from './divedeeper/lib.ts';
 import { resolve } from './divedeeper/editor.ts';
 import { badPhone, normPhone, showPhone } from './divedeeper/sections/R-contacts.ts';
 
@@ -110,10 +113,30 @@ test('Malaysian phone numbers are read the way they are printed, and impossible 
   assert.match(String(badPhone(normPhone('012-34567'))), /digits/);
 });
 
-test('a lane that cannot load comes back partial instead of throwing', async () => {
+test('a lane that cannot load comes back failed instead of throwing', async () => {
   const r = await runLane('Z', 'missing', 'test-0', { company: 'Acme' });
-  assert.equal(r.status, 'partial');
-  assert.match(r.warnings[0], /no lane file/);
+  assert.equal(r.status, 'failed');
+  assert.match(String(r.failure), /no lane file/);
+});
+
+test('a lane past its time limit fails and names the call it was still waiting on', async () => {
+  const file = path.join(SECTIONS, 'Ztest-hang.ts');
+  fs.writeFileSync(file, "export async function run(ctx) { await ctx.track('page https://slow.example/', new Promise(() => {})); return { findings: [] }; }\n");
+  try {
+    const r = await runLane('Ztest', 'hang', 'test-1', { company: 'Acme' }, 50);
+    assert.equal(r.status, 'failed');
+    assert.match(String(r.failure), /did not finish within .*still waiting on page https:\/\/slow\.example\//);
+  } finally {
+    fs.rmSync(file, { force: true });
+  }
+});
+
+test('a lane whose outside service failed after every backup counts as failed; notes alone do not', () => {
+  const ctx = makeCtx('test-2', 'Z', 'meter');
+  assert.equal(serviceFailures(ctx.meter), null);
+  ctx.meter.llm.failed = 1;
+  ctx.meter.brave.failed = 2;
+  assert.match(String(serviceFailures(ctx.meter)), /1 LLM call\(s\) failed on every lane; 2 search\(es\) failed on every engine/);
 });
 
 test('the preview landing page builds from the company-dive alone, uses the editor notes, and shows the deeper dive as not run yet', () => {

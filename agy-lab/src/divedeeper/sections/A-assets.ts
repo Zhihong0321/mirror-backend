@@ -42,7 +42,7 @@ function whois43(host: string, query: string): Promise<string> {
 let bootstrap: { dns?: any; ipv4?: any } = {};
 async function rdapBase(kind: 'dns' | 'ipv4', key: string): Promise<string | null> {
   try {
-    bootstrap[kind] ??= await (await fetch(`https://data.iana.org/rdap/${kind}.json`)).json();
+    bootstrap[kind] ??= await (await fetch(`https://data.iana.org/rdap/${kind}.json`, { signal: AbortSignal.timeout(60_000) })).json();
     if (kind === 'dns') return bootstrap.dns.services.find((s: any) => s[0].includes(key))?.[1]?.[0] ?? null;
     const [a, b] = key.split('.').map(Number);
     // IPv4 bootstrap entries are /8 prefixes ("35.0.0.0/8"); the first octet is enough to pick the registry.
@@ -79,7 +79,7 @@ async function registration(domain: string): Promise<Reg> {
     return refer ? parseWhois(await whois43(refer, domain), `whois ${refer}`) : { registrar: null, created: null, expires: null, updated: null, org: null, status: [], ns: [], source: 'whois', error: `no registry found for .${tld}` };
   }
   try {
-    const res = await fetch(`${base.replace(/\/?$/, '/')}domain/${domain}`, { headers: { accept: 'application/rdap+json' } });
+    const res = await fetch(`${base.replace(/\/?$/, '/')}domain/${domain}`, { headers: { accept: 'application/rdap+json' }, signal: AbortSignal.timeout(60_000) });
     if (res.status === 404) return { registrar: null, created: null, expires: null, updated: null, org: null, status: [], ns: [], source: 'RDAP', error: 'not registered' };
     const j = await res.json() as any;
     const ev = (a: string) => j.events?.find((e: any) => e.eventAction === a)?.eventDate ?? null;
@@ -116,7 +116,7 @@ function ipOwner(ip: string): Promise<string | null> {
     const base = await rdapBase('ipv4', ip);
     if (!base) return null;
     try {
-      const j = await (await fetch(`${base.replace(/\/?$/, '/')}ip/${ip}`, { headers: { accept: 'application/rdap+json' } })).json() as any;
+      const j = await (await fetch(`${base.replace(/\/?$/, '/')}ip/${ip}`, { headers: { accept: 'application/rdap+json' }, signal: AbortSignal.timeout(60_000) })).json() as any;
       const org = (j.entities ?? []).map((e: any) => vcardOrg(e) ?? vcardName(e)).find(Boolean);
       return [j.name, org].filter(Boolean).join(' · ') || null;
     } catch { return null; }
@@ -321,7 +321,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   for (const d of N.domains.slice(0, 3)) {
     const c = ctx.call('web', `crt.sh ${d}`);
     try {
-      const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(d)}&output=json`);
+      const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(d)}&output=json`, { signal: AbortSignal.timeout(60_000) });
       c.done({ ok: res.ok, note: `HTTP ${res.status}` });
       if (!res.ok) { ctx.warn(`crt.sh ${d}: HTTP ${res.status}`); continue; }
       const rows = await res.json() as any[];

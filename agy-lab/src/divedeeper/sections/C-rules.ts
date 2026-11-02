@@ -522,7 +522,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     for (let attempt = 0; attempt < 2 && !body; attempt++) {
       const c = ctx.call('web', `LanguageTool ${bytes} bytes`);
       try {
-        const res = await fetch(LT_URL, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' }, body: new URLSearchParams({ text: b.text, language: 'en-GB', enabledOnly: 'false' }) });
+        const res = await fetch(LT_URL, { signal: AbortSignal.timeout(60_000), method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' }, body: new URLSearchParams({ text: b.text, language: 'en-GB', enabledOnly: 'false' }) });
         const raw = await res.text();
         c.done({ ok: res.ok, note: `HTTP ${res.status}` });
         if (res.status === 429) { ctx.warn(`LanguageTool 429 (attempt ${attempt + 1}); waiting a minute`); await sleep(61000); continue; }

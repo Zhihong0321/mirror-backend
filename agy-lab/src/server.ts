@@ -524,11 +524,13 @@ server.listen(PORT, '0.0.0.0', () => {
   // Age 0 at boot: this process owns no run yet, so anything non-terminal was
   // stranded by the restart that just happened.
   reapAbandonedRuns(0);
+  // Dive-deeper runs resume after the company dives are closed: a run whose dive the restart
+  // cut off starts that dive again (divedeeper.ts execute).
   void companyDive.failInterrupted()
     .then(() => companyDivePeople.failInterrupted())
-    .catch((err: Error) => console.warn('could not close interrupted company dives: ' + err.message));
-  void diveDeeper.failInterrupted()
-    .catch((err: Error) => console.warn('could not close interrupted dive-deeper runs: ' + err.message))
+    .catch((err: Error) => console.warn('could not close interrupted company dives: ' + err.message))
+    .then(() => diveDeeper.resumeInterrupted())
+    .catch((err: Error) => console.warn('could not resume interrupted dive-deeper runs: ' + err.message))
     .finally(() => diveDeeper.startPreviewWorker());
   // Every lead, so a rule changed in this deploy reaches the ones already saved.
   if (reportdb.configured()) {

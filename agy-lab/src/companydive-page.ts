@@ -100,7 +100,7 @@ function deeperHtml(r) {
   if (!rep) h += '<button class="small" data-deeper="' + r.id + '">Start</button>';
   else {
     h += '<a href="' + esc(rep.report_url) + '" target="_blank" rel="noopener">' + esc(ddLabel[rep.status] || rep.status) + '</a>';
-    if (rep.status === 'failed') h += ' <button class="small" data-retry="' + rep.run_id + '">Retry</button>';
+    if (rep.status === 'failed' || rep.status === 'incomplete') h += ' <button class="small" data-retry="' + rep.run_id + '">Retry</button>';
   }
   if (c && c.preview_url) h += '<span class="muted">·</span><a href="' + esc(c.preview_url) + '" target="_blank" rel="noopener">Preview</a>';
   return '<div class="dd">' + h + '</div>';

@@ -27,7 +27,7 @@ export async function token(warn: (m: string) => void, log?: ApiCall[]): Promise
     const head = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: sa.private_key_id }));
     const body = b64url(JSON.stringify({ iss: sa.client_email, aud: sa.token_uri, scope: 'openid', iat: now, exp: now + 3600 }));
     const sig = crypto.createSign('RSA-SHA256').update(`${head}.${body}`).sign(sa.private_key).toString('base64url');
-    const res = await fetch(sa.token_uri, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${head}.${body}.${sig}` }) });
+    const res = await fetch(sa.token_uri, { signal: AbortSignal.timeout(30_000), method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${head}.${body}.${sig}` }) });
     const j = await res.json() as any;
     if (!res.ok || !j.access_token) {
       log?.push(c.done({ ok: false, note: `HTTP ${res.status}` }));
@@ -52,7 +52,7 @@ export async function run(url: string, strategy: 'mobile' | 'desktop', accessTok
   for (let attempt = 0; attempt < 2; attempt++) {
     const c = startCall('web', `PageSpeed ${strategy} ${url}`, { provider: 'google' });
     try {
-      const res = await fetch(`${API}?${q}`, { headers: { authorization: `Bearer ${accessToken}` } });
+      const res = await fetch(`${API}?${q}`, { headers: { authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(180_000) });
       const d = await res.json() as any;
       if (res.ok && d.lighthouseResult) { opts.log?.push(c.done({ ok: true })); return d; }
       last = `HTTP ${res.status}: ${String(d.error?.message ?? 'no Lighthouse result').slice(0, 200)}`;
