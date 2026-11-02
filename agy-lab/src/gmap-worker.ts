@@ -14,7 +14,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import { AREA_MATCH_FLOOR, DEFAULT_MAX, FAMILIES, STREET_FORMS } from './maps-worker.ts';
+import { AREA_MATCH_FLOOR, DEFAULT_MAX, FAMILIES, STREET_FORMS } from './gmap-sweep.ts';
 
 /**
  * The only job types a worker key may claim or answer. `fetch.pages` is the

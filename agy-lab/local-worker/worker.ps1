@@ -10,9 +10,9 @@
 # the pb offset. The field positions are gosom's ParseSearchResults
 # (github.com/gosom/google-maps-scraper, gmaps/multiple.go, MIT) plus the
 # place id at 78 (gosom gmaps/entry.go). On 2026-10-29 the factory sweep of
-# Taman Daya read 802 businesses in 4 minutes this way; scraper.tech read 839.
+# Taman Daya read 802 businesses in 4 minutes this way.
 #
-# The sweep is the hub's (maps-worker.ts): "<word> in <place>" for every word of
+# The sweep is the hub's (gmap-sweep.ts): "<word> in <place>" for every word of
 # the keyword's family, then for a Business scan "shop/company in <street>" for
 # the streets the first pass found. The words come from the hub on every job.
 #
@@ -244,7 +244,7 @@ function Get-ListPage([string]$Query, [double]$Lat, [double]$Lon, [int]$Offset) 
 function Squash([string]$Value) { return ($Value.ToLower() -replace '[^a-z0-9]', '') }
 
 # The names an address must carry to be in the place: the first comma segment,
-# split on "/". Same rule as areaNames in maps-worker.ts.
+# split on "/".
 function Get-AreaNames([string]$Place) {
   return @(($Place.Split(',')[0]).Split('/') | ForEach-Object { Squash $_ } | Where-Object { $_.Length -ge 3 })
 }
@@ -290,8 +290,7 @@ function Get-Median($Values) {
   return $v[[int][Math]::Floor($v.Count / 2)]
 }
 
-# The streets named in these addresses, most businesses first. Same rule as
-# streetsOf in maps-worker.ts.
+# The streets named in these addresses, most businesses first.
 function Get-Streets($Businesses) {
   $counts = @{}; $names = @{}
   foreach ($b in $Businesses) {
@@ -385,7 +384,6 @@ function Invoke-Scan($Job, $Strategy) {
     outsideArea = $outside; streets = $streets; skippedSearches = $null; scrolls = 0
     provider = 'maps-list-local'; worker = $Name
     mapCentre = ($centre | ForEach-Object { ([double]$_).ToString($Invariant) }) -join ','
-    # Free: nothing here counts against the scraper.tech budget.
     requests = 0; googleRequests = $script:Requests
     stoppedEarly = $script:Blocked
     tookMs = [int]((Get-Date) - $started).TotalMilliseconds; at = (Get-Date).ToUniversalTime().ToString('o'); storage = 'hub'

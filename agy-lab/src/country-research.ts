@@ -3,8 +3,8 @@
 // own order: cities from World Cities, one Maps search per city, merge,
 // website contacts, CSV. One step differs: each city's search is a gmap.scan
 // job on this hub's queue instead of a Chrome on the machine running the
-// pipeline, so whichever Maps worker is free answers it: the scraper.tech
-// lanes, a Gmap Local Worker PC, or the Mac mini (allowed these searches only,
+// pipeline, so whichever Maps worker is free answers it: a Gmap Local Worker
+// PC or the Mac mini (allowed these searches only,
 // see jobs.ts countryScanOnly).
 //
 // Every step checkpoints to disk under the job id, as the worker did, so a

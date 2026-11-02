@@ -5,11 +5,12 @@
 // the context and returns an empty value, so a lane ends partial, never dead
 // (no timeouts, no max_tokens, no throw-on-parse-fail).
 //
-// LLM, Maps, Exa and Brave calls go through ../core (core/README.md): on the hub,
+// LLM, Exa and Brave calls go through ../core (core/README.md): on the hub,
 // every LLM lane on /workers and the hub's key pools. On this machine the local
 // vault (D:\Tools\my-vault\vault.json) is the fallback, unless the env already has
-// the keys: EE_AUTO_LAB_TOKEN, SCRAPER_TECH_KEY, ZM_AI_FIXED_KEY, VECTIDE_DEEPSEEK_KEY,
-// EXA_API_KEY, BRAVE_SEARCH_API_KEY.
+// the keys: EE_AUTO_LAB_TOKEN, ZM_AI_FIXED_KEY, VECTIDE_DEEPSEEK_KEY,
+// EXA_API_KEY, BRAVE_SEARCH_API_KEY. Google Maps searches are gmap.scan jobs on a
+// connected Gmap worker (PC or Mac mini), so they run only inside the hub.
 import fs from 'node:fs';
 import https from 'node:https';
 import os from 'node:os';
@@ -17,6 +18,7 @@ import tls from 'node:tls';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as core from '../core/index.ts';
+import * as jobs from '../jobs.ts';
 import * as pagefetch from '../pagefetch.ts';
 import { startCall, type ApiCall, type ApiName } from '../cost.ts';
 
@@ -114,7 +116,7 @@ export type Finding = {
 export type Meter = {
   started: number;
   llm: { calls: number; failed: number; promptChars: number; answerChars: number; tokensIn: number; tokensOut: number; byModel: Record<string, number>; byModelTokens: Record<string, { in: number; out: number }> };
-  maps: { calls: number; failed: number; byTool: Record<string, number> };
+  maps: { calls: number; failed: number };
   /** priced: calls that reported their own cost; dollars: what they reported. */
   exa: { calls: number; failed: number; results: number; priced: number; dollars: number };
   brave: { calls: number; failed: number };
@@ -124,6 +126,12 @@ export type Meter = {
   calls: ApiCall[];
 };
 
+/** Marks the gmap.scan jobs the dive-deeper queues. */
+const MAPS_SOURCE = 'dive.deeper';
+const MAPS_TIMEOUT_MS = 300_000;
+/** One business as a Gmap worker returns it. */
+export type MapsRow = { name: string; rating: number | null; reviews: number | null; category: string | null; address: string | null; phone: string | null; website: string | null; mapsUrl: string | null };
+
 export type Ctx = ReturnType<typeof makeCtx>;
 
 export function makeCtx(diveId: string, section: string, lane: string) {
@@ -131,7 +139,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
   const meter: Meter = {
     started: Date.now(),
     llm: { calls: 0, failed: 0, promptChars: 0, answerChars: 0, tokensIn: 0, tokensOut: 0, byModel: {}, byModelTokens: {} },
-    maps: { calls: 0, failed: 0, byTool: {} },
+    maps: { calls: 0, failed: 0 },
     exa: { calls: 0, failed: 0, results: 0, priced: 0, dollars: 0 },
     brave: { calls: 0, failed: 0 },
     http: { calls: 0, failed: 0 },
@@ -175,17 +183,26 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     }
   }
 
-  /** One scraper.tech Maps tool call (core/maps.ts). Returns the API's parsed JSON, or null. */
-  async function maps(tool: core.maps.MapsTool, args: Record<string, string>): Promise<any> {
+  /** One Google Maps search as a gmap.scan job on a connected Gmap worker. Returns the
+   *  businesses in Maps order (name, address, rating, reviews, phone, website, mapsUrl),
+   *  or null when no worker is online or the search failed or was blocked. */
+  async function mapsSearch(keyword: string, place: string, max: number): Promise<MapsRow[] | null> {
     meter.maps.calls++;
-    meter.maps.byTool[tool] = (meter.maps.byTool[tool] ?? 0) + 1;
-    try {
-      return await core.maps.call(tool, { country: 'my', ...args }, { log: meter.calls });
-    } catch (e) {
-      warn(`maps ${tool}: ${(e as Error).message.slice(0, 200)}`);
+    const what = place ? `"${keyword}" in ${place}` : `"${keyword}"`;
+    if (!jobs.liveTypes().includes('gmap.scan')) {
+      warn(`maps ${what}: no Gmap worker online`);
       meter.maps.failed++;
       return null;
     }
+    const job = jobs.create('gmap.scan', { keyword, place, max, source: MAPS_SOURCE }, MAPS_TIMEOUT_MS);
+    const settled = await jobs.wait(job.id, MAPS_TIMEOUT_MS + 5_000);
+    const result = settled?.result as { businesses?: MapsRow[]; blocked?: boolean; blockedReason?: string | null } | null | undefined;
+    if (!settled || settled.status !== 'done' || !result || result.blocked || !Array.isArray(result.businesses)) {
+      warn(`maps ${what}: ${settled?.error ?? (result?.blocked ? 'blocked: ' + (result.blockedReason ?? 'no reason') : settled ? 'no businesses in the answer' : 'no answer in time')}`.slice(0, 300));
+      meter.maps.failed++;
+      return null;
+    }
+    return result.businesses;
   }
 
   /** Exa search (core/exa.ts, the hub's key pool). `text: true` adds page text (capped by Exa's own maxCharacters). */
@@ -275,7 +292,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     }
   }
 
-  return { diveId, section, lane, warnings, meter, warn, log, call, llm, maps, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
+  return { diveId, section, lane, warnings, meter, warn, log, call, llm, mapsSearch, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
 }
 
 /** First JSON object or array in a model answer, or null. Never throws. */

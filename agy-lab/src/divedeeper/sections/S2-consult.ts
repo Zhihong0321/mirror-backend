@@ -2,7 +2,7 @@
 //
 //   node scripts/dive-deeper/run.ts S2 consult <diveId>
 //
-// Reads the stage-1 outputs already in out/ (E-maps, H-maps, H-web, C-merged, D-registry,
+// Reads the stage-1 outputs already in out/ (H-maps, H-web, C-merged, D-registry,
 // G-fixed, G-grounded for the same dive) and makes a handful of fresh reads: the company's
 // own homepages, the competitors AI names most, and the "best <trade> in <town>" list pages
 // AI read when it answered. Three LLM calls write the ready-to-use drafts: a website plan with

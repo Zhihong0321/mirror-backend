@@ -1,7 +1,7 @@
 // Search lists: a CSV of Google Maps searches (country, city, industry,
 // search_keyword), run by the hub to the end. Each search is a gmap.scan job on
-// the queue, so whichever Maps worker is free answers it: the Mac mini, the
-// scraper.tech lanes or a Gmap Local Worker PC. Every business found is then
+// the queue, so whichever Maps worker is free answers it: the Mac mini or a
+// Gmap Local Worker PC. Every business found is then
 // checked on its own website for emails, phones, social links and people, with
 // the country pipeline's plain-code contact step (./country/), no LLM.
 //
@@ -27,8 +27,8 @@ import { contacts as websiteContacts } from './country/website-contacts.mjs';
 /** Marks the gmap.scan jobs a list queues; the mini may answer these (jobs.ts countryScanOnly). */
 export const SCAN_SOURCE = 'search.list';
 const MAX_PER_SEARCH = 200;
-/** The mini, the PC and three scraper.tech lanes: one search each. */
-const SEARCHES_IN_FLIGHT = 5;
+/** The mini and the PC: one search each. */
+const SEARCHES_IN_FLIGHT = 2;
 const SEARCH_TIMEOUT_MS = 600_000;
 /** A failed, blocked or cut-short search is asked once more, likely of another worker. */
 const SEARCH_ATTEMPTS = 2;

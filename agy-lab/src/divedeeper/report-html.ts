@@ -363,7 +363,7 @@ ${body}
 `;
 }
 
-/** lanes: { "E-maps": laneResult, …, "S2-consult": …, "S3-editor": … } as runLane returns them. */
+/** lanes: { "H-maps": laneResult, …, "S2-consult": …, "S3-editor": … } as runLane returns them. */
 export function buildReport(dive: any, L: Record<string, any>): string {
   const r = dive.result ?? {};
   const R = resolve(dive, L);

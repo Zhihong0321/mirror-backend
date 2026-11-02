@@ -34,11 +34,12 @@ export const enabled = (env: NodeJS.ProcessEnv = process.env): boolean => /^(1|t
 process.env.DD_G_MODELS ??= 'deepseek-v4.1-flash-1017';
 process.env.DD_G_JUDGE ??= 'deepseek-v4.1-flash-1017';
 
-/** The order lanes run in. E-maps reuses H-maps' listings and C-merged its Maps phones, so both wait for H-maps.
+/** The order lanes run in. C-merged reuses H-maps' Maps phones, so it waits for H-maps.
+ *  E-maps (Google review text) is gone: it read reviews from scraper.tech, and the Gmap workers return no reviews.
  *  The last three read what the others found: R-contacts (C-merged's and H-maps' contacts), A-assets
  *  (C-merged's domains and email addresses), B-brand (C-merged's pages, H-web's results, G-fixed's answers). S2 reads everything. */
 export const STAGE1_FIRST = [['H', 'maps'], ['H', 'web'], ['D', 'registry'], ['G', 'fixed'], ['G', 'grounded'], ['K', 'credibility'], ['N', 'news'], ['W', 'speed']] as const;
-export const STAGE1_AFTER_H = [['E', 'maps'], ['C', 'merged']] as const;
+export const STAGE1_AFTER_H = [['C', 'merged']] as const;
 export const STAGE1_LAST = [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']] as const;
 export const STAGE2 = ['S2', 'consult'] as const;
 /** The editor reads everything, S2 included, and writes the report's plain titles and screenshots. */

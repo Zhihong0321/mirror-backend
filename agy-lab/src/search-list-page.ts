@@ -8,7 +8,7 @@ export function searchListPage(): string {
 </style></head><body><div class="wrap">
 <nav class="nav" aria-label="Site">${navHtml(OPERATOR_NAV, '/search-lists')}</nav>
 <h1>Search lists</h1>
-<p class="lead">Upload a CSV of Google Maps searches with the columns country, city, industry, search_keyword. The hub sends each search to whichever Maps worker is free (the Mac mini, scraper.tech, a Windows PC), saves every business it finds, and checks each business's website for emails, phones, social links and people. Every finished search and website check is saved as it lands, so a pause or a redeploy picks up where it stopped. A new list starts paused.</p>
+<p class="lead">Upload a CSV of Google Maps searches with the columns country, city, industry, search_keyword. The hub sends each search to whichever Maps worker is free (the Mac mini or a Windows PC), saves every business it finds, and checks each business's website for emails, phones, social links and people. Every finished search and website check is saved as it lands, so a pause or a redeploy picks up where it stopped. A new list starts paused.</p>
 <div class="card"><h2 style="margin:0;font-size:17px">Add a list</h2>
 <label for="name">Name</label><input id="name" placeholder="e.g. 25 countries, 5 industries">
 <label for="file">CSV file</label><input id="file" type="file" accept=".csv,text/csv">

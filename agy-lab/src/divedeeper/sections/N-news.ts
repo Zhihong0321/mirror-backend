@@ -1,6 +1,6 @@
 // N / news — what is said about the company, its brand and its key people outside its own
 // channels: news, forum and social discussion, complaints, awards and press (part 3 of the
-// malaysia-deeper-dive report, next to E-maps' Google reviews).
+// malaysia-deeper-dive report).
 //
 // Searches: Exa news for the legal and the short name; Brave for news, complaints (English and
 // Malay) and forum threads (Lowyat, Reddit, Facebook); and for up to three key people (directors,

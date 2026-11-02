@@ -2,7 +2,7 @@
 
 Every call this hub makes to an LLM, a search API or a paid data API goes through
 `src/core/`. Features (company-dive, dive-deeper, contact research, email replies,
-the gateway, the Maps worker, the key health page) import `src/core/index.ts` and
+the gateway, the key health page) import `src/core/index.ts` and
 nothing else of this folder. Nothing outside `src/core/` sends a request to one of
 these services itself.
 
@@ -29,7 +29,6 @@ every feature at once, and a fix made here reaches all of them.
 | `search.ts` | web search for pipelines: Tavily and Exa, turns between them, key rotation and provider fallback inside | the two pools above |
 | `proxy.ts` | the US proxy (G:\exa-api-proxy), which holds its own Exa and Tavily keys | `gemini_contact_key` (kind `exa_proxy`: url and token) |
 | `brave.ts` | Brave Search | `gemini_contact_key` (kind `brave`), edited on /workers |
-| `maps.ts` | scraper.tech Google Maps tools | `secrets.ts` (kind `scraper_tech`) |
 | `pagespeed.ts` | Google PageSpeed Insights | `secrets.ts` (kind `pagespeed`) |
 | `parallel.ts` | Parallel's FindAll entity search (person research) | `secrets.ts` (kind `parallel`) |
 | `smartlead.ts` | Smartlead, the cold-email platform | `secrets.ts` (kind `smartlead`) |

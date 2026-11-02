@@ -77,7 +77,7 @@ No guessing at library internals, no reading strings out of a Go binary.
 
 ## Outside APIs: `src/core/`
 
-Every LLM, Tavily, Exa, Brave, scraper.tech Maps and Google PageSpeed call goes
+Every LLM, Tavily, Exa, Brave and Google PageSpeed call goes
 through [`src/core/`](src/core/README.md), and nothing else talks to those services.
 The LLM router there uses every enabled deepseek lane saved on /workers, several at
 once. It rests a lane after a 429 and moves on, and falls back to MiniMax only after

@@ -2,8 +2,8 @@
 // Where does the company rank for "<trade> in <area>" in the areas it serves, who sits
 // above it, which of its office towns have no Maps listing, and which of its own
 // listings are duplicates or incomplete. Trades and areas come from H-plan (picked once
-// per company); the rest is scraper.tech search_maps, one request per query.
-import type { Ctx, Finding } from '../lib.ts';
+// per company); the rest is one Google Maps search per query on a Gmap worker (lib.ts mapsSearch).
+import type { Ctx, Finding, MapsRow } from '../lib.ts';
 import { getPlan } from './H-plan.ts';
 
 const LIMIT = 60;
@@ -21,6 +21,8 @@ const place = (addr: string | null | undefined, name: string) => {
   const road = a.match(/\b\d+[a-z]?\/\d+[a-z]?\b/)?.[0] ?? a.replace(/[^a-z0-9]+/g, ' ').trim().split(' ').slice(0, 4).join(' ');
   return postcode && road ? `${postcode}|${road}` : '';
 };
+/** The place id in a Maps link ("0x31cb...:0x36cf..."), the same listing however it was found. */
+const placeKey = (link: string | null) => String(link ?? '').match(/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i)?.[1] ?? null;
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
   const r = dive.result ?? {};
@@ -42,12 +44,11 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const findings: Finding[] = [];
   const ranks: any[] = [];
   const queries = plan.trades.flatMap((t) => plan.areas.map((a) => ({ q: `${t} in ${a}`, trade: t, area: a })));
-  const results = await Promise.all(queries.map(async (x) => ({ ...x, data: await ctx.maps('search_maps', { query: x.q, limit: String(LIMIT), lang: 'en' }) })));
-  for (const { q, trade, area, data } of results) {
-    if (!data) { ranks.push({ query: q, trade, area, rank: null, of: null, failed: true }); continue; }
-    const rows: any[] = data.data ?? [];
+  const results = await Promise.all(queries.map(async (x) => ({ ...x, rows: await ctx.mapsSearch(x.trade, x.area, LIMIT) })));
+  for (const { q, trade, area, rows } of results) {
+    if (!rows) { ranks.push({ query: q, trade, area, rank: null, of: null, failed: true }); continue; }
     const idx = rows.findIndex(isUs);
-    const above = rows.slice(0, idx >= 0 ? idx : 5).filter((x) => !isUs(x)).slice(0, 5).map((x) => `${x.name} (${x.rating ?? '-'}★, ${x.review_count ?? 0} reviews)`);
+    const above = rows.slice(0, idx >= 0 ? idx : 5).filter((x) => !isUs(x)).slice(0, 5).map((x) => `${x.name} (${x.rating ?? '-'}★, ${x.reviews ?? 0} reviews)`);
     ranks.push({ query: q, trade, area, rank: idx >= 0 ? idx + 1 : null, of: rows.length, thin: rows.length < THIN, listing: idx >= 0 ? rows[idx].name : null, top: above });
   }
 
@@ -67,13 +68,14 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }
 
   // The company's own listings: the name search plus any listing the trade searches turned up.
-  const own = await ctx.maps('search_maps', { query: String(id.legal_name ?? dive.company), limit: '20', lang: 'en' });
+  const own = await ctx.mapsSearch(String(id.legal_name ?? dive.company), '', 20);
   const seen = new Set<string>();
-  const ownRows = [...(own?.data ?? []), ...results.flatMap((x) => x.data?.data ?? [])].filter(isUs)
-    .filter((x: any) => { const k = String(x.place_id ?? x.business_id ?? x.name); if (seen.has(k)) return false; seen.add(k); return true; });
-  const listings = ownRows.map((x: any) => ({ name: x.name, address: x.full_address, rating: x.rating, reviews: x.review_count, phone: x.phone_number, website: x.website, claimed: x.is_claimed, verified: x.verified, closed: x.is_permanently_closed || x.is_temporarily_closed, place_link: x.place_link }));
-  if (own || listings.length) {
-    findings.push({ title: `${listings.length} Google Maps listing${listings.length === 1 ? '' : 's'} carry your name`, detail: listings.map((l: any) => `${l.name} — ${l.address ?? 'no address'} — ${l.rating ?? '-'}★/${l.reviews ?? 0} — ${l.phone ?? 'no phone'} — ${l.website ?? 'no website'}${l.claimed === false ? ' — NOT CLAIMED' : ''}${l.closed ? ' — CLOSED' : ''}`).join(' | ') || 'none found', severity: listings.length === 0 ? 'high' : listings.some((l: any) => l.claimed === false || l.closed) ? 'medium' : 'info', source: `https://www.google.com/maps/search/${encodeURIComponent(String(id.legal_name ?? dive.company))}`, checked_at: ctx.now() });
+  const ownRows = [...(own ?? []), ...results.flatMap((x) => x.rows ?? [])].filter(isUs)
+    .filter((x: MapsRow) => { const k = placeKey(x.mapsUrl) ?? x.name; if (seen.has(k)) return false; seen.add(k); return true; });
+  const listings = ownRows.map((x: MapsRow) => ({ name: x.name, address: x.address, rating: x.rating, reviews: x.reviews, phone: x.phone, website: x.website, place_link: x.mapsUrl }));
+  // Only a name search that answered can say what listings exist: a failed one says nothing either way.
+  if (own) {
+    findings.push({ title: `${listings.length} Google Maps listing${listings.length === 1 ? '' : 's'} carry your name`, detail: listings.map((l: any) => `${l.name} — ${l.address ?? 'no address'} — ${l.rating ?? '-'}★/${l.reviews ?? 0} — ${l.phone ?? 'no phone'} — ${l.website ?? 'no website'}`).join(' | ') || 'none found', severity: listings.length === 0 ? 'high' : 'info', source: `https://www.google.com/maps/search/${encodeURIComponent(String(id.legal_name ?? dive.company))}`, checked_at: ctx.now() });
 
     // Two listings at the same place are a duplicate; branches with their own phone are normal.
     const byPlace = new Map<string, any[]>();

@@ -21,7 +21,6 @@ import * as reportdb from './reportdb.ts';
 import * as autoContact from './autocontact.ts';
 import * as autoScan from './autoscan.ts';
 import * as contactWorker from './contact-worker.ts';
-import * as mapsWorker from './maps-worker.ts';
 import * as gmapWorker from './gmap-worker.ts';
 import * as countryResearch from './country-research.ts';
 import * as searchList from './search-list.ts';
@@ -550,7 +549,6 @@ server.listen(PORT, '0.0.0.0', () => {
   // Extract model lanes saved on /workers; until they load, calls use CONTACT_LLM_*.
   void extractLlm.refresh();
   contactWorker.start();
-  mapsWorker.start();
   countryResearch.start();
   searchList.start();
   listStep2.start();

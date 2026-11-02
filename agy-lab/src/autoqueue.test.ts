@@ -70,11 +70,9 @@ test('maps verdict: a loop that stopped ticking is red, but not right after a re
   assert.equal(aq.mapsVerdict({ status: stale, latest: recent, open: [], lastHour: undefined, uptimeMs: 60_000, now: NOW }).level, 'ok');
 });
 
-test('maps verdict: an hour where every scan failed is red; budget reached is amber', () => {
+test('maps verdict: an hour where every scan failed is red', () => {
   const rows = aq.hourly([H0], { ...empty, finished: [finished({ status: 'failed', n: 3 })] });
   assert.equal(aq.mapsVerdict({ status: scanStatus(), latest: recent, open: [], lastHour: rows[0], uptimeMs: 3_600_000, now: NOW }).level, 'bad');
-  const budget = aq.mapsVerdict({ status: scanStatus({ holding: 'monthly Maps budget reached (25000 of 25000 requests)' }), latest: recent, open: [], lastHour: undefined, uptimeMs: 3_600_000, now: NOW });
-  assert.equal(budget.level, 'warn');
 });
 
 test('contact verdict: no worker or no search credits is red', () => {

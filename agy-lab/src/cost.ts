@@ -24,8 +24,6 @@ export const PRICES = {
   braveCall: 0.005,
   /** One Exa search with highlights, measured 2026-10-24; Exa's own figure wins when it sends one. */
   exaSearch: 0.007,
-  /** scraper.tech Maps, Basic plan: $4 for 30,000 requests. */
-  mapsCall: 4 / 30_000,
 };
 
 /** A rough token count for text whose tokens were not reported. */
@@ -97,7 +95,7 @@ export function callUsd(c: Pick<ApiCall, 'api' | 'ok' | 'model' | 'tokensIn' | '
     case 'tavily': return (c.credits ?? 0) * PRICES.tavilyCredit;
     case 'brave': return c.ok ? PRICES.braveCall : 0;
     case 'exa': return c.ok ? PRICES.exaSearch : 0;
-    case 'maps': return c.ok ? PRICES.mapsCall : 0;
+    case 'maps': return 0; // Gmap workers: free
     case 'web': return 0;
     case 'fetch': return 0;
   }
@@ -256,7 +254,7 @@ export function price(u: Usage): Cost {
     const listed = Math.max(0, u.exaCalls - u.exaReported);
     lines.push({ item: 'Exa', detail: calls(u.exaCalls), usd: u.exaDollars + listed * PRICES.exaSearch });
   }
-  if (u.mapsCalls) lines.push({ item: 'Google Maps (scraper.tech)', detail: calls(u.mapsCalls), usd: u.mapsCalls * PRICES.mapsCall });
+  if (u.mapsCalls) lines.push({ item: 'Google Maps (Gmap workers, free)', detail: calls(u.mapsCalls), usd: 0 });
   if (u.fetchCalls) lines.push({ item: 'Page reads (fetch worker)', detail: `${calls(u.fetchCalls)}, free`, usd: 0 });
   if (u.httpCalls) lines.push({ item: 'Other web calls', detail: `${calls(u.httpCalls)}, free`, usd: 0 });
   if (u.failedCalls) lines.push({ item: 'Failed calls', detail: `${calls(u.failedCalls)}, not billed`, usd: 0 });

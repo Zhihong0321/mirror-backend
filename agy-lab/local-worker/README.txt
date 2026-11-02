@@ -4,7 +4,7 @@ GMAP LOCAL WORKER
 Turns this Windows PC into a Google Maps scan worker for the EE Auto hub.
 The hub hands it a Maps job (for example "business in Taman Daya"), the PC
 reads the businesses from Google Maps on its own internet line, and posts them
-back. The scans are free: they do not use the scraper.tech budget.
+back. The scans are free.
 
 START
   1. Unzip this folder somewhere it can stay (for example C:\GmapWorker).

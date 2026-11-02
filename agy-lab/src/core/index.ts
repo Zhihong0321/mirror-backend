@@ -8,12 +8,11 @@
 //   tavily     Tavily search and map over the key pool (gemini_contact_key); page reads go to pagefetch.ts
 //   exa        Exa search and contents over the key pool and the US proxy
 //   brave      Brave Search over the /workers Brave keys
-//   maps       scraper.tech Google Maps tools
 //   pagespeed  Google PageSpeed Insights
 //   parallel   Parallel's FindAll entity search (person research)
 //   smartlead  Smartlead, the cold-email platform (campaigns, leads, replies)
 //   search     web search for pipelines: Tavily and Exa, keys and provider fallback inside
-//   secrets    the keys of the one-key providers above (MiniMax, Maps, Parallel,
+//   secrets    the keys of the one-key providers above (MiniMax, Parallel,
 //              Smartlead, PageSpeed), kept in the hub database
 //
 // Each call takes an optional `log` (an ApiCall[]) and pushes one record per
@@ -24,7 +23,6 @@ export * as pi from './pi.ts';
 export * as tavily from './tavily.ts';
 export * as exa from './exa.ts';
 export * as brave from './brave.ts';
-export * as maps from './maps.ts';
 export * as pagespeed from './pagespeed.ts';
 export * as parallel from './parallel.ts';
 export * as smartlead from './smartlead.ts';

@@ -119,7 +119,6 @@ export function mapsVerdict(input: {
   if (input.uptimeMs > TICK_LATE_MS && tickAge > TICK_LATE_MS) bad.push(`The scan loop has not ticked for ${mins(tickAge)}`);
   if (holding === 'no Maps worker is live') bad.push('No Maps worker is live, so nothing can scan');
   else if (holding?.startsWith('paused')) warn.push('Paused by hand (AUTO_SCAN_PAUSED)');
-  else if (holding?.startsWith('monthly Maps budget')) warn.push('Stopped: ' + holding);
   else if (holding === 'every listed taman has a Business scan') warn.push('Finished: every listed taman has a Business scan');
   for (const r of open.filter((o) => o.kind === 'business_search' && o.status === 'running')) {
     const age = ageMs(iso(r.created_at), now);
@@ -190,8 +189,8 @@ export async function snapshot(hours: number): Promise<Record<string, unknown>> 
   const now = Date.now();
   const slots = hourSlots(hours, now);
   const since = slots[slots.length - 1]!;
-  const [scan, contact, data, problems, state, mapsUsed, keys] = await Promise.all([
-    autoScan.status(), autoContact.status(), db.autoQueueHourly(since), db.autoQueueProblems(since), db.autoQueueState(), db.mapsUsageThisMonth(),
+  const [scan, contact, data, problems, state, keys] = await Promise.all([
+    autoScan.status(), autoContact.status(), db.autoQueueHourly(since), db.autoQueueProblems(since), db.autoQueueState(),
     keyHealth.snapshot(),
   ]);
   const rows = hourly(slots, data);
@@ -210,7 +209,7 @@ export async function snapshot(hours: number): Promise<Record<string, unknown>> 
     uptimeMs: Math.round(uptimeMs),
     maps: {
       verdict: mapsVerdict({ status: scan, latest: latest('business_search'), open, lastHour: rows[0], uptimeMs, now }),
-      status: scan, latest: latest('business_search'), workers: lane('gmap.scan'), mapsRequestsThisMonth: mapsUsed,
+      status: scan, latest: latest('business_search'), workers: lane('gmap.scan'),
     },
     contact: {
       verdict: contactVerdict({ status: contact, latest: latest('contact_research'), open, lastHour: rows[0], uptimeMs, now }),
@@ -272,7 +271,7 @@ tr.idle td{color:#5d6470}tr.err td{background:#24171a}td.z{color:#4a505a}td.bad{
 <div class="lanes" id="lanes"></div>
 <div class="card"><div class="section-head"><h2>API keys: quota left</h2><span class="updated">provider numbers refresh every 5 min</span></div><div class="tiles" id="keyTiles"></div><div id="keyDetail"></div></div>
 <div class="card"><div class="section-head"><h2>Per hour</h2><span class="updated" id="hourNote"></span></div><div class="table-wrap"><table><thead>
-<tr><th></th><th class="grp sep" colspan="7">Maps auto-scan (scraper.tech)</th><th class="grp sep" colspan="6">Contact research auto-queue</th><th class="grp sep" colspan="2">Taman finder</th><th class="sep"></th></tr>
+<tr><th></th><th class="grp sep" colspan="7">Maps auto-scan (Gmap workers)</th><th class="grp sep" colspan="6">Contact research auto-queue</th><th class="grp sep" colspan="2">Taman finder</th><th class="sep"></th></tr>
 <tr><th>Hour</th><th class="sep">Queued</th><th>Done</th><th>Partial</th><th>Failed</th><th>Companies</th><th>Requests</th><th>Skipped</th><th class="sep">Queued</th><th>Done</th><th>Failed</th><th>With phone</th><th>People</th><th>Deferred</th><th class="sep">Towns</th><th>Added</th><th class="sep">Errors</th></tr>
 </thead><tbody id="hourly"><tr><td colspan="17" class="empty">Enter a LAB_TOKEN to load.</td></tr></tbody></table></div>
 <p class="legend">Queued counts runs started in that hour; Done, Failed and the found counts are runs that finished in it. Grey rows did nothing at all. Red rows had errors. Requests are only known for scans saved after this page shipped.</p></div>
@@ -302,11 +301,10 @@ tr.idle td{color:#5d6470}tr.err td{background:#24171a}td.z{color:#4a505a}td.bad{
   var until=function(iso){if(!iso)return '';var s=(new Date(iso).getTime()-Date.now())/1000;if(s<=0)return 'resetting';if(s<3600)return 'resets in '+Math.round(s/60)+'m';if(s<172800)return 'resets in '+(s/3600).toFixed(1)+'h';return 'resets '+when(iso)};
   var tile=function(name,level,big,lines,b){return '<div class="tile '+esc(level||'')+'"><div class="name">'+esc(name)+'</div><div class="big">'+esc(big)+'</div>'+(b||'')+lines.filter(Boolean).map(function(l){return '<div class="line">'+esc(l)+'</div>'}).join('')+'</div>'};
   var renderKeys=function(k){
-    var t=k.tavily||{},e=k.exa||{},m=k.scraperTech||{},mm=k.minimax||{},x=k.extractLlm||{},w=(mm.windows||[])[0];
+    var t=k.tavily||{},e=k.exa||{},mm=k.minimax||{},x=k.extractLlm||{},w=(mm.windows||[])[0];
     $('keyTiles').innerHTML=
       tile('Tavily search',t.level,t.error?'error':t.keys&&!t.keysRead?'unknown':num(t.creditsLeft)+' left',[t.error||(t.keysRead?'of '+num(t.creditsTotal)+' credits this month ('+t.keysRead+' keys read)':'Tavily quota could not be read'),t.keys!=null?'SG '+t.usable+' of '+t.keys+' keys usable':'',t.readFailures?t.readFailures+' key(s) failed the quota read: '+t.readError:'',t.proxy?(t.proxy.reachable?'US proxy: '+t.proxy.usable+' of '+t.proxy.keys+' keys usable, '+num(t.proxy.spentCredits)+' credits spent, about '+num(t.proxy.estimatedLeftCredits)+' left':'US proxy unreachable: '+t.proxy.error):''],bar(t.creditsLeft,t.creditsTotal))+
       tile('Exa search',e.level,e.error?'error':e.usable+' of '+e.keys+' keys',[e.error||'usable now (a spent key rests a day)',e.us&&e.us.keys?'SG '+e.direct.usable+' of '+e.direct.keys+' · US proxy '+e.us.usable+' of '+e.us.keys:'',e.spentUsd!=null?usd(e.spentUsd)+' spent since counting began':'',e.proxy?(e.proxy.reachable?'US proxy: '+e.proxy.usable+' of '+e.proxy.keys+' keys usable, '+usd(e.proxy.spentUsd)+' spent, about '+usd(e.proxy.estimatedLeftUsd)+' left (assumes '+usd(e.proxy.creditAssumedUsd)+' each)':'US proxy unreachable: '+e.proxy.error):'Exa does not report credit left'])+
-      tile('scraper.tech Maps',m.level,m.error?'error':num(m.left)+' left',[m.error||('of '+num(m.plan)+' requests this month'),m.used!=null?num(m.hub)+' hub + '+num(m.finder)+' finder used':'',m.resetsAt?until(m.resetsAt):''],bar(m.left,m.plan))+
       tile('MiniMax token plan',mm.level,mm.error?'error':!mm.configured?'not set':w?w.intervalLeftPct+'% left':'—',[mm.error||mm.note||(w?'this 5-hour window, '+until(w.intervalResetsAt):''),w?w.weekLeftPct+'% of the week left, '+until(w.weekResetsAt):''],w?bar(Math.min(w.intervalLeftPct,w.weekLeftPct),100):'')+
       tile('Contact extract LLM',x.level,x.error?'error':!x.configured?'not set':x.leftUsd!=null?usd(x.leftUsd)+' left':'—',[x.error||x.note||(x.limitUsd!=null?'of '+usd(x.limitUsd)+', '+usd(x.usedUsd)+' used':''),x.model?x.model+' on '+x.host:''],x.leftUsd!=null?bar(x.leftUsd,x.limitUsd):'');
     var tRows=(t.perKey||[]).map(function(r){var s=r.limit?r.left/r.limit:null;return '<tr class="'+(r.cooling?'err':'')+'"><td class="mono">'+esc(r.tail)+'</td><td>'+num(r.used)+' / '+num(r.limit)+'</td><td class="'+(lvl(s)||'good')+'">'+num(r.left)+'</td><td style="text-align:left"><span class="pill '+(r.resting?'bad':r.cooling?'warn':'ok')+'">'+(r.resting?'out of credits':r.cooling?'cooling':'usable')+'</span>'+(r.usageError?' <span class="small">quota read failed: '+esc(r.usageError)+'</span>':r.usageCheckedAt?' <span class="small">read '+esc(ago(r.usageCheckedAt))+'</span>':'')+'</td></tr>'}).join('');
@@ -319,7 +317,7 @@ tr.idle td{color:#5d6470}tr.err td{background:#24171a}td.z{color:#4a505a}td.bad{
     if(b.keys)renderKeys(b.keys);
     var m=b.maps,c=b.contact,f=b.finder,ms=m.status,cs=c.status,sum=function(k,g){return b.hourly.reduce(function(n,r){return n+r[g][k]},0)};
     $('lanes').innerHTML=
-      lane('Taman Maps auto-scan',m.verdict,[['Holding',ms.holding||'no, running'],['Tamans scanned',ms.scanned+' of '+ms.tamans],['Scans in flight',ms.inFlight],['Maps requests this month',m.mapsRequestsThisMonth+' of '+ms.monthlyBudget],['Last queued',ago(m.latest&&m.latest.last_queued)],['Last completed',ago(m.latest&&m.latest.last_completed)],['Loop last ticked',ago(ms.lastTickAt)],['In window','queued '+sum('queued','maps')+', done '+sum('completed','maps')+', failed '+sum('failed','maps')+', '+sum('companies','maps')+' companies']],workers(m.workers))+
+      lane('Taman Maps auto-scan',m.verdict,[['Holding',ms.holding||'no, running'],['Tamans scanned',ms.scanned+' of '+ms.tamans],['Scans in flight',ms.inFlight],['Last queued',ago(m.latest&&m.latest.last_queued)],['Last completed',ago(m.latest&&m.latest.last_completed)],['Loop last ticked',ago(ms.lastTickAt)],['In window','queued '+sum('queued','maps')+', done '+sum('completed','maps')+', failed '+sum('failed','maps')+', '+sum('companies','maps')+' companies']],workers(m.workers))+
       lane('Contact research auto-queue',c.verdict,[['Holding',cs.holding||'no, running'],['Worker type',cs.jobType],['Open auto reports',cs.totals.queued+' queued, '+cs.totals.running+' running'],['All-time auto reports',cs.totals.completed+' done, '+cs.totals.failed+' failed'],['Last queued',ago(c.latest&&c.latest.last_queued)],['Last finished',ago(c.latest&&c.latest.last_finished)],['Loop last ticked',ago(cs.lastTickAt)],['In window','queued '+sum('queued','contact')+', done '+sum('completed','contact')+', failed '+sum('failed','contact')+', '+sum('withPhone','contact')+' with phone']],workers(c.workers))+
       lane('Missing-taman finder',f.verdict,[['Runs from','scripts/find-tamans.ts on a PC'],['Last town checked',ago(f.latest)],['In window',sum('done','finder')+' towns done, '+sum('failed','finder')+' failed, '+sum('added','finder')+' tamans added']]);
     $('hourly').innerHTML=b.hourly.map(function(r){var any=r.maps.queued+r.maps.completed+r.maps.partial+r.maps.failed+r.contact.queued+r.contact.completed+r.contact.failed+r.contact.deferred+r.finder.done+r.finder.failed;

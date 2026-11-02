@@ -5,16 +5,15 @@
 //   node scripts/find-tamans.ts check <state> <district> [town]   read, print, write a review file
 //   node scripts/find-tamans.ts save <review.json> [--only 1,3] [--skip 2]
 //
-// `check` sends nothing to the hub: it runs seven Google Maps list searches per
-// town plus the hub's saved leads, and prints every area name with how many
+// `check` sends nothing to the hub: it reads the hub's saved leads for the
+// town and prints every area name with how many
 // addresses carry it (taman-finder.ts). `save` posts the approved names; the hub
 // saves them as verified tamans and records the town, so `check` skips it from
-// then on. Env: LAB_TOKEN, SCRAPER_TECH_KEY, optional LAB_URL.
+// then on. Env: LAB_TOKEN, optional LAB_URL.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MIN_ADDRESSES, pendingTowns, runTown, townId, type Deps, type TownOutcome } from '../src/taman-finder.ts';
-import { resolveConfig, searchMaps } from '../src/maps-worker.ts';
 import { ALL_TERRITORIES } from '../src/territories.ts';
 
 const LAB = (process.env.LAB_URL ?? 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
@@ -62,8 +61,6 @@ async function check(state: string, district: string, townName?: string): Promis
   const done = new Set((await checkedTowns()).map((r) => townId(r.state, r.district, r.town)));
   const towns = d.towns.filter((t) => !townName || t.name.toLowerCase() === townName.toLowerCase());
   if (!towns.length) throw new Error(`unknown town: ${townName} in ${d.name}`);
-  const maps = resolveConfig();
-  if (!maps.key) throw new Error('SCRAPER_TECH_KEY is not set');
   fs.mkdirSync(REVIEW_DIR, { recursive: true });
   for (const town of towns) {
     if (done.has(townId(territory.state, d.name, town.name))) {
@@ -72,7 +69,8 @@ async function check(state: string, district: string, townName?: string): Promis
     }
     let pending: { run: unknown; tamans: unknown[] } | null = null;
     const deps: Deps = {
-      maps: (q) => searchMaps(maps, q, 500),
+      // No Maps searches: scraper.tech is gone and the Gmap workers answer only the hub's queue.
+      maps: null,
       leadAddresses,
       // Nothing is saved here: the run and its names go to the review file.
       save: async (rows) => { pending = { run: null, tamans: rows }; return rows.length; },

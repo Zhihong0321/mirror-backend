@@ -24,7 +24,7 @@ test('every call is kept one by one with its time, tokens and cost', () => {
   assert.equal(startCall('llm', 'x', { model: 'pi/MiniMax-M3' }).done({ ok: true, tokensIn: 10, tokensOut: 10 }).usd, null);
   assert.equal(startCall('brave', 'q').done({ ok: false, note: 'HTTP 429' }).usd, 0);
   assert.equal(startCall('exa', 'q').done({ ok: true, usd: 0.022 }).usd, 0.022);
-  assert.equal(startCall('maps', 'reviews').done({ ok: true }).usd, PRICES.mapsCall);
+  assert.equal(startCall('maps', 'search').done({ ok: true }).usd, 0);
 });
 
 test('a deeper-dive meter with a call log is priced from the log, retries and failures included', () => {

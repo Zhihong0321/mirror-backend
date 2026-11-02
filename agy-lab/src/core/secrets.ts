@@ -1,4 +1,4 @@
-// The one-key providers' keys: MiniMax, scraper.tech Maps, Parallel, Smartlead and
+// The one-key providers' keys: MiniMax, Parallel, Smartlead and
 // the PageSpeed service account. They live in the hub database (gemini_contact_key,
 // one row per kind, edited on /workers under "Other API keys"); the Railway
 // variable of the same name only serves a hub whose row is empty, and the local
@@ -12,7 +12,6 @@ import * as vault from './vault.ts';
 
 export const KINDS = {
   minimax: 'MINIMAX_API_KEY',
-  scraper_tech: 'SCRAPER_TECH_KEY',
   parallel: 'PARALLEL_API_KEY',
   smartlead: 'SMARTLEAD_API_KEY',
   pagespeed: 'GOOGLE_PAGESPEED_SERVICE_ACCOUNT',

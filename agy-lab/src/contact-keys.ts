@@ -1,7 +1,7 @@
 // GET/POST /api/contact-keys: the search keys contact research rotates through,
 // Tavily and Exa, each shown in full with its quota state, and the Brave keys
 // company and deeper dives search with, and the one-key providers' keys (secrets:
-// MiniMax, scraper.tech, Parallel, Smartlead, PageSpeed). Behind LAB_TOKEN.
+// MiniMax, Parallel, Smartlead, PageSpeed). Behind LAB_TOKEN.
 // GET/POST /api/llm-lanes: the extract model lanes (extract-llm.ts), kept in llm_lane.
 import * as db from './reportdb.ts';
 import { brave, exa, llm as extractLlm, secrets, tavily } from './core/index.ts';

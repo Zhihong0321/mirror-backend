@@ -176,7 +176,7 @@ export function isRetired(worker: string, type: string): boolean {
 
 /**
  * The mini's Chrome Maps scan found 118 businesses in Taman Daya where the
- * scraper.tech sweep found 1,838, so it gets no business search or taman scan.
+ * keyword sweep found 1,838, so it gets no business search or taman scan.
  * It answers only the per-city searches of country research and the searches
  * of a search list, whose jobs carry `source: 'country.industry'` or
  * `source: 'search.list'`.

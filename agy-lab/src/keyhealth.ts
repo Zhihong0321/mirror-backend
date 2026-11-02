@@ -4,15 +4,13 @@
 //   Tavily        GET /usage per key (tavily.ts refreshes it every ten minutes)
 //   Exa           no usage endpoint; the hub counts costDollars per key (exa.record),
 //                 and the US proxy's GET /usage counts its own keys' spend
-//   scraper.tech  no usage endpoint; the hub counts requests (maps_usage) plus the finder's
 //   MiniMax       GET /v1/api/openplatform/coding_plan/remains, the Token Plan windows
 //   Extract LLM   CONTACT_LLM_URL's /dashboard/billing/{subscription,usage} (one-api style)
 //
 // Provider reads are cached for five minutes, so a page refreshing every minute
 // does not spend anyone's rate limit.
 import * as db from './reportdb.ts';
-import { exa, llm as extractLlm, pi, secrets, tavily } from './core/index.ts';
-import * as autoScan from './autoscan.ts';
+import { exa, llm as extractLlm, pi, tavily } from './core/index.ts';
 
 type FetchImpl = typeof fetch;
 export type Level = 'ok' | 'warn' | 'bad' | 'unknown';
@@ -179,24 +177,13 @@ async function exaProxy() {
   }
 }
 
-async function scraperTech() {
-  const plan = Number(process.env.SCRAPER_TECH_MONTHLY_LIMIT) || 30_000;
-  const budget = autoScan.config().budget;
-  const [hub, finder] = await Promise.all([db.mapsUsageThisMonth(), db.finderMapsRequestsThisMonth()]);
-  const used = hub + finder;
-  const left = Math.max(0, plan - used);
-  const now = new Date();
-  const resetsAt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
-  return { level: levelFor(left, plan), plan, used, hub, finder, left, autoScanBudget: budget, resetsAt, configured: Boolean(secrets.get('scraper_tech')) };
-}
-
 const settle = async <T>(name: string, run: () => Promise<T>): Promise<T | { level: Level; error: string }> => {
   try { return await run(); } catch (err) { return { level: 'unknown', error: `${name}: ${(err as Error).message}` }; }
 };
 
 export async function snapshot(fetchImpl: FetchImpl = fetch) {
-  const [tav, ex, maps, mm, llm] = await Promise.all([
-    settle('tavily', tavilyKeys), settle('exa', exaKeys), settle('scraper.tech', scraperTech), minimax(fetchImpl), extract(fetchImpl),
+  const [tav, ex, mm, llm] = await Promise.all([
+    settle('tavily', tavilyKeys), settle('exa', exaKeys), minimax(fetchImpl), extract(fetchImpl),
   ]);
-  return { tavily: tav, exa: ex, scraperTech: maps, minimax: mm, extractLlm: llm };
+  return { tavily: tav, exa: ex, minimax: mm, extractLlm: llm };
 }

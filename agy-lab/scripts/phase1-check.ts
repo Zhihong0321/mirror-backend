@@ -1,7 +1,7 @@
 // Phase 1 check: does every API the three pipelines use answer from THIS service?
 // Run inside the service: node scripts/phase1-check.ts
 import pg from 'pg';
-import { exa, tavily, brave, maps, secrets } from '../src/core/index.ts';
+import { exa, tavily, brave, secrets } from '../src/core/index.ts';
 import * as proxy from '../src/core/proxy.ts';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
@@ -36,7 +36,6 @@ if (px) {
 await guard('exa search (pool)', async () => { const h = await exa.search('Petronas Malaysia', { numResults: 2, timeoutMs: 40_000 }); if (!h.length) throw new Error('0 hits'); return h.length + ' hits'; });
 await guard('tavily search (pool)', async () => { const h: any = await tavily.search('Petronas Malaysia', { maxResults: 2, timeoutMs: 40_000 }); const n = Array.isArray(h) ? h.length : (h?.results?.length ?? 0); if (!n) throw new Error('0 hits'); return n + ' hits'; });
 await guard('brave search', async () => { const h = await brave.search('Petronas Malaysia'); if (!h.length) throw new Error('0 hits'); return h.length + ' hits'; });
-await guard('scraper.tech Maps', async () => { const r = await maps.call('search_maps', { query: 'cafe Kuala Lumpur' }, { timeoutMs: 60_000 }); return JSON.stringify(r).slice(0, 100); });
 
 const keys = (await pool.query('select kind, count(*)::int n from gemini_contact_key group by kind order by kind')).rows;
 rows.push(['keys in DB', 'INFO', keys.map((k) => k.kind + ':' + k.n).join(' ')]);

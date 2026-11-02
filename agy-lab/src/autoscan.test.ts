@@ -3,21 +3,18 @@ import assert from 'node:assert/strict';
 import { config, holdReason, remaining } from './autoscan.ts';
 import { ALL_TERRITORIES, allTamans, withDiscovered } from './territories.ts';
 
-const open = { paused: false, workerLive: true, used: 0, budget: 25_000, inFlight: 0, concurrent: 1, left: 10 };
+const open = { paused: false, workerLive: true, inFlight: 0, concurrent: 1, left: 10 };
 
-test('config defaults: running, 25k budget, one at a time, Johor before Selangor', () => {
-  assert.deepEqual(config({}), { paused: false, budget: 25_000, concurrent: 1, states: ['johor', 'selangor'] });
+test('config defaults: running, one at a time, Johor before Selangor', () => {
+  assert.deepEqual(config({}), { paused: false, concurrent: 1, states: ['johor', 'selangor'] });
   assert.equal(config({ AUTO_SCAN_PAUSED: '1' }).paused, true);
-  assert.equal(config({ MAPS_MONTHLY_BUDGET: '280000', AUTO_SCAN_CONCURRENT: '2' }).budget, 280_000);
+  assert.equal(config({ AUTO_SCAN_CONCURRENT: '2' }).concurrent, 2);
 });
 
-test('the queue holds for a pause, no worker, the budget, a running scan, or nothing left', () => {
+test('the queue holds for a pause, no worker, a running scan, or nothing left', () => {
   assert.equal(holdReason(open), null);
   assert.match(holdReason({ ...open, paused: true })!, /paused/);
   assert.match(holdReason({ ...open, workerLive: false })!, /no Maps worker/);
-  // One more scan's worth would cross the budget: stop before, not after.
-  assert.match(holdReason({ ...open, used: 24_700 })!, /budget/);
-  assert.equal(holdReason({ ...open, used: 24_000 }), null);
   assert.match(holdReason({ ...open, inFlight: 1 })!, /running/);
   assert.match(holdReason({ ...open, left: 0 })!, /every listed taman/);
 });

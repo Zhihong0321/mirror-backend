@@ -5084,20 +5084,7 @@ export async function hideAtapSolarRegistrations(
 }
 
 
-// ---- Maps budget, taman auto-scan, discovered tamans ------------------------
-
-const usageMonth = (at = new Date()): string => at.toISOString().slice(0, 7);
-
-/** Add one scan's scraper.tech requests to this month's count. */
-export async function addMapsUsage(requests: number): Promise<void> {
-  if (!configured() || !Number.isFinite(requests) || requests <= 0) return;
-  await migrate();
-  await sql(
-    `insert into maps_usage (month, requests) values ($1, $2)
-     on conflict (month) do update set requests = maps_usage.requests + excluded.requests, updated_at = now()`,
-    [usageMonth(), Math.round(requests)],
-  );
-}
+// ---- Taman auto-scan, discovered tamans ------------------------
 
 /** Add one batch of calls to a search key's running spend. */
 export async function addSearchKeySpend(kind: string, secret: string, t: {
@@ -5129,24 +5116,6 @@ export async function listSearchKeySpend(kind: string): Promise<Array<{
     [kind],
   );
   return out.rows.map((r) => ({ ...r, dollars: Number(r.dollars) }));
-}
-
-/** Maps requests the missing-taman finder spent this month from a PC; maps_usage counts only the hub's. */
-export async function finderMapsRequestsThisMonth(): Promise<number> {
-  if (!configured()) return 0;
-  await migrate();
-  const out = await sql<{ n: number }>(
-    `select coalesce(sum(maps_requests), 0)::int as n from taman_finder_town where to_char(finished_at at time zone 'UTC', 'YYYY-MM') = $1`,
-    [usageMonth()],
-  );
-  return Number(out.rows[0]?.n ?? 0);
-}
-
-export async function mapsUsageThisMonth(): Promise<number> {
-  if (!configured()) return 0;
-  await migrate();
-  const out = await sql<{ requests: number }>('select requests from maps_usage where month = $1', [usageMonth()]);
-  return Number(out.rows[0]?.requests ?? 0);
 }
 
 /**

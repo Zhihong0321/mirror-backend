@@ -4,7 +4,7 @@
 // A lane is sections/<section>-<lane>.ts exporting
 //   run(ctx, dive): Promise<{ findings: Finding[]; notes?: Record<string, unknown> }>
 // Its output lands in OUT/<section>-<lane>-<diveId>.json, where later lanes read it
-// (E-maps reads H-maps' listings, S2 reads every stage-1 lane).
+// (C-merged reads H-maps' listings, S2 reads every stage-1 lane).
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
