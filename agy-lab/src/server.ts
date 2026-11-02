@@ -530,14 +530,19 @@ server.listen(PORT, '0.0.0.0', () => {
       .then((r) => console.log(`[blacklist] checked ${r.checked} leads, ${r.blacklisted} kept out of contact research`))
       .catch((err: Error) => console.warn('[blacklist] could not check leads: ' + err.message));
   }
-  // company-diver: the lead-pipeline loops (auto contact, auto scan, site emails,
-  // email marketing, search list, list step 2) stay in automation-tools. Starting
-  // them here would run every lead twice against the same Maps and email budget.
+  autoContact.init({ launch: intel.launchContactResearch });
+  autoContact.start();
+  autoScan.init({ launch: intel.launchBusinessSearch });
+  autoScan.start();
+  void siteEmails.start();
+  emailMarketing.start();
   // Extract model lanes saved on /workers; until they load, calls use CONTACT_LLM_*.
   void extractLlm.refresh();
   contactWorker.start();
   mapsWorker.start();
   countryResearch.start();
+  searchList.start();
+  listStep2.start();
   // Broker jobs live only in memory. Refill it from saved contact reports after
   // a restart, with no more concurrent jobs than the research lanes can run.
   setInterval(() => {
