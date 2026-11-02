@@ -45,10 +45,11 @@ async function src(sql: string): Promise<Array<Record<string, string | null>>> {
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
 for (const table of TABLES) {
   const cols = (await pool.query(`select column_name from information_schema.columns where table_schema = 'public' and table_name = $1`, [table])).rows.map((r) => r.column_name as string);
-  const key = ['public_id', 'created_at', 'at'].find((c) => cols.includes(c));
+  // run_event.public_id is often null, so its time is the better identity; company_data has place_id (unique).
+  const key = (table === 'run_event' ? ['at'] : ['public_id', 'place_id', 'created_at', 'at']).find((c) => cols.includes(c));
   if (!key) { console.log(`${table}: no identity column (public_id, created_at, at); skipped`); continue; }
   // Timestamps compare as epoch seconds: their text form depends on each session's time zone.
-  const expr = key === 'public_id' ? q(key) : `extract(epoch from ${q(key)})`;
+  const expr = key === 'public_id' || key === 'place_id' ? q(key) : `extract(epoch from ${q(key)})`;
   const srcMax = Number((await src(`select coalesce(max(id), 0)::text as n from ${q(table)}`))[0]?.n ?? 0);
   const hub = (await pool.query(`select id::text as id, (${expr})::text as k from ${q(table)} where id <= $1 order by id`, [srcMax])).rows as Array<{ id: string; k: string | null }>;
   let same = 0, missingInSource = 0;
