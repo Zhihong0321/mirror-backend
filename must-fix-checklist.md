@@ -265,26 +265,42 @@ Each step is useful on its own and leaves the app working. Tick only with live e
 2. [ ] **Weighted task categories,** so a dive-deeper is processed first once payment is received. Free preview = 1, every dive-deeper task = 50, weight before arrival time in every queue ([docs/job-queue-weights.md](docs/job-queue-weights.md)).
 3. [ ] **Nothing is killed. Firing more new calls is allowed.** When a call passes the time gate, a new call for the same task fires on another lane and the old one keeps running. The first answer is used ([docs/llm-wait-policy.md](docs/llm-wait-policy.md)).
 
-## Plan for the lead import, A1–A3 (owner approved 2026-11-02; not run yet)
+## Plan for the lead import, A1–A3 (rewritten by the owner's rule, 2026-11-03)
 
-**Deadline: the source's read-only token expires 2026-11-06.** After that, rows not yet copied cannot be fetched.
-Script: `agy-lab/scripts/import-from-pg2nd.ts` (doc: `agy-lab/scripts/IMPORT.md`). The order matters: fixing the id counter first would hand the import's ids to new hub rows, and resuming while the hub writes drops more rows.
+**Rule (owner, 2026-11-03): keep the old data, never the old schema.** pg_2nd's ids and row shapes are the old
+design. They are not preserved, not mapped, not protected. Rows in the hub follow the redesign: a company is its
+UID and its anchors (R3: place id, domain, phone, registration), a report is its report UID, a research result is an
+evidence row (research storage). **Deadline: the source's read-only token expires 2026-11-06.**
 
-1. [ ] **Find out why the import stopped** (last log write 05:35 UTC, `/data/import-leads2.log`). Likely a redeploy or the `railway ssh` session closing, since it runs inside the service container. Unconfirmed. **No deploys while it runs**, and run it detached (`nohup … &`) so a closed session cannot kill it.
+1. [ ] **Archive the source, untouched, before the deadline.** Every lead table copied as-is into the schema
+   `pg2nd_archive` of the hub's database (`import-from-pg2nd.ts --group leads --target-schema pg2nd_archive`). The
+   app's `public` tables are not touched, so no old id can clash with a hub row. Run detached (`nohup`), no pushes while
+   it runs. Proof: per-table counts equal the source at the moment it ran. A top-up run after ee-auto stops (or just
+   before 2026-11-06) catches what ee-auto wrote since.
+2. [ ] **Stop ee-auto writing the source** (the owner). Until then the archive is a snapshot of a moving source.
+3. [ ] **Move the archive into the redesign** (its own task and contract, after T8 identity anchors and T7 evidence
+   exist): leads by place id into companies with anchors, reports by public id / report UID, research results as
+   evidence. Old integer ids are dropped. Rows the hub already copied into `public` from the first import are part of
+   this move, not a separate fix.
+4. [ ] **Drop the archive** only after the move is proven live and the owner says so.
+
+**What happened before the rule (2026-11-02, kept as a record):**
+
+- (old step 1) **Find out why the import stopped** (last log write 05:35 UTC, `/data/import-leads2.log`). Likely a redeploy or the `railway ssh` session closing, since it runs inside the service container. Unconfirmed. **No deploys while it runs**, and run it detached (`nohup … &`) so a closed session cannot kill it.
    - **Seen live 2026-11-02 14:39 UTC (Claude, read only):** the log ends mid-line at 05:35:02 inside `published_report` (46,826 of 56,502), with no error and no exit line, so the process was killed from outside. No import process runs now. The container was replaced since (current one started 09:06:47 UTC, 36 s after commit `7a99e30`: this service redeploys within a minute of a push). Commit `6bdc318` landed at 05:25 UTC, ten minutes before the stop, so a redeploy is the likeliest cause; a closed `railway ssh` session is not ruled out (deploy history needs `railway deployment list`). Either way the fix is the same: detached, and no pushes while it runs.
    - **Counts, hub vs source, same moment:** `company_data` 172,120 vs 188,526; `published_report` 46,905 vs 56,613; `search_report_company` 91,014 vs 563,313; `run_event` 974 vs 244,928; `company_email` 5,862 vs 23,951; `lead_activity_log` 541 vs 23,244; `contact_research_run` 0 vs 55,411; `company` 100,401 vs 100,388 (the hub has 13 of its own). The source grew since the import's start (`company_data` 171,300 → 188,526; `published_report` 56,502 → 56,613): ee-auto still writes it (A3 confirmed). Four `published_report` rows were skipped on a foreign key (ids 120, 2095, 4610, 4611).
-2. [ ] **Stop everything that writes the lead tables**, on the new hub *and* on the old app (ee-auto). ee-auto still writes the source, so the copy chases a moving target (A3).
+- (old step 2) **Stop everything that writes the lead tables**, on the new hub *and* on the old app (ee-auto). ee-auto still writes the source, so the copy chases a moving target (A3).
    - Switches that exist: `AUTO_SCAN_PAUSED=1`, `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO` off. The contact worker is already off in production (`contact-worker.ts:1050`).
    - **No switch:** search-list, list-step2, email-marketing sync, the contact-resume timer (every 5 s), the abandoned-run reaper, and the boot blacklist and company-UID backfill (`server.ts:536-566`). Add one shared "import in progress" switch that holds them all, or accept that these write during the copy.
    - **Done on the hub, 2026-11-02 (owner chose the switch):** `IMPORT_IN_PROGRESS=1` holds every background loop, including dive resumes, the preview writer and country research (codex's review found they write `company` and `run_event`); the hub only serves HTTP. Set with `AUTO_SCAN_PAUSED=1`, `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0` (`--skip-deploys`), then one push (`eee37a8`, 15:20:51 UTC). **Live:** the boot log prints "every background loop held … HTTP only"; no lead table changed in 90 s (15:22:52 → 15:24:22 UTC); every id counter still past the source after the boot migration. **Still open: ee-auto (the owner's) still writes the source** (`company_data` source max 568,082 → 571,279 in about an hour).
    - Changing Railway variables redeploys the service, so set them **before** starting the import, never during.
-3. [ ] **Measure the damage already done (A2) before copying more.**
+- (old step 3) **Measure the damage already done (A2) before copying more.**
    - **Measured live 2026-11-02 ~15:35 UTC (read only, `agy-lab/scripts/id-collisions.ts`):** a hub row sitting on an id the source uses for a different row, judged by `public_id` / `place_id` / `created_at` / `at`. `published_report` 1 (id 120; plus 2095, 4610, 4611 skipped on a foreign key); `search_report` 71; `company_data` 1,298; `run_event` 858 (the hub's own trail rows). None in `lead_activity_log`, `telemarketer`, `territory_discovered`, `atap_solar_registrations`, `email_marketing_event`, `taman_*`. Every other hub row at a source id is the same row (e.g. `published_report` 46,822 of 46,905). Not yet measured: source rows dropped because their `place_id` is already here under another id (the re-copy's skip lines will show them). The hub wrote `published_report` rows with ids 1–112 while the import ran. A source row with one of those ids was dropped without a message, and source child rows (`run_event`, `contact_research_run`, `company_research_run`) point at that id, now a different report. Compare ids 1–112 with the source (company and created_at). List every collision and decide per row: move the hub row to a new id, then copy the source row.
-4. [ ] **Re-copy the gaps, not only the tail (A3).** `--resume` starts after the highest id here, so rows skipped below it (foreign-key or `place_id` clashes) are never retried. Run per table **without** `--resume` (rows already here are skipped by `on conflict do nothing`), parents first: `company_data`, `company`, `company_place` before `published_report`, then its children. Read every "row skipped" line.
-5. [ ] **Then move every id counter past the source's highest id** (A1), not just past today's 46,911, plus margin.
+- (old step 4) **Re-copy the gaps, not only the tail (A3).** `--resume` starts after the highest id here, so rows skipped below it (foreign-key or `place_id` clashes) are never retried. Run per table **without** `--resume` (rows already here are skipped by `on conflict do nothing`), parents first: `company_data`, `company`, `company_place` before `published_report`, then its children. Read every "row skipped" line.
+- (old step 5) **Then move every id counter past the source's highest id** (A1), not just past today's 46,911, plus margin.
    - **Moved first instead, owner approved 2026-11-02:** moving the counters past the *source's* highest id (not ours) cannot hand the import's ids to hub rows, and it also covers writers no switch can stop (workers reporting jobs, the Smartlead webhook, operator clicks). `agy-lab/scripts/bump-sequences.ts --apply`, run live 15:2x UTC: all 11 lead-table counters set to max(source, hub) + 1,000,000 and read back (e.g. `published_report` 266 → 1,056,700; `run_event` 985 → 1,245,084; `company_data` 533,370 → 1,568,082). The hub's `published_report` counter had been at 266, inside the source's range: that is how hub rows took source ids. The import's own `resetSequences` at the end stays safe (`max(id) + 1`). Still to do after the copy: check all counters again. The script does this itself only for a table that copied cleanly (`resetSequences`, `import-from-pg2nd.ts:354`). Check all 16 counters afterwards.
-6. [ ] **Prove it.** Source/target counts per table match (the script prints them and exits 1 on any mismatch). No `published_report_pkey` error in the log. One auto-scan tick saves a new report.
-7. [ ] **Restart the loops.** Then decide when ee-auto is turned off for good (handoff fix 6), so the two apps stop sharing Maps and email budgets.
+- (old step 6) **Prove it.** Source/target counts per table match (the script prints them and exits 1 on any mismatch). No `published_report_pkey` error in the log. One auto-scan tick saves a new report.
+- (old step 7) **Restart the loops.** Then decide when ee-auto is turned off for good (handoff fix 6), so the two apps stop sharing Maps and email budgets.
 
 ## To discuss: pipeline concurrency, set by each API provider's rate limit (owner, 2026-11-02)
 

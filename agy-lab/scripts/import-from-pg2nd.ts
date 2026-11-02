@@ -30,6 +30,9 @@
 //   --batch N          rows per request, upper bound (default 200; shrinks on its own for fat rows)
 //   --skip-migrate     do not apply schema.sql / reportdb.migrate() first
 //   --schema PATH      schema.sql location (default ../schema.sql)
+//   --target-schema S  copy into Postgres schema S here instead of public: a raw archive of the source,
+//                      apart from the app's tables: columns, types and primary key only (no schema.sql, migrate,
+//                      defaults, indexes, foreign keys or counters); --truncate is refused
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -70,7 +73,12 @@ const opt = (name: string): string | undefined => {
 const DRY = flag('dry-run');
 const TRUNCATE = flag('truncate');
 const RESUME = flag('resume');
-const SKIP_MIGRATE = flag('skip-migrate');
+const TARGET = opt('target-schema') ?? 'public';
+if (!/^[a-z_][a-z0-9_]*$/.test(TARGET)) { console.error(`--target-schema must be a plain lower-case name, got ${TARGET}`); process.exit(2); }
+const ARCHIVE = TARGET !== 'public';
+// The app's schema.sql and migrate() write public; an archive must not touch it.
+const SKIP_MIGRATE = flag('skip-migrate') || ARCHIVE;
+if (ARCHIVE && flag('truncate')) { console.error('--truncate is not for an archive: a re-run adds only missing rows'); process.exit(2); }
 const MAX_BATCH = Math.max(1, Number(opt('batch') ?? 200));
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCHEMA = opt('schema') ?? path.join(HERE, '..', 'schema.sql');
@@ -186,7 +194,16 @@ const isSerial = (table: string, c: Col): boolean => {
   return !!seq && seq === `${table}_${c.name}_seq` && c.type in SERIAL;
 };
 
+/** Archive tables are raw data: columns, types and the primary key, nothing that carries the old schema's behaviour. */
+function archiveSql(m: Meta): string[] {
+  const lines = m.cols.map((c) => `${q(c.name)} ${c.type}`);
+  const pk = m.constraints.find((k) => k.kind === 'p');
+  if (pk) lines.push(`constraint ${q(pk.name)} ${pk.def}`);
+  return [`create table if not exists ${q(m.table)} (\n  ${lines.join(',\n  ')}\n)`];
+}
+
 function createSql(m: Meta): string[] {
+  if (ARCHIVE) return archiveSql(m);
   const out: string[] = [];
   const lines: string[] = [];
   for (const c of m.cols) {
@@ -272,7 +289,7 @@ let dst: Pool | null = null;
 const d = async (text: string, params?: unknown[]) => dst!.query(text, params);
 
 async function exists(table: string): Promise<boolean> {
-  return (await d(`select to_regclass($1) is not null as ok`, ['public.' + q(table)])).rows[0].ok === true;
+  return (await d(`select to_regclass($1) is not null as ok`, [TARGET + '.' + q(table)])).rows[0].ok === true;
 }
 
 async function ensureTable(m: Meta): Promise<void> {
@@ -281,14 +298,14 @@ async function ensureTable(m: Meta): Promise<void> {
     log(`  created ${m.table} from the source catalog`);
   } else {
     const have = new Set((await d(
-      `select column_name from information_schema.columns where table_schema = 'public' and table_name = $1`, [m.table])).rows.map((r) => String(r.column_name)));
+      `select column_name from information_schema.columns where table_schema = $2 and table_name = $1`, [m.table, TARGET])).rows.map((r) => String(r.column_name)));
     for (const c of m.cols.filter((c) => !have.has(c.name) && c.generated !== 's')) {
-      await d(`alter table ${q(m.table)} add column if not exists ${q(c.name)} ${c.type}${c.def && !nextvalOf(c.def) ? ' default ' + c.def : ''}`);
+      await d(`alter table ${q(m.table)} add column if not exists ${q(c.name)} ${c.type}${!ARCHIVE && c.def && !nextvalOf(c.def) ? ' default ' + c.def : ''}`);
       log(`  ${m.table}: added missing column ${c.name}`);
     }
   }
-  // Unique indexes first: ON CONFLICT DO NOTHING needs them in place before rows arrive.
-  for (const i of m.indexes.filter((i) => /^CREATE UNIQUE INDEX/.test(i.def))) await d(indexSql(i.def));
+  // Unique indexes first: ON CONFLICT DO NOTHING needs them in place before rows arrive (an archive has only its primary key).
+  if (!ARCHIVE) for (const i of m.indexes.filter((i) => /^CREATE UNIQUE INDEX/.test(i.def))) await d(indexSql(i.def));
 }
 
 /** Write one batch; on failure split it until the one bad row is known, skip it and say which. */
@@ -363,7 +380,7 @@ async function addForeignKeys(metas: Meta[]): Promise<void> {
     for (const k of m.constraints.filter((k) => k.kind === 'f')) {
       const ref = k.def.match(/REFERENCES\s+"?([a-z_0-9]+)"?\(/i)?.[1];
       if (!ref || !chosen.has(ref)) continue; // points at a table this copy does not carry
-      const has = (await d(`select 1 from pg_constraint where conname = $1 and conrelid = to_regclass($2)`, [k.name, 'public.' + q(m.table)])).rows.length > 0;
+      const has = (await d(`select 1 from pg_constraint where conname = $1 and conrelid = to_regclass($2)`, [k.name, TARGET + '.' + q(m.table)])).rows.length > 0;
       if (has) continue;
       try {
         await d(`alter table ${q(m.table)} add constraint ${q(k.name)} ${k.def}`);
@@ -405,8 +422,10 @@ async function main(): Promise<void> {
   }
 
   const { default: pg } = await import('pg');
-  dst = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 15_000 }) as unknown as Pool;
+  // An archive: every unqualified name lands in TARGET, so public stays the app's alone.
+  dst = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 15_000, ...(ARCHIVE ? { options: `-c search_path=${TARGET}` } : {}) }) as unknown as Pool;
   await d('select 1');
+  if (ARCHIVE) { await d(`create schema if not exists ${q(TARGET)}`); log(`archive: writing into schema ${TARGET}, not public`); }
 
   if (!SKIP_MIGRATE) {
     if (!fs.existsSync(SCHEMA)) throw new Error(`schema.sql not found at ${SCHEMA}; copy agy-lab/schema.sql into the image or pass --schema`);
@@ -430,15 +449,17 @@ async function main(): Promise<void> {
       await ensureTable(m);
       const stats = await copyTable(m, counts.get(m.table) ?? 0);
       skipped.set(m.table, stats.skipped);
-      for (const i of m.indexes.filter((i) => !/^CREATE UNIQUE INDEX/.test(i.def))) await d(indexSql(i.def));
-      await resetSequences(m);
+      if (!ARCHIVE) {
+        for (const i of m.indexes.filter((i) => !/^CREATE UNIQUE INDEX/.test(i.def))) await d(indexSql(i.def));
+        await resetSequences(m);
+      }
       log(`  inserted ${stats.inserted}${stats.skipped ? `, SKIPPED ${stats.skipped}` : ''}`);
     } catch (err) {
       failures.push(m.table);
       console.error(`  ! ${m.table} failed: ${(err as Error).message}`);
     }
   }
-  await addForeignKeys(metas.filter((m) => !failures.includes(m.table)));
+  if (!ARCHIVE) await addForeignKeys(metas.filter((m) => !failures.includes(m.table)));
 
   log('\ntable                      source      target');
   let bad = failures.length;
