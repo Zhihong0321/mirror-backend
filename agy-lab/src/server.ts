@@ -77,9 +77,11 @@ if (TOKEN.length < 16) {
 }
 
 /**
- * IMPORT_IN_PROGRESS=1 holds every boot step and loop below that writes the lead tables, while
- * scripts/import-from-pg2nd.ts copies them from pg_2nd (must-fix-checklist, lead import A1-A3).
- * The company dive, dive-deeper and country research keep running: they own other tables.
+ * IMPORT_IN_PROGRESS=1 holds every boot step and loop below, while scripts/import-from-pg2nd.ts
+ * copies the lead tables from pg_2nd (must-fix-checklist, lead import A1-A3). The hub only serves
+ * HTTP: even the dive resumes, the preview writer and country research write lead tables
+ * (company, and run_event through broker jobs), and a run_event id taken here is a source row lost.
+ * reportdb.migrate() still runs once at boot (secrets.refresh), before the import is started.
  */
 const IMPORTING = /^(1|true|on|yes)$/i.test(String(process.env.IMPORT_IN_PROGRESS ?? '').trim());
 
@@ -525,7 +527,7 @@ server.listen(PORT, '0.0.0.0', () => {
     .then((count) => { if (count) console.log(`[contact] requeued ${count} interrupted cloud report(s) onto the normal queue`); })
     .catch((error) => console.error('[contact] could not requeue interrupted cloud reports: ' + String(error)));
   console.log('agy-lab listening on :' + PORT);
-  if (IMPORTING) console.log('  IMPORT_IN_PROGRESS: lead-table loops held (reaper, contact requeue and resume, blacklist, UID backfill, auto-contact, auto-scan, site emails, email marketing, contact worker, search list, list step 2)');
+  if (IMPORTING) console.log('  IMPORT_IN_PROGRESS: every background loop held (reaper, contact requeue and resume, dive and dive-deeper resume, preview writer, blacklist, UID backfill, auto-contact, auto-scan, site emails, email marketing, contact worker, country research, search list, list step 2); HTTP only');
   console.log('  HOME     ' + HOME);
   console.log('  pi       ' + (pi.config().apiKey ? pi.PROVIDER + '/' + pi.config().model : 'NOT CONFIGURED - add a MiniMax key on /workers'));
   console.log('  reports  ' + (process.env.DATABASE_URL?.trim() ? 'direct Postgres' : reportdb.configured() ? 'pg-proxy fallback (token can expire)' : 'NOT CONFIGURED'));
@@ -534,7 +536,7 @@ server.listen(PORT, '0.0.0.0', () => {
   if (!IMPORTING) reapAbandonedRuns(0);
   // Company dives cut off by the restart are queued again, then dive-deeper runs resume
   // (a run waiting on its company dive keeps waiting).
-  void companyDivePeople.failInterrupted()
+  if (!IMPORTING) void companyDivePeople.failInterrupted()
     .then(() => companyDive.resumeInterrupted())
     .catch((err: Error) => console.warn('could not resume interrupted company dives: ' + err.message))
     .then(() => diveDeeper.resumeInterrupted())
@@ -559,7 +561,7 @@ server.listen(PORT, '0.0.0.0', () => {
   // Extract model lanes saved on /workers; until they load, calls use CONTACT_LLM_*.
   void extractLlm.refresh();
   if (!IMPORTING) contactWorker.start();
-  countryResearch.start();
+  if (!IMPORTING) countryResearch.start();
   if (!IMPORTING) searchList.start();
   if (!IMPORTING) listStep2.start();
   if (IMPORTING) return;
