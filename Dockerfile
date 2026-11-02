@@ -36,6 +36,8 @@ WORKDIR /app
 COPY agy-lab/package.json ./
 RUN npm install --omit=dev --no-audit --no-fund
 COPY agy-lab/src ./src
+COPY agy-lab/scripts ./scripts
+COPY agy-lab/schema.sql ./schema.sql
 # The Gmap Local Worker package, zipped on download by src/gmap-worker.ts.
 COPY agy-lab/local-worker ./local-worker
 
