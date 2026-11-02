@@ -67,7 +67,7 @@ the old behaviour. Where a failure path is new, it is made to fail on purpose li
 
 | Task | What | Builder / reviewer | Live proof |
 |---|---|---|---|
-| **T0** Lead import (A1–A3) | the approved import plan; deadline 2026-11-06 | Claude + owner (production database) | counts match per table; one auto-scan saves a report |
+| **T0** Country-industry research copy | from ee-auto, ONLY its country-industry research (owner, 2026-11-03: its leads are unrelated; the lead import was wrong data); deadline 2026-11-06 | Claude + owner | every ee-auto country job shows on the hub with the same CSV |
 | **T1** Seam: company dive | split `companydive.ts` into `companydive/pipeline.ts` (the research), `runner.ts` (queue, tries, resume), `http.ts` (API and pages), `store.ts` (table, row updates). The old file stays as a facade that re-exports, so `server.ts` and every importer are untouched. Pure move | grok / codex | one live dive: same stages, same log lines, same result fields as before the deploy |
 | **T2** Seam: dive-deeper | split `divedeeper.ts` into `divedeeper/run.ts` (execute, queue, resume), `preview-writer.ts`, `http.ts`, `stages.ts` (the lane order lists). Facade stays. Pure move | codex / grok | one live dive-deeper and one preview: same as before |
 | **T3** Seam: lane input and output | every section that reads or writes `OUT/*.json` itself goes through two helpers in `divedeeper/lib.ts`, `readLane(diveId, key)` and `writeLane(...)`, with the same paths. 13 section files, mechanical | gemini / grok | one live dive-deeper: same lane files, same report |

@@ -265,6 +265,24 @@ Each step is useful on its own and leaves the app working. Tick only with live e
 2. [ ] **Weighted task categories,** so a dive-deeper is processed first once payment is received. Free preview = 1, every dive-deeper task = 50, weight before arrival time in every queue ([docs/job-queue-weights.md](docs/job-queue-weights.md)).
 3. [ ] **Nothing is killed. Firing more new calls is allowed.** When a call passes the time gate, a new call for the same task fires on another lane and the old one keeps running. The first answer is used ([docs/llm-wait-policy.md](docs/llm-wait-policy.md)).
 
+## WRONG DATA: the lead import was a mistake (owner, 2026-11-03)
+
+**From ee-auto, only the country-industry research belongs to company-diver.** ee-auto's companies and leads are
+never related to this project. Everything below about the lead import (A1–A3, `pg2nd_archive`, the id counters,
+the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a record.
+
+- [ ] **Copy the country-industry research** (the real T0).
+  - **Done 2026-11-03 ~16:50 UTC, live:** ee-auto holds 4 `country.industry` jobs (its job ring holds 4 in all, so
+    none was dropped). Three imported through the hub's `POST /api/jobs/import-country`: West Malaysia / advertising
+    agency (857 rows), Brunei Darussalam / advertising agency (135), San Marino / advertising agency (117); CSV and
+    summary read back from the hub identical to ee-auto's. Malaysia / web design (7,238 rows, 7.8 MB, over the hub's
+    1 MB request cap) written as its job file to `/data/.agy-lab/country-jobs/8877c82a158d.json`, byte-identical
+    (SHA-256 checked); **the hub loads it at its next restart**: tick after it shows on /country-industry.
+- [ ] **Lead data the wrong import left in the hub: owner decides** (nothing deleted without the owner's word): the
+  `public` lead tables filled by the first import (2026-11-02 04:03–05:35 UTC), the `pg2nd_archive` schema, and the
+  variables `IMPORT_IN_PROGRESS=0`, `AUTO_SCAN_PAUSED=1`, `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0`.
+
+
 ## Plan for the lead import, A1–A3 (rewritten by the owner's rule, 2026-11-03)
 
 **Rule (owner, 2026-11-03): keep the old data, never the old schema.** pg_2nd's ids and row shapes are the old
