@@ -1,15 +1,18 @@
 # One-shot setup of a fresh Windows PC as a hub worker: the Gmap scan worker and
-# the Crawl4AI page-fetch worker. Run it from a checkout (or a copy of
-# agy-lab\local-worker + agy-lab\local-fetch-worker):
+# the Crawl4AI page-fetch worker. On the new PC: `git pull`, then from the repo root
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File setup-windows.ps1 `
-#     -LabUrl https://<hub> -WorkerKey <GMAP_WORKER_KEY> -WorkerName pc-office-2
+#   .\setup-worker.cmd
 #
-# WorkerKey is the hub's HMAC key, not LAB_TOKEN (docs/CUTOVER.md says how to make it);
-# this PC never needs LAB_TOKEN. Both workers use the same key.
+# It asks for the hub URL and the worker key. Or give them up front:
+#
+#   .\setup-worker.cmd https://<hub> <GMAP_WORKER_KEY>
+#
+# The key is the hub's HMAC key, not LAB_TOKEN (docs/CUTOVER.md says how to make it);
+# this PC never needs LAB_TOKEN. Both workers use the same key. Optional switches go
+# after them: -WorkerName pc-office-2, -SkipGmap, -SkipFetch, -NoAutostart.
 #
 # What it does, in order (safe to run again; existing settings are backed up to .old):
-#   1. checks Node 24+ and Python 3.12
+#   1. checks Node 24+ and Python 3.12, installing them with winget if missing
 #   2. Gmap worker: builds <GmapDir> the way GmapWorker.zip is laid out, writes worker.env
 #   3. Crawl4AI: venv + crawl4ai + Chromium in %USERPROFILE%\.local-fetch-worker, writes worker.env
 #   4. starts the Crawl4AI supervisor, waits for /health, runs check.ts (reads real pages)
@@ -17,8 +20,8 @@
 #
 # Windows PowerShell 5.1, ASCII only.
 param(
-  [Parameter(Mandatory = $true)][string]$LabUrl,
-  [Parameter(Mandatory = $true)][string]$WorkerKey,
+  [Parameter(Position = 0)][string]$LabUrl = '',
+  [Parameter(Position = 1)][string]$WorkerKey = '',
   [string]$WorkerName = ('pc-' + ($env:COMPUTERNAME.ToLower() -replace '[^a-z0-9-]', '-')),
   [string]$GmapDir = 'C:\GmapWorker',
   [int]$Lanes = 1,
@@ -33,9 +36,6 @@ $ProgressPreference = 'SilentlyContinue'
 $Here = $PSScriptRoot
 $LocalWorker = Join-Path (Split-Path $Here -Parent) 'local-worker'
 $Data = Join-Path $env:USERPROFILE '.local-fetch-worker'
-$LabUrl = $LabUrl.Trim().TrimEnd('/')
-$WorkerKey = $WorkerKey.Trim()
-
 function Say([string]$m) { Write-Host ('[setup] ' + $m) }
 function Fail([string]$m) { Write-Host ('[setup] STOP: ' + $m) -ForegroundColor Red; exit 1 }
 
@@ -54,22 +54,40 @@ function Read-EnvFile([string]$File) {
   return $out
 }
 
-if ($LabUrl -notmatch '^https?://') { Fail 'LabUrl must start with http:// or https://' }
-if ($WorkerKey.Length -lt 32) { Fail 'WorkerKey looks too short; it is the 64-character hex HMAC, not a password' }
+# Asked for only when not given on the command line. Neither is committed: the repo is public.
+if (-not $LabUrl) { $LabUrl = Read-Host 'Hub URL (the company-diver service address)' }
+if (-not $WorkerKey) { $WorkerKey = Read-Host 'GMAP_WORKER_KEY (64 hex characters)' }
+$LabUrl = $LabUrl.Trim().TrimEnd('/')
+$WorkerKey = $WorkerKey.Trim()
+if ($LabUrl -notmatch '^https?://') { Fail 'The hub URL must start with http:// or https://' }
+if ($WorkerKey.Length -lt 32) { Fail 'The key looks too short; it is the 64-character hex HMAC, not a password' }
 
 # ------------------------------------------------------------- 1. prerequisites
 
-$node = Get-Command node -ErrorAction SilentlyContinue
-if (-not $node) { Fail 'Node is not installed. Install Node 24 or newer from nodejs.org, then run this again.' }
-$nodeMajor = [int]((& node --version).TrimStart('v').Split('.')[0])
-if ($nodeMajor -lt 24) { Fail ('Node ' + $nodeMajor + ' is too old; the workers need Node 24 or newer.') }
+# A fresh PC has neither Node nor Python. winget installs them; this session's PATH
+# does not see them until it is re-read from the registry.
+function Refresh-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
+function Install-Winget([string]$Id) {
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) { Fail ('winget is missing; install ' + $Id + ' by hand, then run this again.') }
+  Say ('installing ' + $Id + ' with winget')
+  & winget install -e --id $Id --silent --accept-package-agreements --accept-source-agreements
+  Refresh-Path
+}
+function Node-Major { if (-not (Get-Command node -ErrorAction SilentlyContinue)) { return 0 }; return [int]((& node --version).TrimStart('v').Split('.')[0]) }
+
+if ((Node-Major) -lt 24) { Install-Winget 'OpenJS.NodeJS.LTS' }
+if ((Node-Major) -lt 24) { Fail 'Node 24 or newer is still not found. Close this window, open a new one and run this again.' }
 Say ('node ' + (& node --version))
 
 if (-not $SkipFetch) {
-  $py = Get-Command py -ErrorAction SilentlyContinue
-  if (-not $py) { Fail 'The py launcher is not installed. Install Python 3.12 from python.org (tick "py launcher"), then run this again.' }
-  & py -3.12 --version
-  if ($LASTEXITCODE -ne 0) { Fail 'Python 3.12 not found (py -3.12 failed). Install Python 3.12, then run this again.' }
+  $havePy = $false
+  if (Get-Command py -ErrorAction SilentlyContinue) { & py -3.12 --version 2>$null; $havePy = ($LASTEXITCODE -eq 0) }
+  if (-not $havePy) {
+    Install-Winget 'Python.Python.3.12'
+    if (-not (Get-Command py -ErrorAction SilentlyContinue)) { Fail 'Python 3.12 is installed but py is not found yet. Close this window, open a new one and run this again.' }
+    & py -3.12 --version
+    if ($LASTEXITCODE -ne 0) { Fail 'Python 3.12 not found (py -3.12 failed). Close this window, open a new one and run this again.' }
+  }
 }
 
 # ------------------------------------------------------------------ 2. Gmap worker
