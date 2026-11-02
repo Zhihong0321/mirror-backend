@@ -157,9 +157,11 @@ export async function backfillReports(): Promise<number> {
   if (!has.d) return 0;
   const cols = (await db.sql(`select 1 from information_schema.columns where table_name = 'company_dive' and column_name = 'company_uid'`)).rows.length;
   if (!cols) return 0;
-  const rows = (await db.sql(`select id, company from company_dive where company_uid is null`)).rows as Array<{ id: string; company: string }>;
+  // The website in the company text, else the official domain the dive's own research found.
+  const rows = (await db.sql(`select id, company, result->'identity'->'official_domains'->>0 as domain from company_dive where company_uid is null`)).rows as Array<{ id: string; company: string; domain: string | null }>;
   for (const row of rows) {
-    const uid = await resolve({ text: row.company, create: true });
+    const found = row.domain ? (/^https?:/i.test(row.domain) ? row.domain : 'https://' + row.domain) : undefined;
+    const uid = await resolve({ text: row.company, create: true }) ?? (found ? await resolve({ website: found, create: true }) : null);
     if (uid) { await db.sql(`update company_dive set company_uid = $2 where id = $1`, [row.id, uid]); n++; }
   }
   if (has.dd) {

@@ -246,6 +246,11 @@ export async function askJson<T>(prompt: string, opts: { step: string; uses?: Ll
 
 // ---------------------------------------------------------------- helpers
 
+/** The company name without a website in brackets after it. */
+export function plainName(company: string): string {
+  return company.replace(/\s*\(https?:\/\/[^)]*\)\s*$/i, '').trim() || company.trim();
+}
+
 export function shortName(company: string): string {
   let name = company.trim();
   const suffix = /[\s,]+(sdn\.?\s*bhd\.?|bhd\.?|berhad|plt|pte\.?\s*ltd\.?|ltd\.?|limited|llc|inc\.?|corp(oration)?\.?|co\.?|enterprise)\s*$/i;
@@ -501,7 +506,10 @@ export async function run(company: string, country: string, progress: Progress, 
   }
 }
 
-async function dive(company: string, country: string, progress: Progress, budget: Budget, uses: LlmUse[], counts: { brave: number; braveLog: ApiCall[] }, alongside?: Alongside): Promise<DiveOut> {
+async function dive(asked: string, country: string, progress: Progress, budget: Budget, uses: LlmUse[], counts: { brave: number; braveLog: ApiCall[] }, alongside?: Alongside): Promise<DiveOut> {
+  // A website after the name ("Acme Sdn Bhd (https://acme.my/)") is there for the company UID; searched
+  // as part of the name it made Brave's exact, country, Facebook and LinkedIn queries come back empty.
+  const company = plainName(asked);
   const short = shortName(company);
   // A country pack (countries.ts) only adds: without one every line below is what it always was.
   const { pack, note: packNote } = countries.forCountry(country);
@@ -881,6 +889,26 @@ export const MAX_TRIES = RETRY_AFTER_MS.length + 1;
 /** The longest one try may take; past it the try counts as incomplete. The slowest dive seen took under 10 minutes. */
 const DIVE_LIMIT_MS = 40 * 60_000;
 
+/**
+ * A dive started with a bare name has no website, so no company UID (the UID is keyed by
+ * domain). Its research found the official domain: the UID comes from that, and the
+ * dive-deeper runs on this dive take it too. Never throws.
+ */
+async function giveUid(id: number, row: DiveRow, result: DiveResult): Promise<void> {
+  if ((row as { company_uid?: string | null }).company_uid) return;
+  const domain = (result.identity.official_domains ?? []).map((d) => String(d).trim()).find(Boolean);
+  if (!domain) return;
+  try {
+    const uid = await companies.resolve({ website: /^https?:\/\//i.test(domain) ? domain : 'https://' + domain, create: true });
+    if (!uid) return;
+    await reportdb.sql(`update company_dive set company_uid = $2 where id = $1 and company_uid is null`, [id, uid]);
+    await reportdb.sql(`update dive_deeper set company_uid = $2 where dive_id = $1 and company_uid is null`, [id, uid]).catch(() => {});
+    console.log(`[company-dive ${id}] company UID ${uid} from ${domain}`);
+  } catch (err) {
+    console.warn(`[company-dive ${id}] no company UID from ${domain}: ${(err as Error).message}`);
+  }
+}
+
 /** Not complete: try again later, or fail when the tries are used up. */
 async function notComplete(id: number, tries: number, reason: string, log: DiveRow['log'], stats?: DiveStats): Promise<void> {
   const wait = RETRY_AFTER_MS[tries - 1];
@@ -945,6 +973,7 @@ async function execute(id: number): Promise<void> {
       finished_at: new Date().toISOString(),
     });
     saved = true;
+    await giveUid(id, row, result);
     for (const fn of finishedHooks) { try { fn(id); } catch (err) { console.error(`[company-dive ${id}] finish hook failed`, err); } }
     // The write-up's LLM call joins result.llm, so the result is saved again with it.
     const dossier = await Promise.race([writeDossier(), late]);

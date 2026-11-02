@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { shortName, urlKey, Ledger, corpus, parseJson, stripThinking, Budget, BudgetSpent, budgetedCall, diveRunning, setRunningForTests, LANE_HOLD_MS } from './companydive.ts';
+import { plainName, shortName, urlKey, Ledger, corpus, parseJson, stripThinking, Budget, BudgetSpent, budgetedCall, diveRunning, setRunningForTests, LANE_HOLD_MS } from './companydive.ts';
 
 test('shortName drops Malaysian and common company suffixes', () => {
   assert.equal(shortName('Eternalgy Sdn Bhd'), 'Eternalgy');
@@ -121,4 +121,10 @@ test('a running dive pauses contact research for at most LANE_HOLD_MS, then lets
   setRunningForTests(now - LANE_HOLD_MS - 1);
   assert.equal(diveRunning(now), false);
   setRunningForTests(null);
+});
+
+test('a website after the name is dropped before searching; a bare name stays as it is', () => {
+  assert.equal(plainName('TS Media Design & Print Sdn Bhd (http://www.tsmediadesign.com/)'), 'TS Media Design & Print Sdn Bhd');
+  assert.equal(plainName('Acme Sdn Bhd'), 'Acme Sdn Bhd');
+  assert.equal(shortName(plainName('Acme Sdn Bhd (https://acme.my/)')), 'Acme');
 });
