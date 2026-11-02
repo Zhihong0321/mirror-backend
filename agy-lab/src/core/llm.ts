@@ -25,7 +25,8 @@
 //    60s, 120s). MiniMax (Pi) is the last resort: only after every lane failed
 //    twice, never instead of a lane that would answer.
 // 6. No timeout and no max_tokens of ours unless the caller passes one: answers
-//    stream, so a model that is still thinking keeps the connection alive.
+//    stream, so a model that is still thinking keeps the connection alive. A
+//    stream that goes silent for IDLE_MS (idle.ts) fails and moves to the next lane.
 // 7. Every attempt is one ApiCall in the caller's log: lane, model, tokens, USD,
 //    time, ok or failed, so a run shows which lane served each call.
 //
@@ -33,6 +34,7 @@
 // not_configured), so callers treat both engines alike.
 
 import { netError } from './neterr.ts';
+import { IDLE_MS, idleGuard, readText } from './idle.ts';
 import * as db from '../reportdb.ts';
 import * as pi from './pi.ts';
 import * as vault from './vault.ts';
@@ -238,7 +240,7 @@ function give(c: LlmConfig): void {
 // ---------------------------------------------------------------- one request to one lane
 
 type Message = { role: 'system' | 'user'; content: string };
-type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number };
+type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number };
 type Answer = { answer: string; tokensIn: number; tokensOut: number };
 
 /**
@@ -247,6 +249,9 @@ type Answer = { answer: string; tokensIn: number; tokensOut: number };
  * ignores stream and answers one JSON body is read the same way.
  */
 async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchImpl: FetchImpl, out: { tokensIn: number; tokensOut: number }): Promise<string> {
+  const idleMs = opts.idleMs ?? IDLE_MS;
+  const guard = idleGuard(idleMs);
+  const silent = () => fail('timeout', `${c.model} sent nothing for ${Math.round(idleMs / 1000)}s`);
   let res: Response;
   try {
     res = await fetchImpl(c.url + '/chat/completions', {
@@ -260,19 +265,25 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
         stream_options: { include_usage: true },
         ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       }),
-      ...(opts.timeoutMs ? { signal: AbortSignal.timeout(opts.timeoutMs) } : {}),
+      signal: opts.timeoutMs ? AbortSignal.any([guard.signal, AbortSignal.timeout(opts.timeoutMs)]) : guard.signal,
     });
   } catch (cause) {
+    guard.done();
+    if (guard.idled) throw silent();
     const name = (cause as Error).name;
     if (name === 'TimeoutError' || name === 'AbortError') throw fail('timeout', `${c.model} gave no answer within ${Math.round((opts.timeoutMs ?? 0) / 1000)}s`);
     throw fail('failed', `${c.model} unreachable: ${netError(cause)}`);
   }
   let raw: string;
   try {
-    raw = await res.text();
+    guard.touch();
+    raw = await readText(res, guard);
   } catch (cause) {
+    if (guard.idled) throw silent();
     const name = (cause as Error).name;
     throw fail(name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'failed', `${c.model} answer cut off: ${(cause as Error).message}`);
+  } finally {
+    guard.done();
   }
   if (res.status === 429) throw fail('rate_limit', `${c.model} rate limit: 429 ${raw.slice(0, 300)}`);
   if (!res.ok) throw fail('failed', `${c.model} answered HTTP ${res.status}: ${raw.slice(0, 300)}`);
@@ -347,6 +358,8 @@ export type ChatOpts = {
   /** Only callers that already capped tokens pass these; the router adds none. */
   maxTokens?: number;
   timeoutMs?: number;
+  /** Give up on a lane whose answer stops arriving for this long (default IDLE_MS). */
+  idleMs?: number;
   /** Every attempt is pushed here as an ApiCall. */
   log?: ApiCall[];
   /** MiniMax as the last resort; on unless false. */

@@ -4,6 +4,7 @@
 // spent: out of credits or refused rests it for a day, a rate limit for a minute,
 // and the hub counts each key's spend itself from the costDollars on each answer.
 import { netError } from './neterr.ts';
+import { IDLE_MS, idleGuard, readText } from './idle.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
 import { createKeyPool, type Lease, type SearchHit } from './tavily.ts';
@@ -117,7 +118,7 @@ function fail(message: string, code: string): Error {
 }
 
 type SearchOpts = { numResults?: number; includeDomains?: string[]; timeoutMs?: number; fetchImpl?: FetchImpl; log?: ApiCall[]; what?: string };
-type CallOpts = { what?: string; log?: ApiCall[]; timeoutMs?: number; fetchImpl?: FetchImpl };
+type CallOpts = { what?: string; log?: ApiCall[]; timeoutMs?: number; idleMs?: number; fetchImpl?: FetchImpl };
 
 /**
  * Any Exa endpoint (search, contents, answer) with one key: the request every
@@ -142,19 +143,35 @@ export async function requestWithKey(path: string, body: Record<string, unknown>
 
 async function requestOnce(path: string, body: Record<string, unknown>, apiKey: string, opts: CallOpts): Promise<Record<string, any>> {
   const target = endpoint(apiKey, path);
+  // Without a total timeout (the dive-deeper passes none) a silent answer must still end: idle.ts.
+  const idleMs = opts.idleMs ?? IDLE_MS;
+  const guard = idleGuard(idleMs);
+  const silent = () => fail(`exa ${path} sent nothing for ${Math.round(idleMs / 1000)}s`, 'timeout');
   let res: Response;
   try {
     res = await (opts.fetchImpl ?? fetch)(target.url, {
       method: 'POST',
       headers: target.headers,
       body: JSON.stringify(body),
-      ...(opts.timeoutMs ? { signal: AbortSignal.timeout(opts.timeoutMs) } : {}),
+      signal: opts.timeoutMs ? AbortSignal.any([guard.signal, AbortSignal.timeout(opts.timeoutMs)]) : guard.signal,
     });
   } catch (cause) {
+    guard.done();
+    if (guard.idled) throw silent();
     const name = cause instanceof Error ? cause.name : '';
     throw fail(name === 'TimeoutError' || name === 'AbortError' ? `exa ${path} timed out` : `upstream error: ${netError(cause)}`, 'timeout');
   }
-  const raw = await res.text();
+  let raw: string;
+  try {
+    guard.touch();
+    raw = await readText(res, guard);
+  } catch (cause) {
+    if (guard.idled) throw silent();
+    const name = cause instanceof Error ? cause.name : '';
+    throw fail(name === 'TimeoutError' || name === 'AbortError' ? `exa ${path} timed out` : `upstream error: exa ${path} answer cut off: ${netError(cause)}`, 'timeout');
+  } finally {
+    guard.done();
+  }
   const noKey = noKeyRestMs(res, raw);
   if (noKey) throw Object.assign(fail(`US proxy has no usable Exa key: ${raw.slice(0, 200)}`, 'quota'), { restMs: noKey, provider: 'exa' });
   if (res.status === 429) throw fail(`429 rate_limit_error: exa rate limit: ${raw.slice(0, 200)}`, 'rate_limit');

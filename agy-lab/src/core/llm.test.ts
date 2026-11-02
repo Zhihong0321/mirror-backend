@@ -228,3 +228,38 @@ test('a timeout of 0 tells Pi to wait for the answer', async () => {
     pi.setRunnerForTests(null);
   }
 });
+
+test('a lane whose stream goes silent fails after the idle limit and the call moves to the next lane', async () => {
+  resetForTests();
+  const lanes = [
+    { url: 'https://h.example/v1', key: 'h', model: 'deepseek-v4.1-flash-1017', label: 'Hive', first: true },
+    { url: 'https://v.example/v1', key: 'v', model: 'deepseek-v4.1-flash-1017', label: 'Vectide' },
+  ];
+  // One chunk, then nothing and no close: the thehive.ai stall of 2026-11-02.
+  const stalled = () => new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"par"}}]}\n\n')); } }));
+  const fetchImpl = (async (url: string) => url.startsWith('https://h.') ? stalled() : okAnswer('done')) as unknown as typeof fetch;
+  setLanesForTests(lanes);
+  const log: import('../cost.ts').ApiCall[] = [];
+  const out = await chat('x', { step: 's', fetchImpl, log, fallback: false, idleMs: 50 });
+  assert.equal(out.answer, 'done');
+  assert.equal(out.lane, 'Vectide');
+  assert.match(String(log[0]!.note), /sent nothing for/);
+});
+
+test('a stream that keeps arriving is not cut off by the idle limit', async () => {
+  resetForTests();
+  setLanesForTests([{ url: 'https://h.example/v1', key: 'h', model: 'deepseek-v4.1-flash-1017' }]);
+  const enc = new TextEncoder();
+  const slow = () => new Response(new ReadableStream({
+    async start(c) {
+      for (const part of ['he', 'll', 'o']) {
+        await new Promise((r) => setTimeout(r, 30));
+        c.enqueue(enc.encode(`data: {"choices":[{"delta":{"content":"${part}"}}]}\n\n`));
+      }
+      c.enqueue(enc.encode('data: [DONE]\n\n'));
+      c.close();
+    },
+  }));
+  const out = await chat('x', { step: 's', fetchImpl: (async () => slow()) as unknown as typeof fetch, fallback: false, idleMs: 60 });
+  assert.equal(out.answer, 'hello');
+});

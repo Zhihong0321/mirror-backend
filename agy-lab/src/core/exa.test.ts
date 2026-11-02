@@ -76,3 +76,10 @@ test('a PROXY_NO_KEY retry-after of hours rests the proxy source ten minutes at 
   const err = await exa.requestWithKey('search', { query: 'x' }, exa.PROXY_SOURCE, { fetchImpl: noKey as typeof fetch }).catch((e) => e);
   assert.equal(err.restMs, 10 * 60_000);
 });
+
+test('an Exa answer that stops arriving fails as timeout instead of hanging', async () => {
+  const stalled = (async () => new Response(new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('{"results":[')); } }))) as unknown as typeof fetch;
+  const err = await exa.requestWithKey('search', { query: 'x' }, 'plain-key-123', { fetchImpl: stalled, idleMs: 50 }).catch((e) => e);
+  assert.equal(err.code, 'timeout');
+  assert.match(err.message, /sent nothing for/);
+});
