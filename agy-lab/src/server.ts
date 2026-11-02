@@ -33,6 +33,7 @@ import * as contactKeys from './contact-keys.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
 import { page as companyDivePage } from './companydive-page.ts';
+import { detailPage as companyDetailPage, indexPage as companiesIndexPage } from './company-page.ts';
 import * as diveDeeper from './divedeeper.ts';
 import * as siteEmails from './site-emails.ts';
 import * as emailMarketing from './email-marketing.ts';
@@ -254,6 +255,12 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   if (method === 'GET' && (p === '/research-leads' || p === '/research-leads/')) {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' });
     return void res.end(researchLeadsPage());
+  }
+
+  // One page per company UID, listing every report run on it (dives and deeper dives, newest first).
+  if (method === 'GET' && (p === '/companies' || p === '/companies/' || /^\/companies\/co_[a-f0-9]{12}\/?$/.test(p))) {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' });
+    return void res.end(p.replace(/\/$/, '') === '/companies' ? companiesIndexPage() : companyDetailPage());
   }
 
   if (method === 'GET' && (p === '/company-dive' || p === '/company-dive/')) {
@@ -530,6 +537,10 @@ server.listen(PORT, '0.0.0.0', () => {
       .then((r) => console.log(`[blacklist] checked ${r.checked} leads, ${r.blacklisted} kept out of contact research`))
       .catch((err: Error) => console.warn('[blacklist] could not check leads: ' + err.message));
   }
+  // Reports saved before dives carried a company UID get theirs.
+  void companies.backfillReports()
+    .then((n) => { if (n) console.log(`[company-uid] gave ${n} saved report(s) a company UID`); })
+    .catch((err: Error) => console.warn('[company-uid] could not link saved reports: ' + err.message));
   autoContact.init({ launch: intel.launchContactResearch });
   autoContact.start();
   autoScan.init({ launch: intel.launchBusinessSearch });

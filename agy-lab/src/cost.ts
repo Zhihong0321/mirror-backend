@@ -45,11 +45,13 @@ export type Usage = {
   mapsCalls: number;
   /** Free calls: PageSpeed, WHOIS, DNS, page fetches. */
   httpCalls: number;
+  /** Pages read by a fetch worker (Crawl4AI on the Mac mini or a PC): free, and never Tavily. */
+  fetchCalls: number;
   /** Calls that failed before the service did billable work. */
   failedCalls: number;
 };
 
-export type ApiName = 'llm' | 'tavily' | 'brave' | 'exa' | 'maps' | 'web';
+export type ApiName = 'llm' | 'tavily' | 'brave' | 'exa' | 'maps' | 'web' | 'fetch';
 
 /**
  * One request to an outside service, as it happened. A retry is its own call.
@@ -80,7 +82,7 @@ export type ApiCall = {
 export type CostLine = { item: string; detail: string; usd: number | null; estimated?: boolean };
 export type Cost = { usd: number; estimated: boolean; unpriced: string[]; lines: CostLine[] };
 
-export const emptyUsage = (): Usage => ({ llm: {}, tavilyCalls: 0, tavilyCredits: 0, braveCalls: 0, exaCalls: 0, exaReported: 0, exaDollars: 0, mapsCalls: 0, httpCalls: 0, failedCalls: 0 });
+export const emptyUsage = (): Usage => ({ llm: {}, tavilyCalls: 0, tavilyCredits: 0, braveCalls: 0, exaCalls: 0, exaReported: 0, exaDollars: 0, mapsCalls: 0, httpCalls: 0, fetchCalls: 0, failedCalls: 0 });
 
 /** What one LLM call cost, or null for a model with no per-token price. */
 export function llmUsd(model: string, tokensIn: number, tokensOut: number): number | null {
@@ -97,6 +99,7 @@ export function callUsd(c: Pick<ApiCall, 'api' | 'ok' | 'model' | 'tokensIn' | '
     case 'exa': return c.ok ? PRICES.exaSearch : 0;
     case 'maps': return c.ok ? PRICES.mapsCall : 0;
     case 'web': return 0;
+    case 'fetch': return 0;
   }
 }
 
@@ -123,6 +126,7 @@ export function addCalls(u: Usage, calls: ApiCall[] | null | undefined): Usage {
     else if (c.api === 'brave') u.braveCalls++;
     else if (c.api === 'exa') { u.exaCalls++; u.exaReported++; u.exaDollars += c.usd ?? 0; }
     else if (c.api === 'maps') u.mapsCalls++;
+    else if (c.api === 'fetch') u.fetchCalls++;
     else u.httpCalls++;
   }
   return u;
@@ -176,9 +180,12 @@ export function addMeter(u: Usage, m: Partial<Meter> | null | undefined): Usage 
 }
 
 /** A company-dive row: its counters plus the LLM and Exa calls kept in its result. */
-export function diveUsage(row: { tavily_calls?: number; tavily_credits?: number; brave_calls?: number; llm?: LlmUse[] | null; people_llm?: LlmUse[] | null; people_exa?: Array<{ dollars?: number; usd?: number; ok?: boolean }> | null }): Usage {
+export function diveUsage(row: { tavily_calls?: number; tavily_credits?: number; brave_calls?: number; llm?: LlmUse[] | null; people_llm?: LlmUse[] | null; people_exa?: Array<{ dollars?: number; usd?: number; ok?: boolean }> | null; tavily?: DiveLogs['tavily'] }): Usage {
   const u = emptyUsage();
-  u.tavilyCalls = Number(row.tavily_calls ?? 0);
+  // The dive's tavily_calls counts every budgeted call, page reads a fetch worker answered included.
+  const workerReads = (row.tavily ?? []).filter(isWorkerRead);
+  u.fetchCalls = workerReads.filter((c) => c.ok).length;
+  u.tavilyCalls = Math.max(0, Number(row.tavily_calls ?? 0) - workerReads.length);
   u.tavilyCredits = Number(row.tavily_credits ?? 0);
   u.braveCalls = Number(row.brave_calls ?? 0);
   addLlmUses(u, row.llm);
@@ -192,9 +199,12 @@ export function diveUsage(row: { tavily_calls?: number; tavily_credits?: number;
   return u;
 }
 
+/** A dive's "Tavily" log row that a fetch worker answered: an extract read on a machine of ours, not a Tavily call. */
+const isWorkerRead = (c: { path: string; via?: string }): boolean => c.path === 'extract' && !!c.via && c.via !== 'tavily';
+
 type DiveLogs = {
   llm?: LlmUse[] | null;
-  tavily?: Array<{ at?: string; path: string; label: string; credits: number; ms: number; ok: boolean; note?: string; usd?: number }> | null;
+  tavily?: Array<{ at?: string; path: string; label: string; credits: number; ms: number; ok: boolean; note?: string; usd?: number; via?: string }> | null;
   brave?: ApiCall[] | null;
   people?: { llm?: LlmUse[] | null; exa?: Array<{ at?: string; query: string; kind: string; results: number; dollars: number; ms?: number; ok: boolean; note?: string; usd?: number }> | null } | null;
 };
@@ -217,7 +227,7 @@ export function diveCalls(result: DiveLogs | null | undefined): ApiCall[] {
   });
   const out: ApiCall[] = [
     ...llm(result.llm),
-    ...(result.tavily ?? []).map((c): ApiCall => ({ at: c.at ?? '', api: 'tavily', what: `${c.label} (${c.path})`, credits: c.credits, ms: c.ms, ok: c.ok, usd: c.usd ?? c.credits * PRICES.tavilyCredit, ...(c.note ? { note: c.note } : {}) })),
+    ...(result.tavily ?? []).map((c): ApiCall => ({ at: c.at ?? '', api: isWorkerRead(c) ? 'fetch' : 'tavily', ...(isWorkerRead(c) ? { provider: c.via } : {}), what: `${c.label} (${c.path})`, credits: c.credits, ms: c.ms, ok: c.ok, usd: c.usd ?? c.credits * PRICES.tavilyCredit, ...(c.note ? { note: c.note } : {}) })),
     ...(result.brave ?? []),
     ...llm(result.people?.llm),
     ...(result.people?.exa ?? []).map((c): ApiCall => ({ at: c.at ?? '', api: 'exa', what: `${c.kind}: ${c.query}`, results: c.results, ms: c.ms ?? 0, ok: c.ok, usd: c.usd ?? (c.ok ? c.dollars : 0), ...(c.note ? { note: c.note } : {}) })),
@@ -247,6 +257,7 @@ export function price(u: Usage): Cost {
     lines.push({ item: 'Exa', detail: calls(u.exaCalls), usd: u.exaDollars + listed * PRICES.exaSearch });
   }
   if (u.mapsCalls) lines.push({ item: 'Google Maps (scraper.tech)', detail: calls(u.mapsCalls), usd: u.mapsCalls * PRICES.mapsCall });
+  if (u.fetchCalls) lines.push({ item: 'Page reads (fetch worker)', detail: `${calls(u.fetchCalls)}, free`, usd: 0 });
   if (u.httpCalls) lines.push({ item: 'Other web calls', detail: `${calls(u.httpCalls)}, free`, usd: 0 });
   if (u.failedCalls) lines.push({ item: 'Failed calls', detail: `${calls(u.failedCalls)}, not billed`, usd: 0 });
   return {

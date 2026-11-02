@@ -92,3 +92,14 @@ test('Hive deepseek has no price on record: counted and named, not priced at the
   const cost = price(diveUsage({ llm: [{ step: 'x', engine: 'deepseek-ai/deepseek-v4.1-flash-1017', ms: 1, promptChars: 0, answerChars: 0, tokensIn: 10, tokensOut: 10 }] }));
   assert.deepEqual(cost.unpriced, ['deepseek-ai/deepseek-v4.1-flash-1017 (1 call)']);
 });
+
+test('a page a fetch worker read is its own free line, never a Tavily call', () => {
+  const tavily = [
+    { path: 'search', label: 'T1', credits: 2, ms: 1, ok: true, via: 'tavily' },
+    { path: 'extract', label: 'T3', credits: 0, ms: 1, ok: true, via: 'Gans-Mac-mini-fetch-diver-2' },
+  ];
+  const cost = price(diveUsage({ tavily_calls: 2, tavily_credits: 2, tavily }));
+  assert.deepEqual(cost.lines.filter((l) => /Tavily|Page reads/.test(l.item)).map((l) => [l.item, l.detail]),
+    [['Tavily', '1 call, 2 credits'], ['Page reads (fetch worker)', '1 call, free']]);
+  assert.deepEqual(diveCalls({ tavily }).map((c) => c.api), ['tavily', 'fetch']);
+});

@@ -77,8 +77,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }).slice(0, 5);
   const presence: { url: string; status: number; on: Record<string, boolean> }[] = [];
   for (const u of listPages) {
-    const p = await ctx.page(u, { headers: { accept: 'text/html', 'accept-language': 'en-US,en;q=0.9' } });
-    const text = ctx.htmlText(p.html).toLowerCase();
+    const p = await ctx.read(u);
+    const text = p.text.toLowerCase();
     const on: Record<string, boolean> = { [name]: text.includes(brand) };
     for (const c of competitors) on[c.name] = text.includes(c.token);
     presence.push({ url: u, status: p.status, on });
@@ -87,16 +87,16 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- Competitor homepages and the company's own, as plain text for the LLM. ----
   for (const c of competitors.filter((c) => c.site)) {
-    const p = await ctx.page(new URL(c.site!).origin + '/');
-    c.site_text = clip(ctx.htmlText(p.html), 3000);
+    const p = await ctx.read(new URL(c.site!).origin + '/');
+    c.site_text = clip(p.text, 3000);
   }
   const ownSites: { url: string; text: string }[] = [];
   const seenFinal = new Set<string>();
   for (const d of id.official_domains ?? []) {
-    const p = await ctx.page(`https://${d}/`, { headers: { accept: 'text/html' } });
-    if (!p.html || seenFinal.has(host(p.finalUrl))) continue;
+    const p = await ctx.read(`https://${d}/`);
+    if (!p.text || seenFinal.has(host(p.finalUrl))) continue;
     seenFinal.add(host(p.finalUrl));
-    ownSites.push({ url: p.finalUrl, text: clip(ctx.htmlText(p.html), 7000) });
+    ownSites.push({ url: p.finalUrl, text: clip(p.text, 7000) });
   }
 
   const facts = (r.facts ?? []).filter((f: any) => f.confidence !== 'low').slice(0, 60).map((f: any) => `- ${f.fact}`).join('\n');

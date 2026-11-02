@@ -80,6 +80,9 @@ function ensureTable(): Promise<unknown> {
     );
     -- What writing the preview used (one LLM pass), for its cost.
     alter table dive_preview add column if not exists meter jsonb;
+    -- Same company UID as the company-dive it runs on (company-uid.ts), so a company's page lists both.
+    alter table dive_deeper add column if not exists company_uid text;
+    create index if not exists dive_deeper_uid_idx on dive_deeper (company_uid, created_at desc);
   `).catch((err) => { tableReady = null; throw err; });
   return tableReady;
 }
@@ -415,8 +418,9 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       diveId = started.id;
     }
     const publicId = newPublicId();
+    const companyUid = (await diveRow(diveId!))?.company_uid ?? null;
     const out = await reportdb.sql<{ id: string }>(
-      `insert into dive_deeper (public_id, company, dive_id) values ($1, $2, $3) returning id`, [publicId, name, diveId]);
+      `insert into dive_deeper (public_id, company, dive_id, company_uid) values ($1, $2, $3, $4) returning id`, [publicId, name, diveId, companyUid]);
     const id = Number(out.rows[0].id);
     waiting.push(id);
     pump();

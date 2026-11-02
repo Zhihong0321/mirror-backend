@@ -28,13 +28,14 @@ const COUNTRY_INDUSTRY: NavLink = { href: '/country-industry', label: 'Country r
 const SEARCH_LISTS: NavLink = { href: '/search-lists', label: 'Search lists', zh: '搜索清单' };
 const RESEARCH_LEADS: NavLink = { href: '/research-leads', label: 'Research leads', zh: '研究线索' };
 const COMPANY_DIVE: NavLink = { href: '/company-dive', label: 'Company dive', zh: '公司深挖' };
+const COMPANIES: NavLink = { href: '/companies', label: 'Companies', zh: '公司' };
 const EMAIL_MARKETING: NavLink = { href: '/email-marketing', label: 'Email marketing', zh: '邮件营销' };
 const DOCS: NavLink = { href: '/docs', label: 'API docs', zh: 'API 文档' };
 const WORKSPACE: NavLink = { href: '/research', label: 'Workspace', zh: '工作台' };
 const GUIDE: NavLink = { href: '/guide', label: 'Guide', zh: '指南' };
 
 /** Every surface, for the pages only someone holding LAB_TOKEN reaches. */
-export const OPERATOR_NAV: NavLink[] = [CONSOLE, WORKERS, AUTO_QUEUE, COMPANY_DIVE, COUNTRY_INDUSTRY, SEARCH_LISTS, RESEARCH_LEADS, EMAIL_MARKETING, DOCS, WORKSPACE, GUIDE];
+export const OPERATOR_NAV: NavLink[] = [CONSOLE, WORKERS, AUTO_QUEUE, COMPANY_DIVE, COMPANIES, COUNTRY_INDUSTRY, SEARCH_LISTS, RESEARCH_LEADS, EMAIL_MARKETING, DOCS, WORKSPACE, GUIDE];
 
 /** What a report recipient can use. */
 export const CLIENT_NAV: NavLink[] = [WORKSPACE, GUIDE];

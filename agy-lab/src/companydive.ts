@@ -43,6 +43,7 @@ import * as reportdb from './reportdb.ts';
 import { diveCalls, diveUsage, price, PRICES, type ApiCall } from './cost.ts';
 import * as countries from './countries.ts';
 import * as pagefetch from './pagefetch.ts';
+import * as companies from './company-uid.ts';
 
 export type Source = {
   id: number;
@@ -771,7 +772,10 @@ function ensureTable(): Promise<unknown> {
       finished_at timestamptz
     );
     alter table company_dive add column if not exists public_id text unique;
-    alter table company_dive add column if not exists options jsonb not null default '{}'::jsonb;`)
+    alter table company_dive add column if not exists options jsonb not null default '{}'::jsonb;
+    -- The company UID (company-uid.ts) this report belongs to: one company, many reports on different dates.
+    alter table company_dive add column if not exists company_uid text;
+    create index if not exists company_dive_uid_idx on company_dive (company_uid, created_at desc);`)
     .then(async () => {
       // Dives from before public links get one now.
       const old = await reportdb.sql<{ id: string }>(`select id from company_dive where public_id is null`);
@@ -960,15 +964,17 @@ export async function handle(req: import('node:http').IncomingMessage, res: impo
     }
     const options = { people: body.people !== false };
     const publicId = newPublicId();
+    // The report joins its company's page: the UID given, else the one its website's host has (made if new).
+    const companyUid = await companies.resolve({ uid: body.company_uid, website: body.website, text: company, create: true }).catch(() => null);
     const out = await reportdb.sql<{ id: string }>(
-      `insert into company_dive (company, country, public_id, options) values ($1, $2, $3, $4) returning id`,
-      [company, country, publicId, JSON.stringify(options)]);
+      `insert into company_dive (company, country, public_id, options, company_uid) values ($1, $2, $3, $4, $5) returning id`,
+      [company, country, publicId, JSON.stringify(options), companyUid]);
     const id = Number(out.rows[0].id);
     waiting.push(id);
     pump();
     // The report link works at once: it shows the live log until the report is ready.
     ctx.json(res, 202, {
-      id, public_id: publicId, status: 'queued', company, country, people: options.people,
+      id, public_id: publicId, status: 'queued', company, country, company_uid: companyUid, people: options.people,
       // Still in `waiting` after pump() means another dive holds the one slot.
       queued_behind_another: waiting.includes(id),
       ...links(req, { id, public_id: publicId }),
@@ -980,7 +986,7 @@ export async function handle(req: import('node:http').IncomingMessage, res: impo
   if (m && method === 'GET') {
     const row = (await reportdb.sql<DiveRow>(`select * from company_dive where id = $1`, [Number(m[1])])).rows[0];
     const people = (row?.result as { people?: { llm?: LlmUse[]; exa?: [] } } | null)?.people;
-    if (row) ctx.json(res, 200, { ...row, cost: price(diveUsage({ ...row, llm: row.result?.llm, people_llm: people?.llm, people_exa: people?.exa })), calls: diveCalls(row.result as Parameters<typeof diveCalls>[0]), ...links(req, row) });
+    if (row) ctx.json(res, 200, { ...row, cost: price(diveUsage({ ...row, llm: row.result?.llm, people_llm: people?.llm, people_exa: people?.exa, tavily: (row.result as { tavily?: never } | null)?.tavily })), calls: diveCalls(row.result as Parameters<typeof diveCalls>[0]), ...links(req, row) });
     else ctx.json(res, 404, { error: 'no such dive' });
     return true;
   }

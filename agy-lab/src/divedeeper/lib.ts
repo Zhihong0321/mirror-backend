@@ -17,6 +17,7 @@ import tls from 'node:tls';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as core from '../core/index.ts';
+import * as pagefetch from '../pagefetch.ts';
 import { startCall, type ApiCall, type ApiName } from '../cost.ts';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -225,6 +226,30 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     }
   }
 
+  /**
+   * A page's readable text, for a lane that hands it to the LLM. A fetch worker (Crawl4AI on the
+   * Mac mini or a PC, a home line websites actually serve) reads it first, free and logged as a
+   * `fetch` call; with no worker, or a page it could not read, the hub fetches it itself.
+   * Lanes that need the raw HTML, headers or timing keep using page().
+   */
+  async function read(url: string): Promise<{ url: string; finalUrl: string; status: number; text: string; via: string; error?: string }> {
+    const c = call('fetch', url);
+    try {
+      const out = await pagefetch.read([url]);
+      const row = out.results[0];
+      if (row?.raw_content) {
+        meter.http.calls++;
+        c.done({ ok: true, provider: out.worker ?? 'fetch worker', note: 'read by a fetch worker' });
+        return { url, finalUrl: row.url || url, status: 200, text: row.raw_content, via: out.worker ?? 'fetch worker' };
+      }
+      c.done({ ok: false, note: out.failed_results[0]?.error ?? 'the fetch worker returned no text' });
+    } catch (e) {
+      c.done({ ok: false, note: (e as Error).message.slice(0, 200) });
+    }
+    const p = await page(url, { headers: { accept: 'text/html', 'accept-language': 'en-US,en;q=0.9' } });
+    return { url, finalUrl: p.finalUrl, status: p.status, text: htmlText(p.html), via: 'hub', ...(p.error ? { error: p.error } : {}) };
+  }
+
   /** Plain GET of a page. Never throws: a failure comes back as status 0 with `error`. */
   async function page(url: string, init: RequestInit = {}): Promise<{ url: string; finalUrl: string; status: number; ms: number; headers: Record<string, string>; html: string; error?: string }> {
     meter.http.calls++;
@@ -250,7 +275,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
     }
   }
 
-  return { diveId, section, lane, warnings, meter, warn, log, call, llm, maps, exa, brave, page, parseJson, htmlText, now: () => new Date().toISOString() };
+  return { diveId, section, lane, warnings, meter, warn, log, call, llm, maps, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
 }
 
 /** First JSON object or array in a model answer, or null. Never throws. */

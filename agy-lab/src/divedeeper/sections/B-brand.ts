@@ -34,9 +34,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const urls = [...new Set(pick.length ? pick : homes)].slice(0, 7);
   const own: { url: string; text: string }[] = [];
   for (const u of urls) {
-    const p = await ctx.page(u, { headers: { accept: 'text/html', 'accept-language': 'en-US,en;q=0.9' } });
-    if (p.status !== 200) { if (p.status === 0) ctx.warn(`could not read ${u}: ${p.error}`); continue; }
-    const text = ctx.htmlText(p.html).replace(/\s+/g, ' ').slice(0, 4500);
+    const p = await ctx.read(u);
+    if (p.status !== 200) { ctx.warn(`could not read ${u}: ${p.status === 0 ? p.error : 'HTTP ' + p.status}`); continue; }
+    const text = p.text.replace(/\s+/g, ' ').slice(0, 4500);
     if (text.length > 200) own.push({ url: p.finalUrl || u, text });
   }
   if (!own.length) ctx.warn('none of the company pages could be read; the comparison uses outside sources only');

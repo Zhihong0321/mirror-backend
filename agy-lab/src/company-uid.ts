@@ -10,6 +10,7 @@
 import crypto from 'node:crypto';
 import type http from 'node:http';
 import * as db from './reportdb.ts';
+import { addMeter, diveUsage, emptyUsage, price } from './cost.ts';
 
 /** Hosts many unrelated businesses share; a website here says nothing about which company it is. */
 const SHARED_HOSTS = new Set([
@@ -123,8 +124,84 @@ export async function backfill(): Promise<number> {
   }
 }
 
-/** One company: its UID, website host and every listing of it in every run. */
-export async function company(uid: string): Promise<Record<string, unknown> | null> {
+export const isUid = (v: unknown): v is string => typeof v === 'string' && /^co_[a-f0-9]{12}$/.test(v);
+
+/**
+ * The company UID a report belongs to: one company, many reports on different
+ * dates. An explicit UID wins when it exists; else the UID of the website host
+ * (the request's `website`, or the first http(s) URL in the company text). With
+ * `create`, a host no lead has is given a UID now, so a company that was never in
+ * a search still gets one page. null when there is nothing to group by.
+ */
+export async function resolve(input: { uid?: unknown; website?: unknown; text?: unknown; create?: boolean }): Promise<string | null> {
+  await migrate();
+  if (isUid(input.uid)) {
+    const hit = (await db.sql(`select uid from company where uid = $1`, [input.uid])).rows[0] as { uid: string } | undefined;
+    if (hit) return hit.uid;
+  }
+  const text = typeof input.text === 'string' ? input.text : '';
+  const site = (typeof input.website === 'string' && input.website.trim()) || text.match(/https?:\/\/[^\s)]+/i)?.[0] || '';
+  const domain = companyDomain(site);
+  if (!domain) return null;
+  if (input.create) {
+    await db.sql(`insert into company (uid, domain) values ($1, $2) on conflict (domain) do nothing`, [newUid(), domain]);
+  }
+  return ((await db.sql(`select uid from company where domain = $1`, [domain])).rows[0] as { uid: string } | undefined)?.uid ?? null;
+}
+
+/** Reports saved before dives carried a UID get theirs: the website in their company text, and their dive's UID for a dive-deeper. Safe to run again. */
+export async function backfillReports(): Promise<number> {
+  await migrate();
+  let n = 0;
+  const has = (await db.sql(`select to_regclass('company_dive') as d, to_regclass('dive_deeper') as dd`)).rows[0] as { d: string | null; dd: string | null };
+  if (!has.d) return 0;
+  const cols = (await db.sql(`select 1 from information_schema.columns where table_name = 'company_dive' and column_name = 'company_uid'`)).rows.length;
+  if (!cols) return 0;
+  const rows = (await db.sql(`select id, company from company_dive where company_uid is null`)).rows as Array<{ id: string; company: string }>;
+  for (const row of rows) {
+    const uid = await resolve({ text: row.company, create: true });
+    if (uid) { await db.sql(`update company_dive set company_uid = $2 where id = $1`, [row.id, uid]); n++; }
+  }
+  if (has.dd) {
+    await db.sql(`update dive_deeper d set company_uid = c.company_uid from company_dive c where d.dive_id = c.id and d.company_uid is null and c.company_uid is not null`);
+  }
+  return n;
+}
+
+const originOf = (req: http.IncomingMessage): string =>
+  `${String(req.headers['x-forwarded-proto'] ?? 'https').split(',')[0]}://${req.headers['x-forwarded-host'] ?? req.headers.host}`;
+
+const plainName = (text: string): string => text.replace(/\s*\(https?:\/\/[^)]*\)\s*$/i, '').trim();
+
+/** Every report of one company, newest first: each company dive with the dive-deeper runs made on it. */
+export async function reports(uid: string, base: string): Promise<Array<Record<string, unknown>>> {
+  const has = (await db.sql(`select to_regclass('company_dive') as d, to_regclass('dive_deeper') as dd`)).rows[0] as { d: string | null; dd: string | null };
+  if (!has.d) return [];
+  const dives = (await db.sql(`
+    select id, public_id, company, country, status, stage, error, created_at, finished_at, tavily_calls, tavily_credits, brave_calls,
+           result->'llm' as llm, result->'people'->'llm' as people_llm, result->'people'->'exa' as people_exa, result->'tavily' as tavily
+    from company_dive where company_uid = $1 order by created_at desc`, [uid])).rows as Array<Record<string, any>>;
+  const deeper = has.dd ? (await db.sql(`
+    select id, public_id, dive_id, status, stage, error, created_at, finished_at, lanes
+    from dive_deeper where company_uid = $1 order by created_at desc`, [uid])).rows as Array<Record<string, any>> : [];
+  const runsOf = (diveId: string) => deeper.filter((d) => String(d.dive_id) === String(diveId)).map((d) => {
+    const used = emptyUsage();
+    for (const lane of Object.values(d.lanes ?? {}) as Array<{ meter?: unknown }>) addMeter(used, lane?.meter as never);
+    return {
+      id: Number(d.id), public_id: d.public_id, status: d.status, stage: d.stage, error: d.error ?? null,
+      created_at: d.created_at, finished_at: d.finished_at, report_url: `${base}/dd/${d.public_id}`, cost_usd: price(used).usd,
+    };
+  });
+  return dives.map((d) => ({
+    dive_id: Number(d.id), public_id: d.public_id, company: plainName(d.company), country: d.country, status: d.status, stage: d.stage, error: d.error ?? null,
+    created_at: d.created_at, finished_at: d.finished_at, report_url: `${base}/d/${d.public_id}`, preview_url: `${base}/dp/${d.public_id}`,
+    cost_usd: price(diveUsage({ tavily_calls: d.tavily_calls, tavily_credits: d.tavily_credits, brave_calls: d.brave_calls, llm: d.llm, people_llm: d.people_llm, people_exa: d.people_exa, tavily: d.tavily })).usd,
+    deeper: runsOf(d.id),
+  }));
+}
+
+/** One company: its UID, website host, every listing of it in every run, and every report run on it. */
+export async function company(uid: string, base = ''): Promise<Record<string, unknown> | null> {
   await migrate();
   const row = (await db.sql(`select uid, domain, created_at from company where uid = $1`, [uid])).rows[0];
   if (!row) return null;
@@ -132,17 +209,40 @@ export async function company(uid: string): Promise<Record<string, unknown> | nu
     select cp.place_key, max(p.business->>'name') as name, max(p.business->>'address') as address, max(p.business->>'website') as website,
            array_agg(distinct p.run_id) filter (where p.run_id is not null) as runs
     from company_place cp left join search_list_place p on p.place_key = cp.place_key
-    where cp.uid = $1 group by cp.place_key order by 2`, [uid])).rows;
-  return { ...row, listings };
+    where cp.uid = $1 group by cp.place_key order by 2`, [uid])).rows as Array<Record<string, any>>;
+  const list = await reports(uid, base);
+  const name = (list[0]?.company as string | undefined) || (listings.find((l) => l.name)?.name as string | undefined) || (row as { domain?: string }).domain || uid;
+  const country = (list[0]?.country as string | undefined) ?? null;
+  return { ...row, name, country, listings, reports: list };
+}
+
+/** Companies that have at least one report, most recently reported first. */
+export async function withReports(opts: { q?: string; limit?: number } = {}): Promise<Array<Record<string, unknown>>> {
+  await migrate();
+  const has = (await db.sql(`select to_regclass('company_dive') as d`)).rows[0] as { d: string | null };
+  if (!has.d) return [];
+  const q = (opts.q ?? '').trim().toLowerCase();
+  const rows = (await db.sql(`
+    select c.uid, c.domain, (array_agg(d.company order by d.created_at desc))[1] as name, count(*)::int as reports, max(d.created_at) as last_report_at
+    from company_dive d join company c on c.uid = d.company_uid
+    where $1 = '' or lower(c.domain) like '%' || $1 || '%' or lower(d.company) like '%' || $1 || '%' or c.uid = $1
+    group by c.uid, c.domain order by max(d.created_at) desc limit $2`, [q, Math.min(Math.max(opts.limit ?? 100, 1), 500)])).rows as Array<Record<string, any>>;
+  return rows.map((r) => ({ ...r, name: plainName(String(r.name ?? '')) || r.domain }));
 }
 
 type Ctx = { json: (res: http.ServerResponse, status: number, body: unknown) => void };
 
-/** GET /api/companies/:uid (LAB_TOKEN): one company and its listings. */
+/** GET /api/companies (companies that have reports; ?q= ?limit=) and GET /api/companies/:uid (LAB_TOKEN): one company, its listings and its reports. */
 export async function handle(req: http.IncomingMessage, res: http.ServerResponse, url: URL, { json }: Ctx): Promise<boolean> {
+  if (req.method !== 'GET') return false;
+  if (url.pathname === '/api/companies') {
+    if (!db.configured()) return json(res, 503, { error: 'no report database configured' }), true;
+    const found = await withReports({ q: url.searchParams.get('q') ?? '', limit: Number(url.searchParams.get('limit') ?? 100) });
+    return json(res, 200, { companies: found }), true;
+  }
   const m = /^\/api\/companies\/(co_[a-f0-9]{12})$/.exec(url.pathname);
-  if (!m || req.method !== 'GET') return false;
+  if (!m) return false;
   if (!db.configured()) return json(res, 503, { error: 'no report database configured' }), true;
-  const found = await company(m[1]!);
+  const found = await company(m[1]!, originOf(req));
   return json(res, found ? 200 : 404, found ?? { error: 'no such company' }), true;
 }
