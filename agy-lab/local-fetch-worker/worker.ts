@@ -21,7 +21,7 @@
 // false, and a dive says "no fetch worker" instead of "this page is empty".
 //
 // Settings: ~/.local-fetch-worker/worker.env, or the file LOCAL_FETCH_WORKER_ENV names:
-//   LAB_URL=https://ee-auto.up.railway.app
+//   LAB_URL=<NEW_LAB_URL>
 //   LAB_TOKEN=...                      (or GMAP_WORKER_KEY=... once fetch.pages is in its scope)
 //   CRAWL4AI_URL=http://127.0.0.1:11235   (optional)
 //   CRAWL4AI_TOKEN=...                 (optional, only if the container has JWT on)
@@ -67,7 +67,8 @@ function settings(): Record<string, string> {
 }
 
 const env = { ...settings(), ...process.env } as Record<string, string>;
-const LAB = (env.LAB_URL ?? 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
+// No default: the worker must name its lab (worker.env), never a built-in one.
+const LAB = (env.LAB_URL ?? '').trim().replace(/\/+$/, '');
 const TOKEN = (env.LAB_TOKEN || env.GMAP_WORKER_KEY || '').trim();
 const C4AI = (env.CRAWL4AI_URL ?? 'http://127.0.0.1:11235').replace(/\/+$/, '');
 const C4AI_TOKEN = (env.CRAWL4AI_TOKEN ?? '').trim();
@@ -264,6 +265,10 @@ async function lane(n: number): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  if (!LAB) {
+    log(`no LAB_URL in ${process.env.LOCAL_FETCH_WORKER_ENV ?? path.join(DATA, 'worker.env')}; nothing to do`);
+    process.exit(2);
+  }
   if (!TOKEN) {
     log(`no LAB_TOKEN or GMAP_WORKER_KEY in ${process.env.LOCAL_FETCH_WORKER_ENV ?? path.join(DATA, 'worker.env')}; nothing to do`);
     process.exit(2);

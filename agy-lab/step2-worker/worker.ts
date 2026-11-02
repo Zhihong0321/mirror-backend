@@ -12,7 +12,7 @@
 // worker routes), never LAB_TOKEN. A machine that already holds LAB_TOKEN (the
 // Mac mini) may use it instead. Settings: %LOCALAPPDATA%\Step2Worker\worker.env on
 // Windows, ~/.step2-worker/worker.env elsewhere, or the file STEP2_WORKER_ENV names:
-//   LAB_URL=https://ee-auto.up.railway.app
+//   LAB_URL=<NEW_LAB_URL>
 //   GMAP_WORKER_KEY=...                (or LAB_TOKEN=...)
 //   WORKER_NAME=pc-<computer name>     (optional)
 //   CONCURRENCY=6                      (optional: leads worked at once)

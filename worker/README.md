@@ -135,7 +135,7 @@ node worker/macmini.mjs
 Expect:
 
 ```
-[2026-08-20 19:31:02] worker "macmini" -> https://ee-auto.up.railway.app (any type)
+[2026-08-20 19:31:02] worker "macmini" -> <NEW_LAB_URL> (any type)
 ```
 
 …and then nothing, which is correct: it is holding a long poll, waiting for work.
@@ -143,7 +143,7 @@ Expect:
 ## Prove it, from any machine with the token
 
 ```bash
-LAB=https://ee-auto.up.railway.app
+LAB=<NEW_LAB_URL>
 ID=$(curl -s -X POST $LAB/api/jobs -H "authorization: Bearer $LAB_TOKEN" \
      -H 'content-type: application/json' -d '{"type":"ping"}' | jq -r .job.id)
 curl -s $LAB/api/jobs/$ID -H "authorization: Bearer $LAB_TOKEN" | jq .job.result
@@ -331,7 +331,7 @@ cd ~/automation-tools/agy-lab && npm install --omit=dev
 #    so it uses that rather than the PC's GMAP_WORKER_KEY. chmod 600, never the plist.
 mkdir -p ~/.step2-worker && chmod 700 ~/.step2-worker
 umask 077; cat > ~/.step2-worker/worker.env <<EOF
-LAB_URL=https://ee-auto.up.railway.app
+LAB_URL=<NEW_LAB_URL>
 LAB_TOKEN=$(grep -m1 '^LAB_TOKEN=' ~/.gmap-worker.env | cut -d= -f2-)
 WORKER_NAME=mac-mini
 CONCURRENCY=8
@@ -393,7 +393,7 @@ minute of `worker.log`, not off batch one. The hub's `doneBy` counts it as
 | Variable | Default | |
 |---|---|---|
 | `LAB_TOKEN` | — | required; from `~/.gmap-worker.env` or the environment |
-| `LAB_URL` | `https://ee-auto.up.railway.app` | |
+| `LAB_URL` | `<NEW_LAB_URL>` | |
 | `WORKER_NAME` | `os.hostname()` | what `GET /api/jobs` reports |
 | `WORKER_TYPES` | empty | comma-separated. Empty gives the four default lanes; set, it pins the process to one lane taking exactly these types. See [Lanes](#lanes) |
 | `WORKER_ENV_FILE` | `~/.gmap-worker.env` | |

@@ -150,7 +150,7 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:11235/md -H 'c
 plist, which is world-readable:
 
 ```
-LAB_URL=https://ee-auto.up.railway.app
+LAB_URL=<NEW_LAB_URL>
 LAB_TOKEN=…                            # or GMAP_WORKER_KEY once fetch.pages is in its scope
 CRAWL4AI_URL=http://127.0.0.1:11235
 CRAWL4AI_TOKEN=…                       # the one from step 2

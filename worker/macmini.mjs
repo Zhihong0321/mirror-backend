@@ -49,7 +49,9 @@ if (fs.existsSync(ENV_FILE)) {
   }
 }
 
-const LAB = (process.env.LAB_URL ?? 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
+// No default on purpose: a worker must name its lab, so one package can serve either
+// lab and a stale default can never send a mini's jobs to the wrong one.
+const LAB = (process.env.LAB_URL ?? '').trim().replace(/\/+$/, '');
 const TOKEN = (process.env.LAB_TOKEN ?? '').trim();
 const NAME = (process.env.WORKER_NAME ?? os.hostname()).trim();
 const WAIT_SEC = 25;
@@ -113,6 +115,10 @@ const LANES = (() => {
   ];
 })();
 
+if (!LAB) {
+  console.error('LAB_URL is not set. Put it in ' + ENV_FILE + ' as LAB_URL=https://... or pass it in the environment.');
+  process.exit(1);
+}
 if (!TOKEN) {
   console.error('LAB_TOKEN is not set. Put it in ' + ENV_FILE + ' as LAB_TOKEN=… or pass it in the environment.');
   process.exit(1);

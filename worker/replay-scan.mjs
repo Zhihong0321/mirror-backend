@@ -26,7 +26,11 @@ if (!token) {
   console.error('LAB_TOKEN is required to restore a worker recovery copy.');
   process.exit(2);
 }
-const lab = (process.env.LAB_URL || 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
+const lab = (process.env.LAB_URL || '').trim().replace(/\/+$/, '');
+if (!lab) {
+  console.error('LAB_URL is required to restore a worker recovery copy.');
+  process.exit(2);
+}
 const response = await fetch(`${lab}/api/reports/${publicId}/repair`, {
   method: 'POST',
   headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
