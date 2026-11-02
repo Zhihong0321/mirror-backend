@@ -76,6 +76,13 @@ if (TOKEN.length < 16) {
   process.exit(1);
 }
 
+/**
+ * IMPORT_IN_PROGRESS=1 holds every boot step and loop below that writes the lead tables, while
+ * scripts/import-from-pg2nd.ts copies them from pg_2nd (must-fix-checklist, lead import A1-A3).
+ * The company dive, dive-deeper and country research keep running: they own other tables.
+ */
+const IMPORTING = /^(1|true|on|yes)$/i.test(String(process.env.IMPORT_IN_PROGRESS ?? '').trim());
+
 const STARTED_AT = new Date().toISOString();
 /** Survives only until the next restart, which is exactly the window it describes. */
 let lastCrash: { kind: string; message: string; at: string } | null = null;
@@ -514,16 +521,17 @@ function reapAbandonedRuns(staleMinutes: number): void {
 
 server.listen(PORT, '0.0.0.0', () => {
   void secrets.refresh();
-  void reportdb.requeueInterruptedCloudContactReports()
+  if (!IMPORTING) void reportdb.requeueInterruptedCloudContactReports()
     .then((count) => { if (count) console.log(`[contact] requeued ${count} interrupted cloud report(s) onto the normal queue`); })
     .catch((error) => console.error('[contact] could not requeue interrupted cloud reports: ' + String(error)));
   console.log('agy-lab listening on :' + PORT);
+  if (IMPORTING) console.log('  IMPORT_IN_PROGRESS: lead-table loops held (reaper, contact requeue and resume, blacklist, UID backfill, auto-contact, auto-scan, site emails, email marketing, contact worker, search list, list step 2)');
   console.log('  HOME     ' + HOME);
   console.log('  pi       ' + (pi.config().apiKey ? pi.PROVIDER + '/' + pi.config().model : 'NOT CONFIGURED - add a MiniMax key on /workers'));
   console.log('  reports  ' + (process.env.DATABASE_URL?.trim() ? 'direct Postgres' : reportdb.configured() ? 'pg-proxy fallback (token can expire)' : 'NOT CONFIGURED'));
   // Age 0 at boot: this process owns no run yet, so anything non-terminal was
   // stranded by the restart that just happened.
-  reapAbandonedRuns(0);
+  if (!IMPORTING) reapAbandonedRuns(0);
   // Company dives cut off by the restart are queued again, then dive-deeper runs resume
   // (a run waiting on its company dive keeps waiting).
   void companyDivePeople.failInterrupted()
@@ -533,27 +541,28 @@ server.listen(PORT, '0.0.0.0', () => {
     .catch((err: Error) => console.warn('could not resume interrupted dive-deeper runs: ' + err.message))
     .finally(() => diveDeeper.startPreviewWorker());
   // Every lead, so a rule changed in this deploy reaches the ones already saved.
-  if (reportdb.configured()) {
+  if (!IMPORTING && reportdb.configured()) {
     void reportdb.applyLeadBlacklist({ all: true })
       .then((r) => console.log(`[blacklist] checked ${r.checked} leads, ${r.blacklisted} kept out of contact research`))
       .catch((err: Error) => console.warn('[blacklist] could not check leads: ' + err.message));
   }
   // Reports saved before dives carried a company UID get theirs.
-  void companies.backfillReports()
+  if (!IMPORTING) void companies.backfillReports()
     .then((n) => { if (n) console.log(`[company-uid] gave ${n} saved report(s) a company UID`); })
     .catch((err: Error) => console.warn('[company-uid] could not link saved reports: ' + err.message));
   autoContact.init({ launch: intel.launchContactResearch });
-  autoContact.start();
+  if (!IMPORTING) autoContact.start();
   autoScan.init({ launch: intel.launchBusinessSearch });
-  autoScan.start();
-  void siteEmails.start();
-  emailMarketing.start();
+  if (!IMPORTING) autoScan.start();
+  if (!IMPORTING) void siteEmails.start();
+  if (!IMPORTING) emailMarketing.start();
   // Extract model lanes saved on /workers; until they load, calls use CONTACT_LLM_*.
   void extractLlm.refresh();
-  contactWorker.start();
+  if (!IMPORTING) contactWorker.start();
   countryResearch.start();
-  searchList.start();
-  listStep2.start();
+  if (!IMPORTING) searchList.start();
+  if (!IMPORTING) listStep2.start();
+  if (IMPORTING) return;
   // Broker jobs live only in memory. Refill it from saved contact reports after
   // a restart, with no more concurrent jobs than the research lanes can run.
   setInterval(() => {
