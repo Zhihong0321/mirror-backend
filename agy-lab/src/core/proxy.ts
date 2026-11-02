@@ -6,7 +6,9 @@
 // (PROXY_SOURCE), never as its keys. Its URL and token are one row of kind
 // 'exa_proxy', saved as JSON {url, token} through /api/contact-keys.
 export const PROXY_SOURCE = 'proxy:us';
-/** A PROXY_NO_KEY answer with no retry-after rests the source this long. */
+/** A PROXY_NO_KEY answer rests the source this long at most. The proxy's own
+ * retry-after can be hours off, and asking it again costs nothing: on
+ * 2026-11-01 a long retry-after kept the source idle after its keys refilled. */
 const NO_KEY_REST_MS = 10 * 60_000;
 
 export type ProxyConfig = { url: string; token: string };
@@ -49,5 +51,5 @@ export async function usage(api: 'exa' | 'tavily', fetchImpl: typeof fetch = fet
 export function noKeyRestMs(res: Response, raw: string): number | null {
   if (!raw.includes('PROXY_NO_KEY')) return null;
   const after = Number(res.headers.get('retry-after'));
-  return after > 0 ? after * 1000 : NO_KEY_REST_MS;
+  return after > 0 ? Math.min(after * 1000, NO_KEY_REST_MS) : NO_KEY_REST_MS;
 }

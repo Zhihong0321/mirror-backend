@@ -12,7 +12,9 @@ import * as vault from './vault.ts';
 export { PROXY_SOURCE, isProxy, parseProxy, proxy, setProxy, type ProxyConfig } from './proxy.ts';
 
 export const KEY_CONCURRENCY = 2;
-const OUT_OF_CREDIT_REST_MS = 24 * 60 * 60_000;
+// An hour, not a day: Exa's free credit comes back each month, and on
+// 2026-11-01 a day's rest kept refilled keys idle. A refused call costs nothing.
+const OUT_OF_CREDIT_REST_MS = 60 * 60_000;
 const RATE_LIMIT_REST_MS = 60_000;
 
 type FetchImpl = typeof fetch;
@@ -220,7 +222,7 @@ function toHits(answer: Record<string, any>): SearchHit[] {
   return hits;
 }
 
-/** Rest the key the way the error asks: the proxy's retry-after, a day for a refused or spent key, a minute for a rate limit. */
+/** Rest the key the way the error asks: the proxy's retry-after, an hour for a refused or spent key, a minute for a rate limit. */
 export function releaseFor(lease: Lease, cause: unknown): void {
   const { code, restMs } = (cause as { code?: string; restMs?: number } | null) ?? {};
   lease.release(restMs ?? (code === 'quota' ? OUT_OF_CREDIT_REST_MS : code === 'rate_limit' ? RATE_LIMIT_REST_MS : 0));

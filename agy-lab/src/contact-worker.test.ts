@@ -432,7 +432,7 @@ test('an Exa job records who searched and which provider found each contact', as
   }
 });
 
-test('an Exa key rests a day when Exa refuses it and a minute on a rate limit', async () => {
+test('an Exa key rests an hour when Exa refuses it and a minute on a rate limit', async () => {
   const refused: typeof fetch = async () => new Response('{"error":"insufficient credits"}', { status: 402 });
   await assert.rejects(() => exaApi.searchWithKey('q', 'k', { fetchImpl: refused }), (err: unknown) => (err as { code?: string }).code === 'quota');
   const limited: typeof fetch = async () => new Response('slow down', { status: 429 });
@@ -442,7 +442,7 @@ test('an Exa key rests a day when Exa refuses it and a minute on a rate limit', 
   const cools: number[] = [];
   exaApi.releaseFor({ secret: 'exa-a', release: (ms = 0) => { cools.push(ms); } }, { code: 'quota' });
   exaApi.releaseFor({ secret: 'exa-a', release: (ms = 0) => { cools.push(ms); } }, { code: 'rate_limit' });
-  assert.deepEqual(cools, [24 * 60 * 60_000, 60_000]);
+  assert.deepEqual(cools, [60 * 60_000, 60_000]);
 });
 
 // ---------------------------------------------------------------- readPages

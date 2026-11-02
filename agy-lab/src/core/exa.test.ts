@@ -69,3 +69,10 @@ test('PROXY_NO_KEY from the proxy rests the proxy source for its retry-after', a
   exa.releaseFor({ secret: exa.PROXY_SOURCE, release: (ms = 0) => { rested = ms; } }, err);
   assert.equal(rested, 120_000);
 });
+
+test('a PROXY_NO_KEY retry-after of hours rests the proxy source ten minutes at most', async () => {
+  exa.setProxy(PROXY);
+  const noKey = async () => new Response('{"error":"every key rests","tag":"PROXY_NO_KEY"}', { status: 429, headers: { 'retry-after': '18000' } });
+  const err = await exa.requestWithKey('search', { query: 'x' }, exa.PROXY_SOURCE, { fetchImpl: noKey as typeof fetch }).catch((e) => e);
+  assert.equal(err.restMs, 10 * 60_000);
+});
