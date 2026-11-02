@@ -277,6 +277,14 @@ evidence row (research storage). **Deadline: the source's read-only token expire
    app's `public` tables are not touched, so no old id can clash with a hub row. Run detached (`nohup`), no pushes while
    it runs. Proof: per-table counts equal the source at the moment it ran. A top-up run after ee-auto stops (or just
    before 2026-11-06) catches what ee-auto wrote since.
+   - **Run live 2026-11-02 16:14 → 16:21 UTC:** 27 tables, 0 rows skipped, no errors; `public` untouched (proven first
+     on `telemarketer`: public's 34 tables, 92 indexes, 258 constraints, 16 sequences unchanged). Completeness,
+     `agy-lab/scripts/archive-diff.ts` (every source primary key looked up in the archive): archive + missing = source,
+     table by table, and every missing row is newer than the copy (ee-auto still writes). **Top-up proven** (same
+     command again): it inserted exactly those rows (`company_data` 866, `search_report_company` 1,636, `search_report`
+     1, `published_report` 1, `run_event` 7, `lead_activity_log` 234); the check after it again shows only the newest
+     writes (`company_data` 579 from id 582,015; new search 652). **Not ticked:** complete only after a final top-up
+     once ee-auto has stopped, or on 2026-11-05 at the latest.
 2. [ ] **Stop ee-auto writing the source** (the owner). Until then the archive is a snapshot of a moving source.
 3. [ ] **Move the archive into the redesign** (its own task and contract, after T8 identity anchors and T7 evidence
    exist): leads by place id into companies with anchors, reports by public id / report UID, research results as
