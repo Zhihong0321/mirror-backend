@@ -97,7 +97,7 @@ $MaxPages = 15
 $DefaultCentre = @(3.139, 101.6869)
 
 # One worker per PC: autostart and a double click must not run two.
-$mutex = New-Object Threading.Mutex($false, 'Local\GmapLocalWorker')
+$mutex = New-Object Threading.Mutex($false, ('Local\GmapLocalWorker-' + ($Lab -replace '[^a-z0-9]', '')))
 if (-not $mutex.WaitOne(0)) {
   Write-Host 'The Gmap Local Worker is already running on this PC.'
   exit 2

@@ -1,2 +1,7 @@
 .env
 node_modules
+.fetch-worker.env
+fetch-diver.log
+agy-lab/worker.env
+gmap-diver.log
+gmap-diver.err
