@@ -271,7 +271,7 @@ Each step is useful on its own and leaves the app working. Tick only with live e
 never related to this project. Everything below about the lead import (A1–A3, `pg2nd_archive`, the id counters,
 the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a record.
 
-- [x] **Copy the country-industry research** (the real T0). Ticked by the owner 2026-11-03.
+- [x] **Copy the country-industry research** (the real T0): the 4 country jobs below AND the search lists (120,440 companies, 25 countries; restored 02:11 UTC, see the next item). Ticked by the owner 2026-11-03.
   - **Done 2026-11-03 ~16:50 UTC, live:** ee-auto holds 4 `country.industry` jobs (its job ring holds 4 in all, so
     none was dropped). Three imported through the hub's `POST /api/jobs/import-country`: West Malaysia / advertising
     agency (857 rows), Brunei Darussalam / advertising agency (135), San Marino / advertising agency (117); CSV and
@@ -285,7 +285,13 @@ the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a 
   row, 91 telemarketers, their emails and search places by cascade), plus the 100,382 company UIDs and places the
   hub's boot backfill had generated from those leads. Kept: the hub's own rows (4,473 leads, 87 reports) and the 19
   company UIDs this project's dives use (all 37 dives keep theirs). The same match run again finds 0 copied rows.
-  Then `pg2nd_archive` (27 tables) was dropped. After: 4 country research jobs on the hub; `/d/`, `/dp/`, `/dd/`,
+  Then `pg2nd_archive` (27 tables) was dropped.
+  - **My mistake in that cleanup, fixed:** the search lists ARE the country-industry research (owner): "gmaps-search-list-1250
+    (25 countries, 5 industries)" 79,017 companies and "gmaps-search-list-native (14 countries, local language)" 41,423,
+    120,440 in all, 64,769 with email. I deleted them with the leads; **restored from ee-auto at 02:11 UTC**, all 5 tables
+    (`search_list_run`, `search_list_search`, `search_list_place`, `list_step2_job`, `list_step2_lead`), identical per run
+    on both sides (searches, countries, companies, emails, and a fingerprint of every place and its contacts). The hub's
+    Search lists page and API show both runs. After: 4 country research jobs on the hub; `/d/`, `/dp/`, `/dd/`,
   `/country-industry` all 200. Still set from the import, the owner's call: `AUTO_SCAN_PAUSED=1`,
   `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0`.
 
