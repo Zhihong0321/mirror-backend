@@ -15,6 +15,75 @@ export function publicSources<T extends { url?: string; relevant?: boolean }>(so
 /** Named in public as running the company: the people a preview may name. */
 export const isLeadership = (role: unknown): boolean => /\b(ceo|chief executive|founder|co-founder|managing director|director|owner|chairman|chairperson|president|general manager|principal)\b/i.test(String(role ?? ''));
 
+// A job that merely contains "director" or "principal". The loose check above accepts these.
+const CRAFT_DIRECTOR = /\b(?:art|creative|design|technical|music|athletic|funeral|film|video|stage|lighting|sound|photo|photography|marketing|sales)\s+director\b/i;
+const RANK_PRINCIPAL = /\bprincipal\s+(?:engineer|engineering|consultant|designer|architect|developer|scientist|analyst|investigator|researcher)\b/i;
+const OFFICE = /\b(ceo|chief executive|founder|co-founder|managing director|executive director|owner|chairman|chairperson|president|general manager)\b/i;
+
+/** Running the company. "Art Director" and "Principal Engineer" fail it; "Director" and "Principal" do not. */
+export const isLeadershipStrict = (role: unknown): boolean => {
+  const s = String(role ?? '');
+  if (!s.trim()) return false;
+  if (OFFICE.test(s)) return true;
+  if (CRAFT_DIRECTOR.test(s) || RANK_PRINCIPAL.test(s)) return false;
+  return /\b(director|principal)\b/i.test(s);
+};
+
+const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+const PUB_PHONE = /(?:\+?6?0)[\s-]?1\d[\s-]?\d{3,4}[\s-]?\d{3,4}\b|\+\d[\d\s().-]{6,}\d|\b0\d{1,2}[\s-]\d{3,4}[\s-]?\d{4}\b/i;
+const WEB = /\b(?:https?:\/\/|www\.)[^\s<>"')\]]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<>"')\]]*)?/i;
+const DIGITS = /\d{6,}/;
+
+/** True when the text holds an email, a phone number, a URL, or a run of 6 or more digits. */
+export const hasPrivate = (text: unknown): boolean => {
+  const s = String(text ?? '');
+  return EMAIL.test(s) || PUB_PHONE.test(s) || WEB.test(s) || DIGITS.test(s);
+};
+
+const hostOfUrl = (raw: string): string => {
+  const core = raw.trim().replace(/[.,;:)]+$/, '');
+  try {
+    return new URL(/^https?:\/\//i.test(core) ? core : `http://${core}`).hostname.replace(/^www\./i, '').toLowerCase();
+  } catch {
+    return '';
+  }
+};
+
+const officialHost = (domain: string): string => domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[/?#]/)[0]?.replace(/\.$/, '') ?? '';
+
+const isOfficialUrl = (raw: string, domains: readonly string[]): boolean => {
+  const host = hostOfUrl(raw);
+  if (!host) return false;
+  return domains.some((d) => {
+    const official = officialHost(String(d));
+    return !!official && (host === official || host.endsWith(`.${official}`));
+  });
+};
+
+/** Drops emails, phone numbers, URLs other than the company's own domains, and runs of 6 or more digits. */
+export function scrubPublic(text: unknown, officialDomains: readonly string[] = []): string {
+  const s = String(text ?? '');
+  if (!s) return s;
+  const domains = officialDomains.map((d) => String(d));
+  const email = new RegExp(EMAIL.source, 'gi');
+  const phone = new RegExp(PUB_PHONE.source, 'gi');
+  const url = new RegExp(WEB.source, 'gi');
+  const peel = (m: string) => {
+    const parts = m.match(/^(.*?)([.,;:)]*)$/);
+    const core = parts?.[1] || m;
+    const tail = parts?.[2] ?? '';
+    return { core, tail, ok: isOfficialUrl(core, domains) };
+  };
+  let out = s.replace(email, '').replace(phone, '');
+  out = out.replace(url, (m) => { const p = peel(m); return (p.ok ? p.core : '') + p.tail; });
+  url.lastIndex = 0;
+  out = out.replace(url, (m) => { const p = peel(m); return p.ok ? `\u0000${p.core}\u0000${p.tail}` : m; });
+  // Markers keep a digit run that sits inside an official URL. A bare run still goes.
+  out = out.replace(/\u0000([^\u0000]*)\u0000|\d{6,}/g, (_m, kept) => kept ?? '');
+  if (out === s) return s;
+  return out.replace(/[ \t]{2,}/g, ' ').replace(/[ \t]+([,.;:)])/g, '$1').trim();
+}
+
 // URLs and bare hosts that point at one customer's document, e.g. ee-proposal-production.up.railway.app?uid=….
 const URLISH = /\b(?:https?:\/\/)?[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s)\]"'<>]*)?(?:\?[^\s)\]"'<>]*)?/gi;
 // Malaysian phone numbers as people write them: +60 11-2341 1550, 012-7165685, 01120672895.
