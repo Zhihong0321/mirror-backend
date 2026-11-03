@@ -33,7 +33,7 @@
   tr.row { cursor: pointer; }
   tr.row:hover, tr.row.on { background: var(--chip); }
   .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; border: 1px solid currentColor; }
-  .accepted { color: var(--ok); } .todo { color: var(--todo); } .locked { color: var(--locked); }
+  .accepted { color: var(--ok); } .todo { color: var(--todo); } .locked { color: var(--locked); } .outdated { color: var(--bad); }
   .detail { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
   .detail h2 { font-size: 16px; margin: 0 0 8px; }
   .detail h3 { font-size: 13px; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
@@ -50,12 +50,13 @@
 </head>
 <body>
 <h1>Research tracker</h1>
-<p class="sub">125 country × industry pairs, two passes each. Answers come in from outside AI tools. This page refreshes every 10 seconds.</p>
+<p class="sub">150 research runs: 125 country × industry pairs plus one country layer per country, two passes each. Answers come in from outside AI tools. This page refreshes every 10 seconds.</p>
 
 <div class="cards">
-  <div class="card"><b id="c-pairs">–</b><span>pairs</span></div>
+  <div class="card"><b id="c-pairs">–</b><span>research runs</span></div>
   <div class="card"><b id="c-r1">–</b><span>pass 1 accepted</span></div>
   <div class="card"><b id="c-r2">–</b><span>pass 2 accepted</span></div>
+  <div class="card"><b id="c-old">–</b><span>outdated (old brief)</span></div>
   <div class="card"><b id="c-rej">–</b><span>rejected submissions</span></div>
   <div class="card"><b id="c-prompts">–</b><span>prompts stored</span></div>
 </div>
@@ -68,6 +69,7 @@
     <option value="todo1">Pass 1 todo</option>
     <option value="todo2">Pass 2 todo</option>
     <option value="accepted2">Pass 2 accepted</option>
+    <option value="outdated">Outdated (old brief)</option>
     <option value="rejected">Has rejections</option>
   </select>
   <input id="f-search" type="search" placeholder="Search pair id">
@@ -130,6 +132,7 @@ function matches(p) {
     case 'todo1': return p.round1 === 'todo';
     case 'todo2': return p.round2 === 'todo';
     case 'accepted2': return p.round2 === 'accepted';
+    case 'outdated': return p.round1 === 'outdated' || p.round2 === 'outdated';
     case 'rejected': return p.rejected > 0;
   }
   return true;
@@ -141,6 +144,7 @@ function render() {
   $('c-pairs').textContent = pairs.length;
   $('c-r1').textContent = r1;
   $('c-r2').textContent = r2;
+  $('c-old').textContent = pairs.filter((p) => p.round1 === 'outdated' || p.round2 === 'outdated').length;
   $('c-rej').textContent = pairs.reduce((s, p) => s + p.rejected, 0);
   $('c-prompts').textContent = pairs.reduce((s, p) => s + p.prompts1 + p.prompts2, 0);
 
@@ -178,6 +182,7 @@ function promptList(round) {
     box.append(el('div', { class: 'prompt' }, [
       el('p', {}, [el('b', { text: `${p.rank}. ${p.question}` })]),
       el('p', { class: 'muted', text: `${p.category} · ${(p.problem_type || []).join(', ')} · ${p.used_in} · confidence ${p.confidence}` }),
+      ...(p.query_type ? [el('p', { class: 'muted', text: `runs: ${p.query_type}${p.query_type === 'manual' ? ' (' + (p.manual_reason || '') + ')' : ''} · applies when: ${p.applies_when} · segment: ${p.sub_segment}` })] : [el('p', { class: 'stale', text: 'old format: no query type or applies-when' })]),
       el('p', {}, [el('a', { href: p.source?.url, target: '_blank', rel: 'noopener', text: p.source?.name ?? 'source' })]),
     ]));
   }
@@ -190,6 +195,7 @@ async function showDetail(id, scroll) {
   const panel = el('div', {}, [
     el('h2', { text: `${d.country} · ${d.industry}` }),
     el('p', { class: 'muted', text: `pair id ${d.id}` }),
+    ...(d.kind === 'country' ? [el('p', { class: 'muted', text: 'Country layer: checks that apply to any business in this country, whatever its industry.' })] : []),
     el('h3', { text: 'Brief to give the AI' }),
     el('p', {}, [el('a', { class: 'btn', href: `${base}/brief/1`, target: '_blank', rel: 'noopener', text: 'Open pass 1 brief' })]),
     el('h3', { text: 'Submit pass 1 (from the outside tool)' }),
@@ -214,7 +220,6 @@ async function showDetail(id, scroll) {
     const r = n === 1 ? d.answer1 : d.answer2;
     if (!r) continue;
     panel.append(el('h3', { text: `Pass ${n} prompts (${r.prompts.length}) · received ${new Date(r._received_at).toLocaleString()}` }));
-    panel.append(el('p', { class: 'muted', text: 'Test businesses: ' + (r.test_firms || []).join(', ') }));
     panel.append(promptList(r));
   }
   if (!d.answer1 && !d.answer2) panel.append(el('p', { class: 'muted', text: 'No answer yet. Pass 1 is the first step.' }));

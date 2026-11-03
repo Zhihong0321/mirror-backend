@@ -1,752 +1,1052 @@
 [
   {
+    "id": "IN-country-layer",
+    "country": "India",
+    "country_code": "IN",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
+  },
+  {
     "id": "IN-accounting-firm",
     "country": "India",
     "country_code": "IN",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "IN-digital-marketing-agency",
     "country": "India",
     "country_code": "IN",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "IN-import-export-company",
     "country": "India",
     "country_code": "IN",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "IN-interior-designer",
     "country": "India",
     "country_code": "IN",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "IN-web-design-company",
     "country": "India",
     "country_code": "IN",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "AU-country-layer",
+    "country": "Australia",
+    "country_code": "AU",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "AU-accounting-firm",
     "country": "Australia",
     "country_code": "AU",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "AU-digital-marketing-agency",
     "country": "Australia",
     "country_code": "AU",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "AU-import-export-company",
     "country": "Australia",
     "country_code": "AU",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "AU-interior-designer",
     "country": "Australia",
     "country_code": "AU",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "AU-web-design-company",
     "country": "Australia",
     "country_code": "AU",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "BR-country-layer",
+    "country": "Brazil",
+    "country_code": "BR",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "BR-accounting-firm",
     "country": "Brazil",
     "country_code": "BR",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "BR-digital-marketing-agency",
     "country": "Brazil",
     "country_code": "BR",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "BR-import-export-company",
     "country": "Brazil",
     "country_code": "BR",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "BR-interior-designer",
     "country": "Brazil",
     "country_code": "BR",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "BR-web-design-company",
     "country": "Brazil",
     "country_code": "BR",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "GB-country-layer",
+    "country": "United Kingdom",
+    "country_code": "GB",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "GB-accounting-firm",
     "country": "United Kingdom",
     "country_code": "GB",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "GB-digital-marketing-agency",
     "country": "United Kingdom",
     "country_code": "GB",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "GB-import-export-company",
     "country": "United Kingdom",
     "country_code": "GB",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "GB-interior-designer",
     "country": "United Kingdom",
     "country_code": "GB",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "GB-web-design-company",
     "country": "United Kingdom",
     "country_code": "GB",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "CA-country-layer",
+    "country": "Canada",
+    "country_code": "CA",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "CA-accounting-firm",
     "country": "Canada",
     "country_code": "CA",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "CA-digital-marketing-agency",
     "country": "Canada",
     "country_code": "CA",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "CA-import-export-company",
     "country": "Canada",
     "country_code": "CA",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "CA-interior-designer",
     "country": "Canada",
     "country_code": "CA",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "CA-web-design-company",
     "country": "Canada",
     "country_code": "CA",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "SG-country-layer",
+    "country": "Singapore",
+    "country_code": "SG",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "SG-accounting-firm",
     "country": "Singapore",
     "country_code": "SG",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "SG-digital-marketing-agency",
     "country": "Singapore",
     "country_code": "SG",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "SG-import-export-company",
     "country": "Singapore",
     "country_code": "SG",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "SG-interior-designer",
     "country": "Singapore",
     "country_code": "SG",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "SG-web-design-company",
     "country": "Singapore",
     "country_code": "SG",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "FR-country-layer",
+    "country": "France",
+    "country_code": "FR",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "FR-accounting-firm",
     "country": "France",
     "country_code": "FR",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "FR-digital-marketing-agency",
     "country": "France",
     "country_code": "FR",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "FR-import-export-company",
     "country": "France",
     "country_code": "FR",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "FR-interior-designer",
     "country": "France",
     "country_code": "FR",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "FR-web-design-company",
     "country": "France",
     "country_code": "FR",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "NL-country-layer",
+    "country": "Netherlands",
+    "country_code": "NL",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "NL-accounting-firm",
     "country": "Netherlands",
     "country_code": "NL",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "NL-digital-marketing-agency",
     "country": "Netherlands",
     "country_code": "NL",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "NL-import-export-company",
     "country": "Netherlands",
     "country_code": "NL",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "NL-interior-designer",
     "country": "Netherlands",
     "country_code": "NL",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "NL-web-design-company",
     "country": "Netherlands",
     "country_code": "NL",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "DE-country-layer",
+    "country": "Germany",
+    "country_code": "DE",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "DE-accounting-firm",
     "country": "Germany",
     "country_code": "DE",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "DE-digital-marketing-agency",
     "country": "Germany",
     "country_code": "DE",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "DE-import-export-company",
     "country": "Germany",
     "country_code": "DE",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "DE-interior-designer",
     "country": "Germany",
     "country_code": "DE",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "DE-web-design-company",
     "country": "Germany",
     "country_code": "DE",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "US-country-layer",
+    "country": "United States",
+    "country_code": "US",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "US-accounting-firm",
     "country": "United States",
     "country_code": "US",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "US-digital-marketing-agency",
     "country": "United States",
     "country_code": "US",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "US-import-export-company",
     "country": "United States",
     "country_code": "US",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "US-interior-designer",
     "country": "United States",
     "country_code": "US",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "US-web-design-company",
     "country": "United States",
     "country_code": "US",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "CH-country-layer",
+    "country": "Switzerland",
+    "country_code": "CH",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "CH-accounting-firm",
     "country": "Switzerland",
     "country_code": "CH",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "CH-digital-marketing-agency",
     "country": "Switzerland",
     "country_code": "CH",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "CH-import-export-company",
     "country": "Switzerland",
     "country_code": "CH",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "CH-interior-designer",
     "country": "Switzerland",
     "country_code": "CH",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "CH-web-design-company",
     "country": "Switzerland",
     "country_code": "CH",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "MY-country-layer",
+    "country": "Malaysia",
+    "country_code": "MY",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "MY-accounting-firm",
     "country": "Malaysia",
     "country_code": "MY",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "MY-digital-marketing-agency",
     "country": "Malaysia",
     "country_code": "MY",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "MY-import-export-company",
     "country": "Malaysia",
     "country_code": "MY",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "MY-interior-designer",
     "country": "Malaysia",
     "country_code": "MY",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "MY-web-design-company",
     "country": "Malaysia",
     "country_code": "MY",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "ID-country-layer",
+    "country": "Indonesia",
+    "country_code": "ID",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "ID-accounting-firm",
     "country": "Indonesia",
     "country_code": "ID",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "ID-digital-marketing-agency",
     "country": "Indonesia",
     "country_code": "ID",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "ID-import-export-company",
     "country": "Indonesia",
     "country_code": "ID",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "ID-interior-designer",
     "country": "Indonesia",
     "country_code": "ID",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "ID-web-design-company",
     "country": "Indonesia",
     "country_code": "ID",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "PH-country-layer",
+    "country": "Philippines",
+    "country_code": "PH",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "PH-accounting-firm",
     "country": "Philippines",
     "country_code": "PH",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "PH-digital-marketing-agency",
     "country": "Philippines",
     "country_code": "PH",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "PH-import-export-company",
     "country": "Philippines",
     "country_code": "PH",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "PH-interior-designer",
     "country": "Philippines",
     "country_code": "PH",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "PH-web-design-company",
     "country": "Philippines",
     "country_code": "PH",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "ES-country-layer",
+    "country": "Spain",
+    "country_code": "ES",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "ES-accounting-firm",
     "country": "Spain",
     "country_code": "ES",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "ES-digital-marketing-agency",
     "country": "Spain",
     "country_code": "ES",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "ES-import-export-company",
     "country": "Spain",
     "country_code": "ES",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "ES-interior-designer",
     "country": "Spain",
     "country_code": "ES",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "ES-web-design-company",
     "country": "Spain",
     "country_code": "ES",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "AE-country-layer",
+    "country": "United Arab Emirates",
+    "country_code": "AE",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "AE-accounting-firm",
     "country": "United Arab Emirates",
     "country_code": "AE",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "AE-digital-marketing-agency",
     "country": "United Arab Emirates",
     "country_code": "AE",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "AE-import-export-company",
     "country": "United Arab Emirates",
     "country_code": "AE",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "AE-interior-designer",
     "country": "United Arab Emirates",
     "country_code": "AE",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "AE-web-design-company",
     "country": "United Arab Emirates",
     "country_code": "AE",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "NZ-country-layer",
+    "country": "New Zealand",
+    "country_code": "NZ",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "NZ-accounting-firm",
     "country": "New Zealand",
     "country_code": "NZ",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "NZ-digital-marketing-agency",
     "country": "New Zealand",
     "country_code": "NZ",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "NZ-import-export-company",
     "country": "New Zealand",
     "country_code": "NZ",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "NZ-interior-designer",
     "country": "New Zealand",
     "country_code": "NZ",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "NZ-web-design-company",
     "country": "New Zealand",
     "country_code": "NZ",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "VN-country-layer",
+    "country": "Vietnam",
+    "country_code": "VN",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "VN-accounting-firm",
     "country": "Vietnam",
     "country_code": "VN",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "VN-digital-marketing-agency",
     "country": "Vietnam",
     "country_code": "VN",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "VN-import-export-company",
     "country": "Vietnam",
     "country_code": "VN",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "VN-interior-designer",
     "country": "Vietnam",
     "country_code": "VN",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "VN-web-design-company",
     "country": "Vietnam",
     "country_code": "VN",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "AR-country-layer",
+    "country": "Argentina",
+    "country_code": "AR",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "AR-accounting-firm",
     "country": "Argentina",
     "country_code": "AR",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "AR-digital-marketing-agency",
     "country": "Argentina",
     "country_code": "AR",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "AR-import-export-company",
     "country": "Argentina",
     "country_code": "AR",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "AR-interior-designer",
     "country": "Argentina",
     "country_code": "AR",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "AR-web-design-company",
     "country": "Argentina",
     "country_code": "AR",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "TW-country-layer",
+    "country": "Taiwan",
+    "country_code": "TW",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "TW-accounting-firm",
     "country": "Taiwan",
     "country_code": "TW",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "TW-digital-marketing-agency",
     "country": "Taiwan",
     "country_code": "TW",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "TW-import-export-company",
     "country": "Taiwan",
     "country_code": "TW",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "TW-interior-designer",
     "country": "Taiwan",
     "country_code": "TW",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "TW-web-design-company",
     "country": "Taiwan",
     "country_code": "TW",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "IE-country-layer",
+    "country": "Ireland",
+    "country_code": "IE",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "IE-accounting-firm",
     "country": "Ireland",
     "country_code": "IE",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "IE-digital-marketing-agency",
     "country": "Ireland",
     "country_code": "IE",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "IE-import-export-company",
     "country": "Ireland",
     "country_code": "IE",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "IE-interior-designer",
     "country": "Ireland",
     "country_code": "IE",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "IE-web-design-company",
     "country": "Ireland",
     "country_code": "IE",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "RU-country-layer",
+    "country": "Russia",
+    "country_code": "RU",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "RU-accounting-firm",
     "country": "Russia",
     "country_code": "RU",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "RU-digital-marketing-agency",
     "country": "Russia",
     "country_code": "RU",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "RU-import-export-company",
     "country": "Russia",
     "country_code": "RU",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "RU-interior-designer",
     "country": "Russia",
     "country_code": "RU",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "RU-web-design-company",
     "country": "Russia",
     "country_code": "RU",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "JP-country-layer",
+    "country": "Japan",
+    "country_code": "JP",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "JP-accounting-firm",
     "country": "Japan",
     "country_code": "JP",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "JP-digital-marketing-agency",
     "country": "Japan",
     "country_code": "JP",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "JP-import-export-company",
     "country": "Japan",
     "country_code": "JP",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "JP-interior-designer",
     "country": "Japan",
     "country_code": "JP",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "JP-web-design-company",
     "country": "Japan",
     "country_code": "JP",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "TH-country-layer",
+    "country": "Thailand",
+    "country_code": "TH",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "TH-accounting-firm",
     "country": "Thailand",
     "country_code": "TH",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "TH-digital-marketing-agency",
     "country": "Thailand",
     "country_code": "TH",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "TH-import-export-company",
     "country": "Thailand",
     "country_code": "TH",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "TH-interior-designer",
     "country": "Thailand",
     "country_code": "TH",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "TH-web-design-company",
     "country": "Thailand",
     "country_code": "TH",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
+  },
+  {
+    "id": "KR-country-layer",
+    "country": "South Korea",
+    "country_code": "KR",
+    "industry": "Country layer (all industries)",
+    "kind": "country"
   },
   {
     "id": "KR-accounting-firm",
     "country": "South Korea",
     "country_code": "KR",
-    "industry": "Accounting firm"
+    "industry": "Accounting firm",
+    "kind": "industry"
   },
   {
     "id": "KR-digital-marketing-agency",
     "country": "South Korea",
     "country_code": "KR",
-    "industry": "Digital marketing agency"
+    "industry": "Digital marketing agency",
+    "kind": "industry"
   },
   {
     "id": "KR-import-export-company",
     "country": "South Korea",
     "country_code": "KR",
-    "industry": "Import export company"
+    "industry": "Import export company",
+    "kind": "industry"
   },
   {
     "id": "KR-interior-designer",
     "country": "South Korea",
     "country_code": "KR",
-    "industry": "Interior designer"
+    "industry": "Interior designer",
+    "kind": "industry"
   },
   {
     "id": "KR-web-design-company",
     "country": "South Korea",
     "country_code": "KR",
-    "industry": "Web design company"
+    "industry": "Web design company",
+    "kind": "industry"
   }
 ]

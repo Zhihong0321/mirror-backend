@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "categories": [
     "identity_registration",
     "licence",
@@ -24,6 +25,7 @@
     "reputation"
   ],
   "access": ["open", "walled", "paid", "captcha"],
+  "query_types": ["url_template", "static_list", "manual"],
   "used_in": ["preview", "paid"],
   "confidence": ["high", "medium", "low"]
 }
