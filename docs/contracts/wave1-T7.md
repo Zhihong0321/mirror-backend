@@ -130,3 +130,25 @@ real operations (network calls, database writes, timers). Accepted as not behavi
 own request objects (no getters, no side effects) and the extra microtask ticks of an async step at the run starts.
 Kept by the contract's design and commented in the code: lane-own fetches have no body to capture; a failed call
 stores its error message.
+
+## Live proof result (deployed 2026-11-03 06:01 UTC, merge `9dd0d04`, live 06:02:50)
+
+Synapse Comms, with and without `evidence`; compared with `dive-snapshot.ts` / `deeper-snapshot.ts` and checked with
+`evidence-check.ts` (every logged call against the rows by `api` and start time to the millisecond):
+
+- **Dive-deeper #20 (on):** 208 rows in 16 steps, parent uid set; all 207 lane calls have their row (0 missing), every
+  row with its raw result; 1 lane-fetched row with its note. **#21 (off):** 0 rows.
+- **Company dive #42 (on):** 93 rows (research LLM 13, Brave 16, Tavily 24, people LLM 6, people Exa 32, preview 2); 28 of
+  29 logged calls matched; the 29th is a page read through the Mac mini fetch worker (`pagefetch.ts`, out of scope).
+  **#43 (off):** 0 rows; its preview 0 rows. #42's preview: 2 rows under the dive's public id.
+- **Research unchanged:** same stages, fields and lanes; differences are the LLM's own queries, the order parallel lanes
+  finish, and outside services (a Tavily "Invalid URL", PageSpeed warnings).
+- **Forced failure:** dive #44 with `evidence` + `evidence_fail`: done on its first try, 0 rows, no result warnings,
+  preview and dossier (19,635 chars) written; one `evidence_fail` warning for the dive and one for its preview.
+  `evidence_fail` was then removed from the code (branch `wave1/t7-remove-fail`, deploys with the next task).
+- **Seen, not caused by T7:** between 06:32 and ~07:15 Vectide answered 429 and LLM calls stalled: dive #42's first try
+  hit the 40-min limit in the people step, #43's dossier was cut by the same old limit (`runner.ts`, `Promise.race([writeDossier(), late])`,
+  unchanged by T7), #42's dossier never arrived; the run with evidence on (#44) wrote its dossier. The container also
+  restarted at 07:57:28 UTC without a push or a variable change (cause not visible to Claude: no deployment-history access).
+
+Awaiting the owner's tick.
