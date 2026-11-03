@@ -8,7 +8,7 @@ import * as reportdb from '../reportdb.ts';
 import { updateRow } from '../companydive/store.ts';
 import { makeCtx } from './lib.ts';
 import { quoteOnPage } from './sections/C-merged.ts';
-import { passageWindow, previewInput, type PreviewInput } from './preview-input.ts';
+import { namesBlocked, passageWindow, previewInput, withoutBlocked, type PreviewInput } from './preview-input.ts';
 import { scrubPublic } from './privacy.ts';
 import { editing } from './preview-writer.ts';
 import { switchOn } from '../switches.ts';
@@ -114,6 +114,7 @@ async function verifyWarnings(input: PreviewInput, got: any, read: PageRead, cac
     if (!quote) { dropped.push({ title, reason: 'no quote' }); continue; }
     const found = await sourcesContaining(quote, citedIds(w.sources, urlOf), urlOf, read, cache);
     if (!found.length) { dropped.push({ title, reason: 'quote is not in a cited source' }); continue; }
+    if (namesBlocked(`${title} ${w.detail ?? ''} ${w.risk ?? ''} ${quote}`, input.blocked)) { dropped.push({ title, reason: 'names someone who is not leadership' }); continue; }
     warnings.push({ type: w.type, title, detail: String(w.detail ?? '').trim(), risk: String(w.risk ?? '').trim(), quote, sources: found });
   }
   return { warnings, dropped };
@@ -133,6 +134,7 @@ async function verifyHook(input: PreviewInput, got: any, read: PageRead, cache: 
   const urlOf = new Map(input.sourceUrls.map((s) => [s.id, s.url]));
   const found = await sourcesContaining(quote, citedIds(sourceList, urlOf), urlOf, read, cache);
   if (!found.length) return { hook: '', dropped: { title, reason: 'quote is not in a cited source' } };
+  if (namesBlocked(`${text} ${quote}`, input.blocked)) return { hook: '', dropped: { title, reason: 'names someone who is not leadership' } };
   return { hook: text, dropped: null };
 }
 
@@ -151,7 +153,8 @@ async function sourcePassages(input: PreviewInput, read: PageRead, domains: read
     if (!raw) continue;
     const facts = input.facts.filter((f) => f.sources.includes(src.id)).map((f) => f.fact).join(' ');
     const room = Math.min(PASSAGE_CHARS, PASSAGE_TOTAL - used);
-    const text = passageWindow(scrubPublic(raw, domains), facts, room);
+    // Sentences naming someone who is not leadership never reach the prompt.
+    const text = passageWindow(withoutBlocked(scrubPublic(raw, domains), input.blocked), facts, room);
     if (!text) continue;
     out.push({ id: src.id, text });
     used += text.length;

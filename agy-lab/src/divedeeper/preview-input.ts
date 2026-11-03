@@ -17,6 +17,8 @@ export type PreviewInput = {
   sourceUrls: { id: number; url: string }[];
   /** Scrubbed windows of cited sources. The writer fills this; the allow-list leaves it unset. */
   passages?: { id: number; text: string }[];
+  /** People who are not leadership. The prompt does not read this; it keeps them out of passages and the page. */
+  blocked: string[];
 };
 
 const clean = (text: unknown, domains: string[]): string => {
@@ -106,7 +108,19 @@ export function previewInput(result: DiveResult): PreviewInput {
       const url = urls.get(n);
       return url ? [{ id: n, url }] : [];
     }),
+    blocked,
   };
+}
+
+/** True when the text names someone on the blocked list. */
+export function namesBlocked(text: string, blocked: readonly string[]): boolean {
+  return blocked.some((n) => mentions(text, n));
+}
+
+/** The text without every sentence that names someone on the blocked list. */
+export function withoutBlocked(text: string, blocked: readonly string[]): string {
+  if (!blocked.length) return text;
+  return sentenceSpans(text).map(({ start, end }) => text.slice(start, end)).filter((s) => !namesBlocked(s, blocked)).join(' ');
 }
 
 const WORD = /[a-z0-9]+/g;

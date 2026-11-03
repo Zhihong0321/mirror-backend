@@ -20,7 +20,8 @@ test('the preview v2 prompt is built only from previewInput', () => {
 });
 
 test('passages go through scrubPublic before they enter the prompt', () => {
-  assert.match(src, /passageWindow\(scrubPublic\([\s\S]*const prompt = previewPrompt\(input\)/);
+  // Passages are scrubbed, then lose every sentence naming someone who is not leadership, before the prompt is built.
+  assert.match(src, /passageWindow\(withoutBlocked\(scrubPublic\([\s\S]*const prompt = previewPrompt\(input\)/);
 });
 
 test('preview v2 never writes the notes column', () => {
