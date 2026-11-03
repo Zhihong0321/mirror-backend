@@ -1,0 +1,29 @@
+{
+  "categories": [
+    "identity_registration",
+    "licence",
+    "regulator_action",
+    "professional_membership",
+    "register",
+    "awards",
+    "directory",
+    "reviews",
+    "people",
+    "claims_check",
+    "tenders_partnerships",
+    "local_social",
+    "court_insolvency",
+    "news_press"
+  ],
+  "problem_types": [
+    "contradiction",
+    "legal",
+    "misinformation",
+    "contact_mess",
+    "missing_credential",
+    "reputation"
+  ],
+  "access": ["open", "walled", "paid", "captcha"],
+  "used_in": ["preview", "paid"],
+  "confidence": ["high", "medium", "low"]
+}

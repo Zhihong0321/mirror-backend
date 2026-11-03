@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research tracker</title>
+<style>
+  :root { --bg:#f5f6f4; --panel:#ffffff; --ink:#1d2421; --muted:#667069; --line:#dfe4e0; --accent:#1f6f57;
+          --ok:#1f7a4d; --todo:#8a6d1f; --locked:#8a8f8c; --bad:#b03a2e; --chip:#eef2ef; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+          --bg:#11161a; --panel:#1a2026; --ink:#e7ece9; --muted:#97a29c; --line:#2b333a; --accent:#6fd0b0;
+          --ok:#6fd0a0; --todo:#e0bd6a; --locked:#7f8680; --bad:#ef8c7e; --chip:#232b32; } }
+  :root[data-theme="dark"] { --bg:#11161a; --panel:#1a2026; --ink:#e7ece9; --muted:#97a29c; --line:#2b333a;
+          --accent:#6fd0b0; --ok:#6fd0a0; --todo:#e0bd6a; --locked:#7f8680; --bad:#ef8c7e; --chip:#232b32; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+         padding: 20px max(16px, env(safe-area-inset-left, 0px)); }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .card b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .card span { color: var(--muted); font-size: 12px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  select, input { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  @media (min-width: 960px) { .layout { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; max-height: 70vh; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--panel); font-size: 12px; color: var(--muted); font-weight: 600; }
+  tr.row { cursor: pointer; }
+  tr.row:hover, tr.row.on { background: var(--chip); }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; border: 1px solid currentColor; }
+  .accepted { color: var(--ok); } .todo { color: var(--todo); } .locked { color: var(--locked); }
+  .detail { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+  .detail h2 { font-size: 16px; margin: 0 0 8px; }
+  .detail h3 { font-size: 13px; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  pre { background: var(--chip); border-radius: 6px; padding: 8px 10px; overflow-x: auto; font: 12px/1.45 ui-monospace, Consolas, monospace; margin: 6px 0; white-space: pre-wrap; word-break: break-all; }
+  button, a.btn { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; text-decoration: none; }
+  button:hover, a.btn:hover { border-color: var(--accent); }
+  .prompt { border-top: 1px solid var(--line); padding: 8px 0; }
+  .prompt p { margin: 3px 0; }
+  .muted { color: var(--muted); }
+  .err { color: var(--bad); }
+  .stale { color: var(--bad); font-size: 12px; }
+  .empty { padding: 24px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<h1>Research tracker</h1>
+<p class="sub">125 country × industry pairs, two passes each. Answers come in from outside AI tools. This page refreshes every 10 seconds.</p>
+
+<div class="cards">
+  <div class="card"><b id="c-pairs">–</b><span>pairs</span></div>
+  <div class="card"><b id="c-r1">–</b><span>pass 1 accepted</span></div>
+  <div class="card"><b id="c-r2">–</b><span>pass 2 accepted</span></div>
+  <div class="card"><b id="c-rej">–</b><span>rejected submissions</span></div>
+  <div class="card"><b id="c-prompts">–</b><span>prompts stored</span></div>
+</div>
+
+<div class="filters">
+  <select id="f-country"><option value="">All countries</option></select>
+  <select id="f-industry"><option value="">All industries</option></select>
+  <select id="f-status">
+    <option value="">Any status</option>
+    <option value="todo1">Pass 1 todo</option>
+    <option value="todo2">Pass 2 todo</option>
+    <option value="accepted2">Pass 2 accepted</option>
+    <option value="rejected">Has rejections</option>
+  </select>
+  <input id="f-search" type="search" placeholder="Search pair id">
+</div>
+
+<div class="layout">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Country</th><th>Industry</th><th>Pass 1</th><th>Pass 2</th><th>Prompts</th><th>Rejected</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No pair matches these filters.</div>
+  </div>
+  <div class="detail" id="detail"><p class="muted">Select a pair to see its brief, the submit commands, and its prompts.</p></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) n.append(k);
+  return n;
+};
+const pill = (state) => el('span', { class: 'pill ' + state, text: state });
+
+let pairs = [];
+let selected = null;
+
+async function load() {
+  try {
+    const r = await fetch('/api/pairs', { cache: 'no-store' });
+    pairs = await r.json();
+    fillFilters();
+    render();
+    if (selected) showDetail(selected, false);
+  } catch (e) {
+    $('rows').replaceChildren(el('tr', {}, [el('td', { colspan: '6', class: 'err', text: 'Cannot reach the tracker server: ' + e.message })]));
+  }
+}
+
+function fillFilters() {
+  const cur = { c: $('f-country').value, i: $('f-industry').value };
+  if ($('f-country').options.length > 1) return;
+  const countries = [...new Set(pairs.map((p) => p.country))].sort();
+  const industries = [...new Set(pairs.map((p) => p.industry))].sort();
+  for (const c of countries) $('f-country').append(el('option', { value: c, text: c }));
+  for (const i of industries) $('f-industry').append(el('option', { value: i, text: i }));
+  $('f-country').value = cur.c; $('f-industry').value = cur.i;
+}
+
+function matches(p) {
+  if ($('f-country').value && p.country !== $('f-country').value) return false;
+  if ($('f-industry').value && p.industry !== $('f-industry').value) return false;
+  const q = $('f-search').value.trim().toLowerCase();
+  if (q && !p.id.toLowerCase().includes(q)) return false;
+  switch ($('f-status').value) {
+    case 'todo1': return p.round1 === 'todo';
+    case 'todo2': return p.round2 === 'todo';
+    case 'accepted2': return p.round2 === 'accepted';
+    case 'rejected': return p.rejected > 0;
+  }
+  return true;
+}
+
+function render() {
+  const r1 = pairs.filter((p) => p.round1 === 'accepted').length;
+  const r2 = pairs.filter((p) => p.round2 === 'accepted').length;
+  $('c-pairs').textContent = pairs.length;
+  $('c-r1').textContent = r1;
+  $('c-r2').textContent = r2;
+  $('c-rej').textContent = pairs.reduce((s, p) => s + p.rejected, 0);
+  $('c-prompts').textContent = pairs.reduce((s, p) => s + p.prompts1 + p.prompts2, 0);
+
+  const shown = pairs.filter(matches);
+  $('empty').hidden = shown.length > 0;
+  const rows = shown.map((p) => {
+    const tr = el('tr', { class: 'row' + (selected === p.id ? ' on' : ''), 'data-id': p.id }, [
+      el('td', { text: p.country }),
+      el('td', { text: p.industry }),
+      el('td', {}, [pill(p.round1)]),
+      el('td', {}, [pill(p.round2)]),
+      el('td', { text: String(p.round2 === 'accepted' ? p.prompts2 : p.prompts1) }),
+      el('td', { text: String(p.rejected), class: p.rejected ? 'err' : 'muted' }),
+    ]);
+    tr.addEventListener('click', () => { selected = p.id; showDetail(p.id, true); render(); });
+    return tr;
+  });
+  $('rows').replaceChildren(...rows);
+}
+
+function cmd(text) {
+  const copy = el('button', { type: 'button', text: 'Copy' });
+  copy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text); copy.textContent = 'Copied'; }
+    catch { copy.textContent = 'Select the text'; }
+    setTimeout(() => (copy.textContent = 'Copy'), 1500);
+  });
+  return el('div', {}, [el('pre', { text }), copy]);
+}
+
+function promptList(round) {
+  const box = el('div');
+  const list = [...(round.prompts ?? [])].sort((a, b) => a.rank - b.rank);
+  for (const p of list) {
+    box.append(el('div', { class: 'prompt' }, [
+      el('p', {}, [el('b', { text: `${p.rank}. ${p.question}` })]),
+      el('p', { class: 'muted', text: `${p.category} · ${(p.problem_type || []).join(', ')} · ${p.used_in} · confidence ${p.confidence}` }),
+      el('p', {}, [el('a', { href: p.source?.url, target: '_blank', rel: 'noopener', text: p.source?.name ?? 'source' })]),
+    ]));
+  }
+  return box;
+}
+
+async function showDetail(id, scroll) {
+  const d = await fetch(`/api/pairs/${encodeURIComponent(id)}`, { cache: 'no-store' }).then((r) => r.json());
+  const base = `${location.origin}/api/pairs/${id}`;
+  const panel = el('div', {}, [
+    el('h2', { text: `${d.country} · ${d.industry}` }),
+    el('p', { class: 'muted', text: `pair id ${d.id}` }),
+    el('h3', { text: 'Brief to give the AI' }),
+    el('p', {}, [el('a', { class: 'btn', href: `${base}/brief/1`, target: '_blank', rel: 'noopener', text: 'Open pass 1 brief' })]),
+    el('h3', { text: 'Submit pass 1 (from the outside tool)' }),
+    cmd(`curl -s -X POST ${base}/round/1 -H "content-type: application/json" --data-binary @answer-round1.json`),
+    el('h3', { text: 'Pass 2 (unlocks after pass 1 is accepted)' }),
+    el('p', {}, [el('a', { class: 'btn', href: `${base}/brief/2`, target: '_blank', rel: 'noopener', text: 'Open pass 2 brief' })]),
+    cmd(`curl -s -X POST ${base}/round/2 -H "content-type: application/json" --data-binary @answer-round2.json`),
+    el('h3', { text: 'Status' }),
+    el('p', {}, [el('span', { text: 'Pass 1: ' }), pill(d.round1), el('span', { text: '   Pass 2: ' }), pill(d.round2),
+      el('span', { class: 'muted', text: `   rejected attempts: ${d.rejected}` })]),
+  ]);
+  if (d.rejections?.length) {
+    panel.append(el('h3', { text: 'Last rejected submissions' }));
+    for (const rj of [...d.rejections].reverse()) {
+      panel.append(el('div', { class: 'prompt' }, [
+        el('p', { class: 'muted', text: `pass ${rj.round} · ${new Date(rj.at).toLocaleString()}` }),
+        ...rj.errors.map((e) => el('p', { class: 'err', text: e })),
+      ]));
+    }
+  }
+  for (const n of [1, 2]) {
+    const r = n === 1 ? d.answer1 : d.answer2;
+    if (!r) continue;
+    panel.append(el('h3', { text: `Pass ${n} prompts (${r.prompts.length}) · received ${new Date(r._received_at).toLocaleString()}` }));
+    panel.append(el('p', { class: 'muted', text: 'Test businesses: ' + (r.test_firms || []).join(', ') }));
+    panel.append(promptList(r));
+  }
+  if (!d.answer1 && !d.answer2) panel.append(el('p', { class: 'muted', text: 'No answer yet. Pass 1 is the first step.' }));
+  $('detail').replaceChildren(panel);
+  if (scroll && window.matchMedia('(max-width: 959px)').matches) $('detail').scrollIntoView({ behavior: 'smooth' });
+}
+
+for (const id of ['f-country', 'f-industry', 'f-status']) $(id).addEventListener('change', render);
+$('f-search').addEventListener('input', render);
+load();
+setInterval(() => { if (document.visibilityState === 'visible') load(); }, 10000);
+</script>
+</body>
+</html>
