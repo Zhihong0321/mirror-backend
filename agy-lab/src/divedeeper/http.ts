@@ -1,6 +1,6 @@
 import http from 'node:http';
 import * as reportdb from '../reportdb.ts';
-import { parseSwitches } from '../switches.ts';
+import { parseSwitches, switchOn } from '../switches.ts';
 import { type LaneResult } from './runner.ts';
 import { buildReport } from './report-html.ts';
 import { buildPreview } from './preview-html.ts';
@@ -10,6 +10,8 @@ import { enabled } from './stages.ts';
 import { ensureTable, newPublicId, update, diveRow, type Row } from './store.ts';
 import { startDive, waiting, active, queue } from './run.ts';
 import { previewAuto, offer, editing, writePreviewNotes } from './preview-writer.ts';
+import { writePreviewV2 } from './preview-v2.ts';
+import { sourceText } from './preview-sources.ts';
 
 // ---------------------------------------------------------------- HTTP
 
@@ -28,14 +30,23 @@ function links(req: http.IncomingMessage, publicId: string, divePublicId?: strin
 /** /dp/<company-dive public id>: the free preview, built from the company-dive alone, before anything is paid for.
  *  The first open writes its notes (one LLM pass, about a minute) behind a page that refreshes itself. */
 async function handlePreview(res: http.ServerResponse, publicId: string): Promise<void> {
-  const dive = (await reportdb.sql(`select id, public_id, company, status, stage, result, dossier, finished_at from company_dive where public_id = $1`, [publicId])).rows[0] as any;
+  const dive = (await reportdb.sql(`select id, public_id, company, status, stage, result, dossier, finished_at, options from company_dive where public_id = $1`, [publicId])).rows[0] as any;
   const headers = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' };
   if (!dive) { res.writeHead(404, headers); res.end('<!doctype html><title>Not found</title><p>No such preview.</p>'); return; }
   const ready = dive.result && ['done', 'partial'].includes(dive.status);
   if (ready) {
-    const saved = (await reportdb.sql(`select notes from dive_preview where dive_id = $1`, [dive.id])).rows[0] as any;
-    if (saved) { res.writeHead(200, headers); res.end(buildPreview(dive, offer(), saved.notes?.warnings ? saved.notes : null)); return; }
-    if (!editing.has(Number(dive.id))) void writePreviewNotes(dive);
+    if (switchOn(dive.options, 'preview2')) {
+      await reportdb.sql(`alter table dive_preview add column if not exists notes_v2 jsonb`);
+      const saved = (await reportdb.sql(`select notes_v2 from dive_preview where dive_id = $1`, [dive.id])).rows[0] as any;
+      if (saved?.notes_v2 != null) { res.writeHead(200, headers); res.end(buildPreview(dive, offer(), null, saved.notes_v2)); return; }
+      if (!editing.has(Number(dive.id))) void writePreviewV2(dive, sourceText(dive));
+    } else {
+      // The on-demand write has never seen options, so evidence stays off on this path.
+      delete dive.options;
+      const saved = (await reportdb.sql(`select notes from dive_preview where dive_id = $1`, [dive.id])).rows[0] as any;
+      if (saved) { res.writeHead(200, headers); res.end(buildPreview(dive, offer(), saved.notes?.warnings ? saved.notes : null)); return; }
+      if (!editing.has(Number(dive.id))) void writePreviewNotes(dive);
+    }
   }
   const live = dive.status !== 'failed';
   res.writeHead(200, headers);

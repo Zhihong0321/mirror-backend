@@ -302,6 +302,101 @@ export async function settle(reportUid: string, maxMs: number): Promise<void> {
   } catch { /* a settle never throws */ }
 }
 
+/** The company-dive ledger's key for one URL: no www, fragment, tracking params or trailing slash.
+ *  Copied here so a read does not import the company-dive pipeline. */
+function urlKey(raw: string): string {
+  try {
+    const u = new URL(raw.trim());
+    u.hash = '';
+    for (const p of [...u.searchParams.keys()]) {
+      if (/^(utm_|fbclid$|gclid$|mc_|ref$|ref_src$)/i.test(p)) u.searchParams.delete(p);
+    }
+    const host = u.hostname.toLowerCase().replace(/^www\./, '');
+    const path = u.pathname.replace(/\/+$/, '');
+    return `${host}${path}${u.search}`;
+  } catch {
+    return raw.trim().toLowerCase();
+  }
+}
+
+function sameUrl(a: string, b: string): boolean {
+  return urlKey(a) === urlKey(b);
+}
+
+/** Text stored on one search hit. A page body wins; otherwise the hit's own content or snippets. */
+function resultContent(row: Record<string, unknown>): string | null {
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v : '');
+  const join = (v: unknown) => (Array.isArray(v) ? v.map(str).filter(Boolean).join('\n') : str(v));
+  const page = str(row.raw_content) || str(row.text) || str(row.content);
+  if (page) return page;
+  const snippets = [str(row.description), join(row.extra_snippets), join(row.snippets), join(row.highlights)].filter(Boolean);
+  return snippets.length ? snippets.join('\n') : null;
+}
+
+function contentIn(node: unknown, url: string): string | null {
+  let best: string | null = null;
+  const visit = (v: unknown): void => {
+    if (!v || typeof v !== 'object') return;
+    if (Array.isArray(v)) {
+      for (const item of v) visit(item);
+      return;
+    }
+    const row = v as Record<string, unknown>;
+    if (typeof row.url === 'string' && sameUrl(row.url, url)) {
+      const text = resultContent(row);
+      if (text && (best == null || text.length > best.length)) best = text;
+    }
+    for (const item of Object.values(row)) if (item && typeof item === 'object') visit(item);
+  };
+  visit(node);
+  return best;
+}
+
+/**
+ * Raw text stored for one URL under a dive's public id, or null when nothing is stored.
+ * A `read` / `page` row (api `fetch` / `web`, request or what is that URL) wins.
+ * Otherwise the content of a search result for that URL.
+ */
+export async function textForUrl(reportUid: string, url: string): Promise<string | null> {
+  if (!reportUid || !url) return null;
+  await ensureTable();
+  const pages = await reportdb.sql<{ id: string | number; what: string; request: unknown; text_raw: boolean }>(
+    `select id, what, request, (jsonb_typeof(raw) = 'string') as text_raw
+       from evidence_call
+      where report_uid = $1 and api in ('fetch', 'web')
+      order by at desc, id desc`,
+    [reportUid],
+  );
+  for (const row of pages.rows) {
+    // node-pg returns a boolean. A proxy that json-encodes loosely may return 't' or 'true'.
+    const textRaw = row.text_raw === true || row.text_raw === 't' || (row.text_raw as unknown) === 'true';
+    if (!textRaw) continue;
+    const requestUrl = typeof row.request === 'string' ? row.request : '';
+    // `what` is sliced at 300 characters, so a long URL is matched on the request, which is whole.
+    const whatHit = !!row.what && row.what.length < 300 && sameUrl(row.what, url);
+    const hit = (!!requestUrl && sameUrl(requestUrl, url)) || whatHit;
+    if (!hit) continue;
+    const body = await reportdb.sql<{ text: string | null }>(
+      `select raw #>> '{}' as text from evidence_call where id = $1 and jsonb_typeof(raw) = 'string'`,
+      [row.id],
+    );
+    const text = body.rows[0]?.text;
+    if (typeof text === 'string' && text.trim()) return text;
+  }
+  const searches = await reportdb.sql<{ raw: unknown }>(
+    `select raw from evidence_call
+      where report_uid = $1 and api in ('brave', 'exa', 'tavily') and raw is not null
+      order by at desc, id desc`,
+    [reportUid],
+  );
+  let best: string | null = null;
+  for (const row of searches.rows) {
+    const text = contentIn(row.raw, url);
+    if (text && (best == null || text.length > best.length)) best = text;
+  }
+  return best;
+}
+
 export async function callsForReport(reportUid: string): Promise<EvidenceCall[]> {
   await ensureTable();
   const out = await reportdb.sql<Record<string, unknown>>(
