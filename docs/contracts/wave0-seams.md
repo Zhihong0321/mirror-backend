@@ -140,3 +140,9 @@ waited on a slow LLM lane and passed on its second try; W-speed was partial (Pag
 **T3 baseline (on the T2 code, before T3):** dive #38's lane files in `OUT`: A-assets, B-brand, C-merged, D-claims,
 D-registry, G-fixed, G-grounded, H-maps, H-plan, H-web, K-credibility, N-news, R-contacts, S2-consult, S3-editor,
 S4-analysis, S5-plan, W-speed, and dive-38 (`<name>-38.json`, 19 files).
+
+**T3 (deployed 2026-11-03 01:41 UTC, `c24ce9a`).** Dive-deeper #17 on dive #38 after the deploy, against T2's run #16
+and the baseline above: done; the snapshot is identical except two parallel stage-1 lanes (W-speed, G-grounded)
+finishing in another order; the same 19 lane file names, all written fresh after the restart through `writeLane`;
+C-merged done with no "Maps phones NOT checked" warning while H-maps saved 2 listings (so it read H-maps' file through
+`readLane`); report published, `/dd/` 200. Awaiting the owner's tick.
