@@ -426,8 +426,10 @@ async function minimax(prompt: string, opts: ChatOpts): Promise<Omit<ChatAnswer,
   const model = `pi/${pi.config().model}`;
   const call = startCall('llm', opts.step, { model, provider: 'MiniMax' });
   const used = { tokensIn: 0, tokensOut: 0 };
-  const text = opts.system ? `${opts.system}\n\n${prompt}` : prompt;
+  // Built inside the try, as before T7: a throw here still goes through the failure record below.
+  let text = prompt;
   try {
+    text = opts.system ? `${opts.system}\n\n${prompt}` : prompt;
     const out = await pi.ask(text, { tools: false, timeoutMs: opts.timeoutMs ?? 0, ...(opts.maxTokens ? { maxTokens: opts.maxTokens } : {}) }, used);
     if (opts.log || evidenceActive()) kept(call, { ok: true, ...used }, opts.log, out, text);
     return { answer: out.answer, model, lane: 'MiniMax', tokensIn: used.tokensIn, tokensOut: used.tokensOut };
