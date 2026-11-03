@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const src = fs.readFileSync(new URL('./preview-v2.ts', import.meta.url), 'utf8');
+const src = fs.readFileSync(new URL('./divedeeper/preview-v2.ts', import.meta.url), 'utf8');
 
 test('the preview v2 prompt is built only from previewInput', () => {
   assert.match(src, /const input = previewInput\(/);

@@ -60,7 +60,7 @@ const isOfficialUrl = (raw: string, domains: readonly string[]): boolean => {
   });
 };
 
-/** Drops emails, phone numbers, URLs other than the company's own domains, and runs of 6 or more digits. */
+/** Drops emails, phone numbers, non-official URLs, official URLs that hold 6 or more digits in a row, and any other run of 6 or more digits. */
 export function scrubPublic(text: unknown, officialDomains: readonly string[] = []): string {
   const s = String(text ?? '');
   if (!s) return s;
@@ -72,14 +72,12 @@ export function scrubPublic(text: unknown, officialDomains: readonly string[] = 
     const parts = m.match(/^(.*?)([.,;:)]*)$/);
     const core = parts?.[1] || m;
     const tail = parts?.[2] ?? '';
-    return { core, tail, ok: isOfficialUrl(core, domains) };
+    // No digit-run exception: an official URL that itself holds one is dropped whole.
+    return { core, tail, ok: isOfficialUrl(core, domains) && !/\d{6,}/.test(core) };
   };
   let out = s.replace(email, '').replace(phone, '');
   out = out.replace(url, (m) => { const p = peel(m); return (p.ok ? p.core : '') + p.tail; });
-  url.lastIndex = 0;
-  out = out.replace(url, (m) => { const p = peel(m); return p.ok ? `\u0000${p.core}\u0000${p.tail}` : m; });
-  // Markers keep a digit run that sits inside an official URL. A bare run still goes.
-  out = out.replace(/\u0000([^\u0000]*)\u0000|\d{6,}/g, (_m, kept) => kept ?? '');
+  out = out.replace(/\d{6,}/g, '');
   if (out === s) return s;
   return out.replace(/[ \t]{2,}/g, ' ').replace(/[ \t]+([,.;:)])/g, '$1').trim();
 }

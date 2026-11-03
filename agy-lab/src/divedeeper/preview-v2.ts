@@ -8,6 +8,7 @@ import { updateRow } from '../companydive/store.ts';
 import { makeCtx } from './lib.ts';
 import { quoteOnPage } from './sections/C-merged.ts';
 import { previewInput, type PreviewInput } from './preview-input.ts';
+import { scrubPublic } from './privacy.ts';
 import { switchOn } from '../switches.ts';
 
 const KEPT = new Set(['contradiction', 'outdated', 'wrong']);
@@ -42,6 +43,11 @@ function logLines(v: unknown): Array<{ at: string; stage: string; msg: string }>
   } catch {
     return [];
   }
+}
+
+function scrubbedError(err: unknown, domains: readonly string[]): string {
+  const msg = err instanceof Error ? err.message : String(err ?? '');
+  return scrubPublic(msg, domains);
 }
 
 /** One line on the company dive, through updateRow. preview2_fail is proof only. */
@@ -141,6 +147,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
     const input = previewInput(dive?.result);
     const prompt = previewPrompt(input);
     const read = typeof sourceText === 'function' ? sourceText : async () => null;
+    const domains = (dive?.result?.identity?.official_domains ?? []).map((d: unknown) => String(d));
     await reportdb.sql(`alter table dive_preview add column if not exists notes_v2 jsonb`);
     const edited_at = new Date().toISOString();
     const store = async (body: Record<string, unknown>) => {
@@ -150,24 +157,44 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
         [dive.id, JSON.stringify(saved), JSON.stringify(ctx.meter)],
       );
     };
+    // Same shape as a returned failure. A thrown error adds its scrubbed text.
+    const failed = (err?: unknown) => ({
+      prompt, hook: '', known: [] as { label: string; value: string }[], warnings: [] as SavedWarning[], dropped: [] as Dropped[], failed: true as const,
+      ...(err == null ? {} : { error: scrubbedError(err, domains) }),
+    });
     if (switchOn(options, 'preview2_fail')) {
       try { await notePreview2Fail(dive); }
       catch (err) { console.error(`[dive-preview ${id}] preview2_fail log failed`, err); }
-      await store({ prompt, hook: '', known: [], warnings: [], dropped: [], failed: true });
+      await store(failed());
       return;
     }
     let got: any = null;
+    let thrown: unknown = null;
     for (let attempt = 1; attempt <= 2; attempt++) {
-      got = ctx.parseJson(await ctx.llm(prompt, { label: 'preview2' }));
+      try {
+        got = ctx.parseJson(await ctx.llm(prompt, { label: 'preview2' }));
+        thrown = null;
+      } catch (err) {
+        // The model or the parser threw. Retry once, then save failed below.
+        thrown = err;
+        got = null;
+      }
       if (got && Array.isArray(got.warnings)) break;
       ctx.warn(`preview editor answer did not parse (attempt ${attempt})`);
       got = null;
     }
     if (!got) {
-      await store({ prompt, hook: '', known: [], warnings: [], dropped: [], failed: true });
+      await store(failed(thrown ?? undefined));
       return;
     }
-    const { warnings, dropped } = await verifyWarnings(input, got, read);
+    let warnings: SavedWarning[];
+    let dropped: Dropped[];
+    try {
+      ({ warnings, dropped } = await verifyWarnings(input, got, read));
+    } catch (err) {
+      await store(failed(err));
+      return;
+    }
     await store({
       prompt,
       hook: typeof got.hook === 'string' ? got.hook.trim() : '',
@@ -177,6 +204,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
       failed: false,
     });
   } catch (err) {
+    // The model and the parser save their own failure. A database error stays a log.
     console.error(`[dive-preview ${id}] preview2 failed`, err);
   } finally {
     release?.();

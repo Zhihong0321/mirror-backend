@@ -114,6 +114,8 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     : Math.max(warnings.length - shown.length, contradictions.length + gaps.length - shown.length, 0);
   const typesFound = [...new Set(warnings.map((w) => w.type))];
   const signCount = v2 ? shown.length : Math.max(warnings.length, contradictions.length + gaps.length);
+  // Switched page: this figure counts shown contradiction warnings, never the raw list.
+  const disagreeN = v2 ? shown.filter((w) => w.type === 'contradiction').length : contradictions.length;
   const hook = picked?.hook ? P(picked.hook) : `This preview was prepared for ${name} alone, from ${sources.length} public sources. Here is what they say about you, and where they do not agree.`;
 
   const ctaHref = offer.order_url && /^https?:\/\//.test(offer.order_url) ? offer.order_url : '#order';
@@ -519,7 +521,7 @@ ${PARTNERS_CSS}`;
 <div class="strip">
   <div><b>${esc(sources.length)}</b><span>public source${sources.length === 1 ? '' : 's'} read about ${esc(short)}</span></div>
   <div><b>${esc(facts.length)}</b><span>fact${facts.length === 1 ? '' : 's'} on public record</span></div>
-  <div><b>${esc(contradictions.length)}</b><span>${contradictions.length === 1 ? 'place' : 'places'} where those sources disagree</span></div>
+  <div><b>${esc(disagreeN)}</b><span>${disagreeN === 1 ? 'place' : 'places'} where those sources disagree</span></div>
 ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'question' : 'questions'} they cannot answer</span></div>\n`}</div>
 
 <section id="thesis" class="thesis">
