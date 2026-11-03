@@ -40,6 +40,14 @@ const SG_SAMPLE_BATCH: ResearchInput[] = [
   { company: 'Verz Design', country: 'Singapore', industry: 'Web design company', website: 'https://www.verzdesign.com/' },
 ];
 
+const AU_SAMPLE_BATCH: ResearchInput[] = [
+  { company: 'Pitcher Partners', country: 'Australia', industry: 'Accounting firm', website: 'https://www.pitcher.com.au/' },
+  { company: 'Digital Next', country: 'Australia', industry: 'Digital marketing agency', website: 'https://www.digitalnext.com.au/' },
+  { company: 'Magellan Logistics', country: 'Australia', industry: 'Import export company', website: 'https://magellanlogistics.com.au/' },
+  { company: 'Alexander &CO.', country: 'Australia', industry: 'Interior designer', website: 'https://alexanderand.co/' },
+  { company: 'Chromatix', country: 'Australia', industry: 'Web design company', website: 'https://www.chromatix.com.au/' },
+];
+
 async function main() {
   const opts = parseArgs();
 
@@ -49,9 +57,11 @@ async function main() {
   console.log('====================================================\n');
 
   if (opts.batch) {
-    const isSg = opts.batch.toLowerCase().includes('sg');
-    const batchList = isSg ? SG_SAMPLE_BATCH : MY_SAMPLE_BATCH;
-    const batchName = isSg ? 'Singapore' : 'Malaysia';
+    const b = opts.batch.toLowerCase();
+    const isSg = b.includes('sg');
+    const isAu = b.includes('au');
+    const batchList = isAu ? AU_SAMPLE_BATCH : isSg ? SG_SAMPLE_BATCH : MY_SAMPLE_BATCH;
+    const batchName = isAu ? 'Australia' : isSg ? 'Singapore' : 'Malaysia';
     console.log(`Running ${batchName} batch of ${batchList.length} companies:\n`);
     for (let i = 0; i < batchList.length; i++) {
       const item = batchList[i];

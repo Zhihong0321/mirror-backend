@@ -96,11 +96,12 @@ function cleanDomain(rawUrl: string): string {
   }
 }
 
-/** Company name without its legal suffix, lower case, single spaces. */
+/** Company name without its legal suffix, lower case, single spaces, normalized punctuation. */
 function brandName(company: string): string {
   return company
     .toLowerCase()
     .replace(/\b(sdn\.?\s*bhd\.?|bhd\.?|plt|pte\.?\s*ltd\.?|ltd\.?|llc|inc\.?)\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -148,12 +149,22 @@ function aboutContactLinks(
   return [...found].map(([label, url]) => [url, label]);
 }
 
-/** Town and state from the first postcode address on the site ("41200 Klang, Selangor" -> "Klang, Selangor"). */
+/** Town and state from the first postcode address on the site (e.g. "41200 Klang, Selangor" -> "Klang, Selangor", "South Melbourne VIC 3205" -> "South Melbourne, VIC"). */
 function siteTown(markdown: string, country: string): string {
   const text = markdown.replace(/\]\([^)]*\)/g, ']');
-  const m = text.match(/\b\d{5}\s+([A-Z][A-Za-z'. ]{2,40}?)(?:\s*,\s*([A-Z][A-Za-z ]{2,30}?))?\s*(?:[,.\n|*]|$)/);
-  if (!m) return '';
-  return [m[1], m[2]].filter((x) => x && x.trim().toLowerCase() !== country.toLowerCase()).join(', ').trim();
+  // Malaysia: 5-digit postcode followed by town and state
+  const mMY = text.match(/\b\d{5}\s+([A-Z][A-Za-z'. ]{2,40}?)(?:\s*,\s*([A-Z][A-Za-z ]{2,30}?))?\s*(?:[,.\n|*]|$)/);
+  if (mMY) {
+    const res = [mMY[1], mMY[2]].filter((x) => x && x.trim().toLowerCase() !== country.toLowerCase()).join(', ').trim();
+    if (res) return res;
+  }
+  // Australia: suburb, STATE, 4-digit postcode ("South Melbourne, VIC, 3205"; "Bondi Junction\nNSW 2022").
+  // The suburb never spans a line; the state is upper case.
+  const mAU = text.match(/\b([A-Z][A-Za-z ]{2,25}?),?\s+(VIC|NSW|QLD|WA|SA|TAS|ACT|NT),?\s+\d{4}\b/);
+  if (mAU) {
+    return `${mAU[1].trim()}, ${mAU[2]}`;
+  }
+  return '';
 }
 
 /** Step 1: confirm the official site, read it, then search where the owner does not look */
@@ -212,8 +223,12 @@ export async function runStep1Research(
     const url = `https://${domain}`;
     log(`Checking official site candidate ${url}`);
     const page = await readWebPage(url);
+    const pageNorm = page.markdown.toLowerCase().replace(/[^a-z0-9]+/g, ' ');
     const carriesName =
-      mainLabel(domain).includes(brandCompact) || page.markdown.toLowerCase().replace(/\s+/g, ' ').includes(brand);
+      mainLabel(domain).includes(brandCompact) ||
+      brandCompact.includes(mainLabel(domain)) ||
+      pageNorm.includes(brand) ||
+      (brandToken.length >= 4 && mainLabel(domain).includes(brandToken) && pageNorm.includes(brandToken));
     tried.push(`${url}: ${page.status}${page.status === 'ok' && !carriesName ? ', company name not on page' : ''}`);
     if (page.status === 'ok' && carriesName) {
       officialDomain = domain;
