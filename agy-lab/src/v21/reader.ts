@@ -37,10 +37,17 @@ const BLOCKED_PATTERNS = [
   /403 forbidden/i,
   /robot or human/i,
   /ddos-guard/i,
+  /please wait while your request is being verified/i,
+  /being verified/i,
+  /just a moment\.\.\./i,
+  /security check/i,
+  /verify you are human/i,
+  /turnstile/i,
 ];
 
 function isBlocked(text: string): boolean {
   if (text.length > 5000) return false;
+  if (text.length < 200 && /loader|verif|moment/i.test(text)) return true;
   return BLOCKED_PATTERNS.some((p) => p.test(text));
 }
 
@@ -91,37 +98,44 @@ async function fetchViaTavily(url: string): Promise<string> {
 
 /** Read a page with local headless worker, falling back to Tavily */
 export async function readWebPage(url: string): Promise<PageResult> {
+  let crawl4aiErr = '';
   // 1. Try local Crawl4AI
   try {
     const text = await fetchViaCrawl4Ai(url);
-    if (!text) return { url, markdown: '', status: 'empty', method: 'crawl4ai' };
-    if (isBlocked(text)) return { url, markdown: text.slice(0, 500), status: 'blocked', method: 'crawl4ai' };
-    return {
-      url,
-      markdown: text.slice(0, MAX_PAGE_CHARS),
-      status: 'ok',
-      method: 'crawl4ai',
-    };
-  } catch (err: any) {
-    // 2. Try Tavily /extract fallback
-    try {
-      const text = await fetchViaTavily(url);
-      if (!text) return { url, markdown: '', status: 'empty', method: 'tavily' };
-      if (isBlocked(text)) return { url, markdown: text.slice(0, 500), status: 'blocked', method: 'tavily' };
+    if (isBlocked(text)) {
+      crawl4aiErr = 'Crawl4AI was blocked by interstitial/captcha';
+    } else if (!text) {
+      crawl4aiErr = 'Crawl4AI returned empty text';
+    } else {
       return {
         url,
         markdown: text.slice(0, MAX_PAGE_CHARS),
         status: 'ok',
-        method: 'tavily',
-      };
-    } catch (err2: any) {
-      return {
-        url,
-        markdown: '',
-        status: 'error',
-        error: `Crawl4AI: ${err.message} | Tavily: ${err2.message}`,
-        method: 'failed',
+        method: 'crawl4ai',
       };
     }
+  } catch (err: any) {
+    crawl4aiErr = `Crawl4AI: ${err.message}`;
+  }
+
+  // 2. Try Tavily /extract fallback
+  try {
+    const text = await fetchViaTavily(url);
+    if (!text) return { url, markdown: '', status: 'empty', method: 'tavily' };
+    if (isBlocked(text)) return { url, markdown: text.slice(0, 500), status: 'blocked', method: 'tavily' };
+    return {
+      url,
+      markdown: text.slice(0, MAX_PAGE_CHARS),
+      status: 'ok',
+      method: 'tavily',
+    };
+  } catch (err2: any) {
+    return {
+      url,
+      markdown: '',
+      status: 'error',
+      error: `${crawl4aiErr} | Tavily: ${err2.message}`,
+      method: 'failed',
+    };
   }
 }

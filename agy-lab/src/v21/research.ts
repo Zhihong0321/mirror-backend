@@ -59,6 +59,8 @@ export type RawResearchCheckpoint = {
   official_site: {
     domain: string;
     resolved_url: string;
+    /** Every candidate the gate tried and what it returned, kept even when one passes (a given site that fails is itself evidence). */
+    tried: string[];
     pages: OfficialPageData[];
   };
   third_party_discoveries: Array<{
@@ -112,14 +114,36 @@ function mainLabel(domain: string): string {
 }
 
 /** Same-domain links on a page whose path says about or contact, first of each. */
-function aboutContactLinks(markdown: string, domain: string): Array<[string, 'about' | 'contact']> {
+function aboutContactLinks(
+  markdown: string,
+  domain: string,
+  extraUrls: string[] = [],
+): Array<[string, 'about' | 'contact']> {
   const found = new Map<'about' | 'contact', string>();
+  const dLabel = mainLabel(domain);
+
+  const testUrl = (url: string) => {
+    const uDom = cleanDomain(url);
+    const uLabel = mainLabel(uDom);
+    const isSameSite =
+      uDom === domain ||
+      (uLabel &&
+        dLabel &&
+        (dLabel.includes(uLabel) || uLabel.includes(dLabel)) &&
+        Math.min(uLabel.length, dLabel.length) >= 3);
+    if (!isSameSite) return;
+    try {
+      const p = new URL(url).pathname.toLowerCase();
+      if (!found.has('about') && /about|profile|our-story/.test(p)) found.set('about', url);
+      if (!found.has('contact') && /contact/.test(p)) found.set('contact', url);
+    } catch {}
+  };
+
   for (const m of markdown.matchAll(/\]\((https?:\/\/[^)\s]+)/g)) {
-    const url = m[1];
-    if (cleanDomain(url) !== domain) continue;
-    const p = new URL(url).pathname.toLowerCase();
-    if (!found.has('about') && /about|profile|our-story/.test(p)) found.set('about', url);
-    if (!found.has('contact') && /contact/.test(p)) found.set('contact', url);
+    testUrl(m[1]);
+  }
+  for (const u of extraUrls) {
+    testUrl(u);
   }
   return [...found].map(([label, url]) => [url, label]);
 }
@@ -211,7 +235,7 @@ export async function runStep1Research(
       industry: checklist?.industry ?? industry,
       prompt_count: prompts.length,
     },
-    official_site: { domain: officialDomain, resolved_url: officialUrl, pages: [] },
+    official_site: { domain: officialDomain, resolved_url: officialUrl, tried, pages: [] },
     third_party_discoveries: discoveries,
     probes: [],
   };
@@ -226,7 +250,8 @@ export async function runStep1Research(
   // 3. Read the official site: home, then its own about and contact links. A page identical to one read is dropped.
   const pages = checkpoint.official_site.pages;
   pages.push({ url: officialUrl, label: 'home', status: homeStatus, charCount: homeMarkdown.length, markdown: homeMarkdown, method: homeMethod });
-  for (const [url, label] of aboutContactLinks(homeMarkdown, officialDomain)) {
+  const discoveryUrls = discoveries.map((d) => d.url);
+  for (const [url, label] of aboutContactLinks(homeMarkdown, officialDomain, discoveryUrls)) {
     log(`Reading [${label}] ${url}`);
     const page = await readWebPage(url);
     if (page.status === 'ok' && pages.some((p) => p.markdown === page.markdown)) {
@@ -239,7 +264,10 @@ export async function runStep1Research(
   // 4. Coverage searches: Google Maps (on a Gmap worker, running while the rest go), reviews, employee reviews, news
   // Maps needs a place: the town and state from the site's own address, else the country alone.
   const town = siteTown(pages.map((p) => p.markdown).join('\n'), country);
-  const mapsQuery = [company, town, country].filter(Boolean).join(' ');
+  const mapsParts = [company];
+  if (town) mapsParts.push(town);
+  if (!company.toLowerCase().includes(country.toLowerCase())) mapsParts.push(country);
+  const mapsQuery = mapsParts.join(' ');
   log(`Google Maps search: ${mapsQuery}`);
   const maps = mapsSearch(mapsQuery);
   for (const q of COVERAGE_QUERIES) {
@@ -249,7 +277,9 @@ export async function runStep1Research(
   }
 
   // 5. Catalog probes: run each and keep the raw hits
+  // Two catalog sources on the same host make the same query: run it once, under the first one.
   log(`Running ${prompts.length} catalog probes`);
+  const probed = new Set<string>();
   for (const p of prompts) {
     let host = '';
     try {
@@ -257,6 +287,11 @@ export async function runStep1Research(
     } catch {}
 
     const query = host ? `"${company}" site:${host}` : `"${company}" ${p.source.name}`;
+    if (probed.has(query)) {
+      log(`Probe #${p.rank} [${p.category}]: same query as an earlier probe, not run again`);
+      continue;
+    }
+    probed.add(query);
     log(`Probe #${p.rank} [${p.category}]: ${query}`);
     const hits = await braveSearch(query, { count: 3 }).catch(() => [] as BraveHit[]);
 

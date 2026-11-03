@@ -69,6 +69,10 @@ export async function getLlmLanes(): Promise<LlmLane[]> {
 // ---------------------------------------------------------------- Brave Search
 export type BraveHit = { url: string; title: string; snippets: string[] };
 
+const BRAVE_SUPPORTED_COUNTRIES = new Set([
+  'AR', 'AU', 'AT', 'BE', 'BR', 'CA', 'CL', 'DK', 'FI', 'FR', 'DE', 'GR', 'HK', 'IN', 'ID', 'IT', 'JP', 'KR', 'MY', 'MX', 'NL', 'NZ', 'NO', 'CN', 'PL', 'PT', 'PH', 'RU', 'SA', 'ZA', 'ES', 'SE', 'CH', 'TW', 'TR', 'GB', 'US', 'ALL'
+]);
+
 export async function braveSearch(query: string, options: { count?: number; country?: string } = {}): Promise<BraveHit[]> {
   const keys = await getCloudKeys();
   const count = options.count ?? 10;
@@ -77,7 +81,12 @@ export async function braveSearch(query: string, options: { count?: number; coun
   for (const key of keys.braveKeys) {
     try {
       const q = new URLSearchParams({ q: query, count: String(count) });
-      if (options.country) q.set('country', options.country);
+      if (options.country) {
+        const cCode = options.country.trim().toUpperCase();
+        if (BRAVE_SUPPORTED_COUNTRIES.has(cCode)) {
+          q.set('country', cCode);
+        }
+      }
       const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${q}`, {
         headers: {
           'X-Subscription-Token': key,

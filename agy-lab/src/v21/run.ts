@@ -24,12 +24,20 @@ function parseArgs(): {
   return out;
 }
 
-const SAMPLE_BATCH: ResearchInput[] = [
+const MY_SAMPLE_BATCH: ResearchInput[] = [
   { company: 'YYC Advisors', country: 'Malaysia', industry: 'Accounting firm', website: 'https://www.yycadvisors.com' },
   { company: 'Dezeno', country: 'Malaysia', industry: 'Interior designer', website: 'https://dezeno.com.my' },
   { company: 'Kingdom Digital', country: 'Malaysia', industry: 'Digital marketing agency', website: 'https://www.kingdomdigital.com.my' },
   { company: 'DNE Logistics', country: 'Malaysia', industry: 'Import export company', website: 'https://dnelogistics.com' },
   { company: 'O2O Digital', country: 'Malaysia', industry: 'Web design company', website: 'https://o2o.my' },
+];
+
+const SG_SAMPLE_BATCH: ResearchInput[] = [
+  { company: 'RSM Singapore', country: 'Singapore', industry: 'Accounting firm', website: 'https://www.rsmsingapore.sg/' },
+  { company: 'OOm Pte Ltd', country: 'Singapore', industry: 'Digital marketing agency', website: 'https://www.oom.com.sg/' },
+  { company: 'Makoto-Ya Singapore', country: 'Singapore', industry: 'Import export company', website: 'https://www.makoto-ya.com.sg/' },
+  { company: 'Space Factor', country: 'Singapore', industry: 'Interior designer', website: 'https://spacefactor.com.sg/' },
+  { company: 'Verz Design', country: 'Singapore', industry: 'Web design company', website: 'https://www.verzdesign.com/' },
 ];
 
 async function main() {
@@ -41,10 +49,13 @@ async function main() {
   console.log('====================================================\n');
 
   if (opts.batch) {
-    console.log(`Running sample batch of ${SAMPLE_BATCH.length} companies:\n`);
-    for (let i = 0; i < SAMPLE_BATCH.length; i++) {
-      const item = SAMPLE_BATCH[i];
-      console.log(`\n>>> [${i + 1}/${SAMPLE_BATCH.length}] Processing "${item.company}"...`);
+    const isSg = opts.batch.toLowerCase().includes('sg');
+    const batchList = isSg ? SG_SAMPLE_BATCH : MY_SAMPLE_BATCH;
+    const batchName = isSg ? 'Singapore' : 'Malaysia';
+    console.log(`Running ${batchName} batch of ${batchList.length} companies:\n`);
+    for (let i = 0; i < batchList.length; i++) {
+      const item = batchList[i];
+      console.log(`\n>>> [${i + 1}/${batchList.length}] Processing "${item.company}"...`);
       try {
         const { checkpointPath } = await runStep1Research(item);
         console.log(`>>> Checkpoint written: ${checkpointPath}`);
