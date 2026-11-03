@@ -33,11 +33,16 @@ const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const PUB_PHONE = /(?:\+?6?0)[\s-]?1\d[\s-]?\d{3,4}[\s-]?\d{3,4}\b|\+\d[\d\s().-]{6,}\d|\b0\d{1,2}[\s-]\d{3,4}[\s-]?\d{4}\b/i;
 const WEB = /\b(?:https?:\/\/|www\.)[^\s<>"')\]]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<>"')\]]*)?/i;
 const DIGITS = /\d{6,}/;
+// Any country's phone as written: 3 or more digit groups split by spaces, dots, dashes or brackets, 9 or more digits in all
+// (1-888-595-8255, 03-2022 5418, (02) 9374 4000). Dates stay: 2026-11-03 and 2009-2019 have only 8 digits.
+const GROUPED = /\(?\+?\d{1,4}\)?(?:[\s.()-]{1,3}\d{1,4}){2,}/g;
+const phoneLike = (m: string): boolean => (m.match(/\d/g) ?? []).length >= 9;
+const hasGroupedPhone = (s: string): boolean => (s.match(GROUPED) ?? []).some(phoneLike);
 
 /** True when the text holds an email, a phone number, a URL, or a run of 6 or more digits. */
 export const hasPrivate = (text: unknown): boolean => {
   const s = String(text ?? '');
-  return EMAIL.test(s) || PUB_PHONE.test(s) || WEB.test(s) || DIGITS.test(s);
+  return EMAIL.test(s) || PUB_PHONE.test(s) || hasGroupedPhone(s) || WEB.test(s) || DIGITS.test(s);
 };
 
 const hostOfUrl = (raw: string): string => {
@@ -75,7 +80,7 @@ export function scrubPublic(text: unknown, officialDomains: readonly string[] = 
     // No digit-run exception: an official URL that itself holds one is dropped whole.
     return { core, tail, ok: isOfficialUrl(core, domains) && !/\d{6,}/.test(core) };
   };
-  let out = s.replace(email, '').replace(phone, '');
+  let out = s.replace(email, '').replace(phone, '').replace(GROUPED, (m) => (phoneLike(m) ? '' : m));
   out = out.replace(url, (m) => { const p = peel(m); return (p.ok ? p.core : '') + p.tail; });
   out = out.replace(/\d{6,}/g, '');
   if (out === s) return s;

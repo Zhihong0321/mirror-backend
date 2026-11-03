@@ -107,6 +107,9 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     ? (notesV2?.warnings ?? []).filter((w) => typeof w?.quote === 'string' && w.quote.trim())
     : (notes?.warnings?.length ? notes.warnings : fallbackWarnings(r));
   const warnings = rawWarnings.map((w) => ({ ...w, title: P(w.title), detail: P(w.detail), risk: P(w.risk) }));
+  // Switched page: only the sources a shown warning cites are listed, so another company's page never appears there.
+  const cited = new Set(warnings.flatMap((w: any) => (Array.isArray(w.sources) ? w.sources : []).map(Number)));
+  const listed = v2 ? sources.filter((s: any) => cited.has(Number(s.id))) : sources;
   const shown = v2 ? warnings : warnings.slice(0, 5);
   // Every sign we hold beyond what this page shows stays locked for the full report.
   const moreSigns = v2
@@ -695,7 +698,7 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
 </section>
 
 <footer>
-  ${sources.length ? `<details><summary>The public sources behind this preview <span class="muted">(${sources.length})</span></summary><ol class="sources">${sources.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${sourceLink(s)}</li>`).join('')}</ol></details>` : ''}
+  ${listed.length ? `<details><summary>The public sources behind this preview <span class="muted">(${listed.length})</span></summary><ol class="sources">${listed.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${sourceLink(s)}</li>`).join('')}</ol></details>` : ''}
   <div class="colophon">
     <div><span class="k">Prepared for</span><span>${esc(name)}</span></div>
     <div><span class="k">Researched</span><span>${esc(made)}, from ${esc(srcN)}</span></div>
