@@ -56,3 +56,20 @@ Preserve `people`, queue order and retry selections. Retries keep stored options
 
 **Notes for Claude.** Rechecked the T6 facts against current code; no discrepancy found. `startDive(company)` in `divedeeper/run.ts:8` sends no switches. Run selection is independent: T6 does not propagate a deeper list to its company dive. Later propagation needs that file's owner. T7 owns execution-context hooks. The list GETs, `publicView` and `company-uid.ts` `reports` omit options; T6 leaves them so. The preview sweep's read of
 options is T6's (decided by Claude for T10; grok's review, 2026-11-03). Builder must not deploy, access production/Railway or read `D:\Tools\my-vault`. Merge, deploy and proof remain Claude's work after owner approval.
+
+---
+
+## Live proof result (deployed 2026-11-03 04:28 UTC, merge `3e4d574`, live 04:29:20)
+
+1. **Malformed lists, on purpose:** `"evidence"`, `null`, `["Bad!"]` and `["evidence",1]` on both `POST /api/company-dive`
+   and `POST /api/dive-deeper`: all 8 answered `400 {"error":"invalid switches"}`; the newest ids stayed company dive 39
+   and dive-deeper 17, so nothing was created or queued.
+2. **Same company with and without `evidence`** (Synapse Comms): company dive #40 (with) vs #41 (without), dive-deeper
+   #18 (with) vs #19 (without) on dive #38, compared with `dive-snapshot.ts` and `deeper-snapshot.ts`: identical except
+   the follow-up searches the LLM picks in `fill` / `reflect` (company dive) and the finishing order of the parallel
+   stage-1 lanes (dive-deeper). Same status, stages, fields, counters, dossier, preview, 16 lanes and report.
+3. **Stored options on the real rows:** #40 `{"people":true,"switches":["evidence"]}`, #41 `{"people":true}` (exactly
+   as before T6), #18 `{"switches":["evidence"]}`, #19 `{}`. `switchOn(evidence)`: true only for #40 and #18; with
+   `OVERHAUL_SWITCHES_OFF=yes` false for all four, the stored lists untouched.
+
+Awaiting the owner's tick.
