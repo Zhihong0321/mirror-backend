@@ -279,9 +279,15 @@ the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a 
     1 MB request cap) written as its job file to `/data/.agy-lab/country-jobs/8877c82a158d.json`, byte-identical
     (SHA-256 checked). **Loaded by the T2 deploy's restart (2026-11-03 00:30 UTC): all 4 jobs listed on the hub;
     Malaysia / web design CSV (7,596,614 chars) and summary read back identical to ee-auto's.** Ready for the owner's tick.
-- [ ] **Lead data the wrong import left in the hub: owner decides** (nothing deleted without the owner's word): the
-  `public` lead tables filled by the first import (2026-11-02 04:03–05:35 UTC), the `pg2nd_archive` schema, and the
-  variables `IMPORT_IN_PROGRESS=0`, `AUTO_SCAN_PAUSED=1`, `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0`.
+- [x] **Lead data the wrong import left in the hub: deleted** (owner's order 2026-11-03: "Not the telemarketing leads,
+  if copied, must delete"). Live 02:01 UTC, one transaction: every row whose key and identity matched the raw copy of
+  pg_2nd went (`company_data` 168,128, `published_report` 46,822, `search_report` 571, every search-list and list-step-2
+  row, 91 telemarketers, their emails and search places by cascade), plus the 100,382 company UIDs and places the
+  hub's boot backfill had generated from those leads. Kept: the hub's own rows (4,473 leads, 87 reports) and the 19
+  company UIDs this project's dives use (all 37 dives keep theirs). The same match run again finds 0 copied rows.
+  Then `pg2nd_archive` (27 tables) was dropped. After: 4 country research jobs on the hub; `/d/`, `/dp/`, `/dd/`,
+  `/country-industry` all 200. Still set from the import, the owner's call: `AUTO_SCAN_PAUSED=1`,
+  `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0`.
 
 
 ## Plan for the lead import, A1–A3 (rewritten by the owner's rule, 2026-11-03)
