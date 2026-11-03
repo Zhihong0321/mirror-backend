@@ -18,11 +18,18 @@
 // no research write-up (privacy.ts). Sources are the ones the company-dive judged to be about them.
 import { CHAPTER_EYEBROW, CHAPTER_ORDER, NB, OPENERS, PART_OPENERS, esc, tie, typeset } from './report-html.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { isLeadership, publicSources, scrub } from './privacy.ts';
+import { isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
 import type { PreviewNotes } from './preview-editor.ts';
 
 /** What the seller shows on the order panel; every field optional. */
 export type Offer = { price?: string; contact?: string; order_url?: string };
+
+/** Switched preview. Omit it and the page is byte for byte the one built from `notes` alone. */
+export type PreviewNotesV2 = {
+  hook?: string;
+  known?: { label: string; value: string }[];
+  warnings?: { type: string; title: string; detail?: string; risk?: string; quote?: string }[];
+};
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n).replace(/\s+\S*$/, '') + ' …' : s);
 const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
@@ -47,25 +54,35 @@ function fallbackWarnings(r: any): NonNullable<PreviewNotes['warnings']> {
   ];
 }
 
-export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes | null = null): string {
+export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes | null = null, notesV2?: PreviewNotesV2 | null): string {
+  const v2 = notesV2 != null;
   const r = dive?.result ?? {};
   const id = r.identity ?? {};
-  const name = String(id.legal_name ?? dive?.company ?? 'Your company');
-  const short = shortName(name);
+  const nameRaw = String(id.legal_name ?? dive?.company ?? 'Your company');
   const facts: any[] = r.facts ?? [];
   const sources: any[] = publicSources(r.sources);
   const contradictions: string[] = (r.contradictions ?? []).filter(Boolean);
   const gaps: string[] = (r.gaps ?? []).filter(Boolean);
   const everyone = (r.people?.people ?? []).filter((p: any) => p.name);
-  const people = everyone.filter((p: any) => isLeadership(p.role));
-  const staff = everyone.filter((p: any) => !isLeadership(p.role)).map((p: any) => String(p.name));
+  // Strict leadership only on the switched page, so "Art Director" is not named there.
+  const lead = (role: unknown) => (v2 ? isLeadershipStrict(role) : isLeadership(role));
+  const staff = everyone.filter((p: any) => !lead(p.role)).map((p: any) => String(p.name));
+  const domainsRaw: string[] = id.official_domains ?? [];
+  const domains = v2 ? domainsRaw.map((d) => scrubPublic(String(d), domainsRaw)).filter(Boolean) : domainsRaw;
+  const name = v2 ? scrubPublic(scrub(nameRaw, { phones: true, staff }), domains) : nameRaw;
+  const short = shortName(name);
+  const people = everyone.filter((p: any) => lead(p.role)).map((p: any) => (v2 ? { ...p, name: scrubPublic(scrub(p.name, { phones: true, staff }), domains), role: p.role ? scrubPublic(scrub(p.role, { phones: true, staff }), domains) : p.role } : p));
   /** Text written from the research, made fit for a public page. */
-  const P = (t: unknown) => typeset(noCites(scrub(t, { phones: true, staff })));
-  const domains: string[] = id.official_domains ?? [];
-  const ssm = (id.registration_numbers ?? []).find((x: string) => /^\d{12}$/.test(x)) ?? (id.registration_numbers ?? [])[0] ?? null;
-  const town = String(id.address ?? '').match(/\b\d{5}\s+([^,]+)/)?.[1]?.trim() ?? 'your town';
+  const P = (t: unknown) => typeset(noCites(v2 ? scrubPublic(scrub(t, { phones: true, staff }), domains) : scrub(t, { phones: true, staff })));
+  const ssmRaw = (id.registration_numbers ?? []).find((x: string) => /^\d{12}$/.test(x)) ?? (id.registration_numbers ?? [])[0] ?? null;
+  const ssmClean = ssmRaw ? scrubPublic(scrub(String(ssmRaw), { phones: true, staff }), domains) : '';
+  const ssm = v2 ? (ssmClean && /\d/.test(ssmClean) ? ssmClean : null) : ssmRaw;
+  const townRaw = String(id.address ?? '').match(/\b\d{5}\s+([^,]+)/)?.[1]?.trim() ?? 'your town';
+  const town = v2 ? (scrubPublic(scrub(townRaw, { phones: true, staff }), domains) || 'your town') : townRaw;
+  const addressShown = id.address ? clip(v2 ? scrubPublic(scrub(String(id.address), { phones: true, staff }), domains) : String(id.address), 90) : '';
   // "Solar photovoltaic (PV) EPC, …" becomes "solar photovoltaic company", so the openers read as a sentence.
-  const kind = String(id.industry ?? '').split(/[,(;]/)[0].trim().toLowerCase();
+  const kindRaw = String(id.industry ?? '').split(/[,(;]/)[0].trim().toLowerCase();
+  const kind = v2 ? scrubPublic(scrub(kindRaw, { phones: true, staff }), domains) : kindRaw;
   const trade = !kind ? 'business like yours' : /\b(installer|contractor|company|firm|shop|clinic|agency|supplier|provider|consultant|service)s?$/.test(kind) ? kind : `${kind} company`;
   const claims = facts.filter((f) => CLAIM.test(String(f.fact ?? '')) && !/private limited/i.test(String(f.fact))).length;
   const made = dateOf(dive?.finished_at) || dateOf(new Date().toISOString());
@@ -76,7 +93,8 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   const plural = (n: number, one: string, many = `${one}s`) => `${n}${NB}${n === 1 ? one : many}`;
   const srcN = plural(sources.length, 'public source');
 
-  const known = notes?.known?.length ? notes.known : [
+  const picked = v2 ? notesV2 : notes;
+  const known = picked?.known?.length ? picked.known : [
     id.industry && { label: 'What you do', value: clip(String(id.industry), 90) },
     id.address && { label: 'Head office', value: clip(String(id.address), 90) },
     ssm && { label: 'Registration', value: `SSM ${ssm}` },
@@ -84,13 +102,21 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     (id.aliases ?? []).length && { label: 'Also known as', value: id.aliases.join(', ') },
     people[0] && { label: 'Leadership', value: `${people[0].name}${people[0].role ? `, ${people[0].role}` : ''}` },
   ].filter(Boolean) as { label: string; value: string }[];
-  const warnings = (notes?.warnings?.length ? notes.warnings : fallbackWarnings(r)).map((w) => ({ ...w, title: P(w.title), detail: P(w.detail), risk: P(w.risk) }));
-  const shown = warnings.slice(0, 5);
+  // Switched page: warnings come only from notesV2, and one with no quote is dropped.
+  const rawWarnings = v2
+    ? (notesV2?.warnings ?? []).filter((w) => typeof w?.quote === 'string' && w.quote.trim())
+    : (notes?.warnings?.length ? notes.warnings : fallbackWarnings(r));
+  const warnings = rawWarnings.map((w) => ({ ...w, title: P(w.title), detail: P(w.detail), risk: P(w.risk) }));
+  const shown = v2 ? warnings : warnings.slice(0, 5);
   // Every sign we hold beyond what this page shows stays locked for the full report.
-  const moreSigns = Math.max(warnings.length - shown.length, contradictions.length + gaps.length - shown.length, 0);
+  const moreSigns = v2
+    ? Math.max(warnings.length - shown.length, 0)
+    : Math.max(warnings.length - shown.length, contradictions.length + gaps.length - shown.length, 0);
   const typesFound = [...new Set(warnings.map((w) => w.type))];
-  const signCount = Math.max(warnings.length, contradictions.length + gaps.length);
-  const hook = notes?.hook ? P(notes.hook) : `This preview was prepared for ${name} alone, from ${sources.length} public sources. Here is what they say about you, and where they do not agree.`;
+  const signCount = v2 ? shown.length : Math.max(warnings.length, contradictions.length + gaps.length);
+  // Switched page: this figure counts shown contradiction warnings, never the raw list.
+  const disagreeN = v2 ? shown.filter((w) => w.type === 'contradiction').length : contradictions.length;
+  const hook = picked?.hook ? P(picked.hook) : `This preview was prepared for ${name} alone, from ${sources.length} public sources. Here is what they say about you, and where they do not agree.`;
 
   const ctaHref = offer.order_url && /^https?:\/\//.test(offer.order_url) ? offer.order_url : '#order';
   const ctaAttrs = ctaHref === '#order' ? '' : ' target="_blank" rel="noopener"';
@@ -421,7 +447,7 @@ ${PARTNERS_CSS}`;
   const signRows = warnings.slice(0, Math.max(6 - claimRows.length, 3))
     .map((w) => ({ src: TYPE[w.type]?.[0] ?? 'Warning sign', said: w.title, where: checkFor(w.title, String(w.detail ?? '')) }));
   const ledgerRows = [...claimRows, ...signRows];
-  const hiddenRows = Math.max(Math.max(warnings.length, contradictions.length + gaps.length) - signRows.length, 0) + Math.max(claims - claimRows.length, 0);
+  const hiddenRows = Math.max((v2 ? warnings.length : Math.max(warnings.length, contradictions.length + gaps.length)) - signRows.length, 0) + Math.max(claims - claimRows.length, 0);
 
   /** The deeper dive's six research areas, one line each on what they check. */
   const SCAN: Record<string, string> = {
@@ -443,6 +469,15 @@ ${PARTNERS_CSS}`;
     ${runRow('', 'So far', 'Found by the surface scan alone. The rest can only be counted once the deeper dive runs.', '', `${esc(signCount)}&nbsp;+&nbsp;?`, 'problems in all', 'total')}
   </div>`;
   const lockedCard = (n: number) => `<article class="locked" aria-label="${n} more surface-scan warning signs, in the full report"><div class="bar s"></div><div class="bar m"></div><div class="bar"></div><div class="bar m"></div><div class="bar s"></div><div class="lockmsg"><b>+${n}</b><span>more from the surface scan,<br>shown in your full report</span></div></article>`;
+  // Same markup as before when the switch is off. On, a link stays only for an official domain.
+  const sourceLink = (s: any): string => {
+    if (!v2) return /^https?:\/\//.test(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(clip(String(s.title || hostOf(s.url)), 90))}</a> · ${esc(hostOf(s.url))}` : esc(s.title);
+    const url = typeof s.url === 'string' ? s.url : '';
+    const title = scrubPublic(scrub(String(s.title || (url ? hostOf(url) : '')), { phones: true, staff }), domains);
+    const kept = /^https?:\/\//.test(url) ? scrubPublic(url, domains) : '';
+    if (/^https?:\/\//.test(kept)) return `<a href="${esc(kept)}" target="_blank" rel="noopener">${esc(clip(title || hostOf(kept), 90))}</a> · ${esc(hostOf(kept))}`;
+    return esc(title);
+  };
 
   return `<!doctype html>
 <html lang="en">
@@ -473,7 +508,7 @@ ${PARTNERS_CSS}`;
     <h3>${esc(name)}</h3>
     <dl>
       <div><dt>Registration</dt>${ssm ? `<dd>SSM&nbsp;${esc(ssm)}</dd>` : '<dd class="nf">Not in any public source we read</dd>'}</div>
-      ${id.address ? `<div><dt>Head office</dt><dd>${esc(clip(String(id.address), 90))}</dd></div>` : ''}
+      ${addressShown ? `<div><dt>Head office</dt><dd>${esc(addressShown)}</dd></div>` : ''}
       ${domains.length ? `<div><dt>Websites</dt><dd>${esc(domains.join(', '))}</dd></div>` : ''}
       ${people.length ? `<div><dt>Leadership</dt><dd>${esc(people.slice(0, 3).map((p: any) => p.name).join(', '))}</dd></div>` : ''}
       <div><dt>Surface scan</dt><dd>${signCount ? `<b style="color:var(--wrong)">${esc(plural(signCount, 'warning sign'))}</b> found` : 'No warning signs found'}</dd></div>
@@ -486,9 +521,8 @@ ${PARTNERS_CSS}`;
 <div class="strip">
   <div><b>${esc(sources.length)}</b><span>public source${sources.length === 1 ? '' : 's'} read about ${esc(short)}</span></div>
   <div><b>${esc(facts.length)}</b><span>fact${facts.length === 1 ? '' : 's'} on public record</span></div>
-  <div><b>${esc(contradictions.length)}</b><span>${contradictions.length === 1 ? 'place' : 'places'} where those sources disagree</span></div>
-  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'question' : 'questions'} they cannot answer</span></div>
-</div>
+  <div><b>${esc(disagreeN)}</b><span>${disagreeN === 1 ? 'place' : 'places'} where those sources disagree</span></div>
+${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'question' : 'questions'} they cannot answer</span></div>\n`}</div>
 
 <section id="thesis" class="thesis">
   <p class="eyebrow">Why this matters</p>
@@ -661,7 +695,7 @@ ${PARTNERS_CSS}`;
 </section>
 
 <footer>
-  ${sources.length ? `<details><summary>The public sources behind this preview <span class="muted">(${sources.length})</span></summary><ol class="sources">${sources.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${/^https?:\/\//.test(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(clip(String(s.title || hostOf(s.url)), 90))}</a> · ${esc(hostOf(s.url))}` : esc(s.title)}</li>`).join('')}</ol></details>` : ''}
+  ${sources.length ? `<details><summary>The public sources behind this preview <span class="muted">(${sources.length})</span></summary><ol class="sources">${sources.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${sourceLink(s)}</li>`).join('')}</ol></details>` : ''}
   <div class="colophon">
     <div><span class="k">Prepared for</span><span>${esc(name)}</span></div>
     <div><span class="k">Researched</span><span>${esc(made)}, from ${esc(srcN)}</span></div>
