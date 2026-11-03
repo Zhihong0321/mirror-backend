@@ -1,6 +1,6 @@
 # Overhaul plan: step by step, in parallel where files allow
 
-**Status: approved by the owner on 2026-11-02. Wave 0 done: T0–T3 proven live and ticked by the owner on 2026-11-03 (evidence: [contracts/wave0-seams.md](contracts/wave0-seams.md), "Live proof results"); T4 waits for the owner to confirm the plans and accounts. Wave 1 not started: it starts only when the owner says so.**
+**Status: approved by the owner on 2026-11-02. Wave 0 done: T0–T3 proven live and ticked by the owner on 2026-11-03 (evidence: [contracts/wave0-seams.md](contracts/wave0-seams.md), "Live proof results"); T4 (provider limits) is parked for the future by the owner: not a bug, every lane works; do not raise it again. Wave 1 not started: it starts only when the owner says so.**
 The owner's open points (section 9) are still open; none of them blocks wave 0. It follows the rules in must-fix-checklist.md,
 "How we build" (beside the old code, behind a switch, one module per task, proven live with real data), and
 builds the fixes for the design review (R1–R12).

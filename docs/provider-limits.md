@@ -1,6 +1,6 @@
 # Provider limits
 
-**T4, 2026-11-02. Status: researched, not yet confirmed by the owner.** Drafted by agy (gemini-3.8-flash-high), every claim fact-checked against the provider's own page by codex (gpt-6.1-terra; 40 of 89 first-draft claims held), rewritten to keep only confirmed numbers; Smartlead re-checked by Claude. Every number links its source. Code defaults do not establish deployed values. A concurrency slot is not a request rate.
+**T4, 2026-11-02. Status: parked by the owner (2026-11-03): not a bug, every LLM lane works. Reference only; nothing to confirm or act on now.** Drafted by agy (gemini-3.8-flash-high), every claim fact-checked against the provider's own page by codex (gpt-6.1-terra; 40 of 89 first-draft claims held), rewritten to keep only confirmed numbers; Smartlead re-checked by Claude. Every number links its source. Code defaults do not establish deployed values. A concurrency slot is not a request rate.
 
 ## Vectide
 
