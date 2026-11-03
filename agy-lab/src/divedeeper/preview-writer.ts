@@ -28,7 +28,7 @@ async function previewWriter(): Promise<void> {
   try {
     await ensureTable();
     for (;;) {
-      const dive = (await reportdb.sql(`select c.id, c.public_id, c.company, c.status, c.result, c.dossier, c.finished_at from company_dive c
+      const dive = (await reportdb.sql(`select c.id, c.public_id, c.company, c.status, c.options, c.result, c.dossier, c.finished_at from company_dive c
                                           left join dive_preview p on p.dive_id = c.id
                                          where p.dive_id is null and c.status in ('done', 'partial') and c.result is not null
                                            and not (c.id = any($1::bigint[]))

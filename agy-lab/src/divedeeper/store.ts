@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import * as reportdb from '../reportdb.ts';
+import type { SwitchOptions } from '../switches.ts';
 import { type LaneResult } from './runner.ts';
 
 export type Row = {
@@ -9,6 +10,7 @@ export type Row = {
   created_at: string; finished_at: string | null;
   /** How many times an incomplete run was picked up again on its own, and when it is next. */
   resumes?: number; retry_at?: string | null;
+  options?: SwitchOptions;
 };
 
 let tableReady: Promise<unknown> | null = null;
@@ -39,6 +41,7 @@ export function ensureTable(): Promise<unknown> {
     -- Same company UID as the company-dive it runs on (company-uid.ts), so a company's page lists both.
     alter table dive_deeper add column if not exists company_uid text;
     create index if not exists dive_deeper_uid_idx on dive_deeper (company_uid, created_at desc);
+    alter table dive_deeper add column if not exists options jsonb not null default '{}'::jsonb;
     -- An incomplete run (a lane failed after its tries) is picked up again at retry_at.
     alter table dive_deeper add column if not exists resumes int not null default 0;
     alter table dive_deeper add column if not exists retry_at timestamptz;
@@ -51,7 +54,7 @@ export const newPublicId = () => crypto.randomBytes(15).toString('base64url');
 export async function update(id: number, fields: Partial<Omit<Row, 'id' | 'created_at'>>): Promise<void> {
   const keys = Object.keys(fields);
   if (!keys.length) return;
-  const json = new Set(['log', 'lanes']);
+  const json = new Set(['log', 'lanes', 'options']);
   const sets = keys.map((k, i) => `${k} = $${i + 2}${json.has(k) ? '::jsonb' : ''}`).join(', ');
   const values = keys.map((k) => (json.has(k) ? JSON.stringify((fields as any)[k]) : (fields as any)[k]));
   await reportdb.sql(`update dive_deeper set ${sets} where id = $1`, [id, ...values]);

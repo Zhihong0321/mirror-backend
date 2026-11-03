@@ -3,6 +3,7 @@ import { brave } from '../core/index.ts';
 import * as reportdb from '../reportdb.ts';
 import { diveCalls, diveUsage, price } from '../cost.ts';
 import * as companies from '../company-uid.ts';
+import { parseSwitches } from '../switches.ts';
 import type { DiveResult, LlmUse } from './pipeline.ts';
 import { ensureTable, newPublicId, type DiveRow } from './store.ts';
 import { pump, waiting } from './runner.ts';
@@ -48,6 +49,13 @@ export async function handle(req: import('node:http').IncomingMessage, res: impo
   }
   if (p === '/api/company-dive' && method === 'POST') {
     const body = await ctx.readJson(req);
+    let switches: string[];
+    try {
+      switches = parseSwitches(body.switches);
+    } catch {
+      ctx.json(res, 400, { error: 'invalid switches' });
+      return true;
+    }
     const company = String(body.company ?? body.name ?? '').trim();
     const country = String(body.country ?? '').trim() || 'Malaysia';
     if (company.length < 2 || company.length > 200) {
@@ -58,7 +66,8 @@ export async function handle(req: import('node:http').IncomingMessage, res: impo
       ctx.json(res, 503, { error: 'No Brave keys: add one on /workers' });
       return true;
     }
-    const options = { people: body.people !== false };
+    const options: { people: boolean; switches?: string[] } = { people: body.people !== false };
+    if (switches.length) options.switches = switches;
     const publicId = newPublicId();
     // The report joins its company's page: the UID given, else the one its website's host has (made if new).
     const companyUid = await companies.resolve({ uid: body.company_uid, website: body.website, text: company, create: true }).catch(() => null);

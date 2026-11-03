@@ -1,5 +1,6 @@
 import http from 'node:http';
 import * as reportdb from '../reportdb.ts';
+import { parseSwitches } from '../switches.ts';
 import { type LaneResult } from './runner.ts';
 import { buildReport } from './report-html.ts';
 import { buildPreview } from './preview-html.ts';
@@ -137,6 +138,13 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
   // Start a run: {company} starts a fresh company-dive first; {dive_id} reuses a finished one.
   if (p === '/api/dive-deeper' && method === 'POST') {
     const body = await ctx.readJson(req);
+    let switches: string[];
+    try {
+      switches = parseSwitches(body.switches);
+    } catch {
+      ctx.json(res, 400, { error: 'invalid switches' });
+      return true;
+    }
     const company = String(body.company ?? '').trim();
     let diveId = Number(body.dive_id ?? 0) || null;
     let name = company;
@@ -152,8 +160,13 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
     }
     const publicId = newPublicId();
     const companyUid = (await diveRow(diveId!))?.company_uid ?? null;
-    const out = await reportdb.sql<{ id: string }>(
-      `insert into dive_deeper (public_id, company, dive_id, company_uid) values ($1, $2, $3, $4) returning id`, [publicId, name, diveId, companyUid]);
+    const out = switches.length
+      ? await reportdb.sql<{ id: string }>(
+          `insert into dive_deeper (public_id, company, dive_id, company_uid, options) values ($1, $2, $3, $4, $5::jsonb) returning id`,
+          [publicId, name, diveId, companyUid, JSON.stringify({ switches })])
+      : await reportdb.sql<{ id: string }>(
+          `insert into dive_deeper (public_id, company, dive_id, company_uid) values ($1, $2, $3, $4) returning id`,
+          [publicId, name, diveId, companyUid]);
     const id = Number(out.rows[0].id);
     queue(id);
     ctx.json(res, 202, { id, public_id: publicId, company: name, dive_id: diveId, status: 'queued', queued_behind_another: waiting.includes(id), ...links(req, publicId) });
