@@ -394,7 +394,7 @@ export async function loadDive(diveId: string, fresh = false): Promise<any> {
   if (!res.ok) throw new Error(`GET /api/company-dive/${diveId}: HTTP ${res.status}`);
   const dive = await res.json();
   if (dive.status !== 'done') console.warn(`  ! dive ${diveId} is ${dive.status}, not done`);
-  fs.writeFileSync(file, JSON.stringify(dive, null, 2));
+  writeLane(diveId, 'dive', dive, 2);
   return dive;
 }
 
@@ -407,6 +407,23 @@ export function sourceUrl(dive: any, id: number): string | null {
 export function readLane(diveId: string, lane: string): any | null {
   const file = path.join(OUT, `${lane}-${diveId}.json`);
   try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
+}
+
+/** Where a lane's output for this dive is saved (out/<name>-<diveId>.json). */
+export function laneFile(diveId: string, name: string): string {
+  return path.join(OUT, `${name}-${diveId}.json`);
+}
+
+/** Like readLane, but tells a missing file (undefined) from one that will not read (it throws). */
+export function readLaneStrict(diveId: string, name: string): any {
+  const file = laneFile(diveId, name);
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : undefined;
+}
+
+/** Saves a lane's output for this dive (out/<name>-<diveId>.json). */
+export function writeLane(diveId: string, name: string, data: any, space?: number | string): void {
+  fs.mkdirSync(OUT, { recursive: true });
+  fs.writeFileSync(path.join(OUT, `${name}-${diveId}.json`), JSON.stringify(data, null, space));
 }
 
 /** The names a page has to carry to be about this company, and its own domains. */

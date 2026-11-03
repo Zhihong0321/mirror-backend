@@ -8,19 +8,12 @@
 // assessment of each part, the threads that run through several parts, what to build on, the risks,
 // the opportunities, and the few things a stranger would notice do not add up.
 // No answer keeps the report's built-in wording for every block.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { AREAS, STAGE1_LANES, resolve, type Item } from '../editor.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
 const THEMES = AREAS.map((a) => a.id);
 const THEME_HELP = 'contact = contact and reachability, understanding = how the internet understands the brand, voice = reviews, discussion and news, credibility = official records and licences, assets = domains, hosting and email, speed = Google PageSpeed scores of the official homepages';
-
-function stage(diveId: string, lane: string): any | null {
-  const file = path.join(OUT, `${lane}-${diveId}.json`);
-  try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
-}
 
 async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -50,7 +43,7 @@ export function factsOf(R: ReturnType<typeof resolve>) {
 }
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor'].map((l) => [l, stage(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the analysis skips what it covers`);
   const R = resolve(dive, L);
   const name = R.name;

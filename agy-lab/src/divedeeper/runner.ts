@@ -8,7 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { OUT, SECTIONS, makeCtx, type Finding, type Meter } from './lib.ts';
+import { SECTIONS, makeCtx, writeLane, type Finding, type Meter } from './lib.ts';
 
 /**
  * done: ran with nothing to note. partial: ran to the end, with notes (a page that did not
@@ -39,14 +39,12 @@ export function serviceFailures(meter: Meter): string | null {
 
 /** Puts a saved lane back where later lanes read it, so a resumed run sees what it had. */
 export function restoreLane(result: LaneResult): void {
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.writeFileSync(path.join(OUT, `${result.section}-${result.lane}-${result.diveId}.json`), JSON.stringify(result, null, 2));
+  writeLane(result.diveId, `${result.section}-${result.lane}`, result, 2);
 }
 
 /** Writes the dive where the lanes look for it (OUT/dive-<id>.json). */
 export function stageDive(diveId: string, dive: unknown): void {
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.writeFileSync(path.join(OUT, `dive-${diveId}.json`), JSON.stringify(dive));
+  writeLane(diveId, 'dive', dive);
 }
 
 /** Never throws: a crashed lane, or one past its time limit, comes back failed with the reason. */
@@ -88,7 +86,6 @@ export async function runLane(section: string, lane: string, diveId: string, div
     findings_count: findings.length,
     meter: ctx.meter, warnings: ctx.warnings, notes, findings,
   };
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.writeFileSync(path.join(OUT, `${section}-${lane}-${diveId}.json`), JSON.stringify(result, null, 2));
+  writeLane(diveId, `${section}-${lane}`, result, 2);
   return result;
 }

@@ -6,12 +6,9 @@
 // page weight and time; mixed content; forms (found, never submitted); placeholder text; stale news.
 // Grammar comes from the free LanguageTool public API (en-GB), paced under its public limits, with a
 // deterministic filter for Malay words, brand names and product codes.
-import fs from 'node:fs';
-import path from 'node:path';
 import tls from 'node:tls';
 import dns from 'node:dns/promises';
-import type { Ctx, Finding } from '../lib.ts';
-import { OUT } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 
 // ---------------------------------------------------------------------------------------------
 // Crawl helper (same copy in C-llm.ts). Bounded, polite: 3 requests at a time, robots.txt honoured.
@@ -374,9 +371,13 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     for (const n of phonesIn(p.text)) notePhone(n, p.finalUrl, 'page text');
   }
   const divePhones = new Set(phonesIn(JSON.stringify(r.facts ?? []) + ' ' + JSON.stringify(r.people ?? [])));
-  const mapsFile = path.join(OUT, `H-maps-${ctx.diveId}.json`);
   let mapsListings: any[] = [];
-  try { mapsListings = JSON.parse(fs.readFileSync(mapsFile, 'utf8')).notes?.listings ?? []; } catch { ctx.warn(`no ${path.basename(mapsFile)}; skipping the Maps phone check`); }
+  const mapsData = readLane(ctx.diveId, 'H-maps');
+  if (mapsData) {
+    mapsListings = mapsData.notes?.listings ?? [];
+  } else {
+    ctx.warn(`no H-maps-${ctx.diveId}.json; skipping the Maps phone check`);
+  }
   for (const l of mapsListings) {
     const n = normPhone(String(l.phone ?? ''));
     if (n && !sitePhones.has(n)) add('phone-maps', { title: `Maps listing "${l.name}" gives ${fmtPhone(n)}, which is not on your website`, detail: `A customer who finds this branch on Google Maps calls a number your site never shows. Site numbers: ${[...sitePhones.keys()].map(fmtPhone).join(', ')}.`, severity: 'medium', source: l.place_link ?? null, evidence: l.phone });

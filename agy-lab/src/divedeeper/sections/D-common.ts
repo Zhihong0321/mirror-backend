@@ -7,9 +7,7 @@
 //      about / why-choose / credentials pages, and the logo alt texts on the homepage.
 // One LLM call turns that into a short, de-duplicated claim list. Every step falls back:
 // a dead page or a bad LLM answer logs a warning and the list is built from what is left.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx } from '../lib.ts';
+import { readLaneStrict, writeLane, type Ctx } from '../lib.ts';
 
 export type Verdict = 'verified' | 'contradicted' | 'not found' | "can't check automatically";
 
@@ -116,12 +114,13 @@ function filterOnly(set: ClaimSet): ClaimSet {
 /** Step 1: the claim list (dive facts + a fresh read of the official site), one LLM call.
  *  Stored once per dive in out/D-claims-<id>.json so reruns check the same claims; D_FRESH_CLAIMS=1 rebuilds it. */
 export async function extractClaims(ctx: Ctx, dive: any): Promise<ClaimSet> {
-  const file = path.join(OUT, `D-claims-${ctx.diveId}.json`);
-  if (!process.env.D_FRESH_CLAIMS && fs.existsSync(file)) {
+  if (!process.env.D_FRESH_CLAIMS) {
     try {
-      const cached = JSON.parse(fs.readFileSync(file, 'utf8')) as ClaimSet;
-      ctx.log(`claim list from ${path.basename(file)} (${cached.claims.length} claims, extracted ${cached.extracted_at})`);
-      return filterOnly({ ...cached, cached: true });
+      const cached = readLaneStrict(ctx.diveId, 'D-claims') as ClaimSet | undefined;
+      if (cached !== undefined) {
+        ctx.log(`claim list from D-claims-${ctx.diveId}.json (${cached.claims.length} claims, extracted ${cached.extracted_at})`);
+        return filterOnly({ ...cached, cached: true });
+      }
     } catch (e) { ctx.warn(`claim cache unreadable (${(e as Error).message}); extracting again`); }
   }
   const r = dive.result ?? {};
@@ -183,7 +182,7 @@ Return JSON only: {"claims":[{"claim":"...","kind":"grade|registration|certifica
   }
   const set: ClaimSet = { claims, pages: pages.map((p) => ({ url: p.url, status: p.status })), selfGrades: gradesShown(pages, dive), extracted_at: ctx.now() };
   if (parsed) {
-    try { fs.mkdirSync(OUT, { recursive: true }); fs.writeFileSync(file, JSON.stringify(set, null, 2)); }
+    try { writeLane(ctx.diveId, 'D-claims', set, 2); }
     catch (e) { ctx.warn(`claim cache not written: ${(e as Error).message}`); }
   }
   return filterOnly(set);

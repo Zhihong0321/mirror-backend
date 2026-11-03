@@ -5,9 +5,7 @@
 //
 // No kill gates: every LLM call goes through ctx.llm (never throws); a judge answer
 // that will not parse is warned and kept as "unjudged", and the lane continues.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 
 export const ANSWER_MODELS = (process.env.DD_G_MODELS ?? 'deepseek-v4.1-flash-1017,gpt-6.1-sol').split(',').map((s) => s.trim()).filter(Boolean);
 export const JUDGE_MODEL = process.env.DD_G_JUDGE ?? 'gpt-6.1-sol';
@@ -118,11 +116,12 @@ export async function profileOf(ctx: Ctx, dive: any): Promise<Profile> {
   // this dive (read-only from out/); DD_G_NEW_PROFILE=1 builds a fresh one.
   if (!process.env.DD_G_NEW_PROFILE) {
     for (const lane of ['fixed', 'free', 'grounded']) {
-      try {
-        const prev = JSON.parse(fs.readFileSync(path.join(OUT, `G-${lane}-${ctx.diveId}.json`), 'utf8'));
-        // Only reuse a v2 profile: v1 took the area from identity.address, which for Rienzo was a credit agency's office.
-        if (prev.notes?.profile?.trade && prev.notes.profile.v === PROFILE_VERSION) { ctx.log(`profile reused from out/G-${lane}-${ctx.diveId}.json`); return prev.notes.profile; }
-      } catch { /* none yet */ }
+      const prev = readLane(ctx.diveId, `G-${lane}`);
+      // Only reuse a v2 profile: v1 took the area from identity.address, which for Rienzo was a credit agency's office.
+      if (prev?.notes?.profile?.trade && prev.notes.profile.v === PROFILE_VERSION) {
+        ctx.log(`profile reused from out/G-${lane}-${ctx.diveId}.json`);
+        return prev.notes.profile;
+      }
     }
   }
   const r = dive.result ?? {};

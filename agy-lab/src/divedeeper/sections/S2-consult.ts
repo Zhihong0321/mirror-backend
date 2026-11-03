@@ -9,18 +9,11 @@
 // rewritten homepage copy, the FAQ for an AI-visibility plan built against those competitors, and
 // review-reply drafts. The business JSON-LD is built in code from the dive's facts. The analysis
 // and the action plan read across everything afterwards (S4-analysis, S5-plan).
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES } from '../editor.ts';
 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
-
-function stage1(diveId: string, lane: string): any | null {
-  const file = path.join(OUT, `${lane}-${diveId}.json`);
-  try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
-}
 
 const brief = (out: any, n = 30) => (out?.findings ?? []).slice(0, n).map((f: Finding) => `- [${f.severity}] ${f.title}: ${clip(String(f.detail ?? ''), 220)}`).join('\n');
 
@@ -39,7 +32,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const id = r.identity ?? {};
   const name = String(id.legal_name ?? dive.company);
   const brand = name.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim().split(/\s+/)[0] ?? '';
-  const lanes = Object.fromEntries(STAGE1_LANES.map((l) => [l, stage1(ctx.diveId, l)]));
+  const lanes = Object.fromEntries(STAGE1_LANES.map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(lanes)) if (!v) ctx.warn(`stage-1 output ${l}-${ctx.diveId}.json missing; advice will skip what it covers`);
   const findings: Finding[] = [];
   const now = ctx.now();

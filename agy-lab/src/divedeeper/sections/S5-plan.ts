@@ -8,19 +8,12 @@
 // draft that does it for them. Code then checks the list is complete: every urgent or needs-work
 // finding no task covers is listed under its department, so nothing found drops off the plan.
 // No LLM answer builds the plan in code from the findings themselves.
-import fs from 'node:fs';
-import path from 'node:path';
-import { OUT, type Ctx, type Finding } from '../lib.ts';
+import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { AREAS, DEPTS, STAGE1_LANES, deptOf, resolve, type Dept, type Item } from '../editor.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
 const WHEN = ['week', 'month', 'quarter'] as const;
 const IMPACT = ['high', 'medium', 'low'] as const;
-
-function stage(diveId: string, lane: string): any | null {
-  const file = path.join(OUT, `${lane}-${diveId}.json`);
-  try { return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; } catch { return null; }
-}
 
 async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -34,7 +27,7 @@ async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
 export type Task = { dept: Dept; task: string; why: string; how: string; when: typeof WHEN[number]; effort: string; impact: typeof IMPACT[number]; theme: string | null; ready: string | null; items: string[] };
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor', 'S4-analysis'].map((l) => [l, stage(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor', 'S4-analysis'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the plan skips what it covers`);
   const R = resolve(dive, L);
   const plain: Record<string, { title: string; why: string }> = L['S3-editor']?.notes?.plain ?? {};
