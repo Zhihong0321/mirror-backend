@@ -40,7 +40,6 @@ const OPAQUE = Symbol.for('agy.evidence.opaque');
 const DECODED = Symbol.for('agy.evidence.decoded');
 
 const warned = new Set<string>();
-const failing = new Set<string>();
 const pending = new Map<string, Set<Promise<void>>>();
 
 let ready: Promise<void> | null = null;
@@ -223,13 +222,9 @@ function asRaw(call: ApiCall, raw: unknown): unknown {
 }
 
 async function write(call: ApiCall, raw: unknown, request: unknown, meta: Meta): Promise<void> {
-  // evidence_fail: throw before any query. The run still finishes; nothing is inserted.
-  if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
   const requestJson = fitJson(await prepare(stripSecrets(request)));
   const rawJson = fitJson(await prepare(asRaw(call, raw)));
-  if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
   await ensureTable();
-  if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
   await reportdb.sql(
     `insert into evidence_call
        (report_uid, parent_report_uid, kind, step, provider, api, what, request, raw, status, ok, at, ms, model, usd, note)
@@ -255,17 +250,9 @@ async function write(call: ApiCall, raw: unknown, request: unknown, meta: Meta):
   );
 }
 
-/**
- * One warning per run, and whether this run's inserts throw before the query.
- * A later run of the same report clears the flag when `fail` is false, so a
- * proof can turn evidence_fail off by taking it out of options and running again.
- * Calls that return after settle still see the flag from the run that started them.
- */
-export function watchRun(reportUid: string, fail: boolean): void {
-  const key = runKey(reportUid);
-  warned.delete(key);
-  if (fail) failing.add(key);
-  else failing.delete(key);
+/** One warning per run: a new run of the report may warn again. (evidence_fail, proof only, was removed after T7's live proof.) */
+export function watchRun(reportUid: string): void {
+  warned.delete(runKey(reportUid));
 }
 
 /**

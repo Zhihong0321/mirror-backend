@@ -75,7 +75,7 @@ async function execute(id: number): Promise<void> {
   const evidenceOn = switchOn(row.options, 'evidence') && Boolean(row.public_id);
   if (!evidenceOn || !row.public_id) return executeBody(id, row, false);
   const uid = row.public_id;
-  watchRun(uid, switchOn(row.options, 'evidence_fail'));
+  watchRun(uid);
   try {
     await runWithReport({
       reportUid: uid, parentReportUid: null, kind: 'company_dive', step: 'research', weight: 1, on: true,

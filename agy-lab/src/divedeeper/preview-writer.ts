@@ -100,8 +100,7 @@ export async function writePreviewNotes(dive: any): Promise<void> {
   const evidenceOn = switchOn(dive.options, 'evidence') && Boolean(dive.public_id);
   if (!evidenceOn) return writePreviewPlain(dive);
   const uid = String(dive.public_id);
-  // This process may not have run the company dive, so arm evidence_fail here before the preview runs.
-  watchRun(uid, switchOn(dive.options, 'evidence_fail'));
+  watchRun(uid);
   try {
     await runWithReport({
       reportUid: uid, parentReportUid: null, kind: 'preview', step: 'P-preview', weight: 1, on: true,
