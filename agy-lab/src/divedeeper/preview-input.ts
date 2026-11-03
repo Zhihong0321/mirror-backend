@@ -15,6 +15,8 @@ export type PreviewInput = {
   facts: { fact: string; sources: number[] }[];
   /** Where a cited id was published. The prompt does not read this. */
   sourceUrls: { id: number; url: string }[];
+  /** Scrubbed windows of cited sources. The writer fills this; the allow-list leaves it unset. */
+  passages?: { id: number; text: string }[];
 };
 
 const clean = (text: unknown, domains: string[]): string => {
@@ -105,4 +107,79 @@ export function previewInput(result: DiveResult): PreviewInput {
       return url ? [{ id: n, url }] : [];
     }),
   };
+}
+
+const WORD = /[a-z0-9]+/g;
+
+function wordSet(text: string): Set<string> {
+  return new Set(text.toLowerCase().match(WORD) ?? []);
+}
+
+/** How many distinct words in `text` also appear in `words`. */
+function wordOverlap(text: string, words: Set<string>): number {
+  let n = 0;
+  const seen = new Set<string>();
+  for (const w of text.toLowerCase().match(WORD) ?? []) {
+    if (!words.has(w) || seen.has(w)) continue;
+    seen.add(w);
+    n++;
+  }
+  return n;
+}
+
+/** Sentence spans in reading order. A line break ends a sentence, as does . ! or ? before whitespace. */
+function sentenceSpans(text: string): { start: number; end: number }[] {
+  const spans: { start: number; end: number }[] = [];
+  let start = 0;
+  for (let i = 0; i <= text.length; i++) {
+    const atEnd = i === text.length;
+    const c = text[i];
+    const brk = atEnd || c === '\n' || ((c === '.' || c === '!' || c === '?') && (i + 1 === text.length || /\s/.test(text[i + 1] ?? '')));
+    if (!brk) continue;
+    const end = atEnd || c === '\n' ? i : i + 1;
+    if (text.slice(start, end).trim()) spans.push({ start, end });
+    if (atEnd) break;
+    let next = c === '\n' ? i + 1 : end;
+    while (next < text.length && text[next] !== '\n' && /\s/.test(text[next])) next++;
+    start = next;
+    i = next - 1;
+  }
+  return spans;
+}
+
+function clip(text: string, limit: number): string {
+  const s = text.trim();
+  if (s.length <= limit) return s;
+  const cut = s.slice(0, limit);
+  const sp = cut.lastIndexOf(' ');
+  return (sp >= Math.floor(limit * 0.6) ? cut.slice(0, sp) : cut).trim();
+}
+
+/** At most `limit` characters around the first sentence that shares the most words with `facts`. */
+export function passageWindow(text: string, facts: string, limit = 700): string {
+  const body = String(text ?? '');
+  if (limit <= 0 || !body.trim()) return '';
+  const spans = sentenceSpans(body);
+  if (!spans.length) return clip(body, limit);
+  const factWords = wordSet(String(facts ?? ''));
+  let best = 0;
+  let bestScore = -1;
+  for (let i = 0; i < spans.length; i++) {
+    const score = wordOverlap(body.slice(spans[i].start, spans[i].end), factWords);
+    if (score > bestScore) { bestScore = score; best = i; }
+  }
+  const lengthOf = (a: number, b: number) => body.slice(spans[a].start, spans[b].end).trim().length;
+  if (lengthOf(best, best) > limit) return clip(body.slice(spans[best].start, spans[best].end), limit);
+  let lo = best;
+  let hi = best;
+  let takePrev = true;
+  for (;;) {
+    const prevOk = lo > 0 && lengthOf(lo - 1, hi) <= limit;
+    const nextOk = hi + 1 < spans.length && lengthOf(lo, hi + 1) <= limit;
+    if (takePrev && prevOk) { lo--; takePrev = false; continue; }
+    if (nextOk) { hi++; takePrev = true; continue; }
+    if (prevOk) { lo--; takePrev = false; continue; }
+    break;
+  }
+  return body.slice(spans[lo].start, spans[hi].end).trim();
 }

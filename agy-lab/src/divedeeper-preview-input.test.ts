@@ -19,6 +19,10 @@ test('the preview v2 prompt is built only from previewInput', () => {
   assert.match(src, /quoteOnPage\(/);
 });
 
+test('passages go through scrubPublic before they enter the prompt', () => {
+  assert.match(src, /passageWindow\(scrubPublic\([\s\S]*const prompt = previewPrompt\(input\)/);
+});
+
 test('preview v2 never writes the notes column', () => {
   const queries = [...src.matchAll(/sql\(\s*`([^`]*)`/gs)].map((m) => m[1]);
   assert.ok(queries.some((q) => q.includes('notes_v2')), 'the writer stores notes_v2');
