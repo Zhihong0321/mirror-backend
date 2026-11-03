@@ -21,7 +21,7 @@ import * as core from '../core/index.ts';
 import * as jobs from '../jobs.ts';
 import * as pagefetch from '../pagefetch.ts';
 import { startCall, type ApiCall, type ApiName } from '../cost.ts';
-import { current } from '../evidence/context.ts';
+import { evidenceActive } from '../evidence/context.ts';
 import { handoff, isOpaque, record as recordEvidence } from '../evidence/store.ts';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -159,6 +159,7 @@ export function makeCtx(diveId: string, section: string, lane: string) {
    * ones are ignored. Lanes that call an API themselves use this too.
    * Pass the body as the second argument (`read` and `page` do). With none, the
    * evidence row keeps no body: the lane fetched it and holds it.
+   * ctx.call cannot see a body a lane fetches itself: that row is raw = null and note 'lane-fetched: body captured by the lane task'.
    */
   const OMITTED = Symbol('omitted');
   const call = (api: ApiName, what: string, extra: Partial<ApiCall> = {}) => {
@@ -168,8 +169,10 @@ export function makeCtx(diveId: string, section: string, lane: string) {
       if (!rec) {
         rec = c.done(end);
         meter.calls.push(rec);
-        if (raw === OMITTED) recordEvidence(current()?.on ? { ...rec, note: 'lane-fetched: body captured by the lane task' } : rec, null, what);
-        else recordEvidence(rec, raw, what);
+        if (evidenceActive()) {
+          if (raw === OMITTED) recordEvidence({ ...rec, note: 'lane-fetched: body captured by the lane task' }, null, what);
+          else recordEvidence(rec, raw, what);
+        }
       }
       return rec;
     } };
@@ -347,22 +350,26 @@ export function makeCtx(diveId: string, section: string, lane: string) {
       const ca = extraCaFor(url);
       if (ca) {
         const r = await track(`page ${url}`, httpsWithCa(url, { method: init.method, headers, body: init.body as string | undefined }, ca));
-        c.done({ ok: true, note: `HTTP ${r.status}` }, handoff(r.text, r.headers['content-type']));
+        if (evidenceActive()) c.done({ ok: true, note: `HTTP ${r.status}` }, handoff(r.text, r.headers['content-type']));
+        else c.done({ ok: true, note: `HTTP ${r.status}` });
         return { url, finalUrl: r.url, status: r.status, ms: Date.now() - t, headers: r.headers, html: r.text };
       }
-      const { res, html, evidence } = await track(`page ${url}`, (async () => {
+      const loaded = await track(`page ${url}`, (async () => {
         const res = await fetch(url, { redirect: 'follow', ...init, headers, signal: AbortSignal.timeout(PAGE_TIMEOUT_MS) });
+        if (!evidenceActive()) return { res, html: await res.text(), kept: false as const, evidence: undefined as unknown };
         const ct = res.headers.get('content-type') ?? '';
         // Clone only while evidence is on, and only for a body we must not keep, so the lane still reads `res`.
         let evidence: unknown;
-        if (current()?.on && isOpaque(ct)) {
+        if (isOpaque(ct)) {
           try { evidence = res.clone(); }
           catch (err) { evidence = { unreadable: true, note: err instanceof Error ? err.message : String(err) }; }
         }
         const html = await res.text();
-        return { res, html, evidence: evidence ?? handoff(html, ct) };
+        return { res, html, kept: true as const, evidence: evidence ?? html };
       })());
-      c.done({ ok: true, note: `HTTP ${res.status}` }, evidence);
+      if (loaded.kept) c.done({ ok: true, note: `HTTP ${loaded.res.status}` }, loaded.evidence);
+      else c.done({ ok: true, note: `HTTP ${loaded.res.status}` });
+      const { res, html } = loaded;
       return { url, finalUrl: res.url, status: res.status, ms: Date.now() - t, headers: Object.fromEntries(res.headers), html };
     } catch (e) {
       meter.http.failed++;

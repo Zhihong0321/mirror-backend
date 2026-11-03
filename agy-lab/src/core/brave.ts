@@ -10,6 +10,7 @@
 import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
+import { evidenceActive } from '../evidence/context.ts';
 import { record as recordEvidence } from '../evidence/store.ts';
 import * as vault from './vault.ts';
 
@@ -89,7 +90,7 @@ export async function searchRaw(
     const rec = opts.what ? { ...done, what: `${opts.what}: ${done.what}` } : done;
     if (opts.log) opts.log.push(rec);
     opts.onCall?.(rec);
-    recordEvidence(rec, raw, q);
+    if (evidenceActive()) recordEvidence(rec, raw, q);
   };
   let lastErr = '';
   for (let tries = 0; tries < allKeys.length; tries++) {

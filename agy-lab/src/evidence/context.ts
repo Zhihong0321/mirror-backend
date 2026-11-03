@@ -51,3 +51,8 @@ export function step<T>(name: string, fn: () => Promise<T>): Promise<T> {
 export function current(): ReportCtx | undefined {
   try { return storage.getStore(); } catch { return undefined; }
 }
+
+/** True when this call sits in a report whose evidence switch is on. One store read. */
+export function evidenceActive(): boolean {
+  return current()?.on === true;
+}

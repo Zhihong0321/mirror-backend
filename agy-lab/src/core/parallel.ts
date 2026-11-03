@@ -2,10 +2,12 @@
 // intel.ts). The key is on /workers (core/secrets.ts; PARALLEL_API_KEY only when none is saved). Logged like every core call; Parallel
 // prices per request on its own plan, so the log carries no USD for it.
 import { startCall, type ApiCall } from '../cost.ts';
+import { evidenceActive } from '../evidence/context.ts';
 import { record as recordEvidence } from '../evidence/store.ts';
 
-/** One ApiCall for the log, when a log was passed, and for evidence either way. */
+/** One ApiCall for the log, when a log was passed, and for evidence when that switch is on. */
 function kept(call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, log: ApiCall[] | undefined, raw: unknown, request?: unknown): void {
+  if (!log && !evidenceActive()) return;
   const rec = call.done(end);
   if (log) log.push(rec);
   recordEvidence(rec, raw, request);
@@ -30,10 +32,11 @@ export async function entitySearch(body: Record<string, unknown>, opts: { what?:
     if (!payload || typeof payload !== 'object' || !Array.isArray((payload as Record<string, unknown>).entities)) {
       throw new Error('Parallel Entity Search returned an invalid response');
     }
-    kept(c, { ok: true, usd: null, results: (payload as { entities: unknown[] }).entities.length }, opts.log, payload, body);
+    if (opts.log || evidenceActive()) kept(c, { ok: true, usd: null, results: (payload as { entities: unknown[] }).entities.length }, opts.log, payload, body);
     return payload as Record<string, unknown>;
   } catch (err) {
-    kept(c, { ok: false, usd: 0, note: (err as Error).message.slice(0, 200) }, opts.log, err, body);
+    const on = evidenceActive();
+    if (opts.log || on) kept(c, { ok: false, usd: 0, note: on ? String((err as any)?.message ?? err).slice(0, 200) : (err as Error).message.slice(0, 200) }, opts.log, err, body);
     throw err;
   }
 }

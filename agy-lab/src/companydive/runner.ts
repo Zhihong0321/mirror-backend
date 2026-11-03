@@ -73,10 +73,7 @@ async function execute(id: number): Promise<void> {
   const row = (await reportdb.sql<DiveRow>(`select * from company_dive where id = $1`, [id])).rows[0];
   if (!row) return;
   const evidenceOn = switchOn(row.options, 'evidence') && Boolean(row.public_id);
-  if (!evidenceOn || !row.public_id) {
-    await executeBody(id, row, false);
-    return;
-  }
+  if (!evidenceOn || !row.public_id) return executeBody(id, row, false);
   const uid = row.public_id;
   watchRun(uid, switchOn(row.options, 'evidence_fail'));
   try {

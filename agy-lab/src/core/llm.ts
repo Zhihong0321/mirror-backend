@@ -41,10 +41,12 @@ import * as db from '../reportdb.ts';
 import * as pi from './pi.ts';
 import * as vault from './vault.ts';
 import { startCall, type ApiCall } from '../cost.ts';
+import { evidenceActive } from '../evidence/context.ts';
 import { record as recordEvidence } from '../evidence/store.ts';
 
-/** One ApiCall for the log, when a log was passed, and for evidence either way. */
+/** One ApiCall for the log, when a log was passed, and for evidence when that switch is on. */
 function kept(call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, log: ApiCall[] | undefined, raw: unknown, request?: unknown): void {
+  if (!log && !evidenceActive()) return;
   const rec = call.done(end);
   if (log) log.push(rec);
   recordEvidence(rec, raw, request);
@@ -342,12 +344,13 @@ async function round(step: string, messages: Message[], lanes: LlmConfig[], opts
     const used = { tokensIn: 0, tokensOut: 0 };
     try {
       const answer = await request(c, messages, opts, fetchImpl, used);
-      kept(call, { ok: true, ...used, note: `${chars} chars in, ${answer.length} out` }, log, answer, messages);
+      if (log || evidenceActive()) kept(call, { ok: true, ...used, note: `${chars} chars in, ${answer.length} out` }, log, answer, messages);
       return { answer, ...used, lane: c };
     } catch (err) {
       last = err as Error;
       if ((err as { code?: string }).code === 'rate_limit') rest(c);
-      kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: (err as Error).message.slice(0, 200) }, log, err, messages);
+      const on = evidenceActive();
+      if (log || on) kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: on ? String((err as any)?.message ?? err).slice(0, 200) : (err as Error).message.slice(0, 200) }, log, err, messages);
     } finally {
       give(c);
     }
@@ -426,10 +429,11 @@ async function minimax(prompt: string, opts: ChatOpts): Promise<Omit<ChatAnswer,
   const text = opts.system ? `${opts.system}\n\n${prompt}` : prompt;
   try {
     const out = await pi.ask(text, { tools: false, timeoutMs: opts.timeoutMs ?? 0, ...(opts.maxTokens ? { maxTokens: opts.maxTokens } : {}) }, used);
-    kept(call, { ok: true, ...used }, opts.log, out, text);
+    if (opts.log || evidenceActive()) kept(call, { ok: true, ...used }, opts.log, out, text);
     return { answer: out.answer, model, lane: 'MiniMax', tokensIn: used.tokensIn, tokensOut: used.tokensOut };
   } catch (err) {
-    kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: (err as Error).message.slice(0, 200) }, opts.log, err, text);
+    const on = evidenceActive();
+    if (opts.log || on) kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: on ? String((err as any)?.message ?? err).slice(0, 200) : (err as Error).message.slice(0, 200) }, opts.log, err, text);
     throw err;
   }
 }
@@ -465,10 +469,11 @@ export async function agent(prompt: string, opts: pi.AskOptions & { step?: strin
   const used = { tokensIn: 0, tokensOut: 0 };
   try {
     const out = await pi.ask(prompt, opts, used);
-    kept(call, { ok: true, ...used }, opts.log, out, prompt);
+    if (opts.log || evidenceActive()) kept(call, { ok: true, ...used }, opts.log, out, prompt);
     return out;
   } catch (err) {
-    kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: (err as Error).message.slice(0, 200) }, opts.log, err, prompt);
+    const on = evidenceActive();
+    if (opts.log || on) kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: on ? String((err as any)?.message ?? err).slice(0, 200) : (err as Error).message.slice(0, 200) }, opts.log, err, prompt);
     throw err;
   }
 }

@@ -36,6 +36,8 @@ const SECRET = /^(authorization|api[-_]?key|x-api-key|access[-_]?token|refresh[-
 
 /** Marks text whose content type must not be stored (PDF, image, archive). */
 const OPAQUE = Symbol.for('agy.evidence.opaque');
+/** Decoded text from the https agent: hashed as text, with a note that the original bytes are gone. */
+const DECODED = Symbol.for('agy.evidence.decoded');
 
 const warned = new Set<string>();
 const failing = new Set<string>();
@@ -54,34 +56,23 @@ export function statusOf(call: { ok: boolean; results?: number; note?: string })
   return COULDNT.test(call.note ?? '') ? "couldn't check" : 'failed';
 }
 
-/** True for PDF, images, audio, video, and archives. JSON, XML, and HTML are text. */
+/** Text we store whole. Anything else is `{ content_type, bytes, sha256 }`, never the body. */
 export function isOpaque(contentType: string): boolean {
   const mime = contentType.split(';')[0].trim().toLowerCase();
-  if (!mime || mime.startsWith('text/')) return false;
-  if (mime.includes('json') || mime.includes('xml') || mime.includes('html') || mime.includes('javascript')) return false;
-  if (mime.startsWith('image/') || mime.startsWith('audio/') || mime.startsWith('video/') || mime.startsWith('font/')) return true;
-  return mime === 'application/pdf'
-    || mime === 'application/zip'
-    || mime === 'application/gzip'
-    || mime === 'application/x-gzip'
-    || mime === 'application/octet-stream'
-    || mime === 'application/wasm'
-    || mime === 'application/x-tar'
-    || mime === 'application/x-7z-compressed'
-    || mime === 'application/vnd.rar'
-    || mime === 'application/x-rar-compressed'
-    || mime === 'application/x-bzip2'
-    || mime === 'application/x-bzip';
+  if (mime.startsWith('text/')) return false;
+  if (mime === 'application/json' || mime === 'application/xml' || mime === 'application/javascript') return false;
+  if (mime.endsWith('+json') || mime.endsWith('+xml')) return false;
+  return true;
 }
 
 /**
- * The body to store. Text stays text. An opaque content type becomes
- * `{ content_type, bytes, sha256 }` and the bytes are not kept. Cheap either way:
- * the hash of an opaque body happens later, inside the insert, not here.
+ * The body to store from decoded text (the extra-CA path has no original bytes).
+ * Text types stay text. Anything else is marked and hashed later, inside the insert.
  */
 export function handoff(text: string, contentType?: string | null): unknown {
-  if (contentType && isOpaque(contentType)) return { [OPAQUE]: true as const, text, content_type: contentType };
-  return text;
+  const ct = contentType ?? '';
+  if (!isOpaque(ct)) return text;
+  return { [DECODED]: true as const, text, content_type: ct };
 }
 
 function mimeOf(contentType: string): string {
@@ -100,10 +91,23 @@ function isOpaqueWrap(value: unknown): value is { text: string; content_type: st
   return Boolean(value) && typeof value === 'object' && OPAQUE in (value as object);
 }
 
+function isDecodedWrap(value: unknown): value is { text: string; content_type: string } {
+  return Boolean(value) && typeof value === 'object' && DECODED in (value as object);
+}
+
+function decodedMeta(text: string, contentType: string): { content_type: string; bytes: number; sha256: string; note: string } {
+  return {
+    content_type: mimeOf(contentType) || 'application/octet-stream',
+    bytes: Buffer.byteLength(text),
+    sha256: sha256(Buffer.from(text)),
+    note: 'decoded by the https agent',
+  };
+}
+
 /** Drop a secret key on a plain request object. Arrays (messages) are left whole. */
 function stripSecrets(value: unknown): unknown {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
-  if (value instanceof Error || value instanceof Response || Buffer.isBuffer(value) || isOpaqueWrap(value)) return value;
+  if (value instanceof Error || value instanceof Response || Buffer.isBuffer(value) || isOpaqueWrap(value) || isDecodedWrap(value)) return value;
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
     if (SECRET.test(key)) continue;
@@ -115,8 +119,9 @@ function stripSecrets(value: unknown): unknown {
 async function prepare(value: unknown): Promise<unknown> {
   if (value == null) return null;
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
-  if (value instanceof Error) return { message: value.message, name: value.name };
+  if (value instanceof Error) return { error: value.message };
   if (Buffer.isBuffer(value)) return opaqueMeta(value, 'application/octet-stream');
+  if (isDecodedWrap(value)) return decodedMeta(value.text, value.content_type);
   if (isOpaqueWrap(value)) return opaqueMeta(Buffer.from(value.text), value.content_type);
   if (value instanceof Response) {
     try {
@@ -210,11 +215,18 @@ function track(reportUid: string, job: Promise<void>): void {
 
 type Meta = { reportUid: string; parentReportUid: string | null; kind: ReportCtx['kind']; step: string };
 
+/** A failed call's row stores `{ error: <message> }`. Provider messages already carry the HTTP status and body excerpt. */
+function asRaw(call: ApiCall, raw: unknown): unknown {
+  if (call.ok || raw == null || raw instanceof Response || isOpaqueWrap(raw) || isDecodedWrap(raw)) return raw;
+  const message = raw instanceof Error ? String((raw as any)?.message ?? raw) : (call.note ?? String((raw as any)?.message ?? raw));
+  return { error: message };
+}
+
 async function write(call: ApiCall, raw: unknown, request: unknown, meta: Meta): Promise<void> {
   // evidence_fail: throw before any query. The run still finishes; nothing is inserted.
   if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
   const requestJson = fitJson(await prepare(stripSecrets(request)));
-  const rawJson = fitJson(await prepare(raw));
+  const rawJson = fitJson(await prepare(asRaw(call, raw)));
   if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
   await ensureTable();
   if (failing.has(runKey(meta.reportUid))) throw new Error('evidence_fail');
@@ -227,7 +239,7 @@ async function write(call: ApiCall, raw: unknown, request: unknown, meta: Meta):
       meta.parentReportUid,
       meta.kind,
       meta.step,
-      call.provider || 'api',
+      call.provider || call.api,
       call.api,
       call.what,
       requestJson,

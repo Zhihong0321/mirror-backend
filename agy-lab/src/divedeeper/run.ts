@@ -49,10 +49,7 @@ async function execute(id: number): Promise<void> {
   const row = (await reportdb.sql<Row>(`select * from dive_deeper where id = $1`, [id])).rows[0];
   if (!row) return;
   const evidenceOn = switchOn(row.options, 'evidence') && Boolean(row.public_id);
-  if (!evidenceOn) {
-    await executeBody(id, row, false);
-    return;
-  }
+  if (!evidenceOn) return executeBody(id, row, false);
   let parent: string | null = null;
   if (row.dive_id) {
     try {
