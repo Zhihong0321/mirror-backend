@@ -120,3 +120,23 @@ The plan said 13 sections; the code has 11 (B-brand and W-speed only matched the
   missing, so C-merged warns "Maps phones NOT checked") fires live only when H-maps did not save a file, and causing
   that on purpose would damage a real paid run. So it is checked in the diff review: every `null` branch keeps its old
   warning word for word. **Your call:** accept that, or name a way to make H-maps fail on purpose live.
+
+---
+
+## Live proof results
+
+**T1 (deployed 2026-11-02 16:41 UTC, `17559eb`).** Synapse Comms, company dive #37 (before) vs #38 (after),
+compared with `agy-lab/scripts/dive-snapshot.ts`: same status, tries, all 9 stages in order, result and identity
+fields, counters, dossier, preview, table columns; `/d/` and `/dp/` 200. The only differing lines are the follow-up
+searches the LLM picks in `fill` and `reflect` (same message template, other queries and count). Awaiting the owner's tick.
+
+**T2 (deployed 2026-11-03 00:30 UTC, `637fa8c`).** Dive-deeper #15 (before) vs #16 (after) on dive #38, plus the
+preview of dive #38 (old writer) vs #39 (T2 writer), compared with `agy-lab/scripts/deeper-snapshot.ts`: same
+stages 1–5, all 16 lanes with the same fields, report and preview written, same columns, 0 resumes; `/dd/` and `/dp/`
+200. Differences, all from outside the code: the parallel stage-1 lanes finished in another order; #15's D-registry
+waited on a slow LLM lane and passed on its second try; W-speed was partial (PageSpeed warnings) in #15 and done in
+#16. Awaiting the owner's tick.
+
+**T3 baseline (on the T2 code, before T3):** dive #38's lane files in `OUT`: A-assets, B-brand, C-merged, D-claims,
+D-registry, G-fixed, G-grounded, H-maps, H-plan, H-web, K-credibility, N-news, R-contacts, S2-consult, S3-editor,
+S4-analysis, S5-plan, W-speed, and dive-38 (`<name>-38.json`, 19 files).
