@@ -7,6 +7,23 @@ import { netError } from './neterr.ts';
 import { IDLE_MS, idleGuard, readText } from './idle.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
+import { evidenceActive } from '../evidence/context.ts';
+import { record as recordEvidence } from '../evidence/store.ts';
+
+/** One ApiCall for the log, when a log was passed, and for evidence when that switch is on. Exa's own `record` counts key spend. */
+function kept(call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, log: ApiCall[] | undefined, raw: unknown, request?: unknown): void {
+  if (!log && !evidenceActive()) return;
+  const rec = call.done(end);
+  if (log) log.push(rec);
+  recordEvidence(rec, raw, request);
+}
+
+function exaAsked(path: string, body: Record<string, unknown>): unknown {
+  if (typeof body.query === 'string') return body.query;
+  if (typeof body.url === 'string') return body.url;
+  if (body.urls != null) return body.urls;
+  return path;
+}
 import { createKeyPool, type Lease, type SearchHit } from './tavily.ts';
 import { isProxy, noKeyRestMs, parseProxy, proxy, setProxy, usage, withProxy } from './proxy.ts';
 import * as vault from './vault.ts';
@@ -132,11 +149,12 @@ export async function requestWithKey(path: string, body: Record<string, unknown>
     const out = await requestOnce(path, body, apiKey, opts);
     const dollars = Number(out.costDollars?.total ?? 0);
     record(apiKey, { dollars });
-    opts.log?.push(call.done({ ok: true, results: Array.isArray(out.results) ? out.results.length : undefined, ...(out.costDollars?.total != null ? { usd: dollars } : {}) }));
+    if (opts.log || evidenceActive()) kept(call, { ok: true, results: Array.isArray(out.results) ? out.results.length : undefined, ...(out.costDollars?.total != null ? { usd: dollars } : {}) }, opts.log, out, exaAsked(path, body));
     return out;
   } catch (cause) {
     record(apiKey, { error: (cause as Error).message ?? String(cause) });
-    opts.log?.push(call.done({ ok: false, note: (cause as Error).message.slice(0, 200) }));
+    const on = evidenceActive();
+    if (opts.log || on) kept(call, { ok: false, note: on ? String((cause as any)?.message ?? cause).slice(0, 200) : (cause as Error).message.slice(0, 200) }, opts.log, cause, exaAsked(path, body));
     throw cause;
   }
 }

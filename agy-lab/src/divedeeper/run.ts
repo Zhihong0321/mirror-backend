@@ -1,4 +1,7 @@
 import * as reportdb from '../reportdb.ts';
+import { switchOn } from '../switches.ts';
+import { runWithReport, step } from '../evidence/context.ts';
+import { settle, watchRun } from '../evidence/store.ts';
 import { restoreLane, runLane, stageDive, type LaneResult } from './runner.ts';
 import { buildReport } from './report-html.ts';
 import { enabled, STAGE1_FIRST, STAGE1_AFTER_H, STAGE1_LAST, STAGE2, STAGE3, STAGE4, STAGE5 } from './stages.ts';
@@ -45,6 +48,26 @@ const clock = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { timeZ
 async function execute(id: number): Promise<void> {
   const row = (await reportdb.sql<Row>(`select * from dive_deeper where id = $1`, [id])).rows[0];
   if (!row) return;
+  const evidenceOn = switchOn(row.options, 'evidence') && Boolean(row.public_id);
+  if (!evidenceOn) return executeBody(id, row, false);
+  let parent: string | null = null;
+  if (row.dive_id) {
+    try {
+      const dive = await diveRow(row.dive_id);
+      parent = dive?.public_id ? String(dive.public_id) : null;
+    } catch { parent = null; }
+  }
+  watchRun(row.public_id, switchOn(row.options, 'evidence_fail'));
+  try {
+    await runWithReport({
+      reportUid: row.public_id, parentReportUid: parent, kind: 'dive_deeper', step: 'dive', weight: 50, on: true,
+    }, () => executeBody(id, row, true));
+  } finally {
+    await settle(row.public_id, 10_000);
+  }
+}
+
+async function executeBody(id: number, row: Row, evidenceOn: boolean): Promise<void> {
   const log = row.log ?? [];
   const say = async (stage: string, msg: string, extra: Partial<Row> = {}) => {
     log.push({ at: new Date().toISOString(), stage, msg });
@@ -81,7 +104,9 @@ async function execute(id: number): Promise<void> {
       const key = `${section}-${lane}`;
       if (lanes[key] && lanes[key].status !== 'failed') return true;
       for (let t = 1; t <= LANE_TRIES; t++) {
-        const r = await runLane(section, lane, diveKey, dive);
+        const r = evidenceOn
+          ? await step(`${section}-${lane}`, () => runLane(section, lane, diveKey, dive))
+          : await runLane(section, lane, diveKey, dive);
         lanes[key] = r;
         if (r.status !== 'failed') {
           await say(stage, `${key}: ${r.findings_count} findings${r.warnings.length ? `, ${r.warnings.length} warnings` : ''}${t > 1 ? ` (try ${t})` : ''}`, { lanes });
@@ -114,19 +139,24 @@ async function execute(id: number): Promise<void> {
       const retryAt = resumes < MAX_RESUMES ? new Date(Date.now() + RESUME_AFTER_MS).toISOString() : null;
       const msg = `Not complete: ${failed.map((l) => `${l.section}-${l.lane} ${l.failure}`).join('; ')}. `
         + (retryAt ? `Next automatic try at ${clock(retryAt)} (${resumes + 1} of ${MAX_RESUMES}).` : `All ${MAX_RESUMES} automatic tries used; press Retry.`);
+      if (evidenceOn) await settle(row.public_id, 10_000);
       await say('incomplete', msg, { status: 'incomplete', error: msg, lanes, retry_at: retryAt });
       return;
     }
 
     // 3. The report: every lane ran.
     const html = buildReport(dive, lanes);
+    if (evidenceOn) await settle(row.public_id, 10_000);
     await say('done', 'Report ready: every lane ran', {
       status: 'done', error: null, lanes, report_html: html, retry_at: null, finished_at: new Date().toISOString(),
     });
   } catch (err) {
     console.error(`[dive-deeper ${id}] failed`, err);
     log.push({ at: new Date().toISOString(), stage: 'failed', msg: (err as Error).message });
+    if (evidenceOn) await settle(row.public_id, 10_000);
     await update(id, { status: 'failed', stage: 'failed', error: (err as Error).message, log, finished_at: new Date().toISOString() });
+  } finally {
+    if (evidenceOn) await settle(row.public_id, 10_000);
   }
 }
 

@@ -1,4 +1,7 @@
 import * as reportdb from '../reportdb.ts';
+import { switchOn } from '../switches.ts';
+import { runWithReport } from '../evidence/context.ts';
+import { settle, watchRun } from '../evidence/store.ts';
 import { makeCtx } from './lib.ts';
 import { type Offer } from './preview-html.ts';
 import { editPreview } from './preview-editor.ts';
@@ -61,8 +64,8 @@ export const offer = (): Offer => ({ price: process.env.DD_PREVIEW_PRICE, contac
 /** Company-dives whose preview notes are being written in this process right now. */
 export const editing = new Set<number>();
 
-/** Writes the preview's notes once and keeps them; a failed pass is kept as {} so the page falls back. Never throws. */
-export async function writePreviewNotes(dive: any): Promise<void> {
+/** The preview write as it was before evidence: one try, then drop the editing flag. Never throws. */
+async function writePreviewPlain(dive: any): Promise<void> {
   editing.add(Number(dive.id));
   try {
     const ctx = makeCtx(String(dive.id), 'P', 'preview');
@@ -73,5 +76,37 @@ export async function writePreviewNotes(dive: any): Promise<void> {
     console.error(`[dive-preview ${dive.id}] notes failed`, err);
   } finally {
     editing.delete(Number(dive.id));
+  }
+}
+
+/** Same write, under the report context, settling before the preview row is saved. */
+async function writePreviewOn(dive: any, uid: string): Promise<void> {
+  editing.add(Number(dive.id));
+  try {
+    const ctx = makeCtx(String(dive.id), 'P', 'preview');
+    const notes = await editPreview(dive, (p) => ctx.llm(p), ctx.parseJson, ctx.warn);
+    await settle(uid, 10_000);
+    await reportdb.sql(`insert into dive_preview (dive_id, notes, meter) values ($1, $2::jsonb, $3::jsonb) on conflict (dive_id) do update set notes = excluded.notes, meter = excluded.meter, created_at = now()`,
+      [dive.id, JSON.stringify(notes ?? {}), JSON.stringify(ctx.meter)]);
+  } catch (err) {
+    console.error(`[dive-preview ${dive.id}] notes failed`, err);
+  } finally {
+    editing.delete(Number(dive.id));
+  }
+}
+
+/** Writes the preview's notes once and keeps them; a failed pass is kept as {} so the page falls back. Never throws. */
+export async function writePreviewNotes(dive: any): Promise<void> {
+  const evidenceOn = switchOn(dive.options, 'evidence') && Boolean(dive.public_id);
+  if (!evidenceOn) return writePreviewPlain(dive);
+  const uid = String(dive.public_id);
+  // This process may not have run the company dive, so arm evidence_fail here before the preview runs.
+  watchRun(uid, switchOn(dive.options, 'evidence_fail'));
+  try {
+    await runWithReport({
+      reportUid: uid, parentReportUid: null, kind: 'preview', step: 'P-preview', weight: 1, on: true,
+    }, () => writePreviewOn(dive, uid));
+  } finally {
+    await settle(uid, 10_000);
   }
 }
