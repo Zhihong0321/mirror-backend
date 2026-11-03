@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
 import * as reportdb from '../reportdb.ts';
+import type { SwitchOptions } from '../switches.ts';
 import type { DiveResult } from './pipeline.ts';
 
 // ---------------------------------------------------------------- storage
 
 export type DiveRow = {
-  id: number; public_id: string | null; options: { people?: boolean } | null;
+  id: number; public_id: string | null; options: ({ people?: boolean } & SwitchOptions) | null;
   company: string; country: string; status: string; stage: string;
   log: Array<{ at: string; stage: string; msg: string }>; result: DiveResult | null; dossier: string | null; error: string | null;
   tavily_calls: number; tavily_credits: number; brave_calls: number; llm_calls: number;
@@ -63,7 +64,7 @@ export async function updateRow(id: number, fields: Partial<Omit<DiveRow, 'id' |
   const sets = cols.map((c, i) => `${c} = $${i + 2}`).join(', ');
   const vals = cols.map((c) => {
     const v = (fields as Record<string, unknown>)[c];
-    return c === 'log' || c === 'result' ? JSON.stringify(v) : v;
+    return c === 'log' || c === 'result' || c === 'options' ? JSON.stringify(v) : v;
   });
   await reportdb.sql(`update company_dive set ${sets} where id = $1`, [id, ...vals]);
 }
