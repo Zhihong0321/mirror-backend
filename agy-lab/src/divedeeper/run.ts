@@ -57,7 +57,7 @@ async function execute(id: number): Promise<void> {
       parent = dive?.public_id ? String(dive.public_id) : null;
     } catch { parent = null; }
   }
-  watchRun(row.public_id, switchOn(row.options, 'evidence_fail'));
+  watchRun(row.public_id);
   try {
     await runWithReport({
       reportUid: row.public_id, parentReportUid: parent, kind: 'dive_deeper', step: 'dive', weight: 50, on: true,
