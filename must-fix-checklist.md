@@ -271,7 +271,7 @@ Each step is useful on its own and leaves the app working. Tick only with live e
 never related to this project. Everything below about the lead import (A1–A3, `pg2nd_archive`, the id counters,
 the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a record.
 
-- [ ] **Copy the country-industry research** (the real T0).
+- [x] **Copy the country-industry research** (the real T0). Ticked by the owner 2026-11-03.
   - **Done 2026-11-03 ~16:50 UTC, live:** ee-auto holds 4 `country.industry` jobs (its job ring holds 4 in all, so
     none was dropped). Three imported through the hub's `POST /api/jobs/import-country`: West Malaysia / advertising
     agency (857 rows), Brunei Darussalam / advertising agency (135), San Marino / advertising agency (117); CSV and

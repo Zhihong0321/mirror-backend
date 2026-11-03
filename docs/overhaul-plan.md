@@ -1,6 +1,6 @@
 # Overhaul plan: step by step, in parallel where files allow
 
-**Status: approved by the owner on 2026-11-02. Not started: nothing runs until the owner says start.**
+**Status: approved by the owner on 2026-11-02. Wave 0 done: T0–T3 proven live and ticked by the owner on 2026-11-03 (evidence: [contracts/wave0-seams.md](contracts/wave0-seams.md), "Live proof results"); T4 waits for the owner to confirm the plans and accounts. Wave 1 not started: it starts only when the owner says so.**
 The owner's open points (section 9) are still open; none of them blocks wave 0. It follows the rules in must-fix-checklist.md,
 "How we build" (beside the old code, behind a switch, one module per task, proven live with real data), and
 builds the fixes for the design review (R1–R12).
@@ -67,10 +67,10 @@ the old behaviour. Where a failure path is new, it is made to fail on purpose li
 
 | Task | What | Builder / reviewer | Live proof |
 |---|---|---|---|
-| **T0** Country-industry research copy | from ee-auto, ONLY its country-industry research (owner, 2026-11-03: its leads are unrelated; the lead import was wrong data); deadline 2026-11-06 | Claude + owner | every ee-auto country job shows on the hub with the same CSV |
-| **T1** Seam: company dive | split `companydive.ts` into `companydive/pipeline.ts` (the research), `runner.ts` (queue, tries, resume), `http.ts` (API and pages), `store.ts` (table, row updates). The old file stays as a facade that re-exports, so `server.ts` and every importer are untouched. Pure move | grok / codex | one live dive: same stages, same log lines, same result fields as before the deploy |
-| **T2** Seam: dive-deeper | split `divedeeper.ts` into `divedeeper/run.ts` (execute, queue, resume), `preview-writer.ts`, `http.ts`, `stages.ts` (the lane order lists). Facade stays. Pure move | codex / grok | one live dive-deeper and one preview: same as before |
-| **T3** Seam: lane input and output | every section that reads or writes `OUT/*.json` itself goes through two helpers in `divedeeper/lib.ts`, `readLane(diveId, key)` and `writeLane(...)`, with the same paths. 13 section files, mechanical | gemini / grok | one live dive-deeper: same lane files, same report |
+| ✅ **T0** Country-industry research copy | from ee-auto, ONLY its country-industry research (owner, 2026-11-03: its leads are unrelated; the lead import was wrong data); deadline 2026-11-06 | Claude + owner | every ee-auto country job shows on the hub with the same CSV |
+| ✅ **T1** Seam: company dive | split `companydive.ts` into `companydive/pipeline.ts` (the research), `runner.ts` (queue, tries, resume), `http.ts` (API and pages), `store.ts` (table, row updates). The old file stays as a facade that re-exports, so `server.ts` and every importer are untouched. Pure move | grok / codex | one live dive: same stages, same log lines, same result fields as before the deploy |
+| ✅ **T2** Seam: dive-deeper | split `divedeeper.ts` into `divedeeper/run.ts` (execute, queue, resume), `preview-writer.ts`, `http.ts`, `stages.ts` (the lane order lists). Facade stays. Pure move | codex / grok | one live dive-deeper and one preview: same as before |
+| ✅ **T3** Seam: lane input and output | every section that reads or writes `OUT/*.json` itself goes through two helpers in `divedeeper/lib.ts`, `readLane(diveId, key)` and `writeLane(...)`, with the same paths. 13 section files, mechanical | gemini / grok | one live dive-deeper: same lane files, same report |
 | **T4** Provider limits (read only) | the real rate limit of each provider, per key and per account (LLM lanes, MiniMax, Tavily, Exa, Brave, PageSpeed, Gmap and fetch workers), from their docs and the hub's own 429s. Writes `docs/provider-limits.md` | gemini / Claude | the owner confirms the accounts and plans |
 | **T5** Contracts | the contract for each wave-1 task: interface, tables, owned files, switch name, live proof | Claude, owner approves | — |
 
