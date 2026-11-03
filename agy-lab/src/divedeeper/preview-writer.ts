@@ -19,12 +19,6 @@ const PREVIEW_SWEEP_MS = 120_000;
 /** Previews written at once, as many as the company-dives that run at once. */
 const PREVIEW_WRITERS = 3;
 let writers = 0;
-/** notes_v2 is added by the switched writer. The sweep reads it, so the column has to exist first. Once per process. */
-let notesV2Column: Promise<void> | null = null;
-function ensureNotesV2Column(): Promise<void> {
-  notesV2Column ??= reportdb.sql(`alter table dive_preview add column if not exists notes_v2 jsonb`).then(() => {}, (err) => { notesV2Column = null; throw err; });
-  return notesV2Column;
-}
 
 /** Starts the writers that are missing; each takes finished company-dives without a preview, newest first. Never throws. */
 function previewSweep(): void {
@@ -38,27 +32,12 @@ function previewSweep(): void {
 async function previewWriter(): Promise<void> {
   try {
     await ensureTable();
-    await ensureNotesV2Column();
     for (;;) {
-      // Global off makes switchOn false for every dive, so those runs keep today's "no row yet" condition.
-      const preview2Live = !/^(1|true|on|yes)$/i.test(String(process.env.OVERHAUL_SWITCHES_OFF ?? '').trim());
-      // A preview2 dive is unwritten only while notes_v2 is null. Every other dive is unwritten only while it has no row.
       const dive = (await reportdb.sql(`select c.id, c.public_id, c.company, c.status, c.options, c.result, c.dossier, c.finished_at from company_dive c
                                           left join dive_preview p on p.dive_id = c.id
-                                         where c.status in ('done', 'partial') and c.result is not null
+                                         where p.dive_id is null and c.status in ('done', 'partial') and c.result is not null
                                            and not (c.id = any($1::bigint[]))
-                                           and case
-                                                 when $2::boolean
-                                                  and jsonb_typeof(c.options->'switches') = 'array'
-                                                  and not exists (
-                                                    select 1 from jsonb_array_elements_text(case when jsonb_typeof(c.options->'switches') = 'array' then c.options->'switches' else '[]'::jsonb end) s(name)
-                                                    where s.name !~ '^[a-z][a-z0-9_]*$'
-                                                  )
-                                                  and case when jsonb_typeof(c.options->'switches') = 'array' then jsonb_exists(c.options->'switches', 'preview2') else false end
-                                                 then p.notes_v2 is null
-                                                 else p.dive_id is null
-                                               end
-                                         order by c.finished_at desc nulls last limit 1`, [[...editing], preview2Live])).rows[0] as any;
+                                         order by c.finished_at desc nulls last limit 1`, [[...editing]])).rows[0] as any;
       if (!dive) break;
       // Another writer took it between the query and here; the next query skips it.
       if (editing.has(Number(dive.id))) continue;

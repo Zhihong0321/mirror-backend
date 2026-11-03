@@ -8,6 +8,7 @@ import { updateRow } from '../companydive/store.ts';
 import { makeCtx } from './lib.ts';
 import { quoteOnPage } from './sections/C-merged.ts';
 import { previewInput, type PreviewInput } from './preview-input.ts';
+import { editing } from './preview-writer.ts';
 import { switchOn } from '../switches.ts';
 
 const KEPT = new Set(['contradiction', 'outdated', 'wrong']);
@@ -139,7 +140,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
   try {
     const options = switchOptions(dive);
     if (!switchOn(options, 'preview2')) return;
-    const { editing } = await import('./preview-writer.ts');
+    // Before any await: a concurrent sweep or /dp/ must already see this id in `editing`.
     editing.add(id);
     release = () => { editing.delete(id); };
     const ctx = makeCtx(String(dive.id), 'P', 'preview2');
@@ -155,7 +156,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
         [dive.id, JSON.stringify(saved), JSON.stringify(ctx.meter)],
       );
     };
-    // Same shape as a returned failure. A thrown error adds its scrubbed text.
+    // A content failure still inserts a row. The notes column keeps its default. A thrown error stores its kind, never its message.
     const failed = (err?: unknown) => ({
       prompt, hook: '', known: [] as { label: string; value: string }[], warnings: [] as SavedWarning[], dropped: [] as Dropped[], failed: true as const,
       ...(err == null ? {} : { error: errorKind(err) }),
@@ -182,7 +183,10 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
       got = null;
     }
     if (!got) {
-      await store(failed(thrown ?? undefined));
+      // No answer, or an answer that did not parse. Either way the row exists, with the error's kind.
+      const err = thrown ?? new Error('parse');
+      if (thrown == null && err instanceof Error) err.name = 'parse';
+      await store(failed(err));
       return;
     }
     let warnings: SavedWarning[];
@@ -190,6 +194,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
     try {
       ({ warnings, dropped } = await verifyWarnings(input, got, read));
     } catch (err) {
+      // Quote check threw. Keep a row so the sweep's "no row yet" query leaves this dive alone.
       await store(failed(err));
       return;
     }
