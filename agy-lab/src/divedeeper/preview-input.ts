@@ -35,9 +35,11 @@ function peopleOf(result: DiveResult): { name?: unknown; role?: unknown }[] {
   return Array.isArray(people) ? people : [];
 }
 
-// "ownership_people" is about people. A hyphen or underscore is a word break here.
-const PEOPLE_TOPIC = /\b(people|staff|team|contacts?)\b/i;
-const aboutPeople = (topic: unknown): boolean => PEOPLE_TOPIC.test(String(topic ?? '').replace(/[_-]+/g, ' '));
+// Only facts from these topics (companydive/pipeline.ts TOPICS) reach the prompt. ownership_people, reputation, news
+// and risks can name staff or private people and no code can spot every name, so they stay out whole; leadership
+// comes in separately, as name and title from the people step.
+const PUBLIC_TOPICS = new Set(['identity', 'products_services', 'projects_clients', 'footprint', 'size_financials',
+  'competitors', 'digital_presence']);
 
 const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -81,7 +83,7 @@ export function previewInput(result: DiveResult): PreviewInput {
   const blocked = blockedNames(r, allowed);
   const facts = (r.facts ?? []).flatMap((f) => {
     if (!f || typeof f.fact !== 'string') return [];
-    if (aboutPeople((f as { topic?: unknown }).topic)) return [];
+    if (!PUBLIC_TOPICS.has(String((f as { topic?: unknown }).topic ?? ''))) return [];
     const fact = f.fact.trim();
     if (!fact || hasPrivate(fact)) return [];
     if (blocked.some((n) => mentions(fact, n))) return [];

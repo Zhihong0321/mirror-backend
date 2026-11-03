@@ -8,7 +8,6 @@ import { updateRow } from '../companydive/store.ts';
 import { makeCtx } from './lib.ts';
 import { quoteOnPage } from './sections/C-merged.ts';
 import { previewInput, type PreviewInput } from './preview-input.ts';
-import { scrubPublic } from './privacy.ts';
 import { switchOn } from '../switches.ts';
 
 const KEPT = new Set(['contradiction', 'outdated', 'wrong']);
@@ -45,9 +44,9 @@ function logLines(v: unknown): Array<{ at: string; stage: string; msg: string }>
   }
 }
 
-function scrubbedError(err: unknown, domains: readonly string[]): string {
-  const msg = err instanceof Error ? err.message : String(err ?? '');
-  return scrubPublic(msg, domains);
+/** What kind of failure it was, never its message: a message can carry a name, an address or a number. */
+function errorKind(err: unknown): string {
+  return err instanceof Error ? err.name : typeof err;
 }
 
 /** One line on the company dive, through updateRow. preview2_fail is proof only. */
@@ -147,7 +146,6 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
     const input = previewInput(dive?.result);
     const prompt = previewPrompt(input);
     const read = typeof sourceText === 'function' ? sourceText : async () => null;
-    const domains = (dive?.result?.identity?.official_domains ?? []).map((d: unknown) => String(d));
     await reportdb.sql(`alter table dive_preview add column if not exists notes_v2 jsonb`);
     const edited_at = new Date().toISOString();
     const store = async (body: Record<string, unknown>) => {
@@ -160,7 +158,7 @@ export async function writePreviewV2(dive: any, sourceText: (url: string) => Pro
     // Same shape as a returned failure. A thrown error adds its scrubbed text.
     const failed = (err?: unknown) => ({
       prompt, hook: '', known: [] as { label: string; value: string }[], warnings: [] as SavedWarning[], dropped: [] as Dropped[], failed: true as const,
-      ...(err == null ? {} : { error: scrubbedError(err, domains) }),
+      ...(err == null ? {} : { error: errorKind(err) }),
     });
     if (switchOn(options, 'preview2_fail')) {
       try { await notePreview2Fail(dive); }
