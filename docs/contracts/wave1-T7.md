@@ -151,4 +151,4 @@ Synapse Comms, with and without `evidence`; compared with `dive-snapshot.ts` / `
   unchanged by T7), #42's dossier never arrived; the run with evidence on (#44) wrote its dossier. The container also
   restarted at 07:57:28 UTC without a push or a variable change (cause not visible to Claude: no deployment-history access).
 
-Awaiting the owner's tick.
+**Ticked by the owner on 2026-11-03.**

@@ -224,7 +224,7 @@ three shared files with no behaviour change) so most tasks can run side by side.
 Each step is useful on its own and leaves the app working. Tick only with live evidence.
 
 - [ ] **0. Lead import (A1–A3).** Outside the overhaul, and first: its source token expires on 2026-11-06.
-- [ ] **1. Evidence store.** Only adds: every existing call also saves its result. No behaviour changes.
+- [x] **1. Evidence store.** Only adds: every existing call also saves its result. No behaviour changes. **Done as T7, live 2026-11-03, ticked by the owner: [docs/contracts/wave1-T7.md](docs/contracts/wave1-T7.md).**
   Proof: a live dive's stored rows match its call log. It goes first because every later step compares against
   this real data.
 - [ ] **2. Identity anchors (R3).** The dive starts from what the lead already knows; triage confirms it.

@@ -72,4 +72,4 @@ options is T6's (decided by Claude for T10; grok's review, 2026-11-03). Builder 
    as before T6), #18 `{"switches":["evidence"]}`, #19 `{}`. `switchOn(evidence)`: true only for #40 and #18; with
    `OVERHAUL_SWITCHES_OFF=yes` false for all four, the stored lists untouched.
 
-Awaiting the owner's tick.
+**Ticked by the owner on 2026-11-03.**
