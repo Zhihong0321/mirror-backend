@@ -118,3 +118,15 @@ Resume, leases, call reuse, steps, checks, `Finding`, identity, the limiter, que
 Checked against the current code. Two codex reviews (2026-11-03); the second's open points (lane-own fetches, settle
 before the run is final, setup and clone failures, the type-only `cost.ts` import, binary bodies) were settled by Claude
 in this text.
+
+## Build review decisions (Claude, 2026-11-03)
+
+Codex reviewed the build twice. Fixed: the off path builds a call record only where the old code did (a log was
+passed) or when evidence is active; no added `await`, wrapper or `finally` at the run starts; content types on an
+allow-list; provider from the call; `evidence_fail` armed for previews; MiniMax builds its prompt inside its `try`.
+
+**The bar for "switch off is identical":** same return values, same thrown error objects, same log lines, same order of
+real operations (network calls, database writes, timers). Accepted as not behaviour: plain property reads on the app's
+own request objects (no getters, no side effects) and the extra microtask ticks of an async step at the run starts.
+Kept by the contract's design and commented in the code: lane-own fetches have no body to capture; a failed call
+stores its error message.
