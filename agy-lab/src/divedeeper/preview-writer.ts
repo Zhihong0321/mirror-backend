@@ -1,4 +1,7 @@
 import * as reportdb from '../reportdb.ts';
+import { switchOn } from '../switches.ts';
+import { runWithReport } from '../evidence/context.ts';
+import { settle, watchRun } from '../evidence/store.ts';
 import { makeCtx } from './lib.ts';
 import { type Offer } from './preview-html.ts';
 import { editPreview } from './preview-editor.ts';
@@ -64,14 +67,29 @@ export const editing = new Set<number>();
 /** Writes the preview's notes once and keeps them; a failed pass is kept as {} so the page falls back. Never throws. */
 export async function writePreviewNotes(dive: any): Promise<void> {
   editing.add(Number(dive.id));
+  const evidenceOn = switchOn(dive.options, 'evidence') && Boolean(dive.public_id);
+  const uid = String(dive.public_id ?? '');
   try {
-    const ctx = makeCtx(String(dive.id), 'P', 'preview');
-    const notes = await editPreview(dive, (p) => ctx.llm(p), ctx.parseJson, ctx.warn);
-    await reportdb.sql(`insert into dive_preview (dive_id, notes, meter) values ($1, $2::jsonb, $3::jsonb) on conflict (dive_id) do update set notes = excluded.notes, meter = excluded.meter, created_at = now()`,
-      [dive.id, JSON.stringify(notes ?? {}), JSON.stringify(ctx.meter)]);
+    const write = async () => {
+      const ctx = makeCtx(String(dive.id), 'P', 'preview');
+      const notes = await editPreview(dive, (p) => ctx.llm(p), ctx.parseJson, ctx.warn);
+      if (evidenceOn) await settle(uid, 10_000);
+      await reportdb.sql(`insert into dive_preview (dive_id, notes, meter) values ($1, $2::jsonb, $3::jsonb) on conflict (dive_id) do update set notes = excluded.notes, meter = excluded.meter, created_at = now()`,
+        [dive.id, JSON.stringify(notes ?? {}), JSON.stringify(ctx.meter)]);
+    };
+    if (evidenceOn) {
+      // A company dive's evidence_fail covers this public id too, so a preview of that dive does not clear it.
+      if (!switchOn(dive.options, 'evidence_fail')) watchRun(uid, false);
+      await runWithReport({
+        reportUid: uid, parentReportUid: null, kind: 'preview', step: 'P-preview', weight: 1, on: true,
+      }, write);
+    } else {
+      await write();
+    }
   } catch (err) {
     console.error(`[dive-preview ${dive.id}] notes failed`, err);
   } finally {
+    if (evidenceOn) await settle(uid, 10_000);
     editing.delete(Number(dive.id));
   }
 }

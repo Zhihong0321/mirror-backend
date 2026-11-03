@@ -10,6 +10,7 @@
 import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
+import { record as recordEvidence } from '../evidence/store.ts';
 import * as vault from './vault.ts';
 
 type FetchImpl = typeof fetch;
@@ -83,7 +84,13 @@ export async function searchRaw(
   const params = new URLSearchParams({ q, count: String(opts.count ?? 20) });
   if (opts.country) params.set('country', opts.country);
   if (kind === 'web' && opts.extraSnippets !== false) params.set('extra_snippets', 'true');
-  const onCall = (c: ApiCall) => { const rec = opts.what ? { ...c, what: `${opts.what}: ${c.what}` } : c; opts.log?.push(rec); opts.onCall?.(rec); };
+  const finish = (call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, raw: unknown) => {
+    const done = call.done(end);
+    const rec = opts.what ? { ...done, what: `${opts.what}: ${done.what}` } : done;
+    if (opts.log) opts.log.push(rec);
+    opts.onCall?.(rec);
+    recordEvidence(rec, raw, q);
+  };
   let lastErr = '';
   for (let tries = 0; tries < allKeys.length; tries++) {
     const key = allKeys[keyIndex % allKeys.length];
@@ -96,23 +103,25 @@ export async function searchRaw(
         signal: AbortSignal.timeout(30_000),
       });
     } catch (err) {
-      onCall(call.done({ ok: false, note: netError(err).slice(0, 200) }));
+      finish(call, { ok: false, note: netError(err).slice(0, 200) }, err);
       throw Object.assign(new Error(`brave ${kind} unreachable: ${netError(err)}`), { cause: err });
     }
     if (res.status === 429 || res.status === 402) {
-      lastErr = `HTTP ${res.status} ${(await res.text()).slice(0, 200)}`;
-      onCall(call.done({ ok: false, note: lastErr }));
+      const text = await res.text();
+      lastErr = `HTTP ${res.status} ${text.slice(0, 200)}`;
+      finish(call, { ok: false, note: lastErr }, text);
       keyIndex++;
       continue;
     }
     if (!res.ok) {
-      const msg = `Brave ${kind} answered HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`;
-      onCall(call.done({ ok: false, note: msg }));
+      const text = await res.text();
+      const msg = `Brave ${kind} answered HTTP ${res.status}: ${text.slice(0, 200)}`;
+      finish(call, { ok: false, note: msg }, text);
       throw new Error(msg);
     }
     const body = await res.json() as Record<string, any>;
     const rows: Array<Record<string, any>> = (kind === 'news' ? body.results : body.web?.results) ?? [];
-    onCall(call.done({ ok: true, results: rows.length }));
+    finish(call, { ok: true, results: rows.length }, body);
     return rows;
   }
   throw new Error(`Brave: every key refused (${lastErr})`);

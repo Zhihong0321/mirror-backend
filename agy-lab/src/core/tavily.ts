@@ -16,6 +16,20 @@
 import { netError } from './neterr.ts';
 import * as db from '../reportdb.ts';
 import { startCall, type ApiCall } from '../cost.ts';
+import { record as recordEvidence } from '../evidence/store.ts';
+
+/** One ApiCall for the log, when a log was passed, and for evidence either way. */
+function kept(call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, log: ApiCall[] | undefined, raw: unknown, request?: unknown): void {
+  const rec = call.done(end);
+  if (log) log.push(rec);
+  recordEvidence(rec, raw, request);
+}
+
+function tavilyAsked(body: Record<string, unknown>): unknown {
+  if (typeof body.query === 'string') return body.query;
+  if (typeof body.url === 'string') return body.url;
+  return null;
+}
 import { isProxy, noKeyRestMs, parseProxy, proxy, setProxy, usage, withProxy } from './proxy.ts';
 import * as vault from './vault.ts';
 
@@ -282,11 +296,11 @@ export async function searchWithKey(
 ): Promise<SearchHit[]> {
   const call = startCall('tavily', opts.what ?? `search: ${query}`, { provider: isProxy(apiKey) ? 'tavily us proxy' : 'tavily' });
   try {
-    const hits = await searchOnce(query, apiKey, opts);
-    opts.log?.push(call.done({ ok: true, results: hits.length, credits: (opts.depth ?? 'advanced') === 'advanced' ? 2 : 1 }));
+    const { hits, body } = await searchOnce(query, apiKey, opts);
+    kept(call, { ok: true, results: hits.length, credits: (opts.depth ?? 'advanced') === 'advanced' ? 2 : 1 }, opts.log, body, query);
     return hits;
   } catch (cause) {
-    opts.log?.push(call.done({ ok: false, note: (cause as Error).message.slice(0, 200) }));
+    kept(call, { ok: false, note: (cause as Error).message.slice(0, 200) }, opts.log, cause, query);
     throw cause;
   }
 }
@@ -295,7 +309,7 @@ async function searchOnce(
   query: string,
   apiKey: string,
   opts: { maxResults?: number; depth?: 'basic' | 'advanced'; timeoutMs?: number; fetchImpl?: FetchImpl },
-): Promise<SearchHit[]> {
+): Promise<{ hits: SearchHit[]; body: unknown }> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const target = endpoint(apiKey, 'search');
   let res: Response;
@@ -330,16 +344,17 @@ async function searchOnce(
   if (!res.ok) throw fail(`upstream error: tavily answered ${res.status}: ${raw.slice(0, 200)}`, 'timeout');
   pool.spend(apiKey, (opts.depth ?? 'advanced') === 'advanced' ? 2 : 1);
   let body: unknown;
-  try { body = JSON.parse(raw); } catch { return []; }
+  try { body = JSON.parse(raw); } catch { return { hits: [], body: raw }; }
   const results = (body as { results?: unknown })?.results;
-  if (!Array.isArray(results)) return [];
-  return results.flatMap((item): SearchHit[] => {
+  if (!Array.isArray(results)) return { hits: [], body };
+  const hits = results.flatMap((item): SearchHit[] => {
     const row = item as Record<string, unknown>;
     const url = typeof row.url === 'string' ? row.url.trim() : '';
     if (!/^https?:\/\//i.test(url)) return [];
     const clean = (v: unknown, max: number) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
     return [{ url, title: clean(row.title, 200), content: clean(row.content, 400) }];
   });
+  return { hits, body };
 }
 
 /** Release a lease the way the error asks: the proxy's retry-after, rest the key for quota, a minute off for a rate limit. */
@@ -370,12 +385,13 @@ export async function request(
     throw fail(`tavily /${asked} is retired: pages are read by the fetch workers (pagefetch.ts), not bought from Tavily`, 'unsupported');
   }
   const call = startCall('tavily', opts.what ?? `${path}: ${String(body.query ?? body.url ?? '').slice(0, 200)}`, { provider: 'tavily' });
+  const query = tavilyAsked(body);
   try {
     const out = await requestPool(path, body, opts);
-    opts.log?.push(call.done({ ok: true, credits: Number(out.usage?.credits ?? 0) }));
+    kept(call, { ok: true, credits: Number(out.usage?.credits ?? 0) }, opts.log, out, query);
     return out;
   } catch (cause) {
-    opts.log?.push(call.done({ ok: false, note: (cause as Error).message.slice(0, 200) }));
+    kept(call, { ok: false, note: (cause as Error).message.slice(0, 200) }, opts.log, cause, query);
     throw cause;
   }
 }
@@ -441,6 +457,7 @@ export async function requestWithKey<T = Record<string, any>>(
   opts: { timeoutMs?: number; fetchImpl?: FetchImpl; log?: ApiCall[]; what?: string } = {},
 ): Promise<T & { usage?: { credits?: number } }> {
   const call = startCall('tavily', opts.what ?? `${path}: ${String(body.query ?? body.url ?? '').slice(0, 200)}`, { provider: isProxy(apiKey) ? 'tavily us proxy' : 'tavily' });
+  const asked = tavilyAsked(body);
   let res: Response;
   try {
     const target = endpoint(apiKey, path);
@@ -453,11 +470,11 @@ export async function requestWithKey<T = Record<string, any>>(
   } catch (cause) {
     const name = cause instanceof Error ? cause.name : '';
     const err = fail(name === 'TimeoutError' || name === 'AbortError' ? `tavily ${path} timed out` : `upstream error: ${netError(cause)}`, 'timeout');
-    opts.log?.push(call.done({ ok: false, note: err.message.slice(0, 200) }));
+    kept(call, { ok: false, note: err.message.slice(0, 200) }, opts.log, cause, asked);
     throw err;
   }
   const raw = await res.text();
-  const refuse = (message: string, code: string) => { opts.log?.push(call.done({ ok: false, note: message.slice(0, 200) })); return fail(message, code); };
+  const refuse = (message: string, code: string) => { kept(call, { ok: false, note: message.slice(0, 200) }, opts.log, raw, asked); return fail(message, code); };
   const noKey = noKeyRestMs(res, raw);
   if (noKey) throw Object.assign(refuse(`US proxy has no usable Tavily key: ${raw.slice(0, 200)}`, 'quota'), { restMs: noKey, provider: 'tavily' });
   if (res.status === 432 || res.status === 433) throw refuse(`tavily quota exceeded (${res.status}): ${raw.slice(0, 200)}`, 'quota');
@@ -466,7 +483,7 @@ export async function requestWithKey<T = Record<string, any>>(
   let out: T & { usage?: { credits?: number } };
   try { out = JSON.parse(raw); } catch { throw refuse(`tavily ${path} answered non-JSON`, 'timeout'); }
   // The caller counts the credits against its key (it holds the lease).
-  opts.log?.push(call.done({ ok: true, credits: Number(out.usage?.credits ?? 0) }));
+  kept(call, { ok: true, credits: Number(out.usage?.credits ?? 0) }, opts.log, out, asked);
   return out;
 }
 

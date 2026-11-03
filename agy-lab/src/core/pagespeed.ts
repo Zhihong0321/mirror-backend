@@ -8,6 +8,14 @@
 // logged at $0. A 429 or 5xx is asked again once after 10s.
 import crypto from 'node:crypto';
 import { startCall, type ApiCall } from '../cost.ts';
+import { record as recordEvidence } from '../evidence/store.ts';
+
+/** One ApiCall for the log, when a log was passed, and for evidence either way. */
+function kept(call: { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall }, end: Partial<ApiCall> & { ok: boolean }, log: ApiCall[] | undefined, raw: unknown, request?: unknown): void {
+  const rec = call.done(end);
+  if (log) log.push(rec);
+  recordEvidence(rec, raw, request);
+}
 import * as secrets from './secrets.ts';
 
 const API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
@@ -30,15 +38,15 @@ export async function token(warn: (m: string) => void, log?: ApiCall[]): Promise
     const res = await fetch(sa.token_uri, { signal: AbortSignal.timeout(30_000), method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${head}.${body}.${sig}` }) });
     const j = await res.json() as any;
     if (!res.ok || !j.access_token) {
-      log?.push(c.done({ ok: false, note: `HTTP ${res.status}` }));
+      kept(c, { ok: false, note: `HTTP ${res.status}` }, log, null);
       warn(`Google token HTTP ${res.status}: ${String(j.error_description ?? j.error ?? '').slice(0, 160)}`);
       return '';
     }
-    log?.push(c.done({ ok: true }));
+    kept(c, { ok: true }, log, null);
     cached = { token: j.access_token, until: Date.now() + (Number(j.expires_in ?? 3600) - 60) * 1000 };
     return cached.token;
   } catch (e) {
-    log?.push(c.done({ ok: false, note: (e as Error).message.slice(0, 200) }));
+    kept(c, { ok: false, note: (e as Error).message.slice(0, 200) }, log, null);
     warn(`Google token failed: ${(e as Error).message}`);
     return '';
   }
@@ -54,14 +62,14 @@ export async function run(url: string, strategy: 'mobile' | 'desktop', accessTok
     try {
       const res = await fetch(`${API}?${q}`, { headers: { authorization: `Bearer ${accessToken}` }, signal: AbortSignal.timeout(180_000) });
       const d = await res.json() as any;
-      if (res.ok && d.lighthouseResult) { opts.log?.push(c.done({ ok: true })); return d; }
+      if (res.ok && d.lighthouseResult) { kept(c, { ok: true }, opts.log, d, { url, strategy }); return d; }
       last = `HTTP ${res.status}: ${String(d.error?.message ?? 'no Lighthouse result').slice(0, 200)}`;
-      opts.log?.push(c.done({ ok: false, note: last }));
+      kept(c, { ok: false, note: last }, opts.log, d, { url, strategy });
       if (res.status !== 429 && res.status < 500) break;
       await new Promise((r) => setTimeout(r, 10_000));
     } catch (e) {
       last = (e as Error).message;
-      opts.log?.push(c.done({ ok: false, note: last.slice(0, 200) }));
+      kept(c, { ok: false, note: last.slice(0, 200) }, opts.log, e, { url, strategy });
     }
   }
   throw new Error(last);

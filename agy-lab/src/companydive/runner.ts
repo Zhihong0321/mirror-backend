@@ -1,5 +1,8 @@
 import * as reportdb from '../reportdb.ts';
 import * as companies from '../company-uid.ts';
+import { switchOn } from '../switches.ts';
+import { runWithReport, step } from '../evidence/context.ts';
+import { settle, watchRun } from '../evidence/store.ts';
 import { run, type Alongside, type DiveResult, type DiveStats } from './pipeline.ts';
 import { ensureTable, updateRow, type DiveRow } from './store.ts';
 
@@ -69,6 +72,23 @@ async function notComplete(id: number, tries: number, reason: string, log: DiveR
 async function execute(id: number): Promise<void> {
   const row = (await reportdb.sql<DiveRow>(`select * from company_dive where id = $1`, [id])).rows[0];
   if (!row) return;
+  const evidenceOn = switchOn(row.options, 'evidence') && Boolean(row.public_id);
+  if (!evidenceOn || !row.public_id) {
+    await executeBody(id, row, false);
+    return;
+  }
+  const uid = row.public_id;
+  watchRun(uid, switchOn(row.options, 'evidence_fail'));
+  try {
+    await runWithReport({
+      reportUid: uid, parentReportUid: null, kind: 'company_dive', step: 'research', weight: 1, on: true,
+    }, () => executeBody(id, row, true));
+  } finally {
+    await settle(uid, 10_000);
+  }
+}
+
+async function executeBody(id: number, row: DiveRow, evidenceOn: boolean): Promise<void> {
   const tries = (row.tries ?? 0) + 1;
   // Each try keeps the earlier tries' lines, so the log tells the whole story.
   const log: DiveRow['log'] = [...(row.log ?? [])];
@@ -86,7 +106,9 @@ async function execute(id: number): Promise<void> {
     // Loaded here, not at the top: companydive-people imports this module.
     const people = row.options?.people !== false ? await import('../companydive-people.ts') : null;
     const alongside: Alongside | undefined = people && (async (identity, facts) => {
-      const found = await people.findPeople({ ...row, result: { identity, facts } as DiveResult }, async () => {});
+      const found = evidenceOn
+        ? await step('people', () => people.findPeople({ ...row, result: { identity, facts } as DiveResult }, async () => {}))
+        : await people.findPeople({ ...row, result: { identity, facts } as DiveResult }, async () => {});
       await progress('people', `People step ${found.status}: ${found.people.length} people linked`);
       return found;
     });
@@ -97,9 +119,11 @@ async function execute(id: number): Promise<void> {
     const { result, writeDossier } = await Promise.race([run(row.company, row.country, progress, alongside), late]);
     // Something failed after its backups: no result is saved, and the dive runs again.
     if (result.warnings.length) {
+      if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
       await notComplete(id, tries, result.warnings.join('; ').slice(0, 1500), log, { tavily: result.tavily, llmCalls: result.llm.length, braveCalls: result.braveCalls });
       return;
     }
+    if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
     await updateRow(id, {
       status: 'done', stage: 'done', log, result, error: null,
       tavily_calls: result.tavily.length,
@@ -116,6 +140,7 @@ async function execute(id: number): Promise<void> {
     // A dossier that fell back to the bare facts after its tries is not the report: run the dive again.
     if (result.warnings.length) {
       saved = false;
+      if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
       await notComplete(id, tries, result.warnings.join('; ').slice(0, 1500), log);
       return;
     }
@@ -128,15 +153,18 @@ async function execute(id: number): Promise<void> {
     console.error(`[company-dive ${id}] try ${tries} failed`, err);
     if ((err as { retryable?: boolean }).retryable === false) {
       log.push({ at: new Date().toISOString(), stage: 'failed', msg: message });
+      if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
       await updateRow(id, {
         status: 'failed', error: message, log, finished_at: new Date().toISOString(),
         ...(stats ? { tavily_calls: stats.tavily.length, tavily_credits: stats.tavily.reduce((n, c) => n + c.credits, 0), brave_calls: stats.braveCalls, llm_calls: stats.llmCalls } : {}),
       });
       return;
     }
+    if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
     await notComplete(id, tries, message, log, stats);
   } finally {
     clearTimeout(timer);
+    if (evidenceOn && row.public_id) await settle(row.public_id, 10_000);
   }
 }
 
