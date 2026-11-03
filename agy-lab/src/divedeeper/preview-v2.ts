@@ -127,7 +127,7 @@ async function verifyHook(input: PreviewInput, got: any, read: PageRead, cache: 
   const text = typeof raw === 'string' ? raw.trim() : (raw && typeof raw === 'object' && typeof raw.text === 'string' ? raw.text.trim() : '');
   const quote = raw && typeof raw === 'object' && typeof raw.quote === 'string' ? raw.quote.trim() : '';
   const sourceList = raw && typeof raw === 'object' ? raw.sources : undefined;
-  if (!text && !quote && !Array.isArray(sourceList)) return { hook: '', dropped: null };
+  if (!text && !quote && !Array.isArray(sourceList)) return { hook: '', dropped: { title: 'hook', reason: 'malformed hook' } };
   const title = text || 'hook';
   if (!text) return { hook: '', dropped: { title, reason: 'no hook' } };
   if (!quote) return { hook: '', dropped: { title, reason: 'no quote' } };
@@ -192,7 +192,7 @@ function previewPrompt(input: PreviewInput): string {
     '',
     `Types: contradiction = two of the facts above give different values for the same thing; outdated = a date, certificate, promotion or figure in the facts that has passed or no longer matches today (${today}); wrong = a fact the other facts show is not so.`,
     'There is no quota and no minimum. Return a warning only when the facts above support it, and return an empty warnings list when they do not.',
-    'Rules: use only the material above; every quote must be copied character for character from one of these passages, and must cite that passage\'s source id; never invent facts or numbers; do not accuse the company of dishonesty: say what the sources show; drop citation markers; British English; speak to the owner as "you".',
+    'Rules: use only the material above; every quote must be copied character for character from one of these passages, and must cite that passage\'s source id; never invent facts or numbers; name no person except the leadership listed above, in a title, detail, risk or the hook, and choose a quote that names no other person; do not accuse the company of dishonesty: say what the sources show; drop citation markers; British English; speak to the owner as "you".',
     'This preview is public and unpaid: name no person except the leadership listed above; give no phone numbers, ID numbers, emails or links.',
   ].join('\n');
 }
