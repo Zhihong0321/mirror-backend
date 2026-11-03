@@ -277,7 +277,8 @@ the `IMPORT_IN_PROGRESS` switch) worked on the wrong data and is kept only as a 
     agency (857 rows), Brunei Darussalam / advertising agency (135), San Marino / advertising agency (117); CSV and
     summary read back from the hub identical to ee-auto's. Malaysia / web design (7,238 rows, 7.8 MB, over the hub's
     1 MB request cap) written as its job file to `/data/.agy-lab/country-jobs/8877c82a158d.json`, byte-identical
-    (SHA-256 checked); **the hub loads it at its next restart**: tick after it shows on /country-industry.
+    (SHA-256 checked). **Loaded by the T2 deploy's restart (2026-11-03 00:30 UTC): all 4 jobs listed on the hub;
+    Malaysia / web design CSV (7,596,614 chars) and summary read back identical to ee-auto's.** Ready for the owner's tick.
 - [ ] **Lead data the wrong import left in the hub: owner decides** (nothing deleted without the owner's word): the
   `public` lead tables filled by the first import (2026-11-02 04:03–05:35 UTC), the `pg2nd_archive` schema, and the
   variables `IMPORT_IN_PROGRESS=0`, `AUTO_SCAN_PAUSED=1`, `AUTO_CONTACT_PAUSED=1`, `SITE_EMAIL_AUTO=0`.
