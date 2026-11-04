@@ -250,7 +250,11 @@ const MAPS_KEY = envValue('GMAP_API_KEY');
 export async function mapsSearch(keyword: string, max = 20): Promise<{ status: string; worker?: string; result?: unknown; error?: string }> {
   const headers = { authorization: `Bearer ${MAPS_KEY}`, 'content-type': 'application/json' };
   try {
-    let res = await fetch(`${MAPS_URL}/api/scan`, { method: 'POST', headers, body: JSON.stringify({ keyword, max, wait: 600 }) });
+    // No worker connected: say so now, rather than wait for the service to give up.
+    const health = await (await fetch(`${MAPS_URL}/health`)).json();
+    if (!health.workersLive) return { status: 'failed', error: 'no Gmap worker online' };
+    // Requests are held 60s at a time: the host's proxy drops a longer one ("upstream error").
+    let res = await fetch(`${MAPS_URL}/api/scan`, { method: 'POST', headers, body: JSON.stringify({ keyword, max, wait: 60 }) });
     let data = await res.json();
     // 202: still running; each poll holds up to 60s. The service fails a job itself after its deadline.
     while (res.status === 202) {

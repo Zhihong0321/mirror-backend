@@ -26,6 +26,8 @@ export type PageResult = {
   status: 'ok' | 'blocked' | 'error' | 'empty';
   error?: string;
   method: 'crawl4ai' | 'tavily' | 'failed';
+  /** The page was longer than the limit and was cut. */
+  truncated?: boolean;
 };
 
 const BLOCKED_PATTERNS = [
@@ -97,7 +99,7 @@ async function fetchViaTavily(url: string): Promise<string> {
 }
 
 /** Read a page with local headless worker, falling back to Tavily */
-export async function readWebPage(url: string): Promise<PageResult> {
+export async function readWebPage(url: string, maxChars = MAX_PAGE_CHARS): Promise<PageResult> {
   let crawl4aiErr = '';
   // 1. Try local Crawl4AI
   try {
@@ -109,7 +111,8 @@ export async function readWebPage(url: string): Promise<PageResult> {
     } else {
       return {
         url,
-        markdown: text.slice(0, MAX_PAGE_CHARS),
+        markdown: text.slice(0, maxChars),
+        truncated: text.length > maxChars,
         status: 'ok',
         method: 'crawl4ai',
       };
@@ -125,7 +128,8 @@ export async function readWebPage(url: string): Promise<PageResult> {
     if (isBlocked(text)) return { url, markdown: text.slice(0, 500), status: 'blocked', method: 'tavily' };
     return {
       url,
-      markdown: text.slice(0, MAX_PAGE_CHARS),
+      markdown: text.slice(0, maxChars),
+        truncated: text.length > maxChars,
       status: 'ok',
       method: 'tavily',
     };

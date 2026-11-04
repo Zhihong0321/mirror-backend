@@ -36,9 +36,16 @@ export type ProbeResult = {
     type: string;
   };
   how_to_query: string;
+  query_type?: string;
+  applies_when?: string;
+  /** The search run, or the address read. Empty when the probe was not run. */
   query: string;
   evidence_urls: string[];
   snippets: string[];
+  /** url_template and static_list: the page read, whole (up to the reader's limit). */
+  page?: { url: string; status: string; charCount: number; truncated: boolean; text: string };
+  /** Why the probe was not run (manual source, missing registration number). */
+  not_run?: string;
   found_when?: string;
   not_found_when?: string;
   couldnt_check_when?: string;
@@ -291,16 +298,64 @@ export async function runStep1Research(
     await search(query);
   }
 
-  // 5. Catalog probes: run each and keep the raw hits
-  // Two catalog sources on the same host make the same query: run it once, under the first one.
+  // 5. Catalog probes, each the way its prompt says (query_type):
+  //    manual: not run, the prompt's reason kept; url_template / static_list: read query_url, keep the page whole;
+  //    no query_type (older prompts): a site: search on the source's host.
+  // The same query or address runs once, under the first probe that asks for it.
   log(`Running ${prompts.length} catalog probes`);
   const probed = new Set<string>();
   for (const p of prompts) {
+    const probe = (fields: Pick<ProbeResult, 'query' | 'evidence_urls' | 'snippets' | 'page' | 'not_run'>) =>
+      checkpoint.probes.push({
+        rank: p.rank,
+        category: p.category,
+        question: p.question,
+        why_it_matters: p.why_it_matters,
+        source: { name: p.source.name, url: p.source.url, type: p.source.type },
+        how_to_query: p.how_to_query,
+        query_type: p.query_type,
+        applies_when: p.applies_when,
+        ...fields,
+        found_when: p.found_when,
+        not_found_when: p.not_found_when,
+        couldnt_check_when: p.couldnt_check_when,
+      });
+
+    if (p.query_type === 'manual') {
+      log(`Probe #${p.rank} [${p.category}]: manual source, not run`);
+      probe({ query: '', evidence_urls: [], snippets: [], not_run: p.manual_reason || 'manual source' });
+      continue;
+    }
+
+    if (p.query_type === 'url_template' || p.query_type === 'static_list') {
+      const raw = p.query_url ?? '';
+      if (/\{reg_no\}/.test(raw)) {
+        log(`Probe #${p.rank} [${p.category}]: needs the registration number, not run`);
+        probe({ query: raw, evidence_urls: [], snippets: [], not_run: 'the address needs the registration number' });
+        continue;
+      }
+      const url = raw.replace(/\{company\}/g, encodeURIComponent(company));
+      if (probed.has(url)) {
+        log(`Probe #${p.rank} [${p.category}]: same address as an earlier probe, not read again`);
+        continue;
+      }
+      probed.add(url);
+      log(`Probe #${p.rank} [${p.category}]: reading ${url}`);
+      // A list is read whole: a cut list cannot show that a name is absent.
+      const page = await readWebPage(url, 1_000_000);
+      probe({
+        query: url,
+        evidence_urls: [url],
+        snippets: [],
+        page: { url, status: page.status, charCount: page.markdown.length, truncated: page.truncated ?? false, text: page.markdown },
+      });
+      continue;
+    }
+
     let host = '';
     try {
       host = new URL(p.source.url).hostname.replace(/^www\./, '');
     } catch {}
-
     const query = host ? `"${company}" site:${host}` : `"${company}" ${p.source.name}`;
     if (probed.has(query)) {
       log(`Probe #${p.rank} [${p.category}]: same query as an earlier probe, not run again`);
@@ -309,25 +364,7 @@ export async function runStep1Research(
     probed.add(query);
     log(`Probe #${p.rank} [${p.category}]: ${query}`);
     const hits = await braveSearch(query, { count: 3 }).catch(() => [] as BraveHit[]);
-
-    checkpoint.probes.push({
-      rank: p.rank,
-      category: p.category,
-      question: p.question,
-      why_it_matters: p.why_it_matters,
-      source: {
-        name: p.source.name,
-        url: p.source.url,
-        type: p.source.type,
-      },
-      how_to_query: p.how_to_query,
-      query,
-      evidence_urls: hits.map((h) => h.url),
-      snippets: hits.flatMap((h) => h.snippets),
-      found_when: p.found_when,
-      not_found_when: p.not_found_when,
-      couldnt_check_when: p.couldnt_check_when,
-    });
+    probe({ query, evidence_urls: hits.map((h) => h.url), snippets: hits.flatMap((h) => h.snippets) });
   }
 
   checkpoint.google_maps = { query: mapsQuery, ...(await maps) };
