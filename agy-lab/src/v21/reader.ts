@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getCloudKeys } from './cloud.ts';
+import { getCloudKeys, workerFetch } from './cloud.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
@@ -18,14 +18,15 @@ function loadCrawl4AiToken(): string {
 
 const CRAWL4AI_URL = process.env.CRAWL4AI_URL ?? 'http://127.0.0.1:11235';
 const CRAWL4AI_TOKEN = loadCrawl4AiToken();
-const MAX_PAGE_CHARS = 50_000;
+// A whole page, footer included: the legal name and registration number usually sit at the end.
+const MAX_PAGE_CHARS = 200_000;
 
 export type PageResult = {
   url: string;
   markdown: string;
   status: 'ok' | 'blocked' | 'error' | 'empty';
   error?: string;
-  method: 'crawl4ai' | 'tavily' | 'failed';
+  method: 'worker' | 'crawl4ai' | 'tavily' | 'failed';
   /** The page was longer than the limit and was cut. */
   truncated?: boolean;
 };
@@ -98,16 +99,27 @@ async function fetchViaTavily(url: string): Promise<string> {
   throw new Error('All Tavily keys failed for extract');
 }
 
-/** Read a page with local headless worker, falling back to Tavily */
+/** Read a page or PDF: a worker PC first, then local Crawl4AI, then Tavily */
 export async function readWebPage(url: string, maxChars = MAX_PAGE_CHARS): Promise<PageResult> {
-  let crawl4aiErr = '';
-  // 1. Try local Crawl4AI
+  // 1. A worker PC (pages and PDFs, whole page, no JavaScript)
+  let workerErr = '';
+  try {
+    const { content, truncated } = await workerFetch(url);
+    if (isBlocked(content)) workerErr = 'worker was blocked by interstitial/captcha';
+    else if (!content) workerErr = 'worker returned empty text';
+    else return { url, markdown: content.slice(0, maxChars), truncated: truncated || content.length > maxChars, status: 'ok', method: 'worker' };
+  } catch (err: any) {
+    workerErr = `worker: ${err.message}`;
+  }
+
+  let crawl4aiErr = workerErr;
+  // 2. Try local Crawl4AI (renders JavaScript)
   try {
     const text = await fetchViaCrawl4Ai(url);
     if (isBlocked(text)) {
-      crawl4aiErr = 'Crawl4AI was blocked by interstitial/captcha';
+      crawl4aiErr = `${workerErr} | Crawl4AI was blocked by interstitial/captcha`;
     } else if (!text) {
-      crawl4aiErr = 'Crawl4AI returned empty text';
+      crawl4aiErr = `${workerErr} | Crawl4AI returned empty text`;
     } else {
       return {
         url,
@@ -118,10 +130,10 @@ export async function readWebPage(url: string, maxChars = MAX_PAGE_CHARS): Promi
       };
     }
   } catch (err: any) {
-    crawl4aiErr = `Crawl4AI: ${err.message}`;
+    crawl4aiErr = `${workerErr} | Crawl4AI: ${err.message}`;
   }
 
-  // 2. Try Tavily /extract fallback
+  // 3. Try Tavily /extract fallback
   try {
     const text = await fetchViaTavily(url);
     if (!text) return { url, markdown: '', status: 'empty', method: 'tavily' };

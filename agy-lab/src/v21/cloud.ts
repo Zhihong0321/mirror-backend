@@ -268,3 +268,27 @@ export async function mapsSearch(keyword: string, max = 20): Promise<{ status: s
     return { status: 'failed', error: err.message };
   }
 }
+
+// ---------------------------------------------------------------- Page fetch on a worker PC
+/** One page or PDF read on a Local Gmap Worker PC (POST /api/fetch), whole page as markdown: the footer and
+ *  menu links are what Step 1 reads the legal name and the about/contact pages from. Throws when no worker
+ *  is online or the fetch failed, so the caller can fall back. A PDF reads at about 0.4 s a page. */
+export async function workerFetch(url: string): Promise<{ content: string; truncated: boolean }> {
+  const health = await (await fetch(`${MAPS_URL}/health`)).json();
+  if (!health.workersLive) throw new Error('no worker online');
+  const headers = { authorization: `Bearer ${MAPS_KEY}`, 'content-type': 'application/json' };
+  let res = await fetch(`${MAPS_URL}/api/fetch`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ url, mainContent: false, timeoutMs: 120_000, wait: 60 }),
+  });
+  let data = await res.json();
+  // 202: still running (a long PDF); each poll holds up to 60s, under the host's proxy limit.
+  while (res.status === 202) {
+    res = await fetch(`${MAPS_URL}/api/fetch/${data.job.id}?wait=60`, { headers });
+    data = await res.json();
+  }
+  const job = data.job;
+  if (!res.ok || job?.status !== 'done') throw new Error(job?.error ?? data.error ?? `HTTP ${res.status}`);
+  return { content: String(job.result?.content ?? '').trim(), truncated: Boolean(job.result?.truncated) };
+}
