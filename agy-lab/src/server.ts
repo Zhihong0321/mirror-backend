@@ -29,6 +29,7 @@ import * as listStep2 from './list-step2.ts';
 import { searchListPage } from './search-list-page.ts';
 import { researchLeadsPage } from './research-leads-page.ts';
 import * as contactKeys from './contact-keys.ts';
+import * as v21Bench from './v21-bench-store.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
 import { page as companyDivePage } from './companydive-page.ts';
@@ -423,6 +424,9 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
 
   // ---- contact-form delivery: one lead's message through its website contact form ----
   if (await contactFormDelivery.handle(req, res, url, { json, readJson })) return;
+
+  // ---- V2.1 Step 2 benchmark rows (judge + recheck runs, written once) ----
+  if (await v21Bench.handle(req, res, url, { json, readJson })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
     if (await contactKeys.handleKeys(req, res, url, { json, readJson })) return;
