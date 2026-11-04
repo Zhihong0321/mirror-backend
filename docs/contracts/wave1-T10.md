@@ -141,3 +141,16 @@ Typed checks (R2), the recheck (T29), the preview's promises (R10), layout, E9, 
   - `:490` ("N questions they cannot answer"): **dropped** on the switched page. A count of open questions is a warning
     quota in another form, which R7 rules out.
   - Source links on the public page: **only the company's own official domains stay**; other links go (privacy).
+
+## Live proof, first round (2026-11-03, deploy `9c74136`, live 09:27:48 UTC)
+
+- **Off:** all 39 existing `/dp/` pages byte-identical after the deploy (saved before, refetch-stable).
+- **On, dive #51** (Synapse Comms, `evidence` + `preview2`): `notes_v2` written, `notes` left `{}`; prompt and page held
+  no email, phone, digit run of 6+, off-domain URL or non-leadership name. **But all 6 candidate warnings were dropped**
+  ("quote is not in a cited source"): the build had not given the editor the source text, so it could not quote verbatim;
+  and the hook skipped the quote check. Not ticked.
+- **Fix** (branch `wave1/t10-passages`): scrubbed passages of each cited source's stored text in the prompt (700 chars
+  per source, 20 sources, 12,000 total), every quote and the hook checked by `quoteOnPage`; sentences naming a
+  non-leadership person removed from passages; a warning or hook naming one dropped; the editor told to name no person
+  but the listed leadership. **Residual risk, recorded:** a name the people step never found can still appear inside a
+  verbatim quote from a public source; the proof's scan watches for it.

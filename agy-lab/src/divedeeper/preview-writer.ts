@@ -5,6 +5,8 @@ import { settle, watchRun } from '../evidence/store.ts';
 import { makeCtx } from './lib.ts';
 import { type Offer } from './preview-html.ts';
 import { editPreview } from './preview-editor.ts';
+import { writePreviewV2 } from './preview-v2.ts';
+import { sourceText } from './preview-sources.ts';
 import * as companyDive from '../companydive.ts';
 import { enabled } from './stages.ts';
 import { ensureTable } from './store.ts';
@@ -40,7 +42,8 @@ async function previewWriter(): Promise<void> {
       // Another writer took it between the query and here; the next query skips it.
       if (editing.has(Number(dive.id))) continue;
       console.log(`[dive-preview ${dive.id}] writing the preview for ${dive.company}`);
-      await writePreviewNotes(dive);
+      if (switchOn(dive.options, 'preview2')) await writePreviewV2(dive, sourceText(dive));
+      else await writePreviewNotes(dive);
       // A failed write leaves no row; stop this writer so the next sweep retries instead of looping.
       const saved = (await reportdb.sql(`select 1 from dive_preview where dive_id = $1`, [dive.id])).rows[0];
       if (!saved) break;
@@ -100,8 +103,7 @@ export async function writePreviewNotes(dive: any): Promise<void> {
   const evidenceOn = switchOn(dive.options, 'evidence') && Boolean(dive.public_id);
   if (!evidenceOn) return writePreviewPlain(dive);
   const uid = String(dive.public_id);
-  // This process may not have run the company dive, so arm evidence_fail here before the preview runs.
-  watchRun(uid, switchOn(dive.options, 'evidence_fail'));
+  watchRun(uid);
   try {
     await runWithReport({
       reportUid: uid, parentReportUid: null, kind: 'preview', step: 'P-preview', weight: 1, on: true,
