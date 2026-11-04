@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadChecklist, type ResearchPrompt } from './catalog.ts';
-import { braveSearch, tavilySearch, mapsSearch, type BraveHit, type TavilyHit } from './cloud.ts';
+import { braveSearch, tavilySearch, mapsSearch, linkedinCompany, type BraveHit, type TavilyHit } from './cloud.ts';
 import { readWebPage } from './reader.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -80,6 +80,8 @@ export type RawResearchCheckpoint = {
   probes: ProbeResult[];
   /** The Gmap worker's answer, raw: which listing is theirs is Step 2's call. */
   google_maps?: { query: string; status: string; worker?: string; result?: unknown; error?: string };
+  /** The company's LinkedIn page as the worker read it, raw (website, phone, HQ, founded, industry, type, size). */
+  linkedin?: { url: string; status: string; worker?: string; result?: unknown; error?: string };
 };
 
 // Where an owner does not look: what customers and staff say, and the press.
@@ -172,6 +174,19 @@ function siteTown(markdown: string, country: string): string {
     return `${mAU[1].trim()}, ${mAU[2]}`;
   }
   return '';
+}
+
+/** The first LinkedIn company page among the URLs whose name carries the whole brand, else its first word,
+ *  as https://www.linkedin.com/company/<name>/ ("au.linkedin.com/company/digital-next-australia?trk=x"). */
+function linkedinCompanyUrl(urls: string[], brandCompact: string, brandToken: string): string {
+  const slugs = urls
+    .map((u) => u.match(/linkedin\.com\/company\/([^/?#]+)/i)?.[1]?.toLowerCase())
+    .filter((s): s is string => Boolean(s));
+  const compact = (s: string) => s.replace(/[^a-z0-9]/g, '');
+  const slug =
+    slugs.find((s) => brandCompact && compact(s).includes(brandCompact)) ??
+    slugs.find((s) => brandToken.length >= 3 && compact(s).includes(brandToken));
+  return slug ? `https://www.linkedin.com/company/${slug}/` : '';
 }
 
 /** Step 1: confirm the official site, read it, then search where the owner does not look */
@@ -298,6 +313,11 @@ export async function runStep1Research(
     await search(query);
   }
 
+  // LinkedIn company page: only a URL the searches found, whose name carries the brand; read alongside the probes.
+  const linkedinUrl = linkedinCompanyUrl(discoveries.map((d) => d.url), brandCompact, brandToken);
+  log(linkedinUrl ? `LinkedIn company page: ${linkedinUrl}` : 'LinkedIn company page: none in the search results');
+  const linkedin = linkedinUrl ? linkedinCompany(linkedinUrl) : null;
+
   // 5. Catalog probes, each the way its prompt says (query_type):
   //    manual: not run, the prompt's reason kept; url_template / static_list: read query_url, keep the page whole;
   //    no query_type (older prompts): a site: search on the source's host.
@@ -369,6 +389,10 @@ export async function runStep1Research(
 
   checkpoint.google_maps = { query: mapsQuery, ...(await maps) };
   log(`Google Maps search: ${checkpoint.google_maps.status}`);
+  checkpoint.linkedin = linkedin
+    ? { url: linkedinUrl, ...(await linkedin) }
+    : { url: '', status: 'not_run', error: 'no LinkedIn company page in the search results' };
+  log(`LinkedIn company page: ${checkpoint.linkedin.status}`);
 
   return saveCheckpoint(checkpoint, company, log);
 }

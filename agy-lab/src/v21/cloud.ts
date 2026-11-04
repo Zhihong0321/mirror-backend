@@ -292,3 +292,26 @@ export async function workerFetch(url: string): Promise<{ content: string; trunc
   if (!res.ok || job?.status !== 'done') throw new Error(job?.error ?? data.error ?? `HTTP ${res.status}`);
   return { content: String(job.result?.content ?? '').trim(), truncated: Boolean(job.result?.truncated) };
 }
+
+// ---------------------------------------------------------------- LinkedIn company page on a worker PC
+/** One LinkedIn company page read on a Local Gmap Worker PC (POST /api/linkedin, kind company): website, phone,
+ *  headquarters, founded, industry, type, size, about. The worker paces LinkedIn reads (about 60s apart) and rests
+ *  them after a rate limit, so this can take a minute; the caller runs it alongside other work. */
+export async function linkedinCompany(url: string): Promise<{ status: string; worker?: string; result?: unknown; error?: string }> {
+  const headers = { authorization: `Bearer ${MAPS_KEY}`, 'content-type': 'application/json' };
+  try {
+    const health = await (await fetch(`${MAPS_URL}/health`)).json();
+    if (!health.workersLive) return { status: 'failed', error: 'no worker online' };
+    let res = await fetch(`${MAPS_URL}/api/linkedin`, { method: 'POST', headers, body: JSON.stringify({ kind: 'company', url, wait: 60 }) });
+    let data = await res.json();
+    while (res.status === 202) {
+      res = await fetch(`${MAPS_URL}/api/linkedin/${data.job.id}?wait=60`, { headers });
+      data = await res.json();
+    }
+    if (!res.ok) return { status: 'failed', error: data.error ?? `HTTP ${res.status}` };
+    const job = data.job;
+    return { status: job.status, worker: job.worker, result: job.result, error: job.error ?? undefined };
+  } catch (err: any) {
+    return { status: 'failed', error: err.message };
+  }
+}
