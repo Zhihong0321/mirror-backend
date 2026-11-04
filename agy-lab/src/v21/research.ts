@@ -320,7 +320,7 @@ export async function runStep1Research(
 
   // 5. Catalog probes, each the way its prompt says (query_type):
   //    manual: not run, the prompt's reason kept; url_template / static_list: read query_url, keep the page whole;
-  //    no query_type (older prompts): a site: search on the source's host.
+  //    site_search, or no query_type (older prompts): a site: search on the source's host.
   // The same query or address runs once, under the first probe that asks for it.
   log(`Running ${prompts.length} catalog probes`);
   const probed = new Set<string>();

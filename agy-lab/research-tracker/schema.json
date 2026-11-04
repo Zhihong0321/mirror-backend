@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "categories": [
     "identity_registration",
     "licence",
@@ -22,10 +22,9 @@
     "misinformation",
     "contact_mess",
     "missing_credential",
-    "reputation"
+    "reputation",
+    "missed_advantage"
   ],
-  "access": ["open", "walled", "paid", "captcha"],
-  "query_types": ["url_template", "static_list", "manual"],
-  "used_in": ["preview", "paid"],
+  "query_types": ["site_search", "url_template", "static_list"],
   "confidence": ["high", "medium", "low"]
 }

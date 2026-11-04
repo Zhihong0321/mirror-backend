@@ -1,104 +1,115 @@
 # Research brief: country layer for {{COUNTRY}}
 
-## Role and goal
+## The goal
 
-You are designing the checks that apply to **any business in {{COUNTRY}}, whatever its industry**.
-Your output is a set of research prompts our system runs automatically on every business in {{COUNTRY}}
-to find problems its owner would want to know about. Industry-specific checks (licences, professional
-bodies, awards for one trade) are researched separately; do not write them here.
+We run a free check on small and medium businesses in {{COUNTRY}}. It is a sample: its only job is to make the owner
+want the paid report.
 
-## Who reads the result
+The owner knows their own business better than anyone, so a report that tells them what they already know is
+worthless. What they do **not** know is what the internet says about them in places they do not watch: an old phone
+number or address on a directory, a legal name or status on a register that differs from what they show, a warning or
+complaint about them on an official list.
 
-- We send the owner a free preview, then sell a full audit. The owner knows the business better than
-  anyone: one false or unprovable claim loses the sale. Every prompt must lead to findings that can be
-  checked in public sources.
-- Most businesses are small and medium.
-- What matters most: contradictions (the business's own site says A, an official record says B); wrong or
-  outdated registration details; messy or inconsistent contact details; complaints or enforcement records.
+**Your job:** find the places in {{COUNTRY}}, for **any business whatever its industry**, where a business appears
+without its owner watching, and say exactly how our system can read each one for any business name. Checks for one
+trade (its licences, professional bodies, awards) are researched separately; do not write them here.
+
+## What is worth finding, best first
+
+1. **General business directories and local listing sites** where businesses' names, addresses and phones are listed
+   (yellow pages, local business directories, company data sites). Wrong or conflicting details there are the most
+   common problem.
+2. **Company or business registers that anyone can read free** by name: legal name, status (active, struck off, in
+   liquidation), registration date, registered address.
+3. **Regulator warning and alert lists**, and consumer complaint or enforcement lists.
+4. **Court, insolvency and winding-up notices** that can be read free (for example a government gazette).
+5. **Country-wide business award and ranking lists** (SME awards, fastest-growing lists): a business may have won and
+   not show it.
+6. **The trademark register**, if a name search can be read by address.
+
+Not worth a prompt:
+
+- A register that needs a login, a fee, a CAPTCHA, a form post or a session to show a result. Put it in
+  `sources_rejected` with the reason. Many company registers are like this: say so.
+- Anything the owner watches already (their own website and social pages).
+
+## Already covered (do not write prompts for these)
+
+For every business, in every country and industry, the system already:
+
+- reads the business's own website (home, about, contact);
+- reads its Google Maps listings (rating, review count, phone, address);
+- reads its LinkedIn company page;
+- searches the web for `"<business>" {{COUNTRY}} reviews`, `... employee reviews` and `... news`, which brings back
+  general review sites, job sites and news.
+
+Checks for one industry in {{COUNTRY}} are researched separately.
 
 ## How the system runs your prompts
 
-1. It reads the business's own website and listings and writes down the **claims** it makes: legal name,
-   registration number, years in business, address, phone numbers, emails, licences, certifications.
-2. It runs only the prompts whose `applies_when` matches. If the business makes no such claim, the prompt is
-   skipped as "not applicable", a normal outcome.
-3. It compares what it found with what the business says, and reports the differences.
+- **No person is involved.** Every prompt runs automatically on **every** business in {{COUNTRY}}. Nothing checks
+  first whether the prompt applies to that business.
+- The system knows the business's name, country and industry, and usually its website. It does **not** know its
+  registration number.
+- It saves what it read, raw. A later step compares that with what the business says about itself and decides what
+  matters.
 
-## What to research
+So a good prompt can be read without a person, is cheap to run on every business, and returns a page or search result
+that **names the business when the business is there**.
 
-Everything that applies to any business in {{COUNTRY}}. Start with the **company register**: the strongest
-anchor, because it holds the legal facts the business should match. Cover, where they exist:
+The system can run web searches, fetch pages (including pages that load their content by script) and read PDFs. It
+reads a list up to about one million characters. It cannot log in, pay, solve a CAPTCHA, post a form or keep a
+session.
 
-- The company register: legal name, registration number and its format, incorporation date, status (active,
-  dormant, struck off, in liquidation), registered address, and which of these are free to read. Think about how
-  to compare the register's incorporation date with the "since" or "years in business" claims businesses
-  make, and its name and address with what the business shows.
-- Other official registration or tax identifiers a business may show (business licence, tax number), and
-  whether they can be checked publicly.
-- Courts, insolvency and winding-up notices.
-- Regulator warning or alert lists, and consumer complaint or enforcement bodies.
-- The trademark register and the national domain registry (who holds a business's name and domain).
-- The main general business directories and the local sites where a business's name, address and phone are
-  often listed, since wrong or conflicting details there are a common problem.
+## The three ways a prompt can run (`query_type`)
 
-## Already covered elsewhere (do not write prompts for these)
+- **`site_search`**: the system searches `"<business name>" site:<host of source.url>` and keeps the top three results.
+  Use it for directories and listing sites that have a page per business which search engines index. `source.url`
+  must be on the **narrowest host** that holds those pages. Never a broad government or portal domain: there the name
+  matches unrelated pages. Leave `query_url` empty.
+- **`url_template`**: `query_url` contains `{company}`. The system puts the business name there and reads the page
+  that comes back. Use it only if you opened such an address yourself and the results were in the page.
+  `{company}` is the only placeholder: the system has no registration number.
+- **`static_list`**: `query_url` is one page or PDF that lists the businesses itself (a warning list, a list of
+  revoked licences). The system reads it whole and looks for the name. Give the address of the list, not of a page
+  that links to it.
 
-- Every business, any country: website crawl and health, domains and email setup, Google Maps listing and
-  rank, general news and review search, what AI assistants say about the business.
-- Checks specific to one industry in {{COUNTRY}}.
-
-## What the system has for each business
-
-Name, country, industry; usually its website, address, phone and Google Maps category.
-
-## What the system can do, and cannot
-
-It can fetch public web pages, run web searches, and ask an LLM to judge what it reads.
-It cannot log in, pay, solve CAPTCHAs, post a form that needs a session, or use private APIs.
-It cannot read a page whose content is loaded by script.
-
-Many registers are behind a login, a fee, a CAPTCHA, a form post, or load their results by script, or have
-no public list at all. Say so honestly: such a prompt is `manual`, not automatic.
+If none of the three works for a source, it goes in `sources_rejected`.
 
 ## Your task
 
-1. Use live, up-to-date web search to find these registers, lists and sites for {{COUNTRY}}. Read sources in
-   the local language where they are in one.
-2. For each source, decide how the system can query it:
-   - `url_template`: a web address where the business name (or registration number) goes into the URL and
-     the answer is in the returned page. Give the exact template with `{company}` or `{reg_no}`.
-   - `static_list`: a page that lists the answer and can be read as is.
-   - `manual`: anything else. Say why in `manual_reason` (login, fee, CAPTCHA, form post, loads by script,
-     no public list).
-3. Return up to 12 research prompts, most valuable first. Prefer prompts the system can run automatically.
-   Fewer is fine. Never pad.
+1. Use live web search to find the sources above for {{COUNTRY}}. Read sources in the local language where they are
+   in one.
+2. Open every source yourself and choose its `query_type`.
+3. Check that it works: take a business you can see on the source, run the same search or open the same address, and
+   confirm its name comes back. A prompt that cannot bring back a business you know is listed goes in
+   `sources_rejected`.
+4. Return up to 12 prompts, most valuable first. Fewer is fine. Never pad.
 
 ## Output
 
-Return JSON only, no prose around it. The tracker rejects anything outside these lists.
+Return JSON only, with nothing around it. The tracker rejects anything outside these lists.
 
-- `category`: identity_registration, licence, regulator_action, professional_membership, register,
-  awards, directory, reviews, people, claims_check, tenders_partnerships, local_social, court_insolvency,
-  news_press
-- `problem_type` (one or more): contradiction, legal, misinformation, contact_mess, missing_credential,
-  reputation
-- `source.access`: open, walled, paid, captcha
-- `query_type`: url_template, static_list, manual
-- `used_in`: preview (cheap, runs in the free preview) or paid (only in the full audit)
-- `confidence`: high, medium, low
+- `category`: identity_registration, licence, regulator_action, professional_membership, register, awards,
+  directory, reviews, people, claims_check, tenders_partnerships, local_social, court_insolvency, news_press
+- `problem_type` (one or more): contradiction, legal, misinformation, contact_mess, missing_credential, reputation,
+  missed_advantage
+- `query_type`: site_search, url_template, static_list
+- `confidence`: high, medium, low (how sure you are the source works as described)
 
 Field rules:
+
 - `sub_segment`: use `all` (this layer applies to every kind of business).
-- `applies_when`: the condition on the business that makes this prompt relevant, in plain words. Use `always`
-  for checks that apply to every business in {{COUNTRY}}.
-- `query_url`: required for `url_template` (must contain a `{placeholder}`) and `static_list`; leave empty for
-  `manual`.
-- `manual_reason`: required for `manual`.
-- `found_when`: the problem exists. `not_found_when`: the lookup worked and the problem is absent; only when the
-  lookup itself worked. `couldnt_check_when`: the lookup could not run or could not be trusted.
-  `not_applicable_when`: usually "the business makes no such claim", or "never" for `always`.
-  `possible_match_when`: a name matches but the identity is not confirmed (optional; use it when the lookup
-  searches names).
+- `applies_when`: which businesses are expected on this source, in plain words (for example "companies, not sole
+  proprietors"). Use `always` when any business may be on it. It does not stop the prompt from running; the later
+  step uses it to read the result.
+- `query_url`: required for `url_template` (with `{company}`) and `static_list`; empty for `site_search`.
+- `found_when`: what in the result is worth telling the owner (for example a different phone or address, a status of
+  struck off, a warning).
+- `not_found_when`: what the result looks like when the business is not on the source. Not being on a list is often
+  normal and is not a problem by itself.
+- `couldnt_check_when`: when the result cannot be trusted (the page did not load, the list is out of date, the name
+  is shared by other businesses).
 
 ```json
 {
@@ -110,18 +121,14 @@ Field rules:
       "sub_segment": "all",
       "applies_when": "",
       "question": "the question, in plain language, specific to {{COUNTRY}}",
-      "why_it_matters": "one sentence: the problem this can reveal for the owner",
-      "source": {"name": "", "url": "https://", "type": "", "access": "", "language": ""},
+      "why_it_matters": "one sentence: what the owner may not know that this can show",
+      "source": {"name": "", "url": "https://", "type": "", "language": ""},
       "query_type": "",
       "query_url": "",
-      "manual_reason": "",
-      "how_to_query": "in words: what to enter, and which page or field to read",
+      "how_to_query": "in words: what is searched or read, and which part of the page answers",
       "found_when": "",
       "not_found_when": "",
       "couldnt_check_when": "",
-      "not_applicable_when": "",
-      "possible_match_when": "",
-      "used_in": "",
       "confidence": ""
     }
   ],
@@ -132,7 +139,7 @@ Field rules:
 
 ## Rules
 
-- Never guess. "unknown" is a correct answer. Never invent a URL.
+- Never guess. Never give a URL you have not opened yourself.
 - Never bypass a login, paywall or CAPTCHA.
 - Write in English even when the source is in another language.
 - Do not copy any example above. Every value must come from your own research.

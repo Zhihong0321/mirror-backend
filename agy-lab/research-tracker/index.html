@@ -181,7 +181,7 @@ function promptList(round) {
   for (const p of list) {
     box.append(el('div', { class: 'prompt' }, [
       el('p', {}, [el('b', { text: `${p.rank}. ${p.question}` })]),
-      el('p', { class: 'muted', text: `${p.category} · ${(p.problem_type || []).join(', ')} · ${p.used_in} · confidence ${p.confidence}` }),
+      el('p', { class: 'muted', text: `${p.category} · ${(p.problem_type || []).join(', ')}${p.used_in ? ' · ' + p.used_in : ''} · confidence ${p.confidence}` }),
       ...(p.query_type ? [el('p', { class: 'muted', text: `runs: ${p.query_type}${p.query_type === 'manual' ? ' (' + (p.manual_reason || '') + ')' : ''} · applies when: ${p.applies_when} · segment: ${p.sub_segment}` })] : [el('p', { class: 'stale', text: 'old format: no query type or applies-when' })]),
       el('p', {}, [el('a', { href: p.source?.url, target: '_blank', rel: 'noopener', text: p.source?.name ?? 'source' })]),
     ]));

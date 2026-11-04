@@ -42,9 +42,10 @@ export type ResearchPrompt = {
     language?: string;
   };
   how_to_query: string;
-  /** How the source answers: url_template (query_url with {company} or {reg_no}), static_list (query_url is the
-   *  whole list), manual (cannot be fetched; manual_reason says why). Older prompts have none. */
-  query_type?: 'url_template' | 'static_list' | 'manual';
+  /** How the source answers: site_search (a site: search on source.url's host), url_template (query_url with
+   *  {company}; older prompts may carry {reg_no}), static_list (query_url is the whole list), manual (older prompts
+   *  only: cannot be fetched; manual_reason says why). The oldest prompts have none and run as site_search. */
+  query_type?: 'site_search' | 'url_template' | 'static_list' | 'manual';
   query_url?: string;
   manual_reason?: string;
   applies_when?: string;

@@ -84,24 +84,25 @@ function validate(body) {
     const src = p.source && typeof p.source === 'object' ? p.source : {};
     if (!str(src.name)) errs.push(`${at}.source.name: required`);
     if (typeof src.url !== 'string' || !/^https?:\/\/\S+$/.test(src.url)) errs.push(`${at}.source.url: a real http or https address`);
-    if (!S.access.includes(src.access)) errs.push(`${at}.source.access: one of ${S.access.join(', ')}`);
     if (!str(src.language)) errs.push(`${at}.source.language: required`);
     if (!str(p.how_to_query)) errs.push(`${at}.how_to_query: required`);
-    if (!str(p.applies_when)) errs.push(`${at}.applies_when: the condition on the business that makes this prompt relevant, or "always"`);
+    if (!str(p.applies_when)) errs.push(`${at}.applies_when: which businesses are expected on this source, or "always"`);
     if (!str(p.sub_segment)) errs.push(`${at}.sub_segment: the kind of business this fits, or "all"`);
-    if (!S.query_types.includes(p.query_type)) errs.push(`${at}.query_type: one of ${S.query_types.join(', ')}`);
-    else if (p.query_type === 'manual') {
-      if (!str(p.manual_reason)) errs.push(`${at}.manual_reason: required for a manual prompt (login, fee, CAPTCHA, form post, loads by script, no public list)`);
+    if (!S.query_types.includes(p.query_type)) {
+      errs.push(`${at}.query_type: one of ${S.query_types.join(', ')} (a source none of these can read goes in sources_rejected)`);
+    } else if (p.query_type === 'site_search') {
+      if (str(p.query_url)) errs.push(`${at}.query_url: leave it empty for site_search (the search runs on the host of source.url)`);
     } else if (typeof p.query_url !== 'string' || !/^https?:\/\/\S+$/.test(p.query_url)) {
       errs.push(`${at}.query_url: a real http or https address, required for ${p.query_type}`);
-    } else if (p.query_type === 'url_template' && !/\{[a-z_]+\}/.test(decodeURIComponent(p.query_url))) {
-      errs.push(`${at}.query_url: a url_template must contain a placeholder such as {company} or {reg_no}`);
+    } else if (p.query_type === 'url_template') {
+      const holders = decodeURIComponent(p.query_url).match(/\{[^}]*\}/g) ?? [];
+      if (!holders.includes('{company}') || holders.some((h) => h !== '{company}')) {
+        errs.push(`${at}.query_url: a url_template must contain {company}, and no other placeholder (the system has no registration number)`);
+      }
     }
-    for (const k of ['found_when', 'not_found_when', 'couldnt_check_when', 'not_applicable_when']) {
-      if (!str(p[k])) errs.push(`${at}.${k}: required (say when the lookup finds the problem, finds nothing, cannot be checked, or does not apply)`);
+    for (const k of ['found_when', 'not_found_when', 'couldnt_check_when']) {
+      if (!str(p[k])) errs.push(`${at}.${k}: required (say what is worth telling the owner, what the result looks like when the business is absent, and when it cannot be trusted)`);
     }
-    if (p.possible_match_when !== undefined && typeof p.possible_match_when !== 'string') errs.push(`${at}.possible_match_when: text, or leave it out`);
-    if (!S.used_in.includes(p.used_in)) errs.push(`${at}.used_in: one of ${S.used_in.join(', ')}`);
     if (!S.confidence.includes(p.confidence)) errs.push(`${at}.confidence: one of ${S.confidence.join(', ')}`);
   });
   if (body.sources_rejected !== undefined && !Array.isArray(body.sources_rejected)) errs.push('sources_rejected: a list');
@@ -121,11 +122,11 @@ function briefFor(pair, n) {
     const pass1 = Object.fromEntries(Object.entries(r1).filter(([k]) => !k.startsWith('_')));
     text += `\n\n## Round 2: check and improve your own first pass\n\n` +
       `Below is the answer you gave in round 1, as accepted. Re-open each source yourself. Then:\n` +
-      `- drop any prompt that does not work, or that asks something a register does not show;\n` +
-      `- set \`query_type\` honestly: a prompt is \`url_template\` or \`static_list\` only if a plain page fetch can really answer it, otherwise \`manual\` with the reason;\n` +
-      `- check each \`applies_when\`: it must be a claim a business of this kind would really make;\n` +
-      `- replace weak prompts with sharper ones that name a specific body, register field or page;\n` +
-      `- add prompts for gaps the first pass left, but still at most 12 in total;\n` +
+      `- test each prompt again on a different business you can see on the source: run the same search or open the same address and confirm its name comes back. Move any prompt that fails to \`sources_rejected\`;\n` +
+      `- for \`site_search\`, check that \`source.url\` is the narrowest host that holds the business pages, not a broad government or portal domain;\n` +
+      `- for \`static_list\`, check that \`query_url\` is the list itself and is the current one;\n` +
+      `- replace weak prompts with sharper ones that name a specific list, platform or register;\n` +
+      `- look for what the first pass missed, above all award lists and industry review or listing platforms, but still at most 12 prompts in total;\n` +
       `Return the full round 2 answer in the same JSON format, not a diff.\n\n` +
       `Round 1 answer:\n\`\`\`json\n${JSON.stringify(pass1, null, 2)}\n\`\`\`\n`;
   }

@@ -61,15 +61,14 @@ For pass 2, use `/round/2` and `answer-round2.json`.
 ## What the server checks
 
 - `prompts`: 1 to 12, each with a unique `rank` from 1 to 12.
-- `category`, `problem_type`, `source.access`, `query_type`, `used_in` and `confidence` take only the values in
-  [schema.json](schema.json).
+- `category`, `problem_type`, `query_type` and `confidence` take only the values in [schema.json](schema.json).
 - `applies_when` and `sub_segment` are filled in (`always` and `all` are allowed).
-- `query_type` is `url_template` (the URL needs a `{placeholder}`), `static_list` (a real URL), or `manual`
-  (needs a `manual_reason`).
+- `query_type` is `site_search` (no `query_url`: Step 1 searches `"<company>" site:<host of source.url>`),
+  `url_template` (`query_url` with `{company}` and no other placeholder), or `static_list` (`query_url` is the list).
+  A source none of these can read goes in `sources_rejected`; there is no `manual` prompt.
 - `source.url` is a real http or https address.
 - `question` is at least 15 characters. `why_it_matters`, `how_to_query`, `found_when`, `not_found_when`,
-  `couldnt_check_when`, `not_applicable_when` and `source.name` / `source.language` are filled in.
-  `possible_match_when` is optional.
+  `couldnt_check_when` and `source.name` / `source.language` are filled in.
 
 It does not check that a URL is live or that a result is true. Those checks come from the review step.
 
