@@ -211,9 +211,10 @@ test('only lanes serving the asked model are used', () => {
     { url: 'https://v.example/v1', key: 'v', model: 'deepseek-v4.1-flash-1017' },
     { url: 'https://h.example/v1', key: 'h', model: 'deepseek-ai/deepseek-v4.1-flash-1017' },
     { url: 'https://z.example/v1', key: 'z', model: 'gpt-6.1-sol' },
+    { url: 'https://y.example/v1', key: 'y', model: 'YL-DeepSeek-V4.1-Flash' },
   ];
-  assert.deepEqual(lanesFor('deepseek', lanes).map((l) => l.key), ['v', 'h']);
-  assert.deepEqual(lanesFor('deepseek-v4.1-flash-1017', lanes).map((l) => l.key), ['v', 'h']);
+  assert.deepEqual(lanesFor('deepseek', lanes).map((l) => l.key), ['v', 'h', 'y']);
+  assert.deepEqual(lanesFor('deepseek-v4.1-flash-1017', lanes).map((l) => l.key), ['v', 'h', 'y']);
   assert.deepEqual(lanesFor('gpt-6.1-sol', lanes).map((l) => l.key), ['z']);
 });
 

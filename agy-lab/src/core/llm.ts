@@ -206,7 +206,7 @@ export function laneName(c: LlmConfig): string {
 }
 
 const family = (model: string) => model.toLowerCase().split('/').pop() ?? '';
-const isDeepseek = (model: string) => family(model).startsWith('deepseek');
+const isDeepseek = (model: string) => family(model).includes('deepseek');
 
 /** The lanes that serve a model: any deepseek lane for a deepseek model, else lanes with that exact model. */
 export function lanesFor(model = 'deepseek', all: LlmConfig[] = pool()): LlmConfig[] {
