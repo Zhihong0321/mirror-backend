@@ -32,6 +32,7 @@ every feature at once, and a fix made here reaches all of them.
 | `pagespeed.ts` | Google PageSpeed Insights | `secrets.ts` (kind `pagespeed`) |
 | `parallel.ts` | Parallel's FindAll entity search (person research) | `secrets.ts` (kind `parallel`) |
 | `smartlead.ts` | Smartlead, the cold-email platform | `secrets.ts` (kind `smartlead`) |
+| `scrapertech.ts` | Scraper.Tech Google Maps API: reviews of one Maps profile (5 per request; the Gmap worker reads at most ~10) | `secrets.ts` (kind `scrapertech`, `SCRAPER_TECH_KEY`) |
 
 `secrets.ts` holds the one-key providers' keys (`gemini_contact_key`, edited on
 /workers under "Other API keys"). Every module falls back to its Railway variable

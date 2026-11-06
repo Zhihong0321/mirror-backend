@@ -12,6 +12,7 @@
 import type http from 'node:http';
 import crypto from 'node:crypto';
 import { runStep1Research, type ResearchInput } from './v21/research.ts';
+import { runStep1_5 } from './v21-step1-5-http.ts';
 import * as store from './v21-store.ts';
 
 type Ctx = {
@@ -74,6 +75,14 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
           }
           await store.addRaw(id, 1, 'log', id, run.log);
           await store.setStatus(id, 1, (data as any).skipped ? 'skipped' : 'done');
+
+          // Trigger Step 1.5 (technical audit: PageSpeed + Domain ownership & security) automatically in background
+          try {
+            const rep: any = await store.getReport(id);
+            if (rep) void runStep1_5(rep, data, id);
+          } catch (err: any) {
+            console.error(`[v21 step1 auto step1.5] ${id}: ${err?.message ?? err}`);
+          }
         } catch (err: any) {
           run.store_error = err?.message ?? String(err);
           void store.setStatus(id, 1, 'failed', `raw data not stored: ${run.store_error}`).catch(() => {});

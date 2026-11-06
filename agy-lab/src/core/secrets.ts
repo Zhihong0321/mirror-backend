@@ -15,6 +15,7 @@ export const KINDS = {
   parallel: 'PARALLEL_API_KEY',
   smartlead: 'SMARTLEAD_API_KEY',
   pagespeed: 'GOOGLE_PAGESPEED_SERVICE_ACCOUNT',
+  scrapertech: 'SCRAPER_TECH_KEY',
 } as const;
 
 export type Kind = keyof typeof KINDS;

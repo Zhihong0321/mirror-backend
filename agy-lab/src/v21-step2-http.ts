@@ -14,6 +14,7 @@ import { tidyCheckpoint } from './v21/tidy.ts';
 import { judgeTidy } from './v21/judge.ts';
 import { recheckTidy } from './v21/recheck.ts';
 import type { Step2AnalysisOutput } from './v21/analyse.ts';
+import { runStep1_5 } from './v21-step1-5-http.ts';
 import * as store from './v21-store.ts';
 
 type Ctx = {
@@ -46,10 +47,23 @@ async function runStep2(report: any, checkpoint: any, runId: string, recheck: bo
       await store.setStatus(id, 2, 'skipped');
       return;
     }
-    const tidy = tidyCheckpoint(checkpoint);
+
+    // Step 1.5 digital assets / PageSpeed technical findings: load existing or run on demand
+    let assets = (await store.latestRaw(id, 'assets'))?.payload ?? null;
+    if (!assets && !checkpoint?.skipped) {
+      try {
+        console.log(`[v21 step2] ${id}: Step 1.5 assets not found, running on-demand...`);
+        assets = await runStep1_5(report, checkpoint, runId);
+      } catch (e: any) {
+        console.warn(`[v21 step2] ${id}: on-demand Step 1.5 failed: ${e?.message ?? e}`);
+      }
+    }
+
+    const tidy = tidyCheckpoint(checkpoint, assets);
     await store.addRaw(id, 2, 'tidy', runId, tidy);
 
     let result = await judgeTidy(tidy);
+    if (assets) (result as any).technical_audit = assets;
     await store.addRaw(id, 2, 'judge', runId, result, result.status);
 
     if (recheck) {
@@ -61,6 +75,7 @@ async function runStep2(report: any, checkpoint: any, runId: string, recheck: bo
         stats: { ...result.stats, findings_count: findings.length, llm_calls: result.stats.llm_calls + rc.meta.attempts.length },
         recheck: rc,
       };
+      if (assets) (result as any).technical_audit = assets;
     }
     await store.addRaw(id, 2, 'result', runId, result, result.status);
     await store.setStatus(id, 2, result.status === 'failed' ? 'failed' : 'done', result.status === 'failed' ? result.error ?? 'judge failed' : null);
@@ -93,23 +108,28 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       }
       const runId = crypto.randomUUID();
       await store.setStatus(reportId, 2, 'running');
-      void runStep2(report, cp.payload, runId, b.recheck !== false);
-      return json(res, 202, { report_id: reportId, run_id: runId, status: 'running' }), true;
+      const recheck = b.recheck === undefined ? true : Boolean(b.recheck);
+      void runStep2(report, cp.payload, runId, recheck);
+      return json(res, 202, { report_id: reportId, run_id: runId, recheck }), true;
     }
 
-    if (req.method === 'GET' && p.startsWith(PATH + '/')) {
+    if (req.method === 'GET') {
       const reportId = p.slice(PATH.length + 1);
       const report: any = await store.getReport(reportId);
       if (!report) return json(res, 404, { error: 'no such report' }), true;
       const runId = url.searchParams.get('run_id') || undefined;
       const result = await store.latestRaw(reportId, 'result', runId);
       return json(res, 200, {
-        report_id: reportId, step2_status: report.step2_status, step2_error: report.step2_error,
-        run_id: result?.run_id ?? runId ?? null, result: result?.payload ?? null,
+        report_id: reportId,
+        step2_status: report.step2_status,
+        step2_error: report.step2_error ?? null,
+        run_id: result?.run_id ?? runId ?? null,
+        result: result?.payload ?? null,
       }), true;
     }
   } catch (err: any) {
     return json(res, 503, { error: `report store: ${err?.message ?? err}` }), true;
   }
+
   return json(res, 405, { error: 'method not allowed' }), true;
 }

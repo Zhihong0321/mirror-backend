@@ -25,18 +25,43 @@ const b64url = (b: Buffer | string) => Buffer.from(b).toString('base64url');
 
 let cached: { token: string; until: number } | null = null;
 
+function parseServiceAccount(raw: any): any {
+  if (typeof raw === 'object' && raw !== null) return raw;
+  if (typeof raw !== 'string') return null;
+  let s = raw.trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    try { s = JSON.parse(s); } catch {}
+  }
+  try {
+    return typeof s === 'string' ? JSON.parse(s) : s;
+  } catch {
+    // Escaped quotes in env var (e.g. {\"type\":\"service_account\"...})
+    try {
+      return JSON.parse(s.replace(/\\"/g, '"'));
+    } catch {
+      return null;
+    }
+  }
+}
+
 /** An access token for the saved service account (core/secrets.ts), or '' with the reason passed to `warn`. */
 export async function token(warn: (m: string) => void, log?: ApiCall[]): Promise<string> {
   if (cached && Date.now() < cached.until) return cached.token;
   await secrets.load();
-  let sa: any;
-  try { sa = JSON.parse(secrets.get('pagespeed')); } catch { warn('GOOGLE_PAGESPEED_SERVICE_ACCOUNT is missing or not JSON'); return ''; }
+  const sa = parseServiceAccount(secrets.get('pagespeed'));
+  if (!sa || !sa.client_email || !sa.private_key) {
+    warn('GOOGLE_PAGESPEED_SERVICE_ACCOUNT is missing or not JSON');
+    return '';
+  }
   const c = startCall('web', 'Google token for PageSpeed', { provider: 'google' });
   try {
     const now = Math.floor(Date.now() / 1000);
     const head = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: sa.private_key_id }));
     const body = b64url(JSON.stringify({ iss: sa.client_email, aud: sa.token_uri, scope: 'openid', iat: now, exp: now + 3600 }));
-    const sig = crypto.createSign('RSA-SHA256').update(`${head}.${body}`).sign(sa.private_key).toString('base64url');
+    const privateKey = sa.private_key?.includes('\\n') && !sa.private_key.includes('\n')
+      ? sa.private_key.replace(/\\n/g, '\n')
+      : sa.private_key;
+    const sig = crypto.createSign('RSA-SHA256').update(`${head}.${body}`).sign(privateKey).toString('base64url');
     const res = await fetch(sa.token_uri, { signal: AbortSignal.timeout(30_000), method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${head}.${body}.${sig}` }) });
     const j = await res.json() as any;
     if (!res.ok || !j.access_token) {

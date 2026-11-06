@@ -6,6 +6,7 @@
 //   v21_raw     one row per stored result: step, kind, run_id, payload. Written once, never updated or deleted.
 //
 // Kinds: step 1 'checkpoint' (the whole RawResearchCheckpoint: searches, page text, probes, Maps, LinkedIn) and 'log';
+//        step 1.5 'assets' (PageSpeed + domain ownership and security audit);
 //        step 2 'tidy' (the exact input the judge got), 'judge', 'recheck' (each with its raw model answer) and 'result'.
 // A Step 2 run groups its rows by run_id; Step 1 rows use the report UID as run_id.
 //
@@ -26,7 +27,7 @@ type Ctx = {
 
 export type ReportInput = { company: string; country: string; industry: string; website?: string };
 export type StepStatus = 'none' | 'running' | 'done' | 'failed' | 'skipped';
-export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result';
+export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets';
 
 const PATH = '/api/v21/report';
 
@@ -44,6 +45,8 @@ export function ensureTables(): Promise<void> {
       company_uid text,
       step1_status text not null default 'none',
       step1_error text,
+      step1_5_status text not null default 'none',
+      step1_5_error text,
       step2_status text not null default 'none',
       step2_error text
     )`)
@@ -52,9 +55,10 @@ export function ensureTables(): Promise<void> {
       if exists (select 1 from information_schema.columns where table_name = 'v21_report' and column_name = 'company_id')
          and not exists (select 1 from information_schema.columns where table_name = 'v21_report' and column_name = 'company_uid')
       then alter table v21_report rename column company_id to company_uid; end if; end $$`))
+    .then(() => db.sql(`alter table v21_report add column if not exists step1_5_status text not null default 'none'`))
+    .then(() => db.sql(`alter table v21_report add column if not exists step1_5_error text`))
     .then(() => db.sql(`create index if not exists v21_report_company on v21_report (company_uid, created_at desc)`))
-    .then(() => db.sql(`create table if not exists v21_raw (
-      id bigserial primary key,
+    .then(() => db.sql(`create table if not exists v21_raw (\n      id bigserial primary key,
       report_id text not null references v21_report(report_id),
       step smallint not null check (step in (1, 2)),
       kind text not null,
@@ -130,17 +134,19 @@ export async function getReport(id: string): Promise<Record<string, unknown> | n
 }
 
 /** Set one step's status (control state; the raw rows are what never change). */
-export async function setStatus(id: string, step: 1 | 2, status: StepStatus, error: string | null = null): Promise<void> {
+export async function setStatus(id: string, step: 1 | '1_5' | 1.5 | 2, status: StepStatus, error: string | null = null): Promise<void> {
   await ensureTables();
-  await db.sql(`update v21_report set step${step}_status = $2, step${step}_error = $3, updated_at = now() where report_id = $1`, [id, status, text(error)]);
+  const col = step === '1_5' || step === 1.5 ? 'step1_5' : `step${step}`;
+  await db.sql(`update v21_report set ${col}_status = $2, ${col}_error = $3, updated_at = now() where report_id = $1`, [id, status, text(error)]);
 }
 
 /** Write one result the moment it exists. Returns the row id. Throws when the database does not take it. */
-export async function addRaw(id: string, step: 1 | 2, kind: RawKind, runId: string, payload: unknown, status = 'ok'): Promise<number> {
+export async function addRaw(id: string, step: 1 | '1_5' | 1.5 | 2, kind: RawKind, runId: string, payload: unknown, status = 'ok'): Promise<number> {
   await ensureTables();
+  const stepNum = step === '1_5' || step === 1.5 ? 1 : step;
   const out = await db.sql<{ id: string }>(
     `insert into v21_raw (report_id, step, kind, run_id, status, payload) values ($1, $2, $3, $4, $5, $6::jsonb) returning id`,
-    [id, step, kind, runId, status, jsonb(payload)],
+    [id, stepNum, kind, runId, status, jsonb(payload)],
   );
   return Number(out.rows[0]!.id);
 }
@@ -178,17 +184,16 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
 
   if (parts.length === 1) {
     const rows = await db.sql(
-      `select id, step, kind, run_id, status, created_at, pg_column_size(payload) as bytes from v21_raw where report_id = $1 order by id`,
-      [parts[0]],
-    );
-    return json(res, 200, { report, raw: rows.rows }), true;
+      `select id, step, kind, run_id, status, created_at, pg_column_size(payload) as bytes from v21_raw where report_id = $1 order by id`, [report.report_id]);
+    return json(res, 200, { report, raw_rows: rows.rows.map((r) => ({ ...r, id: Number(r.id), bytes: Number(r.bytes) })) }), true;
   }
-  if (parts.length === 3 && parts[1] === 'raw') {
-    const rowId = Number(parts[2]);
-    if (!Number.isInteger(rowId)) return json(res, 400, { error: 'row id must be an integer' }), true;
-    const out = await db.sql(`select id, step, kind, run_id, status, created_at, payload from v21_raw where report_id = $1 and id = $2`, [parts[0], rowId]);
-    if (!out.rows[0]) return json(res, 404, { error: 'no such row for this report' }), true;
-    return json(res, 200, out.rows[0]), true;
+
+  if (parts[1] === 'raw' && parts[2]) {
+    const row = await db.sql(`select id, report_id, step, kind, run_id, status, created_at, payload from v21_raw where report_id = $1 and id = $2`, [report.report_id, parts[2]]);
+    if (!row.rows[0]) return json(res, 404, { error: 'no such raw row' }), true;
+    const r: any = row.rows[0];
+    return json(res, 200, { ...r, id: Number(r.id) }), true;
   }
+
   return json(res, 404, { error: 'not found' }), true;
 }

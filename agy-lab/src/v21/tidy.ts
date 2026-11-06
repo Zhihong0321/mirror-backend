@@ -1,8 +1,9 @@
-// V2.1 Step 1.5 — Tidy. Plain code between Step 1 (gather) and Step 2 (judge).
-// It only cleans and lays out what Step 1 saved, so Step 2's LLM reads all of it in one clear shape.
+// V2.1 Step 2 Tidy: Plain code between Step 1/1.5 (gather) and Step 2 (judge).
+// It cleans and lays out what Step 1 and Step 1.5 saved, so Step 2's LLM reads all of it in one clear shape.
 // It never judges: no namesake dropping, no found/not-found verdicts, no ranking. Every item keeps its source URL
 // and gets an id (E1, E2, R1...) that Step 2 cites.
 import type { RawResearchCheckpoint } from './research.ts';
+import type { Step1_5_AssetsOutput } from './assets.ts';
 
 export type TidyEvidence = {
   id: string;
@@ -44,6 +45,16 @@ export type TidyData = {
   own_linkedin: Record<string, string> | null;
   evidence: TidyEvidence[];
   registers: TidyRegister[];
+  technical_audit?: {
+    pagespeed_status: string;
+    target_url?: string;
+    mobile_score?: number;
+    desktop_score?: number;
+    field_speed?: string;
+    domains_checked: number;
+    findings_count: number;
+    items: Array<{ title: string; detail: string; severity: string; check: string }>;
+  };
   could_not_check: Array<{ target: string; reason: string }>;
 };
 
@@ -98,42 +109,40 @@ const GENERIC = new Set([
   'limited', 'corporation', 'corp', 'singapore', 'malaysia', 'australia', 'korea',
   // common business words: on their own they match half of any register
   'advisors', 'advisory', 'consulting', 'consultants', 'partners', 'digital', 'design', 'logistics', 'marketing',
-  'services', 'solutions', 'trading', 'international', 'global', 'media', 'studio', 'agency', 'interior', 'web',
-  '주식회사', '주', '유', '세무법인', '회계법인', '법무법인', '유한회사',
+  'agency', 'studio', 'solutions', 'services', 'management', 'international', 'global', 'asia',
 ]);
 
-/** The company name as written, plus its distinctive words (generic company words removed). */
-export function nameTerms(company: string): string[] {
-  const full = company.replace(/[()㈜]/g, ' ').replace(/\s+/g, ' ').trim();
-  const words = full
-    .split(/[\s&.,'’\-]+/)
-    .map((w) => w.trim())
-    .filter((w) => w && !GENERIC.has(w.toLowerCase()))
-    .filter((w) => (/[가-힣]/.test(w) ? w.length >= 2 : w.length >= 3));
-  const out = [full, ...words.filter((w) => w.toLowerCase() !== full.toLowerCase())];
-  return [...new Set(out)].filter(Boolean);
+/** Pick search terms for register mention scans: the full company name, plus the distinctive single words. */
+function nameTerms(company: string): string[] {
+  const norm = cleanText(company).toLowerCase();
+  const words = norm
+    .split(/[\s,./\-_&]+/)
+    .map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''))
+    .filter((w) => w.length >= 3 && !GENERIC.has(w));
+  const out = new Set<string>();
+  if (norm.length >= 3) out.add(norm);
+  for (const w of words) out.add(w);
+  return [...out];
 }
 
-/** Passages around where the name terms appear in a long page. Full name first; single words only if it is absent. */
-export function findMentions(text: string, terms: string[]): string[] {
-  // Link targets and images are noise in a register table; keep the visible text.
-  const flat = String(text ?? '')
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-    .replace(/\[([^\]]*)\]\((?:[^()]|\([^)]*\))*\)/g, '$1')
-    .replace(/\s+/g, ' ');
+/** Find all places any name term appears in a register page; return non-overlapping excerpts. */
+function findMentions(pageText: string, terms: string[]): string[] {
+  if (!pageText || !terms.length) return [];
+  const flat = cleanText(pageText);
   const lower = flat.toLowerCase();
   const spans: Array<[number, number]> = [];
-  for (const [i, term] of terms.entries()) {
-    if (i > 0 && spans.length) break; // the full name was found: don't widen to single words
-    const t = term.toLowerCase();
-    let at = lower.indexOf(t);
-    while (at !== -1 && spans.length < 50) {
-      // Registers list one entity per row and a row's details follow its name: take little before the name
-      // (so the previous row's details don't come along) and more after it.
-      spans.push([Math.max(0, at - MENTION_BEFORE), Math.min(flat.length, at + t.length + MENTION_AFTER)]);
-      at = lower.indexOf(t, at + t.length);
+  for (const t of terms) {
+    let at = 0;
+    while (at < lower.length) {
+      const idx = lower.indexOf(t, at);
+      if (idx === -1) break;
+      const start = Math.max(0, idx - MENTION_BEFORE);
+      const end = Math.min(flat.length, idx + t.length + MENTION_AFTER);
+      spans.push([start, end]);
+      at = idx + Math.max(1, t.length);
     }
   }
+  if (!spans.length) return [];
   spans.sort((a, b) => a[0] - b[0]);
   const merged: Array<[number, number]> = [];
   for (const s of spans) {
@@ -144,7 +153,7 @@ export function findMentions(text: string, terms: string[]): string[] {
   return merged.slice(0, MENTIONS_MAX).map(([a, b]) => (a > 0 ? '…' : '') + flat.slice(a, b).trim() + (b < flat.length ? '…' : ''));
 }
 
-export function tidyCheckpoint(cp: RawResearchCheckpoint): TidyData {
+export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_AssetsOutput | null): TidyData {
   const input = cp.input;
   const domain = (cp.official_site?.domain || domainOf(input.website || '')).toLowerCase();
   const terms = nameTerms(input.company);
@@ -198,24 +207,20 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint): TidyData {
   if (/korea/i.test(input.country)) {
     const nv = cp.naver_place;
     if (!nv) couldNotCheck.push({ target: 'Naver Place', reason: 'Not gathered in Step 1' });
-    else if (nv.status === 'failed') couldNotCheck.push({ target: 'Naver Place', reason: nv.error || 'Naver Place search failed' });
+    else if (nv.status !== 'done') couldNotCheck.push({ target: 'Naver Place', reason: nv.error || `Naver Place ${nv.status}` });
     else {
-      for (const p of nv.places || []) {
+      for (const b of ((nv.result as any)?.places || []) as any[]) {
         evidence.push({
           id: `E${++n}`,
           kind: 'naver_place',
           source_name: 'Naver Place',
-          url: `https://map.naver.com/p/entry/place/${p.id}`,
-          title: p.name,
+          url: b.url || '',
+          title: b.name,
           text: [
-            `Name: ${p.name}`,
-            `Category: ${p.category ?? 'n/a'}`,
-            `Road address: ${p.roadAddress ?? 'n/a'}`,
-            `Lot address: ${p.address ?? 'n/a'}`,
-            `Phone: ${p.phone ?? 'n/a'}`,
-            `Virtual phone: ${p.virtualPhone ?? 'n/a'}`,
-            `Visitor reviews: ${p.visitorReviewCount ?? 0}`,
-            `Blog/cafe reviews: ${p.blogCafeReviewCount ?? 0}`,
+            `Name: ${b.name}`,
+            `Category: ${b.category ?? 'n/a'}`,
+            `Address: ${b.address ?? 'n/a'}`,
+            `Phone: ${b.phone ?? 'n/a'}`,
           ].join(' | '),
         });
       }
@@ -249,6 +254,59 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint): TidyData {
     };
     byUrl.set(d.url, item);
     evidence.push(item);
+  }
+
+  // ---- Step 1.5 Technical Infrastructure & Digital Assets Findings
+  let technicalAudit: TidyData['technical_audit'] = undefined;
+  if (assets) {
+    technicalAudit = {
+      pagespeed_status: assets.pagespeed?.status ?? 'none',
+      target_url: assets.pagespeed?.target_url,
+      mobile_score: assets.pagespeed?.mobile?.scores?.performance,
+      desktop_score: assets.pagespeed?.desktop?.scores?.performance,
+      field_speed: assets.pagespeed?.mobile?.field?.overall,
+      domains_checked: assets.domains?.length ?? 0,
+      findings_count: assets.findings?.length ?? 0,
+      items: (assets.findings ?? []).map((f) => ({
+        title: f.title,
+        detail: f.detail,
+        severity: f.severity,
+        check: f.check,
+      })),
+    };
+
+    for (const f of assets.findings ?? []) {
+      const src = f.check.startsWith('psi') ? 'Google PageSpeed Insights' : 'Domain Security & Assets';
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: src,
+        url: f.evidence_url || f.source || (domain ? `https://${domain}` : ''),
+        title: f.title,
+        text: `[${f.severity.toUpperCase()}] ${f.title}. ${f.detail}`,
+      });
+    }
+
+    // Google Maps reviews of the company's own profile (Step 1.5, Scraper.Tech). Laid out as plain lines, newest first.
+    // A review with no text is kept as a rating line. Not run / failed is "could not check", never a finding.
+    const gr = assets.google_reviews;
+    if (!gr) couldNotCheck.push({ target: 'Google Maps reviews', reason: 'Not gathered in Step 1.5' });
+    else if (gr.status !== 'done' || !gr.data) couldNotCheck.push({ target: 'Google Maps reviews', reason: gr.reason || gr.error || `reviews ${gr.status}` });
+    else {
+      const d = gr.data;
+      const line = (r: (typeof d.reviews)[number]) =>
+        `${r.date?.slice(0, 10) ?? '?'} | ${r.rating ?? '?'}★ | ${r.author}${r.author_reviews != null ? ` (${r.author_reviews} reviews by this person)` : ''} | ` +
+        `${r.text ? cleanText(r.text).slice(0, 600) : '(rating only, no text)'}` +
+        `${r.owner_reply ? ` | OWNER REPLY: ${cleanText(r.owner_reply).slice(0, 400)}` : ''}`;
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'google_maps',
+        source_name: 'Google Maps reviews',
+        url: gr.profile?.maps_url || (gr.profile ? `https://www.google.com/maps/place/?q=place_id:${gr.profile.place_id}` : ''),
+        title: `${gr.profile?.name ?? d.name ?? 'Google Maps profile'}: ${d.reviews.length} newest reviews of ${d.review_count ?? '?'} (profile rating ${d.rating ?? '?'})`,
+        text: d.reviews.map(line).join('\n'),
+      });
+    }
   }
 
   // ---- Catalog probes: not run -> could not check; read pages -> passages where the name appears.
@@ -300,6 +358,7 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint): TidyData {
     own_linkedin: ownLinkedin,
     evidence,
     registers,
+    technical_audit: technicalAudit,
     could_not_check: couldNotCheck,
   };
 }
@@ -356,8 +415,21 @@ export function renderTidy(t: TidyData): string {
     if (!g.page_chars && !g.hits.length) out.push('Nothing was returned.');
   }
 
+  if (t.technical_audit && t.technical_audit.items.length > 0) {
+    out.push(`\n## E. TECHNICAL INFRASTRUCTURE & ASSET AUDIT (Google PageSpeed & Domain Security)`);
+    if (t.technical_audit.mobile_score !== undefined) {
+      out.push(`- Mobile PageSpeed Performance Score: ${t.technical_audit.mobile_score}/100`);
+    }
+    if (t.technical_audit.desktop_score !== undefined) {
+      out.push(`- Desktop PageSpeed Performance Score: ${t.technical_audit.desktop_score}/100`);
+    }
+    for (const it of t.technical_audit.items) {
+      out.push(`- [${it.severity.toUpperCase()}] ${it.title}: ${it.detail}`);
+    }
+  }
+
   if (t.could_not_check.length) {
-    out.push(`\n## E. COULD NOT CHECK (say nothing about these)`);
+    out.push(`\n## F. COULD NOT CHECK (say nothing about these)`);
     for (const c of t.could_not_check) out.push(`- ${c.target}: ${c.reason}`);
   }
   return out.join('\n');

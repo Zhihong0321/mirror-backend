@@ -26,6 +26,7 @@ export * as brave from './brave.ts';
 export * as pagespeed from './pagespeed.ts';
 export * as parallel from './parallel.ts';
 export * as smartlead from './smartlead.ts';
+export * as scrapertech from './scrapertech.ts';
 export * as secrets from './secrets.ts';
 export * as search from './search.ts';
 export { startCall, type ApiCall, type ApiName } from '../cost.ts';
