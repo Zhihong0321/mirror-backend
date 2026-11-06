@@ -1,0 +1,1360 @@
+{
+  "malaysia": {
+    "accounting-firm": {
+      "tracker_run": "MY-accounting-firm",
+      "round": 2,
+      "schema": 1,
+      "prompts": [
+        {
+          "rank": 1,
+          "category": "regulator_action",
+          "problem_type": [
+            "legal",
+            "reputation"
+          ],
+          "question": "Has the accounting or audit firm, or any of its audit partners, been sanctioned, fined, or reprimanded by the Audit Oversight Board (AOB)?",
+          "why_it_matters": "AOB sanctions indicate severe audit quality deficiencies or non-compliance with international auditing standards, which undermines client credibility and can disqualify the firm from auditing public interest entities.",
+          "source": {
+            "name": "Securities Commission Malaysia (Audit Oversight Board)",
+            "url": "https://www.sc.com.my/aob/aobs-sanctions",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search the public AOB Sanctions directory for the firm name or partner name",
+          "found_when": "The firm or a partner is listed with an active sanction, reprimand, or fine",
+          "not_found_when": "The search executes and returns zero disciplinary records or sanctions against the firm and partners",
+          "couldnt_check_when": "The Securities Commission portal is down or unreachable",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "missing_credential",
+            "contradiction"
+          ],
+          "question": "Is the firm's nominated tax partner or principal officially licensed as an approved Tax Agent under Section 153(3) of the Income Tax Act 1967?",
+          "why_it_matters": "Offering commercial tax filing and advisory without a valid Section 153 MOF tax agent license is an offense under Malaysian law and leaves client submissions rejected or penalized by LHDN.",
+          "source": {
+            "name": "Ministry of Finance Malaysia (MyCukai Portal)",
+            "url": "https://mycukai.treasury.gov.my/",
+            "type": "government_portal",
+            "access": "open",
+            "language": "Malay"
+          },
+          "how_to_query": "Query the e-Semakan Ejen Cukai section on MyCukai using the partner IC number, tax agent approval number, or practitioner name",
+          "found_when": "The named practitioner or firm partner is not listed as holding an active Section 153 tax agent license",
+          "not_found_when": "The practitioner is confirmed with an active MOF tax agent approval reference",
+          "couldnt_check_when": "The MyCukai portal is undergoing maintenance or session timeouts",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 3,
+          "category": "professional_membership",
+          "problem_type": [
+            "missing_credential",
+            "contradiction"
+          ],
+          "question": "Does the firm possess a valid Malaysian Institute of Accountants (MIA) Firm Registration Number (AF/NF number) matching its public claims?",
+          "why_it_matters": "Under the Accountants Act 1967, only firms registered with MIA holding an AF or NF number can legally offer statutory audit or public accounting services in Malaysia.",
+          "source": {
+            "name": "Malaysian Institute of Accountants (MIA)",
+            "url": "https://mia.org.my/regulatory-public-interest/enforcement/disciplinary/",
+            "type": "statutory_body",
+            "access": "captcha",
+            "language": "English"
+          },
+          "how_to_query": "Verify firm registration number (AF prefix for audit, NF for non-audit) on MIA public search or search index: site:mia.org.my {company}",
+          "found_when": "The firm claims to be Chartered Accountants or an audit practice but has no registered AF/NF number on the MIA roll",
+          "not_found_when": "Firm registration number and practicing partner credentials match MIA records",
+          "couldnt_check_when": "MIA website triggers Cloudflare bot challenges or rate limits",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 4,
+          "category": "regulator_action",
+          "problem_type": [
+            "legal",
+            "reputation"
+          ],
+          "question": "Has the firm or any of its partners been subject to published disciplinary orders, fines, or striking off by the MIA Disciplinary Committee?",
+          "why_it_matters": "Published MIA disciplinary orders alert potential clients to professional misconduct, breach of the MIA By-Laws, or failed practice reviews.",
+          "source": {
+            "name": "MIA Disciplinary Committee",
+            "url": "https://mia.org.my/regulatory-public-interest/enforcement/disciplinary/",
+            "type": "statutory_regulator",
+            "access": "captcha",
+            "language": "English"
+          },
+          "how_to_query": "Search published MIA Disciplinary orders under Accountants Today / Enforcement decisions for {person} or {company}",
+          "found_when": "A published order lists the member/firm with a formal censure, penalty, suspension, or expulsion",
+          "not_found_when": "Zero disciplinary orders or complaints are recorded against the practitioner",
+          "couldnt_check_when": "MIA enforcement database requires CAPTCHA verification",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 5,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "contradiction"
+          ],
+          "question": "Does the firm claim to provide statutory company audits without holding an active Minister of Finance Company Auditor approval under Section 263 of the Companies Act 2016?",
+          "why_it_matters": "Performing or advertising statutory company audits without MOF/SSM approval violates the Companies Act 2016 and invalidates statutory financial statements submitted to SSM.",
+          "source": {
+            "name": "Suruhanjaya Syarikat Malaysia (SSM)",
+            "url": "https://www.ssm.com.my/",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Verify company auditor license number format (e.g. [No]/[Year] (J)) cited on audit reports against SSM statutory records",
+          "found_when": "Firm advertises statutory audit services but neither firm nor partners hold an approved auditor license number",
+          "not_found_when": "Auditor license number is verified active and valid",
+          "couldnt_check_when": "SSM statutory search portal is unavailable",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 6,
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "question": "Does the firm's website claim ACCA Approved Employer or ACCA Quality Checked status when it is not listed in ACCA's official directory?",
+          "why_it_matters": "Falsely advertising ACCA accreditation or employer status misleads prospective recruits and clients, creating reputational exposure and trademark infringements.",
+          "source": {
+            "name": "ACCA Global (Malaysia Employer Directory)",
+            "url": "https://www.accaglobal.com/gb/en/member/find-an-accountant/find-firm.html",
+            "type": "professional_body",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search ACCA directory of approved employers and practicing firms filtered by Malaysia and {company}",
+          "found_when": "Firm site prominently displays ACCA Approved Employer logos but firm is absent from the ACCA directory",
+          "not_found_when": "Firm is verified on ACCA's directory with valid accreditation tier",
+          "couldnt_check_when": "ACCA global directory search service is undergoing scheduled maintenance",
+          "used_in": "preview",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "digital-marketing-agency": {
+      "tracker_run": "MY-digital-marketing-agency",
+      "round": 2,
+      "schema": 1,
+      "prompts": [
+        {
+          "rank": 1,
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Is the digital marketing agency an officially registered corporate member of the Malaysian Digital Association (MDA)?",
+          "why_it_matters": "Agencies in Malaysia frequently display MDA badges or claim official association representation to win corporate enterprise RFPs without holding active membership.",
+          "source": {
+            "name": "Malaysian Digital Association (MDA)",
+            "url": "https://malaysiandigitalassociation.org.my/",
+            "type": "industry_association",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search the MDA Member directory on malaysiandigitalassociation.org.my for {company}",
+          "found_when": "The agency website displays the MDA membership insignia or claims affiliation but is absent from the MDA roster",
+          "not_found_when": "The agency is listed as an active corporate member on the MDA website",
+          "couldnt_check_when": "The MDA directory page is temporarily unavailable",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "category": "awards",
+          "problem_type": [
+            "misinformation",
+            "contradiction"
+          ],
+          "question": "Are the specific d Awards trophies (e.g. Agency of the Year, Best Use of Digital/AI) claimed on the agency's website verifiable in the official MDA d Awards winners index?",
+          "why_it_matters": "Unsubstantiated or exaggerated advertising award claims mislead prospective clients and violate truth-in-advertising guidelines in Malaysia.",
+          "source": {
+            "name": "MDA d Awards",
+            "url": "https://d-awards.com.my/",
+            "type": "award_organization",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Query the d-awards.com.my past winners archive for the claimed year, campaign, and {company}",
+          "found_when": "The agency claims a Gold, Silver, or Bronze trophy that is absent or attributed to a different agency in the official archive",
+          "not_found_when": "The trophy citation, year, and award category match official d Awards archives exactly",
+          "couldnt_check_when": "The d Awards website archive database is unreachable",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 3,
+          "category": "professional_membership",
+          "problem_type": [
+            "missing_credential",
+            "contradiction"
+          ],
+          "question": "Does the agency hold active accreditation with the Association of Accredited Advertising Agents Malaysia (4As)?",
+          "why_it_matters": "4As accreditation signifies adherence to stringent professional standards and financial vetting; bogus claims can lead to legal action by the association.",
+          "source": {
+            "name": "Association of Accredited Advertising Agents Malaysia (4As)",
+            "url": "https://aaaa.org.my/",
+            "type": "industry_association",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search the 4As Member Agencies directory on aaaa.org.my for {company}",
+          "found_when": "Agency claims to be a 4As Accredited Agency but does not appear on the official 4As roll",
+          "not_found_when": "Agency is officially registered as a current 4As member agency",
+          "couldnt_check_when": "4As portal server fails to respond",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 4,
+          "category": "awards",
+          "problem_type": [
+            "misinformation",
+            "contradiction"
+          ],
+          "question": "Does the agency legitimately hold the Kancil Awards (Gold/Silver/Bronze/Grand Prix) creative trophies cited in its marketing credentials pitch deck?",
+          "why_it_matters": "Claiming unearned Kancil awards—Malaysia's premier creative standard—destroys client trust and breaches intellectual property rights.",
+          "source": {
+            "name": "4As Kancil Awards",
+            "url": "https://www.kancilawards.com/",
+            "type": "award_organization",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Query the Kancil Awards winners index by agency name, year, and campaign title",
+          "found_when": "The agency advertises Kancil awards in pitch materials that do not exist on the official winners roll",
+          "not_found_when": "The award title, campaign, client name, and category match the official Kancil database",
+          "couldnt_check_when": "The Kancil Awards portal experiences an outage",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 5,
+          "category": "regulator_action",
+          "problem_type": [
+            "legal",
+            "reputation"
+          ],
+          "question": "Has any digital campaign produced or published by the agency been censured, issued a takedown notice, or fined by the Communications and Multimedia Content Forum (CMCF) Complaints Bureau?",
+          "why_it_matters": "Sanctions by the CMCF under the Malaysian Communications and Multimedia Act indicate unlawful marketing practices, misleading claims, or code violations that expose brand clients to regulatory liability.",
+          "source": {
+            "name": "Communications and Multimedia Content Forum of Malaysia (CMCF)",
+            "url": "https://contentforum.my/",
+            "type": "self_regulatory_body",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search CMCF annual reports and public complaints tribunal findings for campaigns managed by {company}",
+          "found_when": "A formal ruling confirms a breach of the Malaysian Content Code for false advertising or prohibited content",
+          "not_found_when": "Zero public complaint rulings or takedowns exist involving the agency",
+          "couldnt_check_when": "CMCF portal is unreachable",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 6,
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Does the agency falsely advertise government grant eligibility (such as MDEC SME Digitalisation Grant or Malaysia Digital Status) when it is not a certified MDEC Digital Partner?",
+          "why_it_matters": "Misleading SME clients about eligibility for Malaysian government matching grants risks client financial losses and potential investigations for fraudulent grant claims.",
+          "source": {
+            "name": "Malaysia Digital Economy Corporation (MDEC)",
+            "url": "https://www.mdec.my/",
+            "type": "government_agency",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Verify Technology Solution Provider (TSP) and Malaysia Digital (MD) accreditation in MDEC directories",
+          "found_when": "The agency markets itself as a designated government grant partner but is absent from MDEC's approved partner register",
+          "not_found_when": "The agency's MD status or TSP accreditation is confirmed on official government listings",
+          "couldnt_check_when": "The MDEC partner directory is unavailable",
+          "used_in": "preview",
+          "confidence": "high"
+        }
+      ]
+    },
+    "import-export-company": {
+      "tracker_run": "MY-import-export-company",
+      "round": 2,
+      "schema": 1,
+      "prompts": [
+        {
+          "rank": 1,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "missing_credential",
+            "contradiction"
+          ],
+          "question": "Does the import-export or forwarding firm hold an active Customs Agent License under Section 90 of the Malaysian Customs Act 1967?",
+          "why_it_matters": "Handling import/export customs clearance without an authorized Section 90 customs agent license is a criminal violation of the Customs Act and leads to shipment detention at Malaysian ports.",
+          "source": {
+            "name": "Royal Malaysian Customs Department (JKDM)",
+            "url": "https://www.customs.gov.my/ms/",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "Malay"
+          },
+          "how_to_query": "Search the registered customs agents list or verify agent authorization code via JKDM customs portal",
+          "found_when": "The company offers customs brokerage services but does not possess an active Section 90 license code",
+          "not_found_when": "The company's customs forwarding agent license code is active and verified with JKDM",
+          "couldnt_check_when": "JKDM customs portal is undergoing system maintenance",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "category": "register",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Is the exporting firm officially registered in the Malaysia Exporters Registry (MER) maintained by MATRADE?",
+          "why_it_matters": "Unregistered exporters cannot access official trade missions, export incentives, or government trade dispute mediation, creating commercial risk for overseas trading partners.",
+          "source": {
+            "name": "Malaysia External Trade Development Corporation (MATRADE)",
+            "url": "https://www.matrade.gov.my/en",
+            "type": "government_agency",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search the Directory of Malaysian Exporters on matrade.gov.my by company name {company} or export HS code",
+          "found_when": "An exporter advertising export volumes on its site is missing from the MATRADE MER register",
+          "not_found_when": "The company is verified as an active member in the MATRADE Exporters Registry",
+          "couldnt_check_when": "MATRADE directory search times out",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 3,
+          "category": "identity_registration",
+          "problem_type": [
+            "legal",
+            "contradiction"
+          ],
+          "question": "Does the import-export or freight logistics company hold a valid Sales and Service Tax (SST) registration for customs and forwarding brokerage?",
+          "why_it_matters": "Charging or collecting SST on freight forwarding and customs brokerage without valid Royal Malaysian Customs registration constitutes tax fraud under the Service Tax Act 2018.",
+          "source": {
+            "name": "Royal Malaysian Customs Department (MySST)",
+            "url": "https://mysst.customs.gov.my/",
+            "type": "government_portal",
+            "access": "open",
+            "language": "Malay"
+          },
+          "how_to_query": "Query MySST registration search with the company SSM registration number or SST registration number",
+          "found_when": "The company invoices clients for Malaysian service tax without an active SST registration number",
+          "not_found_when": "The company's SST registration certificate is verified active under forwarding brokerage",
+          "couldnt_check_when": "MySST verification service is offline",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 4,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "missing_credential"
+          ],
+          "question": "Does the company possess an active MAQIS import/export permit and facility registration for trading agricultural, animal, fish, or plant consignments?",
+          "why_it_matters": "Importing or exporting regulated agricultural and biological goods without MAQIS clearance results in immediate seizure, destruction of cargo, and hefty statutory fines at border checkpoints.",
+          "source": {
+            "name": "Malaysian Quarantine and Inspection Services (MAQIS)",
+            "url": "https://www.maqis.gov.my/",
+            "type": "government_agency",
+            "access": "open",
+            "language": "Malay"
+          },
+          "how_to_query": "Search MAQIS e-Permit / Dagang Net approved importer/exporter registry for company permit number",
+          "found_when": "An importer of food/agro products lacks valid MAQIS import permit registration",
+          "not_found_when": "MAQIS registration and inspection compliance certificates are confirmed",
+          "couldnt_check_when": "MAQIS online portal is down for scheduled updates",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 5,
+          "category": "directory",
+          "problem_type": [
+            "misinformation",
+            "contact_mess"
+          ],
+          "question": "Are the business address, export commodities, and contact details published in the FMM Directory of Malaysian Exporters accurate and consistent with the company's current operations?",
+          "why_it_matters": "Outdated addresses or defunct personnel listed in the premier Malaysian trade directory cause lost overseas trade inquiries and buyer mistrust.",
+          "source": {
+            "name": "Federation of Malaysian Manufacturers (FMM)",
+            "url": "https://www.fmm.org.my/",
+            "type": "industry_association",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Look up {company} in the FMM Directory of Malaysian Industries and Exporters",
+          "found_when": "The published FMM entry contains disconnected phone numbers, defunct addresses, or wrong export product classifications",
+          "not_found_when": "Directory details match the current operating premises and official corporate website",
+          "couldnt_check_when": "FMM search directory requires specific member sign-in",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "interior-designer": {
+      "tracker_run": "MY-interior-designer",
+      "round": 2,
+      "schema": 1,
+      "prompts": [
+        {
+          "rank": 1,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "missing_credential",
+            "contradiction"
+          ],
+          "question": "Is the lead designer or firm officially registered as a Registered Interior Designer (IDr) or Interior Design Consultancy Practice under the Architects Act 1967?",
+          "why_it_matters": "Under the Architects Act 1967, using the title 'Interior Designer' or offering professional interior design services without LAM registration is an illegal offense carrying statutory penalties.",
+          "source": {
+            "name": "Lembaga Arkitek Malaysia (Board of Architects Malaysia)",
+            "url": "https://www.lam.gov.my/welcome",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search the LAM Public Search Register under 'Interior Designer' or 'Interior Design Practice' for {company} or principal name",
+          "found_when": "The firm markets itself as an 'Interior Designer' or uses 'IDr' title but neither firm nor lead partner is registered on the LAM roll",
+          "not_found_when": "The designer or practice is confirmed with an active LAM registration number",
+          "couldnt_check_when": "The LAM portal search system is offline",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "category": "licence",
+          "problem_type": [
+            "legal",
+            "missing_credential"
+          ],
+          "question": "Does the interior design firm hold an active CIDB Contractor Registration Certificate (Grade G1–G7 with category B04/B28) for executing interior fit-out and renovation works?",
+          "why_it_matters": "Executing commercial or residential construction/renovation contracts in Malaysia without CIDB registration violates Act 520 and subjects the firm to stop-work orders and hefty fines.",
+          "source": {
+            "name": "Construction Industry Development Board Malaysia (CIDB)",
+            "url": "https://www.cidb.gov.my/",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "Malay"
+          },
+          "how_to_query": "Search CIDB CIMS contractor directory using company name or SSM number to check registration validity and grade (G1 to G7)",
+          "found_when": "The firm accepts renovation contracts but lacks active CIDB contractor registration or required building specialization code",
+          "not_found_when": "Firm holds active CIDB certificate with appropriate grade covering contract sum",
+          "couldnt_check_when": "CIDB CIMS system is undergoing server maintenance",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 3,
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Does the interior designer or practice hold verified Corporate Member or Corporate Practice status with the Malaysian Institute of Interior Designers (MIID)?",
+          "why_it_matters": "Falsely displaying the MIID badge or claiming corporate practice standing damages client trust and breaches intellectual property agreements with the national institute.",
+          "source": {
+            "name": "Malaysian Institute of Interior Designers (MIID)",
+            "url": "https://miid.org.my/",
+            "type": "professional_body",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Check the MIID Member Directory on miid.org.my for {company} or practitioner name",
+          "found_when": "The website displays MIID corporate badges but the firm or practitioner is absent from the MIID register",
+          "not_found_when": "The firm or principal is verified as an active MIID Corporate Member or Practice",
+          "couldnt_check_when": "The MIID directory is temporarily unreachable",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 4,
+          "category": "awards",
+          "problem_type": [
+            "misinformation",
+            "contradiction"
+          ],
+          "question": "Can the national design awards (such as the MIID REKA Awards for Design Excellence) claimed in the firm's portfolio be verified against official competition records?",
+          "why_it_matters": "Falsely claiming prestigious national design awards exposes the studio to public copyright challenges and disqualification from institutional developer tenders.",
+          "source": {
+            "name": "MIID REKA Awards",
+            "url": "https://miid.org.my/",
+            "type": "award_organization",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Query MIID REKA Awards published winners catalogs for project name, category, and designer",
+          "found_when": "A portfolio project claims an official MIID REKA award that is absent from the official winners catalog",
+          "not_found_when": "The project award title, category, and winning year match official MIID documentation",
+          "couldnt_check_when": "MIID REKA archive files are inaccessible",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 5,
+          "category": "reviews",
+          "problem_type": [
+            "reputation",
+            "contradiction"
+          ],
+          "question": "Do customer reviews and project completion complaints on leading Malaysian renovation portal Atap.co contradict the firm's claimed on-time delivery guarantees?",
+          "why_it_matters": "Unresolved abandonment complaints or poor craftsmanship ratings on local renovation platforms drive away high-value homeowners and commercial fitout leads.",
+          "source": {
+            "name": "Atap.co Malaysia",
+            "url": "https://atap.co/malaysia/",
+            "type": "industry_directory",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search Atap.co firm profile for customer ratings, completed project badges, and negative dispute feedback",
+          "found_when": "Multiple customer reviews report project delays, cost blowouts, or abandoned renovation works",
+          "not_found_when": "Firm maintains strong rating and positive verified homeowner feedback with zero unresolved dispute reports",
+          "couldnt_check_when": "Atap.co page is protected by bot detection",
+          "used_in": "preview",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "web-design-company": {
+      "tracker_run": "MY-web-design-company",
+      "round": 2,
+      "schema": 1,
+      "prompts": [
+        {
+          "rank": 1,
+          "category": "awards",
+          "problem_type": [
+            "misinformation",
+            "contradiction"
+          ],
+          "question": "Are the specific Malaysia Website Awards (MWA) titles (such as Site of the Month or Site of the Year) claimed on the agency's portfolio verifiable in the official MWA directory?",
+          "why_it_matters": "Web design agencies in Malaysia frequently fabricate MWA badges on client footers; false awards damage client trust and infringe Exabytes MWA trademarks.",
+          "source": {
+            "name": "Malaysia Website Awards (MWA)",
+            "url": "https://www.mwa.my/",
+            "type": "award_organization",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search mwa.my winners archive by URL, agency name {company}, or winning year",
+          "found_when": "Agency claims an MWA Site of the Month/Year award that is not registered in the MWA winner database",
+          "not_found_when": "The agency's project is verified with official MWA certificate and winner profile",
+          "couldnt_check_when": "MWA winner database is undergoing updates",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "category": "licence",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Does the web design company hold an authorized MYNIC Reseller or Partner accreditation for managing .my national domains?",
+          "why_it_matters": "Claiming official MYNIC partner status without accreditation exposes clients to unauthorized domain handling and potential DNS hijacking risks.",
+          "source": {
+            "name": "MYNIC (.my Domain Registry)",
+            "url": "https://mynic.my/",
+            "type": "statutory_regulator",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Check the official MYNIC Authorized Reseller and Partner list on mynic.my for {company}",
+          "found_when": "Agency claims to be an 'Official MYNIC Registrar/Reseller' but is absent from the MYNIC directory",
+          "not_found_when": "Agency is confirmed as an active MYNIC registered reseller",
+          "couldnt_check_when": "MYNIC reseller directory is unreachable",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 3,
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Does the web design agency falsely claim to be an approved MDEC Technology Solution Provider (TSP) eligible for 50% SME Digitalisation Grants?",
+          "why_it_matters": "Misleading business clients about government matching grant eligibility leads to rejected grant applications and severe contractual disputes.",
+          "source": {
+            "name": "Malaysia Digital Economy Corporation (MDEC)",
+            "url": "https://www.mdec.my/",
+            "type": "government_agency",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Verify company name in the MDEC approved TSP directory for web and e-commerce digitalisation",
+          "found_when": "The agency advertises government grant subsidies but is not an authorized TSP on MDEC records",
+          "not_found_when": "The agency is verified on the official MDEC TSP list with active accreditation",
+          "couldnt_check_when": "MDEC grant partner search service is offline",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 4,
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "question": "Is the web development agency an active corporate member of the Malaysian Digital Association (MDA)?",
+          "why_it_matters": "Falsely claiming industry association affiliation to win high-value corporate web portal contracts violates professional advertising codes in Malaysia.",
+          "source": {
+            "name": "Malaysian Digital Association (MDA)",
+            "url": "https://malaysiandigitalassociation.org.my/",
+            "type": "industry_association",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Search MDA corporate member roll on malaysiandigitalassociation.org.my for {company}",
+          "found_when": "The agency's website footer features the MDA logo without holding active corporate membership",
+          "not_found_when": "The agency is verified as an active member in good standing",
+          "couldnt_check_when": "MDA membership roll is temporarily down",
+          "used_in": "paid",
+          "confidence": "high"
+        },
+        {
+          "rank": 5,
+          "category": "claims_check",
+          "problem_type": [
+            "misinformation",
+            "missing_credential"
+          ],
+          "question": "Does the web agency claim government-certified cybersecurity or secure web development credentials without CyberSecurity Malaysia registration?",
+          "why_it_matters": "Falsely marketing websites as CyberSecurity Malaysia verified or ISO/IEC 27001 certified exposes clients to security compliance failures.",
+          "source": {
+            "name": "CyberSecurity Malaysia",
+            "url": "https://www.cybersecurity.my/",
+            "type": "national_cybersecurity_agency",
+            "access": "open",
+            "language": "English"
+          },
+          "how_to_query": "Verify directory of CyberSecurity Malaysia registered technology partners and accredited services",
+          "found_when": "The agency claims official CyberSecurity Malaysia security certification that cannot be verified",
+          "not_found_when": "Agency credentials accurately describe standard SSL/TLS and CMS security without false statutory certifications",
+          "couldnt_check_when": "CyberSecurity Malaysia portal is undergoing maintenance",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    }
+  },
+  "singapore": {
+    "accounting-firm": {
+      "tracker_run": "SG-accounting-firm",
+      "round": 2,
+      "schema": 2,
+      "prompts": [
+        {
+          "rank": 1,
+          "sub_segment": "statutory audit",
+          "applies_when": "The firm offers statutory audit or identifies a public accountant",
+          "question": "Has ACRA published a disciplinary order against the firm or an identified public accountant associated with it?",
+          "category": "regulator_action",
+          "problem_type": [
+            "legal",
+            "reputation"
+          ],
+          "why_it_matters": "A published disciplinary order may need attention or explanation.",
+          "source": {
+            "name": "ACRA disciplinary proceedings",
+            "url": "https://www.acra.gov.sg/manage/public-accountant-accounting-entity/regulation-compliance/regulatory-notices/disciplinary-proceedings/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "static_list",
+          "query_url": "https://www.acra.gov.sg/manage/public-accountant-accounting-entity/regulation-compliance/regulatory-notices/disciplinary-proceedings/",
+          "manual_reason": "",
+          "how_to_query": "Search named notices, open the order, confirm the same person or entity and the relationship and date.",
+          "found_when": "A published order identifies the subject and specifies an action; report the exact order and date.",
+          "not_found_when": "The accessible published list contains no confirmed match; this is not proof of a clean record.",
+          "couldnt_check_when": "Page or order unavailable, identity or association uncertain, or source coverage incomplete.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "preview",
+          "confidence": "high"
+        },
+        {
+          "rank": 2,
+          "sub_segment": "statutory audit",
+          "applies_when": "A named person claims to be an ACRA registered public accountant",
+          "question": "Does the claimed public accountant have an active registration and the stated accounting entity in ACRA Bizfile?",
+          "category": "licence",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "A misleading public accountant claim can affect confidence in statutory audit services.",
+          "source": {
+            "name": "ACRA Bizfile search guide",
+            "url": "https://www.acra.gov.sg/resources/guides-forms/using-bizfiles-search-functions/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Interactive Bizfile search and results require a form and cannot be fetched as a static list.",
+          "how_to_query": "In Bizfile People search enter the person and 5-digit PA number; open More information and compare status and related entity.",
+          "found_when": "The confirmed profile contradicts the current claimed registration or association.",
+          "not_found_when": "The confirmed profile shows active status and the stated relationship.",
+          "couldnt_check_when": "Registration number is unavailable, profiles are ambiguous, or search cannot be completed.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 3,
+          "sub_segment": "tax advisory",
+          "applies_when": "A named tax practitioner claims SCTP accreditation",
+          "question": "Does the named professional claim the same SCTP tax accreditation and specialisation as the public member directory?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Incorrectly described tax credentials can mislead prospective clients.",
+          "source": {
+            "name": "SCTP members directory",
+            "url": "https://www.sctp.org.sg/Members.aspx?from=bc",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Directory search uses interactive fields and an alphabet selector; only consenting members are published.",
+          "how_to_query": "Search the named professional and compare accreditation and specialisation; the directory only includes consenting members.",
+          "found_when": "A confirmed directory entry explicitly conflicts with the specific claimed designation or specialisation.",
+          "not_found_when": "The confirmed entry matches the stated current designation and specialisation.",
+          "couldnt_check_when": "Not listed, search unavailable, identity uncertain or membership not published by consent.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 4,
+          "sub_segment": "accountancy professionals",
+          "applies_when": "A named individual claims CA (Singapore) or ISCA membership",
+          "question": "Does the identified individual appear with the claimed designation in the ISCA member directory?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "A professional designation belongs to an individual and needs accurate attribution.",
+          "source": {
+            "name": "ISCA member directory",
+            "url": "https://www.isca.org.sg/membership/member-services/member-directory",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Interactive member search; directory allows members to opt out and may use verification.",
+          "how_to_query": "Search the person and compare the claimed designation, confirming identity independently.",
+          "found_when": "A confirmed public record expressly differs from the specific claim.",
+          "not_found_when": "The confirmed record matches the claimed current status.",
+          "couldnt_check_when": "No entry, opt-out, matching name is ambiguous, CAPTCHA or search unavailable.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 5,
+          "sub_segment": "accountancy training",
+          "applies_when": "The firm claims to be an ISCA Singapore CA Qualification accredited training organisation",
+          "question": "Does the firm match the ISCA accredited training organisation listing?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Accurate training accreditation claims matter to prospective candidates.",
+          "source": {
+            "name": "ISCA accredited training organisations",
+            "url": "https://www.isca.org.sg/qualifications/scaq/accredited-training-organisations/atos-listings",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "static_list",
+          "query_url": "https://www.isca.org.sg/qualifications/scaq/accredited-training-organisations/atos-listings",
+          "manual_reason": "",
+          "how_to_query": "Search the published ATO list for the exact legal entity; compare the claim, without inferring a tier.",
+          "found_when": "An explicit claim conflicts with confirmed official accreditation details for the same entity.",
+          "not_found_when": "The current official listing confirms the same entity and the claim.",
+          "couldnt_check_when": "List unavailable, entity uncertain, claim concerns a tier not shown, or no match requires confirmation.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "digital-marketing-agency": {
+      "tracker_run": "SG-digital-marketing-agency",
+      "round": 2,
+      "schema": 2,
+      "prompts": [
+        {
+          "rank": 1,
+          "sub_segment": "digital marketing",
+          "applies_when": "The agency claims a Singapore Effie award for a campaign",
+          "question": "Does the claimed Effie Singapore campaign, year, award level and agency role match the organiser’s record?",
+          "category": "awards",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "why_it_matters": "Clients rely on accurate award and campaign credits.",
+          "source": {
+            "name": "Effie Worldwide Singapore",
+            "url": "https://effie.org/partners/singapore/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "The landing page shows selected cases; the complete archive search and access for each claim require manual checking.",
+          "how_to_query": "Search the Effie Singapore programme case archive for the exact campaign and year; open the case, compare award level and credited role. Landing page examples alone do not establish all winners.",
+          "found_when": "A confirmed record for the exact campaign contradicts the stated award or credited role.",
+          "not_found_when": "Official case evidence confirms the specific claim and agency role.",
+          "couldnt_check_when": "Case not in available archive, attribution ambiguous, paywall or coverage incomplete.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 2,
+          "sub_segment": "digital marketing",
+          "applies_when": "The agency claims IMDA SMEs Go Digital pre-approved status or PSG support for a named solution",
+          "question": "Does the claimed pre-approved solution and vendor match the official programme listing and eligibility terms?",
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "why_it_matters": "A blanket grant claim can create unrealistic customer expectations.",
+          "source": {
+            "name": "IMDA pre-approval of ICM vendors solutions",
+            "url": "https://www.imda.gov.sg/how-we-can-help/smes-go-digital/pre-approval-of-icm-vendors-solutions",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Vendor and solution listing may require interactive or authenticated portal access; verify exact listing manually.",
+          "how_to_query": "Identify exact solution, vendor, status, approval period and offer in the applicable official listing; do not infer client eligibility from a vendor claim.",
+          "found_when": "A current, confirmed official record contradicts the exact solution or vendor claim.",
+          "not_found_when": "The official listing confirms the same solution and vendor and the claim correctly describes eligibility.",
+          "couldnt_check_when": "No accessible listing, approval period unclear, reseller relationship uncertain, or absence alone.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 3,
+          "sub_segment": "advertising agency",
+          "applies_when": "The agency explicitly claims AAMS agency membership",
+          "question": "Is the claimed AAMS agency membership current and correctly attributed to this legal entity?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "A professional membership badge should accurately describe the organisation.",
+          "source": {
+            "name": "AAMS membership",
+            "url": "https://aams.org.sg/types-of-memberships",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "AAMS membership information is public but no complete, current searchable member register was established.",
+          "how_to_query": "Compare the exact entity and membership type with an authoritative current member list or confirm with AAMS.",
+          "found_when": "A confirmed official membership record explicitly conflicts with the claim.",
+          "not_found_when": "The same legal entity and stated current membership are confirmed.",
+          "couldnt_check_when": "No comprehensive accessible list, ambiguous entity, or no response from AAMS.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 4,
+          "sub_segment": "advertising agency",
+          "applies_when": "A named campaign or agency is reported in an ASAS outcome",
+          "question": "Is there a published ASAS outcome concerning the identified campaign, and is the agency’s role accurately described?",
+          "category": "regulator_action",
+          "problem_type": [
+            "reputation",
+            "misinformation"
+          ],
+          "why_it_matters": "A public advertising ruling may merit a factual response or correction.",
+          "source": {
+            "name": "Advertising Standards Authority of Singapore",
+            "url": "https://asas.org.sg/News",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "ASAS publishes selected outcomes, not an established complete searchable list of agency sanctions.",
+          "how_to_query": "Search ASAS published news for campaign and agency; open the original outcome and verify who is named, their role and date.",
+          "found_when": "A published ASAS outcome explicitly identifies this agency and its role; report exact wording and distinguish the advertiser from the agency.",
+          "not_found_when": "Relevant searchable published items contain no confirmed matching published outcome, without claiming no complaints exist.",
+          "couldnt_check_when": "Agency attribution unclear, relevant item unavailable, or no reliable search coverage.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "import-export-company": {
+      "tracker_run": "SG-import-export-company",
+      "round": 2,
+      "schema": 2,
+      "prompts": [
+        {
+          "rank": 1,
+          "sub_segment": "importers exporters and logistics",
+          "applies_when": "The company claims STP or STP-Plus certification",
+          "question": "Does the stated STP certification tier match Singapore Customs’ published certified-company list?",
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "The two voluntary certification tiers have different requirements.",
+          "source": {
+            "name": "Singapore Customs Secure Trade Partnership",
+            "url": "https://www.customs.gov.sg/permits-and-licences/import-export-facilitation-schemes/secure-trade-partnership-stp-stp-plus/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "The official lists are linked PDFs and freshness and entity identity must be checked; PDF extraction capability is not established.",
+          "how_to_query": "Open the current STP or STP-Plus company PDF linked on the official page; compare exact legal entity, tier and list date.",
+          "found_when": "A current authoritative record for the same entity explicitly contradicts the claimed tier or status.",
+          "not_found_when": "The named company is listed under the claimed tier at the relevant date.",
+          "couldnt_check_when": "The list is dated, unavailable, entity ambiguous or absence cannot establish expiry.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 2,
+          "sub_segment": "food importer exporter",
+          "applies_when": "The business claims an SFA food import or export licence for specified goods",
+          "question": "Does the claimed SFA licence cover the stated legal entity and food category?",
+          "category": "licence",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Food categories and import, export and transhipment activities have different requirements.",
+          "source": {
+            "name": "SFA food import and export licensing",
+            "url": "https://www.sfa.gov.sg/food-import-export/licence-permit-registration/businesses-that-need-licence-permit-registration-for-import-export",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "The guidance describes requirements; a public searchable licence record for the company was not established.",
+          "how_to_query": "Determine the exact commodity and import, export or transhipment activity against the SFA table, then verify entity-specific licence or registration with official evidence.",
+          "found_when": "A verified licence explicitly conflicts with the claimed legal entity, scope or validity.",
+          "not_found_when": "The verified licence or registration covers the entity, activity and category.",
+          "couldnt_check_when": "No public lookup, no reliable evidence of goods or activity, licence cannot be verified, or identity uncertain.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 3,
+          "sub_segment": "traders",
+          "applies_when": "The company or a named officer is identified in a Singapore Customs media release",
+          "question": "What does the published Customs release actually say about this trader or officer?",
+          "category": "regulator_action",
+          "problem_type": [
+            "legal",
+            "reputation"
+          ],
+          "why_it_matters": "A specific trade-enforcement report can matter to the business.",
+          "source": {
+            "name": "Singapore Customs news and media",
+            "url": "https://www.customs.gov.sg/news/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Search and pagination are interactive and releases may be PDFs; no exhaustive static company-index was established.",
+          "how_to_query": "Search releases for exact legal name or person, open the original and confirm identifying details, date, legal outcome and association.",
+          "found_when": "A confirmed public release states an adverse trade enforcement action concerning that exact subject.",
+          "not_found_when": "The specified accessible releases searched have no confirmed match; this does not prove no offences.",
+          "couldnt_check_when": "Results unavailable, PDF unreadable, identity or company connection ambiguous.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 4,
+          "sub_segment": "exporters claiming GST scheme",
+          "applies_when": "The company claims approval under the IRAS Major Exporter Scheme",
+          "question": "Is the claimed MES approval and period supported by official evidence for the same entity?",
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Approval is specific to the taxpayer and time period.",
+          "source": {
+            "name": "IRAS Major Exporter Scheme",
+            "url": "https://www.iras.gov.sg/taxes/goods-services-tax-%28gst%29/general-gst-schemes/major-exporter-scheme-%28mes%29",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "IRAS public guidance is not an approval register; entity-specific status is not publicly verified.",
+          "how_to_query": "Verify legal entity and current approval period in a genuine official approval document or IRAS channel; do not infer status from general eligibility.",
+          "found_when": "The verified approval explicitly conflicts with the entity, scheme or period claimed.",
+          "not_found_when": "The valid official evidence matches the current claim.",
+          "couldnt_check_when": "No public record or approval document, access restricted or ambiguous entity.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "interior-designer": {
+      "tracker_run": "SG-interior-designer",
+      "round": 2,
+      "schema": 2,
+      "prompts": [
+        {
+          "rank": 1,
+          "sub_segment": "HDB renovation contractors",
+          "applies_when": "The business claims to be listed in HDB DRC or says it directly carries out HDB flat renovation",
+          "question": "Does the contractor’s identity and HDB directory listing match its HDB renovation claim?",
+          "category": "register",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "HDB says contractors must be listed before carrying out renovations in HDB flats.",
+          "source": {
+            "name": "HDB directory of renovation contractors",
+            "url": "https://www.hdb.gov.sg/business-partners/renovation-contractors/directory-of-renovation-contractors-drc",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "The HDB directory requires an interactive search and session; it is not a static company list.",
+          "how_to_query": "Use the HDB e-service to search the exact legal name and directory reference; distinguish designer from the actual contractor and check current status.",
+          "found_when": "A confirmed official record contradicts the entity or current DRC listing explicitly claimed.",
+          "not_found_when": "The same contractor is currently listed under the claimed details.",
+          "couldnt_check_when": "Search cannot be completed, entity ambiguous, subcontracting role uncertain, or absence alone is not independently confirmed.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "preview",
+          "confidence": "medium"
+        },
+        {
+          "rank": 2,
+          "sub_segment": "renovation contractors",
+          "applies_when": "The business claims CaseTrust renovation accreditation",
+          "question": "Does the stated CaseTrust renovation accreditation match the accredited legal entity and current period?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Accreditation is voluntary and a badge must accurately describe current status.",
+          "source": {
+            "name": "CaseTrust renovation accreditation",
+            "url": "https://case.org.sg/casetrust",
+            "type": "official",
+            "access": "captcha",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "CaseTrust site returned security verification; no bypass or automated lookup.",
+          "how_to_query": "Check the current official accreditation list for the exact legal entity and scheme, or obtain confirmation from CASE.",
+          "found_when": "Confirmed official accreditation details contradict the specific claim.",
+          "not_found_when": "Official current records confirm the same entity and scheme.",
+          "couldnt_check_when": "Site security verification blocks access, identity is ambiguous, list is incomplete or status cannot be confirmed.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 3,
+          "sub_segment": "commercial fit-out contractors",
+          "applies_when": "The business claims BCA CRS registration or a CR06 workhead and grade",
+          "question": "Does BCA’s directory show the claimed workhead, grade and validity for the same company?",
+          "category": "register",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Registration is relevant to the work and procurement claims made by the firm.",
+          "source": {
+            "name": "BCA directory",
+            "url": "https://www.bca.gov.sg/eBACS/bca_directory",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Directory uses an interactive company search; registration is not a universal licence for all design work.",
+          "how_to_query": "Search the company or UEN in BCA e-directory; compare the exact CRS workhead, grade and expiry against the claim.",
+          "found_when": "An identified current record explicitly contradicts the advertised workhead, grade or expiry.",
+          "not_found_when": "The record matches the entity and the precise current claim.",
+          "couldnt_check_when": "Search fails, firm identity uncertain, or no listing alone does not establish a legal breach.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 4,
+          "sub_segment": "interior design",
+          "applies_when": "The firm claims an IDCS 2025 I-DEA award",
+          "question": "Does the claimed IDCS I-DEA project, category and award tier match the organiser gallery?",
+          "category": "awards",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "why_it_matters": "Correct award attribution protects the accuracy of a portfolio.",
+          "source": {
+            "name": "IDCS 2025 I-DEA winners gallery",
+            "url": "https://idcs.sg/dea2025/gallery/idea/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "static_list",
+          "query_url": "https://idcs.sg/dea2025/gallery/idea/",
+          "manual_reason": "",
+          "how_to_query": "Compare exact project, category, award tier and credited firm with the 2025 gallery and linked project.",
+          "found_when": "An official record for the same project contradicts an explicit claim with identity and roles confirmed.",
+          "not_found_when": "The gallery confirms the specific award, year and credited firm.",
+          "couldnt_check_when": "Different year or programme, gallery unavailable, attribution uncertain or project absent.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 5,
+          "sub_segment": "interior design",
+          "applies_when": "A named professional or firm claims IDCS membership",
+          "question": "Does the claimed IDCS membership match the relevant individual or firm listed?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Individual and firm memberships must not be conflated.",
+          "source": {
+            "name": "Interior Design Confederation Singapore members listing",
+            "url": "https://idcs.sg/members/listing",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "Membership listing is opt-in and may require interactive search; absence is not a negative result.",
+          "how_to_query": "Search the public listing, compare named person or firm and membership type; verify current status with IDCS if unclear.",
+          "found_when": "A confirmed record explicitly conflicts with the stated membership.",
+          "not_found_when": "The appropriate named member and stated current status are confirmed.",
+          "couldnt_check_when": "Members may opt out of public listing; an absent name is not proof, and a record may be ambiguous or unavailable.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    },
+    "web-design-company": {
+      "tracker_run": "SG-web-design-company",
+      "round": 2,
+      "schema": 2,
+      "prompts": [
+        {
+          "rank": 1,
+          "sub_segment": "web design agencies",
+          "applies_when": "The business claims a Singapore Website Awards award",
+          "question": "Does the claimed Singapore Website Awards project, year, category and award match the organiser’s published record?",
+          "category": "awards",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "why_it_matters": "Accurate award attribution matters to prospective clients.",
+          "source": {
+            "name": "Singapore Website Awards winners",
+            "url": "https://www.swa.sg/winners/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "static_list",
+          "query_url": "https://www.swa.sg/winners/",
+          "manual_reason": "",
+          "how_to_query": "Compare the exact project, year, award category and credited agency using the winners page and official past-year winners archive; do not infer falsity from absence.",
+          "found_when": "The same project record explicitly contradicts the firm’s specific claim, with agency role confirmed.",
+          "not_found_when": "The relevant organiser record confirms the specific claim and attribution.",
+          "couldnt_check_when": "Year outside available archive, no match, identity uncertain or incomplete coverage.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 2,
+          "sub_segment": "domain service providers",
+          "applies_when": "The agency claims to be an SGNIC accredited registrar",
+          "question": "Is the specific legal entity listed by SGNIC as an accredited registrar for the claimed domain extension?",
+          "category": "professional_membership",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Offering domain services does not itself make an agency an accredited registrar.",
+          "source": {
+            "name": "SGNIC accredited registrars",
+            "url": "https://prod.sgnic.sg/domain-registration/list-of-registrars",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "static_list",
+          "query_url": "https://prod.sgnic.sg/domain-registration/list-of-registrars",
+          "manual_reason": "",
+          "how_to_query": "Compare exact legal name and the applicable extension against the SGNIC registrar list. Do not equate a reseller with an accredited registrar.",
+          "found_when": "An explicit direct accreditation claim conflicts with the verified current list and exact legal entity.",
+          "not_found_when": "The same entity is listed for the claimed extension.",
+          "couldnt_check_when": "List unavailable, identity uncertain, or the claim only concerns reseller or partner status.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 3,
+          "sub_segment": "e-commerce or web solution vendors",
+          "applies_when": "The agency claims a named IMDA pre-approved web or e-commerce solution or PSG eligibility",
+          "question": "Does the exact vendor and solution match the applicable official pre-approved solution record?",
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "misinformation"
+          ],
+          "why_it_matters": "Grant claims need solution-specific support and customer eligibility is conditional.",
+          "source": {
+            "name": "IMDA pre-approval of vendor solutions",
+            "url": "https://www.imda.gov.sg/how-we-can-help/smes-go-digital/pre-approval-of-icm-vendors-solutions",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "A current solution lookup may require an interactive or authenticated portal.",
+          "how_to_query": "Identify exact solution, vendor, approval period and any reseller relationship; compare against current official solution listing and terms.",
+          "found_when": "A confirmed current official record contradicts the specific solution or grant claim.",
+          "not_found_when": "The official record matches the solution and vendor and the statement preserves customer eligibility conditions.",
+          "couldnt_check_when": "Record cannot be accessed, current dates unknown or reseller status not verifiable.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        },
+        {
+          "rank": 4,
+          "sub_segment": "web agencies claiming cybersecurity marks",
+          "applies_when": "The firm claims the CSA Cyber Essentials or Cyber Trust mark",
+          "question": "Does the certification claim match the exact certified organisation, mark and validity?",
+          "category": "claims_check",
+          "problem_type": [
+            "contradiction",
+            "missing_credential"
+          ],
+          "why_it_matters": "Organisational cybersecurity certification does not certify every website produced.",
+          "source": {
+            "name": "CSA cybersecurity certification",
+            "url": "https://www.csa.gov.sg/our-programmes/support-for-enterprises/sg-cyber-safe-programme/cybersecurity-certification-for-organisations/how-to-get-certified/",
+            "type": "official",
+            "access": "open",
+            "language": "English"
+          },
+          "query_type": "manual",
+          "query_url": "",
+          "manual_reason": "CSA lists appointed certification bodies, not an established complete public holder directory; verify with issuer.",
+          "how_to_query": "Locate the official current mark holder list or verify the certificate with its issuer; compare entity, mark and dates.",
+          "found_when": "Verified certification details conflict with an explicit claim.",
+          "not_found_when": "The official evidence matches entity, mark and validity.",
+          "couldnt_check_when": "No public current list, certificate unavailable, unclear scope or identity.",
+          "not_applicable_when": "The relevant service or claim is not present.",
+          "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+          "used_in": "paid",
+          "confidence": "medium"
+        }
+      ]
+    }
+  }
+}

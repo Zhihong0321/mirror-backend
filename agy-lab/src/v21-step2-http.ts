@@ -1,0 +1,115 @@
+// V2.1 Step 2 on the hub: judge one report's Step 1 research. Reads the checkpoint from the database by report UID and
+// writes every result back the moment it exists (src/v21-store.ts), so a crash keeps what was already paid for.
+//
+//   POST /api/v21/step2             { report_id, recheck? (default true) } -> 202 { report_id, run_id }
+//   GET  /api/v21/step2/{report_id} ?run_id=  -> { report_id, step2_status, step2_error, run_id, result? }
+//
+// One run = tidy (no judging) -> judge (DeepSeek lanes, then the code check) -> recheck (second call, same code check).
+// Rows written per run, all with the run_id: 'tidy' (the exact input the judge got), 'judge' and 'recheck' (each with
+// its raw model answer and every lane attempt), 'result' (the final Step 2 output). No file is written.
+// The LLM wait policy applies: a slow call is never killed and restarted (judge.ts askLanes).
+import type http from 'node:http';
+import crypto from 'node:crypto';
+import { tidyCheckpoint } from './v21/tidy.ts';
+import { judgeTidy } from './v21/judge.ts';
+import { recheckTidy } from './v21/recheck.ts';
+import type { Step2AnalysisOutput } from './v21/analyse.ts';
+import * as store from './v21-store.ts';
+
+type Ctx = {
+  json: (res: http.ServerResponse, status: number, body: unknown) => void;
+  readJson: (req: http.IncomingMessage) => Promise<Record<string, unknown>>;
+};
+
+const PATH = '/api/v21/step2';
+/** A report whose Step 2 says "running" for longer than this is taken as abandoned (a restart killed it). */
+const STALE_MS = 60 * 60_000;
+
+function failedOutput(report: any, error: string): Step2AnalysisOutput {
+  return {
+    version: '2.1', stage: 2, created_at: new Date().toISOString(),
+    input: { company: report.company, country: report.country, industry: report.industry, ...(report.website ? { website: report.website } : {}) },
+    status: 'failed', error,
+    baseline: { official_domain: '', pages_present: [], brand_names: [], legal_names: [], phones: [], addresses: [] },
+    findings: [], dropped_namesakes: [], could_not_check: [],
+    stats: { findings_count: 0, dropped_namesakes_count: 0, could_not_check_count: 0, llm_calls: 0, duration_ms: 0 },
+  } as Step2AnalysisOutput;
+}
+
+/** The whole run. Never throws: a failure is stored as a 'result' row with status failed. */
+async function runStep2(report: any, checkpoint: any, runId: string, recheck: boolean): Promise<void> {
+  const id: string = report.report_id;
+  try {
+    if (checkpoint?.skipped) {
+      const out = { ...failedOutput(report, ''), status: 'skipped' as const, error: null, skip_reason: String(checkpoint.skipped) };
+      await store.addRaw(id, 2, 'result', runId, out, 'skipped');
+      await store.setStatus(id, 2, 'skipped');
+      return;
+    }
+    const tidy = tidyCheckpoint(checkpoint);
+    await store.addRaw(id, 2, 'tidy', runId, tidy);
+
+    let result = await judgeTidy(tidy);
+    await store.addRaw(id, 2, 'judge', runId, result, result.status);
+
+    if (recheck) {
+      const { result: rc, findings } = await recheckTidy(tidy, result);
+      await store.addRaw(id, 2, 'recheck', runId, { result: rc, findings }, rc.status);
+      result = {
+        ...result,
+        findings,
+        stats: { ...result.stats, findings_count: findings.length, llm_calls: result.stats.llm_calls + rc.meta.attempts.length },
+        recheck: rc,
+      };
+    }
+    await store.addRaw(id, 2, 'result', runId, result, result.status);
+    await store.setStatus(id, 2, result.status === 'failed' ? 'failed' : 'done', result.status === 'failed' ? result.error ?? 'judge failed' : null);
+  } catch (err: any) {
+    const message = err?.message ?? String(err);
+    try {
+      await store.addRaw(id, 2, 'result', runId, failedOutput(report, message), 'failed');
+      await store.setStatus(id, 2, 'failed', message);
+    } catch (e: any) {
+      console.error(`[v21 step2] ${id}: could not store the failure: ${e?.message ?? e} (original: ${message})`);
+    }
+  }
+}
+
+export async function handle(req: http.IncomingMessage, res: http.ServerResponse, url: URL, { json, readJson }: Ctx): Promise<boolean> {
+  const p = url.pathname.replace(/\/+$/, '');
+  if (p !== PATH && !p.startsWith(PATH + '/')) return false;
+
+  try {
+    if (req.method === 'POST' && p === PATH) {
+      const b = await readJson(req);
+      const reportId = typeof b.report_id === 'string' ? b.report_id.trim() : '';
+      if (!reportId) return json(res, 400, { error: 'missing: report_id' }), true;
+      const report: any = await store.getReport(reportId);
+      if (!report) return json(res, 404, { error: 'no such report' }), true;
+      const cp = await store.latestRaw(reportId, 'checkpoint');
+      if (!cp) return json(res, 409, { error: `report has no Step 1 checkpoint (step1_status=${report.step1_status})` }), true;
+      if (report.step2_status === 'running' && Date.now() - new Date(report.updated_at).getTime() < STALE_MS) {
+        return json(res, 409, { error: 'Step 2 is already running for this report' }), true;
+      }
+      const runId = crypto.randomUUID();
+      await store.setStatus(reportId, 2, 'running');
+      void runStep2(report, cp.payload, runId, b.recheck !== false);
+      return json(res, 202, { report_id: reportId, run_id: runId, status: 'running' }), true;
+    }
+
+    if (req.method === 'GET' && p.startsWith(PATH + '/')) {
+      const reportId = p.slice(PATH.length + 1);
+      const report: any = await store.getReport(reportId);
+      if (!report) return json(res, 404, { error: 'no such report' }), true;
+      const runId = url.searchParams.get('run_id') || undefined;
+      const result = await store.latestRaw(reportId, 'result', runId);
+      return json(res, 200, {
+        report_id: reportId, step2_status: report.step2_status, step2_error: report.step2_error,
+        run_id: result?.run_id ?? runId ?? null, result: result?.payload ?? null,
+      }), true;
+    }
+  } catch (err: any) {
+    return json(res, 503, { error: `report store: ${err?.message ?? err}` }), true;
+  }
+  return json(res, 405, { error: 'method not allowed' }), true;
+}
