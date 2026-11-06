@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadChecklist, type ResearchPrompt } from './catalog.ts';
-import { braveSearch, tavilySearch, mapsSearch, workerFetch, type BraveHit, type TavilyHit } from './cloud.ts';
+import { braveSearch, tavilySearch, mapsSearch, linkedinCompanyExa, workerFetch, type BraveHit, type TavilyHit } from './cloud.ts';
 import { readWebPage } from './reader.ts';
 import { siteLookupOn, loadHandlers, handlerFor, siteLookup, naverPlaceSearch, type HandlerEntry, type SiteLookupResult, type NaverPlace } from './site-lookup.ts';
 
@@ -416,9 +416,7 @@ export async function runStep1Research(
   const domainLabel = brandCompact ? '' : mainLabel(officialDomain);
   const linkedinUrl = linkedinCompanyUrl(discoveries.map((d) => d.url), brandCompact || domainLabel, brandToken, domainLabel);
   log(linkedinUrl ? `LinkedIn company page: ${linkedinUrl}` : 'LinkedIn company page: none in the search results');
-  // The LinkedIn read on the worker is blocked by Cloudflare (HTTP 403 on every company page, 2026-11-06): the owner
-  // marked it unusable until an alternative is found. The URL found in the searches is still kept.
-  const LINKEDIN_UNUSABLE = 'LinkedIn read on the local worker is blocked by Cloudflare (HTTP 403); marked unusable 2026-11-06, alternative needed';
+  // The worker's LinkedIn read is blocked by Cloudflare (HTTP 403, 2026-11-06); the page is read through Exa instead (end of this function).
 
   // 5. Catalog probes, each the way its prompt says (query_type):
   //    manual: not run, the prompt's reason kept; url_template / static_list: read query_url, keep the page whole;
@@ -517,7 +515,10 @@ export async function runStep1Research(
     checkpoint.naver_place = { query: naverQuery, ...(await naver) };
     log(`Naver Place search: ${checkpoint.naver_place.status}, ${checkpoint.naver_place.places.length} listings`);
   }
-  checkpoint.linkedin = { url: linkedinUrl, status: 'not_run', error: linkedinUrl ? LINKEDIN_UNUSABLE : 'no LinkedIn company page in the search results' };
+  // Read through Exa (its own crawl) in place of the blocked worker read; the worker read stays off.
+  checkpoint.linkedin = linkedinUrl
+    ? { url: linkedinUrl, ...(await linkedinCompanyExa(linkedinUrl)) }
+    : { url: linkedinUrl, status: 'not_run', error: 'no LinkedIn company page in the search results' };
   log(`LinkedIn company page: ${checkpoint.linkedin.status}`);
 
   return saveCheckpoint(checkpoint, company, log);

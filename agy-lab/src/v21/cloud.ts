@@ -115,6 +115,22 @@ export async function braveSearch(query: string, options: { count?: number; coun
   throw lastErr ?? new Error(`All Brave keys failed for query: "${query}"`);
 }
 
+// ---------------------------------------------------------------- Exa / Tavily US proxy
+/** Where one Exa or Tavily call can go, in order: each direct hub key, then the US proxy (it holds its own 20 Exa and
+ *  20 Tavily keys, rests a spent one and retries on the next) when EXA_PROXY_URL and EXA_PROXY_TOKEN are in .env. */
+type Target = { url: string; headers: Record<string, string> };
+function apiTargets(api: 'exa' | 'tavily', path: string, directKeys: string[]): Target[] {
+  const out: Target[] = directKeys.map((key) => api === 'exa'
+    ? { url: `https://api.exa.ai/${path}`, headers: { 'Content-Type': 'application/json', 'x-api-key': key } }
+    : { url: `https://api.tavily.com/${path}`, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` } });
+  const proxyUrl = envValue('EXA_PROXY_URL').replace(/\/+$/, '');
+  const proxyToken = envValue('EXA_PROXY_TOKEN');
+  if (proxyUrl && proxyToken) {
+    out.push({ url: `${proxyUrl}/${api === 'tavily' ? 'tavily/' : ''}${path}`, headers: { 'Content-Type': 'application/json', 'x-proxy-token': proxyToken } });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- Tavily Search
 export type TavilyHit = { url: string; title: string; content: string; raw_content?: string };
 
@@ -125,14 +141,11 @@ export async function tavilySearch(
   const keys = await getCloudKeys();
   let lastErr: Error | null = null;
 
-  for (const key of keys.tavilyKeys) {
+  for (const target of apiTargets('tavily', 'search', keys.tavilyKeys)) {
     try {
-      const res = await fetch('https://api.tavily.com/search', {
+      const res = await fetch(target.url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${key}`,
-        },
+        headers: target.headers,
         body: JSON.stringify({
           query,
           max_results: options.max_results ?? 8,
@@ -166,14 +179,11 @@ export async function exaSearch(query: string, options: { num_results?: number }
   const keys = await getCloudKeys();
   let lastErr: Error | null = null;
 
-  for (const key of keys.exaKeys) {
+  for (const target of apiTargets('exa', 'search', keys.exaKeys)) {
     try {
-      const res = await fetch('https://api.exa.ai/search', {
+      const res = await fetch(target.url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': key,
-        },
+        headers: target.headers,
         body: JSON.stringify({
           query,
           num_results: options.num_results ?? 6,
@@ -293,6 +303,57 @@ export async function workerFetch(url: string, format: 'markdown' | 'html' = 'ma
   const job = data.job;
   if (!res.ok || job?.status !== 'done') throw new Error(job?.error ?? data.error ?? `HTTP ${res.status}`);
   return { content: String(job.result?.content ?? '').trim(), truncated: Boolean(job.result?.truncated) };
+}
+
+// ---------------------------------------------------------------- LinkedIn company page through Exa
+/** One LinkedIn company page read through Exa's /contents (its own crawl, so no Cloudflare): name, headquarters,
+ *  founded, industry, size, about, and website / phone / type when Exa's "Company Details" block has them (empty
+ *  otherwise). Same shape as linkedinCompany's answer (result.data). Status 'not_run' when Exa has no copy of the page. */
+export async function linkedinCompanyExa(url: string): Promise<{ status: string; worker?: string; result?: unknown; error?: string }> {
+  let lastErr = '';
+  try {
+    const keys = await getCloudKeys();
+    for (const target of apiTargets('exa', 'contents', keys.exaKeys)) {
+      const res = await fetch(target.url, {
+        method: 'POST',
+        headers: target.headers,
+        body: JSON.stringify({ urls: [url], text: { maxCharacters: 6000 } }),
+        signal: AbortSignal.timeout(60_000),
+      });
+      if (res.status === 429 || res.status === 402) { lastErr = `Exa ${res.status}`; continue; }
+      if (!res.ok) { lastErr = `Exa ${res.status}: ${(await res.text()).slice(0, 150)}`; continue; }
+      const data: any = await res.json();
+      const hit = data.results?.[0];
+      if (!hit) {
+        const st = data.statuses?.[0];
+        return { status: 'not_run', worker: 'exa', error: `Exa has no copy of this LinkedIn page${st?.error?.tag ? ` (${st.error.tag})` : ''}` };
+      }
+      const text = String(hit.text ?? '');
+      const props = hit.entities?.[0]?.properties ?? {};
+      const hq = props.headquarters;
+      const afterAbout = text.split(/^## About\s*$/m)[1] ?? '';
+      const about = afterAbout.split(/^## /m)[0]!.trim();
+      // The "## Company Details" block lists "- Key: value" lines (Industry, Type, Homepage, Phone ...) when Exa has them.
+      const detail = (key: string) => text.match(new RegExp(`^- ${key}: (.+)$`, 'm'))?.[1]?.trim() ?? '';
+      const industry = detail('Industry') || (text.match(/ is an? ([^.]+?) company\./)?.[1] ?? '');
+      const data2: Record<string, string> = {
+        linkedin_url: String(hit.url ?? url),
+        name: String(props.name ?? hit.title ?? ''),
+        website: detail('Homepage'),
+        phone: detail('Phone').split(',')[0]!.trim(),
+        company_type: detail('Type'),
+        headquarters: hq ? [hq.city, hq.country].filter(Boolean).join(', ') : detail('Headquarters'),
+        founded: props.foundedYear ? String(props.foundedYear) : '',
+        industry,
+        company_size: props.workforce?.total ? `${props.workforce.total} employees` : '',
+        about_us: about || String(props.description ?? ''),
+      };
+      return { status: 'done', worker: 'exa', result: { data: data2 } };
+    }
+    return { status: 'failed', worker: 'exa', error: lastErr || 'no Exa key' };
+  } catch (err: any) {
+    return { status: 'failed', worker: 'exa', error: err.message };
+  }
 }
 
 // ---------------------------------------------------------------- LinkedIn company page on a worker PC
