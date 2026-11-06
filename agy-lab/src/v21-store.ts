@@ -7,7 +7,8 @@
 //
 // Kinds: step 1 'checkpoint' (the whole RawResearchCheckpoint: searches, page text, probes, Maps, LinkedIn) and 'log';
 //        step 1.5 'assets' (PageSpeed + domain ownership and security audit);
-//        step 2 'tidy' (the exact input the judge got), 'judge', 'recheck' (each with its raw model answer) and 'result'.
+//        step 2 'tidy' (the exact input the judge got), 'judge', 'recheck' (each with its raw model answer) and 'result';
+//        step 3 'report' (the free report's written parts) and 'email' (the drafted email; nothing is sent).
 // A Step 2 run groups its rows by run_id; Step 1 rows use the report UID as run_id.
 //
 //   GET /api/v21/report/{id}                  the report row + its raw rows (kind, run_id, created_at, size; no payload)
@@ -27,7 +28,7 @@ type Ctx = {
 
 export type ReportInput = { company: string; country: string; industry: string; website?: string };
 export type StepStatus = 'none' | 'running' | 'done' | 'failed' | 'skipped';
-export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets';
+export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets' | 'report' | 'email';
 
 const PATH = '/api/v21/report';
 
@@ -68,6 +69,14 @@ export function ensureTables(): Promise<void> {
       payload jsonb not null
     )`))
     .then(() => db.sql(`create index if not exists v21_raw_report on v21_raw (report_id, id)`))
+    .then(() => db.sql(`alter table v21_report add column if not exists step3_status text not null default 'none'`))
+    .then(() => db.sql(`alter table v21_report add column if not exists step3_error text`))
+    // Step 3 rows: the first version of v21_raw allowed steps 1 and 2 only.
+    .then(() => db.sql(`do $$ begin
+      if not exists (select 1 from pg_constraint where conname = 'v21_raw_step_1_3') then
+        alter table v21_raw drop constraint if exists v21_raw_step_check;
+        alter table v21_raw add constraint v21_raw_step_1_3 check (step in (1, 2, 3));
+      end if; end $$`))
     .then(() => backfillCompanies())
     .catch((err) => {
       ready = null; // try again on the next call
@@ -134,14 +143,14 @@ export async function getReport(id: string): Promise<Record<string, unknown> | n
 }
 
 /** Set one step's status (control state; the raw rows are what never change). */
-export async function setStatus(id: string, step: 1 | '1_5' | 1.5 | 2, status: StepStatus, error: string | null = null): Promise<void> {
+export async function setStatus(id: string, step: 1 | '1_5' | 1.5 | 2 | 3, status: StepStatus, error: string | null = null): Promise<void> {
   await ensureTables();
   const col = step === '1_5' || step === 1.5 ? 'step1_5' : `step${step}`;
   await db.sql(`update v21_report set ${col}_status = $2, ${col}_error = $3, updated_at = now() where report_id = $1`, [id, status, text(error)]);
 }
 
 /** Write one result the moment it exists. Returns the row id. Throws when the database does not take it. */
-export async function addRaw(id: string, step: 1 | '1_5' | 1.5 | 2, kind: RawKind, runId: string, payload: unknown, status = 'ok'): Promise<number> {
+export async function addRaw(id: string, step: 1 | '1_5' | 1.5 | 2 | 3, kind: RawKind, runId: string, payload: unknown, status = 'ok'): Promise<number> {
   await ensureTables();
   const stepNum = step === '1_5' || step === 1.5 ? 1 : step;
   const out = await db.sql<{ id: string }>(
@@ -151,13 +160,23 @@ export async function addRaw(id: string, step: 1 | '1_5' | 1.5 | 2, kind: RawKin
   return Number(out.rows[0]!.id);
 }
 
-/** The newest row of a kind for a report (optionally of one run), payload included. */
-export async function latestRaw(id: string, kind: RawKind, runId?: string): Promise<{ id: number; run_id: string; status: string; created_at: string; payload: any } | null> {
+/** The newest row of a kind for a report (optionally of one run, or with one status), payload included. */
+export async function latestRaw(id: string, kind: RawKind, runId?: string, status?: string): Promise<{ id: number; run_id: string; status: string; created_at: string; payload: any } | null> {
   await ensureTables();
+  const args: unknown[] = [id, kind];
+  const where = [runId && `run_id = $${args.push(runId)}`, status && `status = $${args.push(status)}`].filter(Boolean).map((w) => ` and ${w}`).join('');
   const out = await db.sql(
-    `select id, run_id, status, created_at, payload from v21_raw where report_id = $1 and kind = $2 ${runId ? 'and run_id = $3' : ''} order by id desc limit 1`,
-    runId ? [id, kind, runId] : [id, kind],
+    `select id, run_id, status, created_at, payload from v21_raw where report_id = $1 and kind = $2${where} order by id desc limit 1`,
+    args,
   );
+  const r: any = out.rows[0];
+  return r ? { ...r, id: Number(r.id) } : null;
+}
+
+/** One row of a report by its row id, payload included. */
+export async function rawById(id: string, rowId: number): Promise<{ id: number; run_id: string; kind: string; status: string; payload: any } | null> {
+  await ensureTables();
+  const out = await db.sql(`select id, run_id, kind, status, payload from v21_raw where report_id = $1 and id = $2`, [id, rowId]);
   const r: any = out.rows[0];
   return r ? { ...r, id: Number(r.id) } : null;
 }

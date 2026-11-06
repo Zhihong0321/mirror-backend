@@ -2,6 +2,17 @@
 
 Status: open unless ticked. Evidence is what was seen on the live hub on 2026-11-02.
 
+## V2.1 Step 3 design (owner, 2026-11-06)
+
+| Question | Decision |
+|---|---|
+| Format | HTML page served by the hub: `GET /v21/r/{report_id}` (public, noindex), built by code from the stored Step 3 row and its Step 2 result. |
+| Free vs paid | Everything in full: all strengths, problems, contradictions, suggestions and things to look into. The paid report sells the deeper dive. |
+| 7 deeper-dive areas | v1's six (contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality) plus social media. CTA "Get my full report", no price. |
+| Email | Short (under ~120 words of body), signed "The Eternalgy team", report link as a plain URL. Drafted only, never sent. |
+
+Built as `agy-lab/src/v21/step3.ts` + `agy-lab/src/v21-step3-http.ts`. The LLM writes only the report's opening and the email; every sentence cites Step 2 ids and is code-checked (ids exist, numbers are in the cited items, no talk of the full report). The 7-area paragraph, greeting, link and sign-off are fixed text.
+
 ## Final plan (owner, 2026-11-02): read this first
 
 **Order of work: design first, then fixes.**

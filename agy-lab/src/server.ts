@@ -34,6 +34,7 @@ import * as v21Step1 from './v21-step1-http.ts';
 import * as v21Step1_5 from './v21-step1-5-http.ts';
 import * as v21Step2 from './v21-step2-http.ts';
 import * as v21Store from './v21-store.ts';
+import * as v21Step3 from './v21-step3-http.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
 import { page as companyDivePage } from './companydive-page.ts';
@@ -313,6 +314,8 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   if (await intel.handlePublic(req, res, url)) return;
   if (await companyDive.handlePublic(req, res, url)) return;
   if (await diveDeeper.handlePublic(req, res, url)) return;
+  // V2.1 Step 3's free report page: the report UID is the share link (v21-step3-http.ts).
+  if (await v21Step3.handlePublic(req, res, url)) return;
 
   // /v1/* is the gateway - the OpenAI-shaped surface other tools point at. It sits
   // behind the same token because a bearer header is exactly what an OpenAI client
@@ -440,6 +443,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
 
   // ---- V2.1 Step 2 on the hub, and the stored raw data of both steps (read by report UID) ----
   if (await v21Step2.handle(req, res, url, { json, readJson })) return;
+  if (await v21Step3.handle(req, res, url, { json, readJson })) return;
   if (await v21Store.handle(req, res, url, { json })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
