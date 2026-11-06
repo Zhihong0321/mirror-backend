@@ -1,6 +1,6 @@
 // Scraper.Tech's Google Maps API over its MCP endpoint (plain JSON-RPC POST), the one client for it. Used for Google
 // Maps REVIEWS: the local Gmap worker reads the Maps list and at most ~10 reviews of a profile, so full review reading
-// (many pages of 5) goes here. Key: secrets.ts kind `scrapertech` (SCRAPER_TECH_KEY on Railway, then the local vault).
+// (many pages of 5) goes here. Key: secrets.ts kind `scraper_tech` (SCRAPER_TECH_KEY on Railway, then the local vault).
 // Endpoint = https://mcp.scraper.tech/<key>. A page of reviews is 5 reviews and one request on the plan (the plan's
 // counter on scraper.tech is the proof of cost; the `limit` argument is ignored by the API). Logged like every core call.
 import { startCall, type ApiCall } from '../cost.ts';
@@ -68,7 +68,7 @@ export async function reviews(
   opts: { max?: number; country?: string; sort?: string; log?: ApiCall[]; timeoutMs?: number } = {},
 ): Promise<MapsReviews> {
   await secrets.load();
-  const key = secrets.get('scrapertech');
+  const key = secrets.get('scraper_tech');
   if (!key) throw new Error('No Scraper.Tech key: set SCRAPER_TECH_KEY');
   const businessId = place.businessId || (place.placeId ? featureIdFromPlaceId(place.placeId) : null);
   if (!businessId) throw new Error('No usable Maps ID (need a place ID ChIJ... or a feature ID 0x..:0x..)');
