@@ -13,7 +13,7 @@ import type { ChatMessage } from './cloud.ts';
 import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import type { Step2V2Output } from './step2-v2.ts';
 
-export const STEP3_PROMPT = 'step3-v1';
+export const STEP3_PROMPT = 'step3-v2';
 
 export type Line = { text: string; cites: string[] };
 export type Rejected = { part: string; item: unknown; reasons: string[] };
@@ -133,7 +133,7 @@ export function step3SystemPrompt(s2: Step2V2Output, ko: boolean): string {
 
 WHY: the owner of this company will read a free report that shows what the public internet says about their company: every strength, problem, contradiction, suggestion and thing to look into below is printed on it in full, with its sources. You write two short things around it, so the owner sees why it matters to them and wants the paid full report:
 1. "summary": 2 or 3 sentences that open the report, each under 35 words.
-2. "email": the email that brings them the report link: a "subject" and a "body" of 2 or 3 short paragraphs, under 120 words in all, saying why this report matters to THIS company, using its 2 or 3 strongest facts (for example: the domain behind the contact email expires on a stated date). Pick; do not list everything: the report has the rest.
+2. "email": the email that brings them the report link: a "subject" and a "body" of 2 or 3 short paragraphs, under 120 words in all, saying why this report matters to THIS company, using its 2 or 3 strongest facts. Pick; do not list everything: the report has the rest.
 Code adds the greeting, a fixed paragraph about the full report, the link and the sign-off. Do not write any of those.
 
 YOU WRITE; YOU NEVER JUDGE. The items below were judged by Step 2 and are the only facts you have.
