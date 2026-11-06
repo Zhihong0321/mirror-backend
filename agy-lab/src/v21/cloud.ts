@@ -317,35 +317,3 @@ export async function linkedinCompany(url: string): Promise<{ status: string; wo
     return { status: 'failed', error: err.message };
   }
 }
-
-// ---------------------------------------------------------------- Naver Place (South Korea)
-// Naver's mobile search page carries its Naver Place listings as data in the page: no key needed. Every listing is
-// kept as Naver returns it; which one is the company is Step 2's call. NAVER_SEARCH_URL can point elsewhere (a test).
-const NAVER_URL = process.env.NAVER_SEARCH_URL ?? 'https://m.search.naver.com/search.naver';
-const NAVER_FIELDS = ['category', 'address', 'roadAddress', 'phone', 'virtualPhone', 'visitorReviewCount', 'blogCafeReviewCount'] as const;
-
-export type NaverPlace = { id: string; name: string } & Partial<Record<(typeof NAVER_FIELDS)[number], string>>;
-
-export async function naverPlaceSearch(query: string): Promise<{ status: 'done' | 'empty' | 'failed'; places: NaverPlace[]; error?: string }> {
-  try {
-    // Read on a worker PC (owner, 2026-11-06: every page read goes through the local worker).
-    const { content: html } = await workerFetch(`${NAVER_URL}?query=${encodeURIComponent(query)}`, 'html');
-    // Each listing starts with "id":"<digits>","name":"..."; its fields run until the next listing starts.
-    const starts = [...html.matchAll(/"id":"(\d{6,})","name":("(?:[^"\\]|\\.)*")/g)];
-    const places = new Map<string, NaverPlace>();
-    starts.forEach((m, i) => {
-      if (places.has(m[1])) return;
-      const seg = html.slice(m.index!, starts[i + 1]?.index ?? m.index! + 3000);
-      const place: NaverPlace = { id: m[1], name: String(JSON.parse(m[2])).replace(/<\/?mark>/g, '') };
-      for (const k of NAVER_FIELDS) {
-        const v = seg.match(new RegExp(`"${k}":("(?:[^"\\\\]|\\\\.)*")`))?.[1];
-        const s = v ? String(JSON.parse(v)) : '';
-        if (s) place[k] = s;
-      }
-      places.set(m[1], place);
-    });
-    return { status: places.size ? 'done' : 'empty', places: [...places.values()] };
-  } catch (err: any) {
-    return { status: 'failed', places: [], error: err.message };
-  }
-}

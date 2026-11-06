@@ -95,3 +95,18 @@ export async function siteLookup(handler: string, keyword: string): Promise<Site
     return { handler, job_status: 'failed', error: err.message };
   }
 }
+
+// ---------------------------------------------------------------- Naver Place (South Korea)
+// Naver Place listings come from the KR-naver.com/w1 handler on a worker PC: the listings sit in the mobile search
+// page's scripts, which a plain web.fetch drops. Every listing is kept as Naver returns it; which one is the
+// company is Step 2's call. This runs whatever V21_SITE_LOOKUP says: there is no other way to read Naver.
+export type NaverPlace = { id: string; name: string } & Partial<Record<
+  'category' | 'address' | 'roadAddress' | 'phone' | 'virtualPhone' | 'visitorReviewCount' | 'blogCafeReviewCount', string>>;
+
+export async function naverPlaceSearch(query: string): Promise<{ status: 'done' | 'empty' | 'failed'; places: NaverPlace[]; error?: string }> {
+  const r = await siteLookup('KR-naver.com/w1', query);
+  if (r.job_status !== 'done') return { status: 'failed', places: [], error: r.error };
+  if (r.status === 'found') return { status: 'done', places: (r.records ?? []) as NaverPlace[] };
+  if (r.status === 'not_found') return { status: 'empty', places: [] };
+  return { status: 'failed', places: [], error: `couldnt_check: ${r.reason || r.excerpt || 'no reason'}` };
+}

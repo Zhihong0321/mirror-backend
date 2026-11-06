@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadChecklist, type ResearchPrompt } from './catalog.ts';
-import { braveSearch, tavilySearch, mapsSearch, linkedinCompany, naverPlaceSearch, workerFetch, type BraveHit, type TavilyHit, type NaverPlace } from './cloud.ts';
+import { braveSearch, tavilySearch, mapsSearch, linkedinCompany, workerFetch, type BraveHit, type TavilyHit } from './cloud.ts';
 import { readWebPage } from './reader.ts';
-import { siteLookupOn, loadHandlers, handlerFor, siteLookup, type HandlerEntry, type SiteLookupResult } from './site-lookup.ts';
+import { siteLookupOn, loadHandlers, handlerFor, siteLookup, naverPlaceSearch, type HandlerEntry, type SiteLookupResult, type NaverPlace } from './site-lookup.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // On the hub (production) the checkpoints go to the /data volume, which outlives a redeploy.
