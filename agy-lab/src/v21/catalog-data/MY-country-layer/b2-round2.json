@@ -1,0 +1,133 @@
+{
+  "sources_rejected": [
+    {
+      "url": "https://www.bursamalaysia.com/market_information/announcements/company_announcement",
+      "name": "Bursa Malaysia Company Announcements",
+      "why": "Exclusively lists public listed companies (Bhd); target SME private limited companies (Sdn Bhd) are not publicly traded on the exchange and almost never match."
+    },
+    {
+      "url": "https://www.ssm-einfo.my/",
+      "name": "SSM e-Info",
+      "why": "Requires paid account login and RM10-RM20 fee per company profile and financial statement; cannot be queried freely without paywall."
+    },
+    {
+      "url": "https://www.mydata-ssm.com.my/",
+      "name": "MyData-SSM",
+      "why": "Official SSM financial reports and corporate profiles require credit card payment and identity authentication per document."
+    },
+    {
+      "url": "https://ctoscredit.com.my/",
+      "name": "CTOS SME Score",
+      "why": "Commercial credit rating service requiring paid enterprise subscription and verified consent from the subject entity."
+    },
+    {
+      "url": "https://www.experian.com.my/",
+      "name": "Experian Malaysia",
+      "why": "Commercial credit reporting bureau requiring paid commercial contracts and consent; no open public access."
+    }
+  ],
+  "open_questions": [],
+  "prompts": [
+    {
+      "not_found_when": "Zero tender award notices or bid results match the company name; absence is normal for non-government contractors.",
+      "rank": 1,
+      "why_it_matters": "Contract award notifications (Surat Setuju Terima) confirm whether the vendor actively wins government procurement and the true value of awards won.",
+      "query_url": "",
+      "confidence": "high",
+      "question": "Has the business won or been awarded federal government tenders or contracts on the official MyProcurement portal?",
+      "category": "tenders_partnerships",
+      "how_to_query": "Search '<business name> site:myprocurement.treasury.gov.my' to inspect published tender award decisions, winning contractors, and contract values. Only published/gazetted tender results are indexed. Tested: J & J Murni Sdn Bhd -> https://myprocurement.treasury.gov.my/. Negative test: NonExistentFakeTendererXYZ -> no match.",
+      "source": {
+        "url": "https://myprocurement.treasury.gov.my/",
+        "name": "MyProcurement Treasury Malaysia (Pusat Maklumat Perolehan Kerajaan)",
+        "language": "Malay"
+      },
+      "sub_segment": "all",
+      "applies_when": "Companies that bid for Malaysian federal government tenders, quotations, or direct negotiations",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "found_when": "A published tender result names the company as a winning bidder or records a contract awarded with award amount.",
+      "couldnt_check_when": "Only some result pages are indexed by search engines, or the tender was awarded under an unregistered consortium or subsidiary name.",
+      "query_type": "site_search"
+    },
+    {
+      "not_found_when": "No extortion entries or victim logs mention the company name; absence indicates no tracked ransomware leak.",
+      "rank": 2,
+      "why_it_matters": "A listing on extortion trackers alerts clients and lenders that corporate data, client records, or financial files may have been exfiltrated.",
+      "query_url": "",
+      "confidence": "medium",
+      "question": "Is the company listed as a compromised victim on public ransomware group leak blogs or threat monitoring archives?",
+      "category": "security_exposure",
+      "how_to_query": "Search '<business name> site:ransomlook.io' to check if any ransomware cartel (e.g. LockBit, BlackCat, Qilin) claimed a breach of the company. Tested: Astino Berhad -> https://www.ransomlook.io/. Negative test: NonExistentFakeVictimXYZ -> no match.",
+      "source": {
+        "url": "https://www.ransomlook.io/",
+        "name": "RansomLook (Ransomware Victim Directory & Extortion Blog Tracker)",
+        "language": "English"
+      },
+      "sub_segment": "all",
+      "applies_when": "always",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "found_when": "A victim card or blog entry names the business with extortion proof, claimed data size, and publication date.",
+      "couldnt_check_when": "The extortion post lists a domain or trade name different from the legal registered business name.",
+      "query_type": "site_search"
+    },
+    {
+      "not_found_when": "No forum threads or complaint records match the business name; absence indicates no viral community disputes.",
+      "rank": 3,
+      "why_it_matters": "Consumer dispute discussions and unresolved trade grievances expose poor fulfillment, non-payment, or deceptive practices before signing.",
+      "query_url": "",
+      "confidence": "medium",
+      "question": "Does the company appear in consumer dispute threads or scam alert complaints on Lowyat.NET forums?",
+      "category": "complaints",
+      "how_to_query": "Search '<business name> site:forum.lowyat.net' and inspect community discussions for unresolved buyer complaints, service disputes, or warning threads. Tested: All IT Hypermarket -> https://forum.lowyat.net/. Negative test: NonExistentFakeMerchantXYZ -> no match.",
+      "source": {
+        "url": "https://forum.lowyat.net/",
+        "name": "Lowyat.NET Community Forums (Dispute & Consumer Discussions)",
+        "language": "English"
+      },
+      "sub_segment": "all",
+      "applies_when": "always",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "found_when": "Forum threads detail verified buyer disputes, payment non-compliance, or complaints regarding poor service and unfulfilled agreements.",
+      "couldnt_check_when": "Search results refer to unrelated discussions using common keywords in the company's trade name.",
+      "query_type": "site_search"
+    },
+    {
+      "not_found_when": "No disciplinary records or sanctions against the firm appear in published MOF decision lists; the firm remains in good standing.",
+      "rank": 4,
+      "why_it_matters": "A company or director disciplined by MOF's JKTT is barred from government procurement and indicates severe contractual default or fraud.",
+      "query_url": "https://www.eperolehan.gov.my/documents/10182/100000150863147/KEPUTUSAN+MESYUARAT+JKTT+BIL.+1+2025+UNTUK+PORTAL+TERKINI+12082025.pdf/7353d5b2-5377-406f-9106-ecd3418a640f",
+      "confidence": "high",
+      "question": "Has the Ministry of Finance Malaysia (MOF) issued disciplinary action, suspension, or blacklisting against the company or its directors?",
+      "category": "regulator_action",
+      "how_to_query": "Read the published JKTT disciplinary decision PDF and search for the company name or SSM registration number in the document text. Tested: Rewanas Sdn. Bhd. -> found in document text at Bil. 3. Negative test: Gamuda Berhad -> no match.",
+      "source": {
+        "url": "https://www.eperolehan.gov.my/",
+        "name": "Ministry of Finance Malaysia (Jawatankuasa Tindakan Tatatertib - JKTT)",
+        "language": "Malay"
+      },
+      "sub_segment": "all",
+      "applies_when": "Registered government suppliers and contractors in Malaysia",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "found_when": "The company name or its board of directors appears in the published JKTT decision list with cancellation of field codes, suspension, or blacklisting.",
+      "couldnt_check_when": "The PDF cannot be fetched or the disciplinary action was gazetted in an unindexed supplementary meeting batch.",
+      "query_type": "static_list"
+    }
+  ],
+  "_received_at": "2026-11-04T17:17:02.400Z",
+  "_pair": "MY-country-layer",
+  "_round": 2,
+  "_brief": 2,
+  "_schema": 1
+}

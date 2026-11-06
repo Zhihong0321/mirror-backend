@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadChecklist, type ResearchPrompt } from './catalog.ts';
-import { braveSearch, tavilySearch, mapsSearch, linkedinCompanyExa, workerFetch, type BraveHit, type TavilyHit } from './cloud.ts';
-import { readWebPage } from './reader.ts';
+import { braveSearch, tavilySearch, mapsSearch, workerFetch, linkedinCompanyExa, type BraveHit, type TavilyHit } from './cloud.ts';
+import { readWebPage, type PageResult } from './reader.ts';
 import { siteLookupOn, loadHandlers, handlerFor, siteLookup, naverPlaceSearch, type HandlerEntry, type SiteLookupResult, type NaverPlace } from './site-lookup.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -68,6 +68,8 @@ export type RawResearchCheckpoint = {
     country: string;
     industry: string;
     prompt_count: number;
+    /** How many of the prompts are the country layer's (V21_COUNTRY_LAYER=on); absent in older checkpoints. */
+    country_layer_count?: number;
   };
   official_site: {
     domain: string;
@@ -90,7 +92,61 @@ export type RawResearchCheckpoint = {
   naver_place?: { query: string; status: string; places: NaverPlace[]; error?: string };
   /** The company's LinkedIn page as the worker read it, raw (website, phone, HQ, founded, industry, type, size). */
   linkedin?: { url: string; status: string; worker?: string; result?: unknown; error?: string };
+  /** Every outside page the searches found, read on the worker: the page text, not only the search snippet. */
+  third_party_pages?: ThirdPartyPage[];
 };
+
+export type ThirdPartyPage = {
+  url: string;
+  status: PageResult['status'];
+  charCount: number;
+  truncated: boolean;
+  text: string;
+  error?: string;
+};
+
+// An outside page is kept up to this long: a directory or job page carries the company's entry well before this.
+const THIRD_PARTY_MAX_CHARS = 60_000;
+// Pages read at the same time on the worker: one slow page does not hold up the rest.
+const THIRD_PARTY_PARALLEL = 4;
+
+/** Read every outside page the searches found (owner, 2026-11-06: Step 1 reads what it finds; a snippet is too thin
+ *  for Step 2 to compare). Each URL once. Skipped: the official domain (its pages are read above), LinkedIn (read
+ *  through Exa) and Google Maps (its own search). Every page goes through the local worker; there is no paid reader. */
+async function readThirdPartyPages(urls: string[], officialDomain: string, log: (msg: string) => void): Promise<ThirdPartyPage[]> {
+  const seen = new Set<string>();
+  const list: string[] = [];
+  for (const url of urls) {
+    const domain = cleanDomain(url);
+    if (!domain || domain === officialDomain || domain.endsWith('.' + officialDomain)) continue;
+    if (/(^|\.)linkedin\.com$/.test(domain) || (/(^|\.)google\.[a-z.]+$/.test(domain) && /\/maps/.test(url))) continue;
+    const key = url.replace(/#.*$/, '').replace(/\/$/, '');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(url);
+  }
+  log(`Reading ${list.length} outside pages found by the searches`);
+  const out: ThirdPartyPage[] = new Array(list.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(THIRD_PARTY_PARALLEL, list.length) }, async () => {
+      while (next < list.length) {
+        const i = next++;
+        const page = await readWebPage(list[i], THIRD_PARTY_MAX_CHARS);
+        out[i] = {
+          url: list[i],
+          status: page.status,
+          charCount: page.markdown.length,
+          truncated: page.truncated ?? false,
+          text: page.markdown,
+          ...(page.error ? { error: page.error } : {}),
+        };
+        log(`Outside page ${page.status}: ${list[i]} (${page.markdown.length} chars)`);
+      }
+    }),
+  );
+  return out;
+}
 
 // Where an owner does not look: what customers and staff say, and the press.
 const COVERAGE_QUERIES = [
@@ -251,7 +307,7 @@ export async function runStep1Research(
   const checklist = loadChecklist(country, industry);
   const prompts: ResearchPrompt[] = checklist?.prompts ?? [];
   if (!checklist) log(`Warning: No specific checklist found for ${country} / ${industry}`);
-  else log(`Loaded ${prompts.length} industry prompts from catalog`);
+  else log(`Loaded ${prompts.length - checklist.countryLayerCount} industry prompts and ${checklist.countryLayerCount} country-layer prompts from catalog`);
 
   // A country searched in its own language: the local-script name without its legal form, local words, and Brave's
   // country and language set. Every other country: the name as given, English words, the country in the query.
@@ -362,6 +418,7 @@ export async function runStep1Research(
       country: checklist?.country ?? country,
       industry: checklist?.industry ?? industry,
       prompt_count: prompts.length,
+      country_layer_count: checklist?.countryLayerCount ?? 0,
     },
     official_site: { domain: officialDomain, resolved_url: officialUrl, tried, pages: [] },
     third_party_discoveries: discoveries,
@@ -417,6 +474,11 @@ export async function runStep1Research(
   const linkedinUrl = linkedinCompanyUrl(discoveries.map((d) => d.url), brandCompact || domainLabel, brandToken, domainLabel);
   log(linkedinUrl ? `LinkedIn company page: ${linkedinUrl}` : 'LinkedIn company page: none in the search results');
   // The worker's LinkedIn read is blocked by Cloudflare (HTTP 403, 2026-11-06); the page is read through Exa instead (end of this function).
+
+  // Every outside page the searches found, read while the probes run; awaited at the end.
+  // Off until proven live (V21_READ_OUTSIDE=on turns it on); off, Step 1 is as before.
+  const readOutside = process.env.V21_READ_OUTSIDE === 'on';
+  const thirdParty = readOutside ? readThirdPartyPages(discoveries.map((d) => d.url), officialDomain, log) : null;
 
   // 5. Catalog probes, each the way its prompt says (query_type):
   //    manual: not run, the prompt's reason kept; url_template / static_list: read query_url, keep the page whole;
@@ -520,6 +582,10 @@ export async function runStep1Research(
     ? { url: linkedinUrl, ...(await linkedinCompanyExa(linkedinUrl)) }
     : { url: linkedinUrl, status: 'not_run', error: 'no LinkedIn company page in the search results' };
   log(`LinkedIn company page: ${checkpoint.linkedin.status}`);
+  if (thirdParty) {
+    checkpoint.third_party_pages = await thirdParty;
+    log(`Outside pages read: ${checkpoint.third_party_pages.filter((p) => p.status === 'ok').length} of ${checkpoint.third_party_pages.length}`);
+  }
 
   return saveCheckpoint(checkpoint, company, log);
 }

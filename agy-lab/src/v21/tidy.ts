@@ -63,6 +63,10 @@ const SNIPPET_MAX = 700;
 const MENTION_BEFORE = 120;
 const MENTION_AFTER = 450;
 const MENTIONS_MAX = 6;
+// An outside page read in Step 1: wider passages around the name (a directory entry's details follow the name).
+const PAGE_MENTION_BEFORE = 300;
+const PAGE_MENTION_AFTER = 1_200;
+const PAGE_MENTIONS_MAX = 6;
 
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', '#39': "'" };
 
@@ -126,7 +130,7 @@ function nameTerms(company: string): string[] {
 }
 
 /** Find all places any name term appears in a register page; return non-overlapping excerpts. */
-function findMentions(pageText: string, terms: string[]): string[] {
+function findMentions(pageText: string, terms: string[], before = MENTION_BEFORE, after = MENTION_AFTER, max = MENTIONS_MAX): string[] {
   if (!pageText || !terms.length) return [];
   const flat = cleanText(pageText);
   const lower = flat.toLowerCase();
@@ -136,8 +140,8 @@ function findMentions(pageText: string, terms: string[]): string[] {
     while (at < lower.length) {
       const idx = lower.indexOf(t, at);
       if (idx === -1) break;
-      const start = Math.max(0, idx - MENTION_BEFORE);
-      const end = Math.min(flat.length, idx + t.length + MENTION_AFTER);
+      const start = Math.max(0, idx - before);
+      const end = Math.min(flat.length, idx + t.length + after);
       spans.push([start, end]);
       at = idx + Math.max(1, t.length);
     }
@@ -150,7 +154,7 @@ function findMentions(pageText: string, terms: string[]): string[] {
     if (last && s[0] <= last[1]) last[1] = Math.max(last[1], s[1]);
     else merged.push([...s]);
   }
-  return merged.slice(0, MENTIONS_MAX).map(([a, b]) => (a > 0 ? '…' : '') + flat.slice(a, b).trim() + (b < flat.length ? '…' : ''));
+  return merged.slice(0, max).map(([a, b]) => (a > 0 ? '…' : '') + flat.slice(a, b).trim() + (b < flat.length ? '…' : ''));
 }
 
 export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_AssetsOutput | null): TidyData {
@@ -254,6 +258,30 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
     };
     byUrl.set(d.url, item);
     evidence.push(item);
+  }
+
+  // ---- Outside pages Step 1 read: the passages where the company's name appears, under the snippet.
+  // Checkpoints from before 2026-11-06 have no third_party_pages: their items stay snippets only.
+  if (cp.third_party_pages) {
+    const key = (u: string) => u.replace(/#.*$/, '').replace(/\/$/, '');
+    const readByUrl = new Map(cp.third_party_pages.map((p) => [key(p.url), p]));
+    for (const item of byUrl.values()) {
+      const page = readByUrl.get(key(item.url));
+      if (!page) continue;
+      const snippet = item.text ? `Search snippet: ${item.text}` : '';
+      let read: string;
+      if (page.status !== 'ok' || !page.text) {
+        read = `PAGE NOT READ (${page.status}${page.error ? `: ${page.error}` : ''}); only the snippet above is known.`;
+      } else {
+        const text = pageLines(page.text).join('\n');
+        const passages = findMentions(text, terms, PAGE_MENTION_BEFORE, PAGE_MENTION_AFTER, PAGE_MENTIONS_MAX);
+        const size = `${page.charCount}-character page${page.truncated ? ', cut at that length' : ''}`;
+        read = passages.length
+          ? `PAGE READ (${size}). Passages where ${terms.map((x) => `"${x}"`).join(' / ')} appear:\n` + passages.map((m) => `  > ${m}`).join('\n')
+          : `PAGE READ (${size}): none of ${terms.map((x) => `"${x}"`).join(' / ')} appear anywhere on it.`;
+      }
+      item.text = [snippet, read].filter(Boolean).join('\n');
+    }
   }
 
   // ---- Step 1.5 Technical Infrastructure & Digital Assets Findings
