@@ -1,7 +1,8 @@
 // V2.1 raw-data store on the hub: every Step 1 and Step 2 result is written to Postgres, keyed by report UID.
 // Owns two tables and touches no other table (company_id is reserved for the company-UID link, set where known).
 //
-//   v21_report  one row per V2.1 dive (the report UID is its key, issued before the first call), with step statuses.
+//   v21_report  one row per V2.1 dive (the report UID is its key, issued before the first call), the company UID it
+//               belongs to (company-uid.ts: co_xxxxxxxxxxxx, one per website host) and the step statuses.
 //   v21_raw     one row per stored result: step, kind, run_id, payload. Written once, never updated or deleted.
 //
 // Kinds: step 1 'checkpoint' (the whole RawResearchCheckpoint: searches, page text, probes, Maps, LinkedIn) and 'log';
@@ -10,11 +11,13 @@
 //
 //   GET /api/v21/report/{id}                  the report row + its raw rows (kind, run_id, created_at, size; no payload)
 //   GET /api/v21/report/{id}/raw/{rowId}      one row's payload
-//   GET /api/v21/report?limit=                the latest reports
+//   GET /api/v21/report?limit=&company_uid=   the latest reports, or every report of one company (a lookup, not a list
+//                                             stored on the company)
 // LAB_TOKEN only (server.ts authorized()). Research data is written with a report UID and read by report UID.
 import type http from 'node:http';
 import crypto from 'node:crypto';
 import * as db from './reportdb.ts';
+import * as companies from './company-uid.ts';
 
 type Ctx = {
   json: (res: http.ServerResponse, status: number, body: unknown) => void;
@@ -38,12 +41,18 @@ export function ensureTables(): Promise<void> {
       country text not null,
       industry text not null,
       website text,
-      company_id text,
+      company_uid text,
       step1_status text not null default 'none',
       step1_error text,
       step2_status text not null default 'none',
       step2_error text
     )`)
+    // The first version of this table named the column company_id (always empty): same column, the name every other table uses.
+    .then(() => db.sql(`do $$ begin
+      if exists (select 1 from information_schema.columns where table_name = 'v21_report' and column_name = 'company_id')
+         and not exists (select 1 from information_schema.columns where table_name = 'v21_report' and column_name = 'company_uid')
+      then alter table v21_report rename column company_id to company_uid; end if; end $$`))
+    .then(() => db.sql(`create index if not exists v21_report_company on v21_report (company_uid, created_at desc)`))
     .then(() => db.sql(`create table if not exists v21_raw (
       id bigserial primary key,
       report_id text not null references v21_report(report_id),
@@ -55,7 +64,7 @@ export function ensureTables(): Promise<void> {
       payload jsonb not null
     )`))
     .then(() => db.sql(`create index if not exists v21_raw_report on v21_raw (report_id, id)`))
-    .then(() => undefined)
+    .then(() => backfillCompanies())
     .catch((err) => {
       ready = null; // try again on the next call
       throw err;
@@ -67,14 +76,51 @@ export function ensureTables(): Promise<void> {
 const jsonb = (v: unknown): string => JSON.stringify(v ?? null, (_k, x) => (typeof x === 'string' ? x.toWellFormed() : x));
 const text = (v: unknown): string | null => (v === null || v === undefined ? null : String(v).toWellFormed());
 
-/** A new report: its UID exists before any research call is made. */
-export async function createReport(input: ReportInput): Promise<string> {
+/** A name-only company (no website host to group by): the same name and country keeps one UID of its own. */
+async function loneCompany(company: string, country: string): Promise<string> {
+  const known = await db.sql<{ company_uid: string }>(
+    `select r.company_uid from v21_report r join company c on c.uid = r.company_uid
+     where c.domain is null and lower(r.company) = lower($1) and r.country = $2 order by r.created_at limit 1`, [company, country]);
+  if (known.rows[0]) return known.rows[0].company_uid;
+  const uid = companies.newUid();
+  await db.sql(`insert into company (uid) values ($1)`, [uid]);
+  return uid;
+}
+
+/** Reports saved before they carried a company UID get one (set where empty, from their website). Safe to run again. */
+async function backfillCompanies(): Promise<void> {
+  const rows = await db.sql<{ report_id: string; website: string | null }>(
+    `select report_id, website from v21_report where company_uid is null and website is not null`);
+  for (const r of rows.rows) {
+    const uid = await companies.resolve({ website: r.website, create: true });
+    if (uid) await db.sql(`update v21_report set company_uid = $2 where report_id = $1 and company_uid is null`, [r.report_id, uid]);
+  }
+}
+
+/** A new report: its UID exists before any research call. The company UID comes from the website when it has a host of its own. */
+export async function createReport(input: ReportInput & { company_uid?: string }): Promise<{ report_id: string; company_uid: string | null }> {
   await ensureTables();
   const id = crypto.randomUUID();
-  await db.sql(`insert into v21_report (report_id, company, country, industry, website) values ($1, $2, $3, $4, $5)`, [
-    id, text(input.company), text(input.country), text(input.industry), text(input.website),
+  const companyUid = await companies.resolve({ uid: input.company_uid, website: input.website, create: true });
+  await db.sql(`insert into v21_report (report_id, company, country, industry, website, company_uid) values ($1, $2, $3, $4, $5, $6)`, [
+    id, text(input.company), text(input.country), text(input.industry), text(input.website), companyUid,
   ]);
-  return id;
+  return { report_id: id, company_uid: companyUid };
+}
+
+/**
+ * When Step 1 ends: a report still without a company UID gets one from the official domain Step 1 confirmed; with no
+ * domain at all (skipped, failed, no site) it gets a UID of its own, so no report is left unidentified. Set where empty.
+ */
+export async function linkCompany(id: string, officialDomain?: string | null): Promise<string | null> {
+  await ensureTables();
+  const report: any = await getReport(id);
+  if (!report) return null;
+  if (report.company_uid) return report.company_uid;
+  const site = officialDomain ? (/^https?:/i.test(officialDomain) ? officialDomain : 'https://' + officialDomain) : '';
+  const uid = (site ? await companies.resolve({ website: site, create: true }) : null) ?? (await loneCompany(report.company, report.country));
+  await db.sql(`update v21_report set company_uid = $2, updated_at = now() where report_id = $1 and company_uid is null`, [id, uid]);
+  return ((await getReport(id)) as any)?.company_uid ?? uid;
 }
 
 export async function getReport(id: string): Promise<Record<string, unknown> | null> {
@@ -119,7 +165,10 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
 
   if (p === PATH) {
     const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 50, 1), 500);
-    const out = await db.sql(`select * from v21_report order by created_at desc limit ${limit}`);
+    const uid = url.searchParams.get('company_uid');
+    const out = uid
+      ? await db.sql(`select * from v21_report where company_uid = $1 order by created_at desc limit ${limit}`, [uid])
+      : await db.sql(`select * from v21_report order by created_at desc limit ${limit}`);
     return json(res, 200, { reports: out.rows }), true;
   }
 

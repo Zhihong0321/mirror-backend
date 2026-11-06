@@ -51,8 +51,9 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
 
     // The report UID is the anchor: nothing is researched until it exists in the database.
     let id: string;
+    let companyUid: string | null;
     try {
-      id = await store.createReport(input);
+      ({ report_id: id, company_uid: companyUid } = await store.createReport({ ...input, company_uid: typeof b.company_uid === 'string' ? b.company_uid : undefined }));
     } catch (err: any) {
       return json(res, 503, { error: `report store: ${err?.message ?? err}` }), true;
     }
@@ -65,6 +66,12 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
         Object.assign(run, { status: 'done', checkpointPath, checkpoint: data });
         try {
           await store.addRaw(id, 1, 'checkpoint', id, data);
+          // Company UID where still empty: from the official domain Step 1 confirmed, else one of its own.
+          try {
+            await store.linkCompany(id, (data as any).official_site?.domain);
+          } catch (err: any) {
+            run.log.push(`company link: ${err?.message ?? err}`);
+          }
           await store.addRaw(id, 1, 'log', id, run.log);
           await store.setStatus(id, 1, (data as any).skipped ? 'skipped' : 'done');
         } catch (err: any) {
@@ -75,6 +82,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       .catch(async (err: Error) => {
         Object.assign(run, { status: 'failed', error: err.message });
         try {
+          await store.linkCompany(id, null).catch((e: any) => run.log.push(`company link: ${e?.message ?? e}`));
           await store.addRaw(id, 1, 'log', id, run.log, 'failed');
           await store.setStatus(id, 1, 'failed', err.message);
         } catch (e: any) {
@@ -82,7 +90,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
         }
       })
       .finally(() => (run.finished = new Date().toISOString()));
-    return json(res, 202, { id: run.id, report_id: run.id, status: run.status }), true;
+    return json(res, 202, { id: run.id, report_id: run.id, company_uid: companyUid, status: run.status }), true;
   }
 
   if (req.method === 'GET' && p === PATH) {
@@ -102,7 +110,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       const lg = await store.latestRaw(id, 'log');
       return json(res, 200, {
         id, status: report.step1_status === 'running' ? 'running' : report.step1_status === 'failed' ? 'failed' : 'done',
-        step1_status: report.step1_status, error: report.step1_error ?? undefined,
+        step1_status: report.step1_status, company_uid: report.company_uid ?? null, error: report.step1_error ?? undefined,
         input: { company: report.company, country: report.country, industry: report.industry, website: report.website ?? undefined },
         log: lg?.payload ?? [], checkpoint: cp?.payload, from: 'database',
       }), true;
