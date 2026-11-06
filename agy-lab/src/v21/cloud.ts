@@ -305,6 +305,35 @@ export async function workerFetch(url: string, format: 'markdown' | 'html' = 'ma
   return { content: String(job.result?.content ?? '').trim(), truncated: Boolean(job.result?.truncated) };
 }
 
+// ---------------------------------------------------------------- SEO / GEO audit on a worker PC
+/** One SEO and GEO benchmark of a website on a Local Gmap Worker PC (POST /api/audit, a site.audit job): the worker
+ *  crawls the site on its own connection and its report comes back unchanged (scores.seo / scores.geo, checks, pages,
+ *  facts, notChecked). Never throws: an audit that did not run comes back failed with why. */
+export async function workerAudit(
+  url: string,
+  opts: { maxPages?: number; botTest?: boolean; timeoutMs?: number } = {},
+): Promise<{ status: string; job_id?: string; worker?: string; result?: unknown; error?: string }> {
+  const headers = { authorization: `Bearer ${MAPS_KEY}`, 'content-type': 'application/json' };
+  try {
+    const health = await (await fetch(`${MAPS_URL}/health`)).json();
+    if (!health.workersLive) return { status: 'failed', error: 'no worker online' };
+    const body = { url, maxPages: opts.maxPages ?? 5, botTest: opts.botTest ?? true, timeoutMs: opts.timeoutMs ?? 300_000, wait: 30 };
+    // Requests are held 30s at a time: a 60s hold on /api/jobs came back HTTP 502 from the host's proxy (2026-11-06).
+    // The service fails the job itself after its timeout (also when no worker takes site.audit jobs).
+    let res = await fetch(`${MAPS_URL}/api/audit`, { method: 'POST', headers, body: JSON.stringify(body) });
+    let data = await res.json();
+    while (res.status === 202) {
+      res = await fetch(`${MAPS_URL}/api/jobs/${data.job.id}?wait=30`, { headers });
+      data = await res.json();
+    }
+    if (!res.ok) return { status: 'failed', job_id: data.job?.id, error: data.error ?? `HTTP ${res.status}` };
+    const job = data.job;
+    return { status: job.status, job_id: job.id, worker: job.worker, result: job.result, error: job.error ?? undefined };
+  } catch (err: any) {
+    return { status: 'failed', error: err.message };
+  }
+}
+
 // ---------------------------------------------------------------- LinkedIn company page through Exa
 /** One LinkedIn company page read through Exa's /contents (its own crawl, so no Cloudflare): name, headquarters,
  *  founded, industry, size, about, and website / phone / type when Exa's "Company Details" block has them (empty

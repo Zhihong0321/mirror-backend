@@ -2,6 +2,9 @@
 // Deterministic, zero-LLM technical audit executing:
 //   1. Google PageSpeed Insights (Mobile + Desktop) on the confirmed official website using the vault service account.
 //   2. Domain ownership & security audit on all discovered domains (WHOIS/RDAP, hijack lock, SPF/DMARC spoofing, TLS).
+//   3. Google Maps reviews of the company's own profile (Scraper.Tech).
+//   4. SEO and GEO benchmark of the official website on a Local Gmap Worker PC (site.audit; V21_SITE_AUDIT=on). The
+//      worker's report is kept as it came back (scores, checks, pages, facts, notChecked); nothing is judged here.
 //
 // Runs after Step 1 (Research) and before Step 2 (Analyse) so that objective technical facts feed the judge.
 import net from 'node:net';
@@ -10,6 +13,7 @@ import dnsp from 'node:dns/promises';
 import { pagespeed, scrapertech } from '../core/index.ts';
 import { readPsi, type Psi } from '../divedeeper/sections/W-speed.ts';
 import type { RawResearchCheckpoint } from './research.ts';
+import { workerAudit } from './cloud.ts';
 
 const FREE_MAIL = /^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|me|aol|proton|protonmail|qq|163|126|zoho)\./i;
 const SOCIAL_DOMAINS = /^(?:[a-z0-9-]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twitter|xiaohongshu|threads|weibo|github|pinterest|whatsapp|telegram)\.com$/i;
@@ -107,6 +111,8 @@ export type Step1_5_AssetsOutput = {
   domains: AuditedDomain[];
   /** Google Maps reviews of the company's own profile (Scraper.Tech; newest first, at most REVIEWS_MAX). */
   google_reviews: GoogleReviewsBlock;
+  /** The worker's SEO / GEO benchmark of the official website. Absent when V21_SITE_AUDIT is not on. */
+  site_audit?: SiteAuditBlock;
   findings: TechnicalFinding[];
   stats: {
     domains_checked: number;
@@ -118,6 +124,21 @@ export type Step1_5_AssetsOutput = {
 };
 
 export const REVIEWS_MAX = 50;
+
+/** On with V21_SITE_AUDIT=on (owner, 2026-11-06); off, Step 1.5 is as before and has no site_audit block. */
+export const siteAuditOn = (): boolean => (process.env.V21_SITE_AUDIT ?? '').trim().toLowerCase() === 'on';
+
+export type SiteAuditBlock = {
+  /** done: the worker's report is in result. not_run: no official website to audit. failed: the audit did not run or broke. */
+  status: 'done' | 'not_run' | 'failed';
+  reason?: string;
+  error?: string;
+  target_url?: string;
+  job_id?: string;
+  worker?: string;
+  /** The worker's report, unchanged (POST /api/audit job.result). */
+  result?: unknown;
+};
 
 export type GoogleReviewsBlock = {
   /** done: read. not_run: nothing to read (no Maps profile / no confident match): not a finding. failed: the read broke. */
@@ -542,6 +563,24 @@ export async function runStep1_5Assets(
   let psiReason: string | undefined;
   let psiError: string | undefined;
 
+  // 4. The SEO / GEO benchmark runs on a worker PC while PageSpeed and the reviews read go; awaited at the end.
+  let siteAudit: SiteAuditBlock | undefined;
+  let auditRun: Promise<SiteAuditBlock> | null = null;
+  if (siteAuditOn()) {
+    if (checkpoint.skipped || !officialSiteUrl) {
+      siteAudit = { status: 'not_run', reason: checkpoint.skipped ? `Research skipped: ${checkpoint.skipped}` : 'No confirmed official website' };
+    } else {
+      log(`[Step 1.5] SEO / GEO benchmark of ${officialSiteUrl} on a worker...`);
+      auditRun = workerAudit(officialSiteUrl).then((a) => ({
+        status: a.status === 'done' ? 'done' : 'failed',
+        target_url: officialSiteUrl,
+        ...(a.job_id ? { job_id: a.job_id } : {}),
+        ...(a.worker ? { worker: a.worker } : {}),
+        ...(a.status === 'done' ? { result: a.result } : { error: a.error ?? `audit ${a.status}` }),
+      }));
+    }
+  }
+
   if (checkpoint.skipped || !officialSiteUrl) {
     psiStatus = 'skipped';
     psiReason = checkpoint.skipped ? `Research skipped: ${checkpoint.skipped}` : 'No confirmed official website';
@@ -671,6 +710,12 @@ export async function runStep1_5Assets(
     }
   }
 
+  if (auditRun) {
+    siteAudit = await auditRun;
+    const sc = (siteAudit.result as any)?.scores;
+    log(`[Step 1.5] SEO / GEO benchmark: ${siteAudit.status}${sc ? ` (SEO ${sc.seo}, GEO ${sc.geo})` : ''}${siteAudit.error ? `: ${siteAudit.error}` : ''}`);
+  }
+
   const durationMs = Date.now() - started;
   log(`[Step 1.5] Completed in ${durationMs}ms with ${findings.length} technical findings.`);
 
@@ -697,6 +742,7 @@ export async function runStep1_5Assets(
     },
     domains: auditedDomains,
     google_reviews,
+    ...(siteAudit ? { site_audit: siteAudit } : {}),
     findings,
     stats: {
       domains_checked: auditedDomains.length,
