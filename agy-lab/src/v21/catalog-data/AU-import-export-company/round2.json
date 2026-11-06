@@ -1,0 +1,240 @@
+{
+  "test_firms": [
+    "Keepro International Pty Ltd",
+    "CY International Trading Pty Ltd",
+    "BGP International Pty Ltd"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Does the trading or freight forwarding firm hold an active Customs Broker Licence issued by the Australian Border Force under Part XI of the Customs Act 1901?",
+      "why_it_matters": "Acting as a commercial customs broker or lodging import/export declarations through the Integrated Cargo System (ICS) without an active ABF license is a federal offense under Australian customs law.",
+      "source": {
+        "name": "Australian Border Force (ABF)",
+        "url": "https://www.abf.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search ABF published register of Licensed Customs Brokers (Corporate and Nominee) by entity name {company}",
+      "found_when": "The company acts as a customs clearance agent but lacks an active ABF corporate customs broker licence",
+      "not_found_when": "The entity's corporate customs broker licence is verified active on official ABF lists",
+      "couldnt_check_when": "ABF portal register downloads are unavailable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "International freight forwarding and customs clearance operated under authorized ABF broker standards"
+        },
+        {
+          "firm": "CY International Trading Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Cross-border trading shipments processed in compliance with ABF clearance rules"
+        },
+        {
+          "firm": "BGP International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Fresh produce export logistics conform to Australian customs clearance regulations"
+        },
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Border Force (ABF)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the import-export entity falsely claim Australian Trusted Trader (ATT) accreditation when it is not certified by the Australian Border Force?",
+      "why_it_matters": "Falsely displaying Australian Trusted Trader logos breaches Australian Border Force trade integrity standards and exposes the firm to sanctions under the Customs Act.",
+      "source": {
+        "name": "Australian Border Force (Australian Trusted Trader)",
+        "url": "https://www.abf.gov.au/",
+        "type": "government_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check the official Australian Trusted Trader public register on abf.gov.au for {company}",
+      "found_when": "The firm displays the ATT trustmark on its website but is absent from the certified ATT directory",
+      "not_found_when": "The entity is confirmed as an active accredited Australian Trusted Trader partner",
+      "couldnt_check_when": "ABF ATT register portal is offline",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Commercial freight services marketed without uncertified Australian Trusted Trader claims"
+        },
+        {
+          "firm": "CY International Trading Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Trading capabilities accurately described without false government trade trustmarks"
+        },
+        {
+          "firm": "BGP International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Global fresh produce supply chain operations compliant with standard export certification"
+        },
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Border Force (Australian Trusted Trader)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "question": "Does the company hold valid Biosecurity Approved Arrangements (AA) or required BICON import permits for importing biological, animal, or agricultural goods?",
+      "why_it_matters": "Importing regulated agricultural or biological goods without valid DAFF biosecurity clearance incurs immediate cargo quarantine, destruction, and federal biosecurity penalties.",
+      "source": {
+        "name": "Department of Agriculture, Fisheries and Forestry (DAFF)",
+        "url": "https://www.agriculture.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check DAFF Biosecurity Import Conditions (BICON) database and Approved Arrangements register for {company}",
+      "found_when": "An importer of food or plant commodities operates quarantine premises without active DAFF Approved Arrangement status",
+      "not_found_when": "The company holds valid DAFF import permits and registered biosecurity arrangement credentials",
+      "couldnt_check_when": "DAFF BICON system is down for technical updates",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "General manufactured cargo import workflows comply with non-biosecurity customs pathways"
+        },
+        {
+          "firm": "CY International Trading Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Consumer trade goods handled under standard non-perishable documentation"
+        },
+        {
+          "firm": "BGP International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Export phytosanitary inspection certificates verified for international fresh fruit trade"
+        },
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Department of Agriculture, Fisheries and Forestry (DAFF)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the importing entity claim approval under the ATO Deferred GST Scheme without meeting ongoing monthly business activity statement (BAS) compliance?",
+      "why_it_matters": "Ineligible or revoked Deferred GST participation results in surprise upfront GST liabilities and cargo release holds at Australian container terminals.",
+      "source": {
+        "name": "Australian Taxation Office (Deferred GST Scheme)",
+        "url": "https://www.abf.gov.au/",
+        "type": "government_tax_authority",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify Deferred GST Scheme (DGST) eligibility status through Integrated Cargo System (ICS) lodgment profiles",
+      "found_when": "The importer claims deferred GST entry at the border while removed from the ATO DGST scheme for non-compliance",
+      "not_found_when": "The importer maintains active DGST approval and lodges monthly electronic BAS on time",
+      "couldnt_check_when": "ATO or ABF cargo interface is undergoing maintenance",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Freight forwarding invoicing reflects compliant GST collection and customs duty handling"
+        },
+        {
+          "firm": "CY International Trading Pty Ltd",
+          "date": "2026-11-03",
+          "result": "GST registered trading entity follows standard border taxation schedules"
+        },
+        {
+          "firm": "BGP International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Export operations qualify for GST-free zero-rated international export supplies"
+        },
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Taxation Office (Deferred GST Scheme)"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contact_mess"
+      ],
+      "question": "Are the export products, corporate address, and international market capabilities listed in Austrade trade databases accurate and aligned with the company's current operations?",
+      "why_it_matters": "Inaccurate directory records in official Austrade channels generate dead inquiries, failed trade lead matching, and missed federal export grant opportunities.",
+      "source": {
+        "name": "Australian Trade and Investment Commission (Austrade)",
+        "url": "https://www.austrade.gov.au/",
+        "type": "government_trade_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search Austrade's Australian Suppliers and Exporters directories by company name {company}",
+      "found_when": "The Austrade supplier listing features disconnected phone numbers, defunct addresses, or outdated commodity codes",
+      "not_found_when": "Directory details match current operating premises, export product range, and corporate website",
+      "couldnt_check_when": "Austrade supplier directory search is temporarily down",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Operating address and Melbourne logistics contacts verified accurate on public trade registers"
+        },
+        {
+          "firm": "CY International Trading Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Corporate headquarters in Sydney verified up to date"
+        },
+        {
+          "firm": "BGP International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Export product listings and international market destinations accurately reflected"
+        },
+        {
+          "firm": "Keepro International Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Trade and Investment Commission (Austrade)"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:40:45.600Z",
+  "_pair": "AU-import-export-company",
+  "_round": 2
+}

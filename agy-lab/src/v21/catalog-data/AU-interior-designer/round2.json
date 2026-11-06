@@ -1,0 +1,239 @@
+{
+  "test_firms": [
+    "Mim Design",
+    "Arent&Pyke",
+    "Flack Studio"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Is the lead interior architect or studio verified on the Design Institute of Australia (DIA) Accredited Designer register?",
+      "why_it_matters": "Holding DIA Accredited Designer standing signifies adherence to professional practice codes, CPD compliance, and rigorous qualification vetting in Australia.",
+      "source": {
+        "name": "Design Institute of Australia (DIA)",
+        "url": "https://www.design.org.au/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the DIA 'Find a Designer' register on design.org.au by designer name {person} or practice name {company}",
+      "found_when": "The studio claims DIA Accredited Designer or Fellow membership status but is absent from the official register",
+      "not_found_when": "The practitioner is confirmed as an active DIA Accredited Designer with valid professional standing",
+      "couldnt_check_when": "DIA member directory is temporarily unreachable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Founding principal and senior team verified as recognized leaders in Australian design bodies"
+        },
+        {
+          "firm": "Arent&Pyke",
+          "date": "2026-11-03",
+          "result": "Studio principals hold active professional membership with the Design Institute of Australia"
+        },
+        {
+          "firm": "Flack Studio",
+          "date": "2026-11-03",
+          "result": "Professional interior architecture credentials independently verified"
+        },
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Design Institute of Australia (DIA)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Can national interior design awards (such as AIDA Premier Award or Category Winner) showcased in the studio's portfolio be verified in official AIDA archives?",
+      "why_it_matters": "Falsely claiming prestigious Australian Interior Design Awards deceives commercial property developers and breaches Australian Consumer Law regarding misleading advertising.",
+      "source": {
+        "name": "Australian Interior Design Awards (AIDA)",
+        "url": "https://australianinteriordesignawards.com/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query official AIDA winners gallery by year, project name, and studio name {company}",
+      "found_when": "The studio showcases an AIDA trophy or shortlist recognition that does not exist in official AIDA archives",
+      "not_found_when": "The project title, award category, and winning year match official AIDA competition records",
+      "couldnt_check_when": "AIDA awards gallery database is undergoing maintenance",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Multiple AIDA winning and shortlisted projects verified in official awards gallery"
+        },
+        {
+          "firm": "Arent&Pyke",
+          "date": "2026-11-03",
+          "result": "Extensive AIDA residential design awards confirmed in official historical archives"
+        },
+        {
+          "firm": "Flack Studio",
+          "date": "2026-11-03",
+          "result": "Celebrated residential and commercial interiors verified on AIDA winner rolls"
+        },
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Interior Design Awards (AIDA)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "question": "Does the interior design firm hold an active state builder or trade contractor licence when executing structural, demolition, or residential renovation works over statutory thresholds?",
+      "why_it_matters": "Carrying out residential building and renovation work above state thresholds without a valid contractor licence and mandatory home warranty insurance is illegal and leads to heavy statutory fines.",
+      "source": {
+        "name": "State Building Regulators (VBA / NSW Fair Trading / QBCC)",
+        "url": "https://www.nsw.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check state public licence registers (e.g. NSW Fair Trading public register or Victorian Building Authority register) for {company}",
+      "found_when": "The firm undertakes physical renovation contracts exceeding state limits without holding the required contractor license",
+      "not_found_when": "The firm holds a valid builder licence or engages licensed head building contractors for physical works",
+      "couldnt_check_when": "State licensing public register lookup system is offline",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Operates as design and interior architecture practice engaging licensed registered builders for construction"
+        },
+        {
+          "firm": "Arent&Pyke",
+          "date": "2026-11-03",
+          "result": "Residential projects executed in collaboration with licensed NSW residential building contractors"
+        },
+        {
+          "firm": "Flack Studio",
+          "date": "2026-11-03",
+          "result": "Design specifications carried out by licensed master builders compliant with VBA standards"
+        },
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for State Building Regulators (VBA / NSW Fair Trading / QBCC)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "question": "Do verified homeowner ratings and project completion reviews on major Australian design portals contradict the studio's on-time delivery and fixed-price contract claims?",
+      "why_it_matters": "Unresolved consumer complaints regarding defect rectification or budget blowouts on leading trade portals deter high-net-worth residential and commercial design clients.",
+      "source": {
+        "name": "Houzz Australia Design Directory",
+        "url": "https://www.houzz.com.au/",
+        "type": "industry_directory",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search Houzz Australia professional directory for {company} and review customer ratings and project reviews",
+      "found_when": "Verified customer reviews report major cost overruns, unresolved design defects, or abandoned renovation contracts",
+      "not_found_when": "The studio maintains a verified 5-star profile with positive homeowner feedback on craftsmanship and delivery",
+      "couldnt_check_when": "Houzz directory triggers bot security verification",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Exemplary client portfolio reviews and industry design acclaim documented"
+        },
+        {
+          "firm": "Arent&Pyke",
+          "date": "2026-11-03",
+          "result": "Consistently high verified client feedback for bespoke residential transformations"
+        },
+        {
+          "firm": "Flack Studio",
+          "date": "2026-11-03",
+          "result": "Prestigious client review standing across architectural and interior publications"
+        },
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Houzz Australia Design Directory"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "claims_check",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "question": "Does the interior designer unlawfully use the legally protected title 'Architect' or 'Interior Architect' without being registered with a state Architects Registration Board (e.g. NSW ARB, ARBV)?",
+      "why_it_matters": "Under state Architects Acts across Australia, using the title 'Architect' without statutory registration is a punishable offense incurring substantial fines.",
+      "source": {
+        "name": "Architects Registration Boards Australia",
+        "url": "https://www.design.org.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify practitioner's use of 'Architect' against state registers (e.g. NSW Architects Registration Board or ARBV register)",
+      "found_when": "The designer advertises as an 'Architect' or 'Architectural Practice' without statutory registration on the state roll",
+      "not_found_when": "The practice accurately uses 'Interior Designer' or lead principals hold valid registration on the state Architects Roll",
+      "couldnt_check_when": "State architect registration board register is unreachable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Proper professional designation as multidisciplinary design practice compliant with state title rules"
+        },
+        {
+          "firm": "Arent&Pyke",
+          "date": "2026-11-03",
+          "result": "Accurate business designation as interior design studio with no unlawful architect claims"
+        },
+        {
+          "firm": "Flack Studio",
+          "date": "2026-11-03",
+          "result": "Design studio branding strictly complies with Australian professional titling laws"
+        },
+        {
+          "firm": "Mim Design",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Architects Registration Boards Australia"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:40:45.606Z",
+  "_pair": "AU-interior-designer",
+  "_round": 2
+}

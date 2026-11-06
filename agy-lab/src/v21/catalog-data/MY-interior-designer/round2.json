@@ -1,0 +1,240 @@
+{
+  "test_firms": [
+    "Dezeno",
+    "Edge ID",
+    "Sense Of Design Sdn Bhd"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Is the lead designer or firm officially registered as a Registered Interior Designer (IDr) or Interior Design Consultancy Practice under the Architects Act 1967?",
+      "why_it_matters": "Under the Architects Act 1967, using the title 'Interior Designer' or offering professional interior design services without LAM registration is an illegal offense carrying statutory penalties.",
+      "source": {
+        "name": "Lembaga Arkitek Malaysia (Board of Architects Malaysia)",
+        "url": "https://www.lam.gov.my/welcome",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the LAM Public Search Register under 'Interior Designer' or 'Interior Design Practice' for {company} or principal name",
+      "found_when": "The firm markets itself as an 'Interior Designer' or uses 'IDr' title but neither firm nor lead partner is registered on the LAM roll",
+      "not_found_when": "The designer or practice is confirmed with an active LAM registration number",
+      "couldnt_check_when": "The LAM portal search system is offline",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Principal architectural and design credentials verified compliant with design-build standards"
+        },
+        {
+          "firm": "Edge ID",
+          "date": "2026-11-03",
+          "result": "Design consultancies properly designated as commercial interior design and build"
+        },
+        {
+          "firm": "Sense Of Design Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Space planning studio operating within permitted renovation and interior decoration scopes"
+        },
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Lembaga Arkitek Malaysia (Board of Architects Malaysia)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "question": "Does the interior design firm hold an active CIDB Contractor Registration Certificate (Grade G1–G7 with category B04/B28) for executing interior fit-out and renovation works?",
+      "why_it_matters": "Executing commercial or residential construction/renovation contracts in Malaysia without CIDB registration violates Act 520 and subjects the firm to stop-work orders and hefty fines.",
+      "source": {
+        "name": "Construction Industry Development Board Malaysia (CIDB)",
+        "url": "https://www.cidb.gov.my/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "Malay"
+      },
+      "how_to_query": "Search CIDB CIMS contractor directory using company name or SSM number to check registration validity and grade (G1 to G7)",
+      "found_when": "The firm accepts renovation contracts but lacks active CIDB contractor registration or required building specialization code",
+      "not_found_when": "Firm holds active CIDB certificate with appropriate grade covering contract sum",
+      "couldnt_check_when": "CIDB CIMS system is undergoing server maintenance",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Holds active CIDB Grade G7 registration for large-scale interior fit-outs"
+        },
+        {
+          "firm": "Edge ID",
+          "date": "2026-11-03",
+          "result": "Verified CIDB contractor registration covering commercial fit-out works"
+        },
+        {
+          "firm": "Sense Of Design Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Renovation subcontracting partners hold valid CIDB registrations"
+        },
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Construction Industry Development Board Malaysia (CIDB)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the interior designer or practice hold verified Corporate Member or Corporate Practice status with the Malaysian Institute of Interior Designers (MIID)?",
+      "why_it_matters": "Falsely displaying the MIID badge or claiming corporate practice standing damages client trust and breaches intellectual property agreements with the national institute.",
+      "source": {
+        "name": "Malaysian Institute of Interior Designers (MIID)",
+        "url": "https://miid.org.my/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check the MIID Member Directory on miid.org.my for {company} or practitioner name",
+      "found_when": "The website displays MIID corporate badges but the firm or practitioner is absent from the MIID register",
+      "not_found_when": "The firm or principal is verified as an active MIID Corporate Member or Practice",
+      "couldnt_check_when": "The MIID directory is temporarily unreachable",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Design practice association credentials verified"
+        },
+        {
+          "firm": "Edge ID",
+          "date": "2026-11-03",
+          "result": "Does not make deceptive claims regarding corporate MIID practice status"
+        },
+        {
+          "firm": "Sense Of Design Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Professional memberships accurately cited in corporate profile"
+        },
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysian Institute of Interior Designers (MIID)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Can the national design awards (such as the MIID REKA Awards for Design Excellence) claimed in the firm's portfolio be verified against official competition records?",
+      "why_it_matters": "Falsely claiming prestigious national design awards exposes the studio to public copyright challenges and disqualification from institutional developer tenders.",
+      "source": {
+        "name": "MIID REKA Awards",
+        "url": "https://miid.org.my/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query MIID REKA Awards published winners catalogs for project name, category, and designer",
+      "found_when": "A portfolio project claims an official MIID REKA award that is absent from the official winners catalog",
+      "not_found_when": "The project award title, category, and winning year match official MIID documentation",
+      "couldnt_check_when": "MIID REKA archive files are inaccessible",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Project portfolio showcases legitimate industry design accolades"
+        },
+        {
+          "firm": "Edge ID",
+          "date": "2026-11-03",
+          "result": "No fabricated REKA design award claims found on company site"
+        },
+        {
+          "firm": "Sense Of Design Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Client testimonials and portfolio works independently verified"
+        },
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for MIID REKA Awards"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "question": "Do customer reviews and project completion complaints on leading Malaysian renovation portal Atap.co contradict the firm's claimed on-time delivery guarantees?",
+      "why_it_matters": "Unresolved abandonment complaints or poor craftsmanship ratings on local renovation platforms drive away high-value homeowners and commercial fitout leads.",
+      "source": {
+        "name": "Atap.co Malaysia",
+        "url": "https://atap.co/malaysia/",
+        "type": "industry_directory",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search Atap.co firm profile for customer ratings, completed project badges, and negative dispute feedback",
+      "found_when": "Multiple customer reviews report project delays, cost blowouts, or abandoned renovation works",
+      "not_found_when": "Firm maintains strong rating and positive verified homeowner feedback with zero unresolved dispute reports",
+      "couldnt_check_when": "Atap.co page is protected by bot detection",
+      "used_in": "preview",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Maintains strong project portfolio and positive client satisfaction on Atap.co"
+        },
+        {
+          "firm": "Edge ID",
+          "date": "2026-11-03",
+          "result": "Positive reviews on commercial and residential renovations"
+        },
+        {
+          "firm": "Sense Of Design Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Clean review profile without unresolved contractor complaints"
+        },
+        {
+          "firm": "Dezeno",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Atap.co Malaysia"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:23:57.455Z",
+  "_pair": "MY-interior-designer",
+  "_round": 2
+}

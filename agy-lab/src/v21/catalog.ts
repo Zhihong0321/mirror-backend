@@ -3,7 +3,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const trackerDataDir = path.resolve(here, '../../research-tracker/data');
+// The research tracker's answers on the PC that runs the tracker; on the hub (no tracker), the snapshot in
+// catalog-data/ that ships with the code. Refresh the snapshot when the tracker gets new answers:
+//   cd agy-lab && for f in research-tracker/data/*/round[12].json; do ... cp to src/v21/catalog-data/<pair>/; done
+const trackerDataDir = fs.existsSync(path.resolve(here, '../../research-tracker/data'))
+  ? path.resolve(here, '../../research-tracker/data')
+  : path.resolve(here, 'catalog-data');
 const fallbackPromptsPath = path.resolve(here, '../companydive/v2-prompts.json');
 
 const COUNTRY_MAP: Record<string, string> = {
@@ -13,6 +18,9 @@ const COUNTRY_MAP: Record<string, string> = {
   sg: 'SG',
   australia: 'AU',
   au: 'AU',
+  'south korea': 'KR',
+  korea: 'KR',
+  kr: 'KR',
 };
 
 const INDUSTRY_MAP: Record<string, string> = {
@@ -88,7 +96,7 @@ export function loadChecklist(country: string, industry: string): IndustryCheckl
   if (rounds.length) {
     return {
       countryCode: cCode,
-      country: cCode === 'MY' ? 'Malaysia' : cCode === 'SG' ? 'Singapore' : 'Australia',
+      country: cCode === 'MY' ? 'Malaysia' : cCode === 'SG' ? 'Singapore' : cCode === 'AU' ? 'Australia' : 'South Korea',
       industry,
       industryKey: indKey,
       prompts: rounds[0].prompts,

@@ -1,0 +1,132 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "sub_segment": "web design agencies",
+      "applies_when": "The business claims a Singapore Website Awards award",
+      "question": "Does the claimed Singapore Website Awards project, year, category and award match the organiser’s published record?",
+      "category": "awards",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "why_it_matters": "Accurate award attribution matters to prospective clients.",
+      "source": {
+        "name": "Singapore Website Awards winners",
+        "url": "https://www.swa.sg/winners/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.swa.sg/winners/",
+      "manual_reason": "",
+      "how_to_query": "Compare the exact project, year, award category and credited agency using the winners page and official past-year winners archive; do not infer falsity from absence.",
+      "found_when": "The same project record explicitly contradicts the firm’s specific claim, with agency role confirmed.",
+      "not_found_when": "The relevant organiser record confirms the specific claim and attribution.",
+      "couldnt_check_when": "Year outside available archive, no match, identity uncertain or incomplete coverage.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "sub_segment": "domain service providers",
+      "applies_when": "The agency claims to be an SGNIC accredited registrar",
+      "question": "Is the specific legal entity listed by SGNIC as an accredited registrar for the claimed domain extension?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Offering domain services does not itself make an agency an accredited registrar.",
+      "source": {
+        "name": "SGNIC accredited registrars",
+        "url": "https://prod.sgnic.sg/domain-registration/list-of-registrars",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "https://prod.sgnic.sg/domain-registration/list-of-registrars",
+      "manual_reason": "",
+      "how_to_query": "Compare exact legal name and the applicable extension against the SGNIC registrar list. Do not equate a reseller with an accredited registrar.",
+      "found_when": "An explicit direct accreditation claim conflicts with the verified current list and exact legal entity.",
+      "not_found_when": "The same entity is listed for the claimed extension.",
+      "couldnt_check_when": "List unavailable, identity uncertain, or the claim only concerns reseller or partner status.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "sub_segment": "e-commerce or web solution vendors",
+      "applies_when": "The agency claims a named IMDA pre-approved web or e-commerce solution or PSG eligibility",
+      "question": "Does the exact vendor and solution match the applicable official pre-approved solution record?",
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "why_it_matters": "Grant claims need solution-specific support and customer eligibility is conditional.",
+      "source": {
+        "name": "IMDA pre-approval of vendor solutions",
+        "url": "https://www.imda.gov.sg/how-we-can-help/smes-go-digital/pre-approval-of-icm-vendors-solutions",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "A current solution lookup may require an interactive or authenticated portal.",
+      "how_to_query": "Identify exact solution, vendor, approval period and any reseller relationship; compare against current official solution listing and terms.",
+      "found_when": "A confirmed current official record contradicts the specific solution or grant claim.",
+      "not_found_when": "The official record matches the solution and vendor and the statement preserves customer eligibility conditions.",
+      "couldnt_check_when": "Record cannot be accessed, current dates unknown or reseller status not verifiable.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "sub_segment": "web agencies claiming cybersecurity marks",
+      "applies_when": "The firm claims the CSA Cyber Essentials or Cyber Trust mark",
+      "question": "Does the certification claim match the exact certified organisation, mark and validity?",
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Organisational cybersecurity certification does not certify every website produced.",
+      "source": {
+        "name": "CSA cybersecurity certification",
+        "url": "https://www.csa.gov.sg/our-programmes/support-for-enterprises/sg-cyber-safe-programme/cybersecurity-certification-for-organisations/how-to-get-certified/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "CSA lists appointed certification bodies, not an established complete public holder directory; verify with issuer.",
+      "how_to_query": "Locate the official current mark holder list or verify the certificate with its issuer; compare entity, mark and dates.",
+      "found_when": "Verified certification details conflict with an explicit claim.",
+      "not_found_when": "The official evidence matches entity, mark and validity.",
+      "couldnt_check_when": "No public current list, certificate unavailable, unclear scope or identity.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [
+    "Verify current SGNIC list coverage for each extension and any public certificate-holder register."
+  ],
+  "_received_at": "2026-11-03T09:06:32.627Z",
+  "_pair": "SG-web-design-company",
+  "_round": 2,
+  "_schema": 2
+}

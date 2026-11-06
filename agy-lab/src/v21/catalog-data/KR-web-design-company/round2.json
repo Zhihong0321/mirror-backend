@@ -1,0 +1,274 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this web design company won any Web Award Korea (i-AWARD) prizes for client websites or mobile services it built?",
+      "why_it_matters": "Web Award Korea is South Korea's largest annual internet award; winning agencies often neglect to showcase past trophies, or conversely claim accolades that do not match official winner records.",
+      "source": {
+        "name": "Web Award Korea (웹어워드 코리아 - 한국인터넷전문가협회)",
+        "url": "https://www.i-award.or.kr",
+        "type": "awards_body",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the business name with site:www.i-award.or.kr on Google; examine the returned project evaluation pages and agency winner records to see if the agency is named as the constructing agency (에이전시/제작사).",
+      "found_when": "One or more project winner pages name the company as the producing digital agency (제작사), indicating official award category, project title, and award year.",
+      "not_found_when": "No pages on www.i-award.or.kr mention the company name among award recipients or agency showcases.",
+      "couldnt_check_when": "Search engine returns no indexed results due to network disruption or the agency operates under a completely different legal entity name than its trade brand.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this agency been awarded a Grand Prix or Winner prize at &Award (&어워드)?",
+      "why_it_matters": "&Award is South Korea's top digital media and web design award sponsored by the Ministry of Science and ICT, proving high-level agency design capabilities.",
+      "source": {
+        "name": "&Award (앤어워드 - 한국디지털기업협회)",
+        "url": "https://naward.or.kr",
+        "type": "awards_body",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the business name with site:naward.or.kr on Google; check the top archive search results for project winner cards where the agency is listed under 제작사 (production agency).",
+      "found_when": "Results show project pages identifying the business as the production agency (제작사) alongside winning honours such as Grand Prix, Winner, or Minister Award.",
+      "not_found_when": "No pages on naward.or.kr match the business name.",
+      "couldnt_check_when": "The site query fails to return results or the agency name matches an unrelated common generic Korean phrase.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the web design agency featured in GDWEB Design Awards rankings or portfolio showcases?",
+      "why_it_matters": "GDWEB is the leading daily web design showcase and agency ranking directory in Korea, carrying peer recognition and client review visibility.",
+      "source": {
+        "name": "GDWEB Design Awards (지디웹 디자인 어워즈)",
+        "url": "https://www.gdweb.co.kr",
+        "type": "awards_body",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the business name with site:www.gdweb.co.kr on Google; check agency profile pages and project showcase listings where the agency is credited.",
+      "found_when": "The agency appears with a designated agency profile, ranking position, or project entries awarded Winner Prize, Monthly Winner, or Grand Prize.",
+      "not_found_when": "No matching agency profile or portfolio entries appear on www.gdweb.co.kr.",
+      "couldnt_check_when": "Search engine returns no results or fails to distinguish between the agency and the client brand name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company an accredited corporate member of the Korea Digital Enterprise Association (DEA)?",
+      "why_it_matters": "Active membership in the Korea Digital Enterprise Association demonstrates industry accreditation and discloses verified representative names and office addresses that may contradict what the business currently displays.",
+      "source": {
+        "name": "Korea Digital Enterprise Association (사단법인 한국디지털기업협회)",
+        "url": "https://www.dea.or.kr",
+        "type": "industry_association",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.dea.or.kr/dea/intro/digi_comm.do",
+      "how_to_query": "Fetch the official member directory page at https://www.dea.or.kr/dea/intro/digi_comm.do and inspect the company cards for the company name, CEO name, and registered address.",
+      "found_when": "The company is listed as an active member company (협회사), displaying its legal corporate name, representative name, and registered office address.",
+      "not_found_when": "The company name is not present in the HTML list of member enterprises on this page.",
+      "couldnt_check_when": "The DEA member page fails to load or returns HTTP errors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this web agency listed as a regular member of the Korea Digital Agency Association (KDAA), and do its published contact phone and CEO match current company records?",
+      "why_it_matters": "KDAA (formerly Korea Web Agency Association) lists certified web development agencies; directory listings often retain abandoned phone numbers, old office locations, or former executives.",
+      "source": {
+        "name": "Korea Digital Agency Association (사단법인 한국디지털에이전시협회)",
+        "url": "http://www.kwaa.or.kr",
+        "type": "industry_association",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "http://www.kwaa.or.kr/member/member_sub02.html",
+      "how_to_query": "Reads the regular member list at http://www.kwaa.or.kr/member/member_sub02.html and searches for the company name, verifying the listed CEO, website URL, and office phone number.",
+      "found_when": "The company name is found in the member directory card, displaying the representative name, website link, email, and contact phone number.",
+      "not_found_when": "The company name does not appear on the regular member directory page.",
+      "couldnt_check_when": "The page cannot be loaded or the business is enrolled under an alternate division trade name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this web design company hold an active, valid Web Accessibility (WA) quality mark certification for its website or its primary public client portals?",
+      "why_it_matters": "Korean web agencies routinely market Web Accessibility compliance to public and corporate clients; this checks whether their certified status is currently valid or expired in the government-accredited register.",
+      "source": {
+        "name": "Korea Digital Accessibility Promotion Agency (한국디지털접근성진흥원)",
+        "url": "http://www.kwacc.or.kr",
+        "type": "accreditation_register",
+        "language": "Korean"
+      },
+      "query_type": "url_template",
+      "query_url": "http://www.kwacc.or.kr/CertificationSite/WA/List?SearchSiteName={company}",
+      "how_to_query": "Queries the government-accredited certification registry at http://www.kwacc.or.kr/CertificationSite/WA/List?SearchSiteName={company} and inspects the result cards for institution name, certification dates, and status (유효 vs 만료).",
+      "found_when": "The page displays one or more certification entries listing the site name, institution name (기관명), certificate period (인증기간), and current status (유효 or 만료).",
+      "not_found_when": "The page returns the empty result message '검색된 데이터가 없습니다.' indicating no Web Accessibility certification exists under that name.",
+      "couldnt_check_when": "The search endpoint returns an internal server error or the agency registered the certification under an unlinked client brand name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the agency listed as an award-winning production company (제작사) in the ICT Award Korea annual winners registry?",
+      "why_it_matters": "Sponsored by the Ministry of Science and ICT, ICT Award Korea honors top UI/UX and web development agencies, giving third-party validation that the business may not be leveraging.",
+      "source": {
+        "name": "ICT Award Korea Annual Winners (ICT 어워드 코리아 - 한국정보과학진흥협회 / 디지털인사이트)",
+        "url": "https://ditoday.com",
+        "type": "awards_body",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://ditoday.com/ict-award/2026-winning-entries/",
+      "how_to_query": "Fetch the annual winners list page at https://ditoday.com/ict-award/2026-winning-entries/ and search within the HTML tables specifically under the 제작사 (Production Agency) column for the business name.",
+      "found_when": "The company name appears in the table under the 제작사 column, confirming the awarded project, category, and prize level.",
+      "not_found_when": "The company name does not appear in any table under the 제작사 column on this page.",
+      "couldnt_check_when": "The page is unreachable or updated to another year without redirecting.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this web design agency or its leadership been featured in Digital Insight (DI Today) industry news or interviews?",
+      "why_it_matters": "Digital Insight is South Korea's dedicated digital agency publication; trade features, leadership interviews, and case studies enhance B2B trust or reveal public statements made by agency leadership.",
+      "source": {
+        "name": "Digital Insight (디지털 인사이트 - DI Today)",
+        "url": "https://ditoday.com",
+        "type": "trade_press",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the business name with site:ditoday.com on Google; inspect news articles, project reviews, and executive interviews for mentions of the agency.",
+      "found_when": "Top search results include published editorial features, project case studies, or founder interviews specifically profiling the agency.",
+      "not_found_when": "No editorial articles or news entries on ditoday.com mention the company.",
+      "couldnt_check_when": "The agency name consists of ordinary Korean words that match unrelated article body text.",
+      "confidence": "high"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "DBCUT Web Design Board & Agency Directory (디비컷 에이전시)",
+      "url": "https://www.dbcut.com",
+      "why": "Google search (site:dbcut.com) fails to consistently index individual agency profiles and returns no results for major agencies due to Cloudflare JS challenge shields on dynamic query endpoints."
+    },
+    {
+      "name": "Korea Internet Professionals Association Corporate Members (한국인터넷전문가협회 단체회원사)",
+      "url": "http://www.kipfa.or.kr/Information/InternetProCorpList.aspx",
+      "why": "The corporate member directory table is empty on standard HTTP GET requests, as member data is dynamically populated via ASP.NET ViewState and server-side form post events."
+    },
+    {
+      "name": "Awwwards South Korea Directory (아워즈 대한민국 디렉토리)",
+      "url": "https://www.awwwards.com",
+      "why": "English-language international design platform that rarely indexes Korean-script SMB agency names, leading to false-negative not_found results for local domestic businesses."
+    },
+    {
+      "name": "KIDP Industrial Design Firm Comprehensive Management System (한국디자인진흥원 산업디자인전문회사 종합관리시스템)",
+      "url": "https://designfirm.kidp.or.kr",
+      "why": "Connection times out from external network environments; the design firm registry database requires an authenticated corporate session and cannot be queried via automated GET requests."
+    },
+    {
+      "name": "DesignDB Directory by KIDP (디자인DB - 한국디자인진흥원)",
+      "url": "https://www.designdb.com",
+      "why": "Connection times out from external network environments; database search requires complex ASP session state and interactive form POST."
+    },
+    {
+      "name": "KOSA SW Industry Comprehensive Information System (SW산업정보종합시스템 - SWIT)",
+      "url": "https://www.swit.or.kr",
+      "why": "Server drops foreign/external IP requests; software business confirmation lookup requires business member login and digital certificate authentication."
+    },
+    {
+      "name": "KONEPS Public Procurement Service (나라장터)",
+      "url": "https://www.g2b.go.kr",
+      "why": "Forces redirection to Single Sign-On (sso.g2b.go.kr) requiring digital certificate / PKI authentication and session cookies; cannot be queried without credentials."
+    },
+    {
+      "name": "SMINFO Small & Medium Business Information System (중소기업현황정보시스템)",
+      "url": "https://sminfo.mss.go.kr",
+      "why": "Direct production certification queries require user authentication and digital certificate verification; blocks unauthenticated GET queries with HTTP 405."
+    },
+    {
+      "name": "Clutch South Korea Web Designers (클러치 대한민국 웹디자인 디렉토리)",
+      "url": "https://clutch.co/kr/web-designers",
+      "why": "Protected by Cloudflare anti-bot challenge and Turnstile verification (returns HTTP 403 Forbidden to automated HTTP clients)."
+    },
+    {
+      "name": "WebWatch Web Accessibility Certification (웹와치 웹 접근성 인증현황)",
+      "url": "https://webwatch.or.kr",
+      "why": "Root address returns HTTP 404; furthermore, its certification database registers client website URLs rather than the contracting web design agencies."
+    },
+    {
+      "name": "Freemoa IT Outsourcing Platform (프리모아)",
+      "url": "https://www.freemoa.net",
+      "why": "Automated requests are blocked by server security policies with HTTP 403 Forbidden."
+    },
+    {
+      "name": "Wishket Partner Directory (위시켓 파트너스)",
+      "url": "https://www.wishket.com/partner/",
+      "why": "Replaced open public partner search with an interactive AI matching funnel requiring client project input and user verification."
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-04T07:05:12.148Z",
+  "_pair": "KR-web-design-company",
+  "_round": 2,
+  "_schema": 3
+}

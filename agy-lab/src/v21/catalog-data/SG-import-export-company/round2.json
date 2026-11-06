@@ -1,0 +1,108 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "sub_segment": "importers exporters and logistics",
+      "applies_when": "The company claims STP or STP-Plus certification",
+      "question": "Does the stated STP certification tier match Singapore Customs’ published certified-company list?",
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "The two voluntary certification tiers have different requirements.",
+      "source": {
+        "name": "Singapore Customs Secure Trade Partnership",
+        "url": "https://www.customs.gov.sg/permits-and-licences/import-export-facilitation-schemes/secure-trade-partnership-stp-stp-plus/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "The official lists are linked PDFs and freshness and entity identity must be checked; PDF extraction capability is not established.",
+      "how_to_query": "Open the current STP or STP-Plus company PDF linked on the official page; compare exact legal entity, tier and list date.",
+      "found_when": "A current authoritative record for the same entity explicitly contradicts the claimed tier or status.",
+      "not_found_when": "The named company is listed under the claimed tier at the relevant date.",
+      "couldnt_check_when": "The list is dated, unavailable, entity ambiguous or absence cannot establish expiry.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "sub_segment": "traders",
+      "applies_when": "The company or a named officer is identified in a Singapore Customs media release",
+      "question": "What does the published Customs release actually say about this trader or officer?",
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "why_it_matters": "A specific trade-enforcement report can matter to the business.",
+      "source": {
+        "name": "Singapore Customs news and media",
+        "url": "https://www.customs.gov.sg/news/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Search and pagination are interactive and releases may be PDFs; no exhaustive static company-index was established.",
+      "how_to_query": "Search releases for exact legal name or person, open the original and confirm identifying details, date, legal outcome and association.",
+      "found_when": "A confirmed public release states an adverse trade enforcement action concerning that exact subject.",
+      "not_found_when": "The specified accessible releases searched have no confirmed match; this does not prove no offences.",
+      "couldnt_check_when": "Results unavailable, PDF unreadable, identity or company connection ambiguous.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "sub_segment": "exporters claiming GST scheme",
+      "applies_when": "The company claims approval under the IRAS Major Exporter Scheme",
+      "question": "Is the claimed MES approval and period supported by official evidence for the same entity?",
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Approval is specific to the taxpayer and time period.",
+      "source": {
+        "name": "IRAS Major Exporter Scheme",
+        "url": "https://www.iras.gov.sg/taxes/goods-services-tax-%28gst%29/general-gst-schemes/major-exporter-scheme-%28mes%29",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "IRAS public guidance is not an approval register; entity-specific status is not publicly verified.",
+      "how_to_query": "Verify legal entity and current approval period in a genuine official approval document or IRAS channel; do not infer status from general eligibility.",
+      "found_when": "The verified approval explicitly conflicts with the entity, scheme or period claimed.",
+      "not_found_when": "The valid official evidence matches the current claim.",
+      "couldnt_check_when": "No public record or approval document, access restricted or ambiguous entity.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "SFA food import and export licensing",
+      "url": "https://www.sfa.gov.sg/food-import-export/licence-permit-registration/businesses-that-need-licence-permit-registration-for-import-export",
+      "why": "Behind a search form, cannot be read by a site: search (v21 Step 1 Singapore run, 2026-11-03)"
+    }
+  ],
+  "open_questions": [
+    "Confirm current public availability and machine readability of food licence records and Customs certification PDFs."
+  ],
+  "_received_at": "2026-11-03T09:05:52.349Z",
+  "_pair": "SG-import-export-company",
+  "_round": 2,
+  "_schema": 2
+}

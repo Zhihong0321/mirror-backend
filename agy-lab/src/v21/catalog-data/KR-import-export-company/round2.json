@@ -1,0 +1,114 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Any Korean exporter, trading company, or manufacturer-exporter that may have crossed an export-tower threshold. Most firms are not on a given year's list.",
+      "question": "Is this business on the numbered list of 수출의 탑 winners for the 62nd Trade Day (제62회 무역의 날)?",
+      "why_it_matters": "A tower the business never mentions is a public award it can show, and a tower it claims that is not on this list is a claim a buyer can check.",
+      "source": {
+        "name": "62nd Trade Day Export Tower winner list (제62회 무역의 날 수출의 탑 수상업체 명단)",
+        "url": "https://www.smarttoday.co.kr/ko-kr/articles/98031",
+        "type": "award list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.smarttoday.co.kr/ko-kr/articles/98031",
+      "how_to_query": "Read this one article. The introduction says 1,689 winners (29 large, 123 mid-sized, 1,537 small). The body is one numbered list from 1 to 1689. Each line is number, Korean legal name, representative, size (대기업, 중견, or 중소), and tower level such as 5억불탑 or 2천만불탑. Match the Maps name to the company-name field, allowing a space that the list sometimes inserts after (주). This page is the 2025 ceremony list only. Re-tested on a second firm: 주식회사 이조무역 is line 253, representative 이래관, 중소, 2천만불탑. The same page also lists (주) 약진통상 at line 20 (5억불탑) and 환인터내셔널 주식회사 at line 271 (1천만불탑).",
+      "found_when": "The Korean name is on a numbered line with a tower level. Report the level, the representative printed beside it, and the size label. A level the business does not show is an unused award. A level it advertises that differs from this line is a contradiction.",
+      "not_found_when": "The name is not among the 1,689 lines. That is normal. Only firms that met the dollar threshold for this one ceremony are listed.",
+      "couldnt_check_when": "The article does not load, the numbered lines stop before 1689, or a short or shared name matches more than one line so the firm cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "food importer",
+      "applies_when": "Businesses that import food, food additives, utensils, or health supplements into Korea and might have a current recall or sales-stop notice. Ordinary general traders are not expected here.",
+      "question": "Does the Ministry of Food and Drug Safety import-food portal list this business on a current 회수·판매중지 (recall or sales-stop) notice?",
+      "why_it_matters": "A recall naming the importer is a public safety action the owner may not have on the website, and it is what a buyer sees when checking the firm.",
+      "source": {
+        "name": "Import Food Information Maru recall and sales-stop list (수입식품정보마루 회수판매중지)",
+        "url": "https://impfood.mfds.go.kr/CFCFF01F01",
+        "type": "regulator list",
+        "language": "ko"
+      },
+      "query_type": "url_template",
+      "query_url": "https://impfood.mfds.go.kr/CFCFF01F01/getCntntsList?page=1&limit=10&gbn=N&searchCondition=cpNm&searchInpText={company}",
+      "how_to_query": "Fetch the query URL. searchCondition=cpNm is the company-name field and searchInpText is the business name. The page states a count, 총 N건. Each hit shows the product name, the importer in the 업체명 line, a use-by or consume-by date, a registration date, and a food category. Read the first page of hits (10). Re-tested on a second firm: 네이쳐스바이젠(주) returns 총 1건, product 듀얼케어 락토바이옴.",
+      "found_when": "The count is 1 or more and the 업체명 line is this business. Report the product, the date, and the category. That is a live recall or sales-stop notice against the importer.",
+      "not_found_when": "The page says 총 0건 or 조회 결과가 없습니다. That is normal. The list is current notices (about 150), not a history of every importer.",
+      "couldnt_check_when": "The page is an error screen, the count is missing, or several different companies share the searched words so the hit is not clearly this firm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Exporters, importers, or freight forwarders in the Gwangju main customs district that agreed to publish their AEO (수출입안전관리우수업체) status. Firms elsewhere, and firms that did not consent, are not on this page.",
+      "question": "Is this business on the Gwangju Main Customs public list of AEO-authorised companies that consented to be named?",
+      "why_it_matters": "AEO status is a customs trusted-trader credential with faster clearance. The national roster is not public, so this consent list is one of the few places a buyer can see the name without a login.",
+      "source": {
+        "name": "Gwangju Main Customs AEO authorised company list (광주본부세관 AEO 공인 기업명단)",
+        "url": "https://www.customs.go.kr/gwangju/cm/cntnts/cntntsView.do?mi=3921&cntntsId=2231",
+        "type": "licence list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.customs.go.kr/gwangju/cm/cntnts/cntntsView.do?mi=3921&cntntsId=2231",
+      "how_to_query": "Read the HTML table headed AEO 공인 기업명단. Columns are 공인부문 (수출업체, 수입업체, 관세사, 운영인), 업체명, and 사업장명. The footer says 공인정보 제공동의 업체 기준(2026.04). Match the Korean name in 업체명. Do not search the whole customs.go.kr host. Re-tested on a second firm: ㈜대웅에스앤티 is in the 수출업체 block, with the same name repeated as the workplace name.",
+      "found_when": "The name is in 업체명. Report the 공인부문 value. The business may hold AEO and not show it, or may show AEO while this consent list does not include it.",
+      "not_found_when": "The name is not in the table. That is the usual result. This is one district and only firms that consented. Absence does not mean the firm lacks AEO.",
+      "couldnt_check_when": "The table does not load, the footer date is missing so the page is not the list, or a short name matches more than one row.",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Certified trading company search (전문무역상사 검색, ctc.kita.net)",
+      "url": "https://ctc.kita.net/online/matching/tradeSearchList.do",
+      "why": "The roster is the right licence list, and a POST of searchKeyword 오션엔텍 returns 주식회사 오션엔텍. A GET with the same field returns 0건. The system cannot post a form."
+    },
+    {
+      "name": "2025/26 certified trading company directory e-book",
+      "url": "https://online.fliphtml5.com/phwzi/soxx/",
+      "why": "The KITA notice points here and at a PDF that is fetched only by a script POST. The e-book page itself does not contain the company names, and the file path returned by the download call 404s."
+    },
+    {
+      "name": "KIFFA member list (한국국제물류협회 회원사리스트)",
+      "url": "https://www.kiffa.or.kr/sub02/sub03.php",
+      "why": "Name search is a POST. The member detail URL for 서도상선(주) returns an empty record. The public pages are a paginated directory of about ten firms each, so one page is not the membership."
+    },
+    {
+      "name": "2025 customs high-value chronic delinquent list PDF (관세 고액·상습 체납자 명단)",
+      "url": "https://www.customs.go.kr/common/nttFileDownload.do?fileKey=17419279ca5c4ef6749743ca01959225",
+      "why": "The notice page names the file but does not list the 236 people and companies. A direct fetch of the file key returns a short HTML message, not the PDF, so the names cannot be read."
+    },
+    {
+      "name": "Import Food Information Maru product search (수입식품조회)",
+      "url": "https://impfood.mfds.go.kr/CFCCC01F01",
+      "why": "Importer name is a POST field (bsshNm). A GET of getList with bsshNm set returns an error page, so there is no name URL the system can open."
+    }
+  ],
+  "open_questions": [
+    "The 전문무역상사 designation (about 607 firms for 2026, three-year term) is the licence that matters for trading companies. It stays unreadable until a single public file or a GET search returns the Korean legal names.",
+    "Korea Customs does not publish one national AEO company list. UNI-PASS lookup needs a login, and other regional pages found were explainers or ceremony stories, not rosters."
+  ],
+  "_received_at": "2026-11-04T07:08:25.999Z",
+  "_pair": "KR-import-export-company",
+  "_round": 2,
+  "_schema": 3
+}

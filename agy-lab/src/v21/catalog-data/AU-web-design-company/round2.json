@@ -1,0 +1,239 @@
+{
+  "test_firms": [
+    "Defyn Digital",
+    "Punch Buggy",
+    "Process Creative"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the web design agency hold authorized auDA Accredited Registrar or Reseller standing for issuing and managing .au and .com.au domains?",
+      "why_it_matters": "Claiming official auDA registrar or reseller standing without accreditation exposes business clients to DNS mismanagement and breaches .au Licensing Rules.",
+      "source": {
+        "name": ".au Domain Administration (auDA)",
+        "url": "https://www.auda.org.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check official auDA list of Accredited Registrars on auda.org.au for {company}",
+      "found_when": "The agency claims to be an official auDA accredited registrar but is not listed on auDA's accredited registrar directory",
+      "not_found_when": "The agency is verified as an accredited registrar or provisions domains through an authorized wholesale partner",
+      "couldnt_check_when": "auDA registrar lookup service is down for maintenance",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Domain hosting operations provided in alignment with accredited Australian registrar channels"
+        },
+        {
+          "firm": "Punch Buggy",
+          "date": "2026-11-03",
+          "result": "Custom e-commerce web builds integrate standard accredited Australian domain provisioning"
+        },
+        {
+          "firm": "Process Creative",
+          "date": "2026-11-03",
+          "result": "Digital domain and DNS architecture managed via compliant accredited registrar networks"
+        },
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for .au Domain Administration (auDA)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Are the Australian Web Awards (AWA) trophies or AWIA Best in Class titles claimed on the agency's portfolio verifiable in the official AWA winners index?",
+      "why_it_matters": "Falsely advertising Australian Web Awards trophies misleads prospective commercial clients and infringes AWIA intellectual property.",
+      "source": {
+        "name": "Australian Web Industry Association (AWIA AWA)",
+        "url": "https://webawards.com.au/",
+        "type": "award_organization",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Search webawards.com.au past winners archive by project URL, category, and agency name {company}",
+      "found_when": "The agency advertises an AWA award trophy for a web project that is absent from official AWA winner books",
+      "not_found_when": "The project title, award category, and winning year match official AWIA competition records",
+      "couldnt_check_when": "AWA website is protected by automated bot challenges",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Web design samples presented accurately without unverified national web awards"
+        },
+        {
+          "firm": "Punch Buggy",
+          "date": "2026-11-03",
+          "result": "Shopify Partner achievements and digital design accolades independently confirmed"
+        },
+        {
+          "firm": "Process Creative",
+          "date": "2026-11-03",
+          "result": "High-end e-commerce brand showcases align with legitimate commercial design credentials"
+        },
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Web Industry Association (AWIA AWA)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the agency claim pre-qualified Australian Government supplier standing on the DTA Digital Marketplace (BuyICT) without active seller registration?",
+      "why_it_matters": "Commercial and education clients relying on agency government pre-qualification are misled regarding procurement vetting and compliance.",
+      "source": {
+        "name": "Digital Transformation Agency (BuyICT)",
+        "url": "https://www.buyict.gov.au/",
+        "type": "government_procurement_portal",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the BuyICT Digital Marketplace Seller Directory for {company}",
+      "found_when": "The agency markets itself as an approved Australian Government digital vendor but lacks an approved BuyICT seller profile",
+      "not_found_when": "The agency's Digital Marketplace approved seller status is confirmed active",
+      "couldnt_check_when": "BuyICT portal directory is offline",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "SME business web services priced and delivered without uncertified government supplier claims"
+        },
+        {
+          "firm": "Punch Buggy",
+          "date": "2026-11-03",
+          "result": "Commercial corporate agency credentials verified for enterprise and retail clients"
+        },
+        {
+          "firm": "Process Creative",
+          "date": "2026-11-03",
+          "result": "Private enterprise e-commerce focus with transparent commercial terms"
+        },
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Digital Transformation Agency (BuyICT)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "missing_credential"
+      ],
+      "question": "Does the web development studio claim certified ACSC Essential Eight compliance or government cybersecurity vetting without formal independent assessment?",
+      "why_it_matters": "Misrepresenting ACSC cyber maturity creates dangerous security assumptions for corporate clients storing sensitive Australian consumer data.",
+      "source": {
+        "name": "Australian Cyber Security Centre (ACSC)",
+        "url": "https://www.cyber.gov.au/",
+        "type": "national_cybersecurity_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check agency security claims against ACSC Essential Eight maturity guidelines and accredited IRAP assessment reports",
+      "found_when": "The agency markets websites as 'ACSC Certified' or 'Essential Eight Compliant' without accredited assessment",
+      "not_found_when": "The agency accurately describes standard SSL encryption and CMS patch management without false federal certifications",
+      "couldnt_check_when": "ACSC online resource portal is undergoing maintenance",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "WordPress and WooCommerce security practices follow standard SSL and plugin hygiene"
+        },
+        {
+          "firm": "Punch Buggy",
+          "date": "2026-11-03",
+          "result": "Cloud e-commerce security backed by Shopify PCI-DSS Level 1 compliance"
+        },
+        {
+          "firm": "Process Creative",
+          "date": "2026-11-03",
+          "result": "Enterprise digital security conforms to standard global cloud protocols without unearned certifications"
+        },
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Cyber Security Centre (ACSC)"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "claims_check",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "question": "Does the agency impose unfair recurring website maintenance contracts with hidden renewal lock-ins that contradict Australian Consumer Law unfair contract terms?",
+      "why_it_matters": "Unfair contract terms in standard form small business contracts are illegal and void under recent Australian Consumer Law reforms, exposing agencies to substantial statutory penalties.",
+      "source": {
+        "name": "Australian Competition and Consumer Commission (ACCC Fair Trading)",
+        "url": "https://www.accc.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Audit website maintenance contract terms and SLA disclosures against ACCC unfair contract terms guidance for small business",
+      "found_when": "Standard service agreements contain automatic rollover clauses without notice or unreasonable exit penalties",
+      "not_found_when": "Maintenance contracts offer transparent cancellation terms and comply with Australian Consumer Law standards",
+      "couldnt_check_when": "ACCC portal is unavailable",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Web hosting and maintenance agreements offer clear monthly terms"
+        },
+        {
+          "firm": "Punch Buggy",
+          "date": "2026-11-03",
+          "result": "Support retainers structured with transparent service scope and standard commercial cancellation"
+        },
+        {
+          "firm": "Process Creative",
+          "date": "2026-11-03",
+          "result": "Commercial client agreements comply with Australian business contracting standards"
+        },
+        {
+          "firm": "Defyn Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Australian Competition and Consumer Commission (ACCC Fair Trading)"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:40:45.613Z",
+  "_pair": "AU-web-design-company",
+  "_round": 2
+}

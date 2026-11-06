@@ -1,0 +1,201 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the business have a public profile on Saramin with conflicting representative, establishment date, headcount, or registered address details?",
+      "why_it_matters": "Saramin links corporate data to National Pension Service records; outdated representative or office details create conflicting public profiles for prospective hires and commercial partners.",
+      "source": {
+        "name": "Saramin Corporate Information",
+        "url": "https://www.saramin.co.kr/zf_user/company-info/view",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Google for '<business name>' site:saramin.co.kr/zf_user/company-info/view and inspect the indexed company profile card.",
+      "found_when": "A company profile is indexed displaying a representative name, establishment year, employee count, or registered headquarters address that contradicts what the business currently displays.",
+      "not_found_when": "No Saramin company profile page is indexed, or the listed representative, address, and founding date match current business records.",
+      "couldnt_check_when": "The business name is shared by multiple unrelated entities across South Korea, or Saramin returns a generic index redirect.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Ministry of Employment and Labor publicly blacklisted the business as a habitual wage arrears defaulter under the Labor Standards Act?",
+      "why_it_matters": "Inclusion on the government's wage defaulter blacklist carries severe public reputational damage, commercial contract disqualification, and government loan restrictions.",
+      "source": {
+        "name": "Ministry of Employment and Labor Wage Defaulter Public Disclosure",
+        "url": "https://www.moel.go.kr/info/defaulter/defaulterList.do",
+        "language": "Korean"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.moel.go.kr/info/defaulter/defaulterList.do?searchField=4&searchText={company}",
+      "how_to_query": "Open the URL with the business name and inspect the table: if listed, it outputs the business name, CEO name, industry, registered address, and overdue wage amount.",
+      "found_when": "The business appears in the table with a confirmed match on business name and location, citing specific delinquent wage amounts and the public disclosure cycle.",
+      "not_found_when": "The table displays '데이터가 존재하지 않습니다.' (Data does not exist), confirming no public wage arrears disclosure.",
+      "couldnt_check_when": "The MOEL portal returns a network timeout or connection reset, or multiple distinct businesses share the exact common trade name in the same municipality.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Korea Fair Trade Commission published a formal corrective order, warning, or fine against the business for unfair trade or deceptive advertising?",
+      "why_it_matters": "Published FTC decision documents (의결서) disclose regulatory violations such as deceptive online sales, unfair subcontracting, or false advertising that clients and vendors inspect.",
+      "source": {
+        "name": "Korea Fair Trade Commission Online Case Processing System",
+        "url": "https://case.ftc.go.kr",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Google for '<business name>' site:case.ftc.go.kr and read the case resolution documents or decision summaries.",
+      "found_when": "An official FTC decision or warning document names the business as the respondent (피심인) and orders corrective action, penalty surcharges, or formal warnings.",
+      "not_found_when": "No decision or case document is found referencing the company on the KFTC case system.",
+      "couldnt_check_when": "The query returns general regulatory notices without naming the specific company, or the case system site search is not indexed for recent decisions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the business hold an active or expired INNO-BIZ Technology Innovation SME certification that is missing from its public marketing?",
+      "why_it_matters": "Inno-Biz certification confers valuable procurement incentives, tax deductions, and preferential credit guarantee benefits that expired or unpublicized credentials fail to leverage.",
+      "source": {
+        "name": "INNO-BIZ Technology Innovation Association SME Registry",
+        "url": "https://www.innobiz.net/company/company2_list.asp",
+        "language": "Korean"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.innobiz.net/company/company2_list.asp?SearchKey=c&Co_Name={company}",
+      "how_to_query": "Open the query URL and inspect the table for company name, CEO name, region, industry sector, and certification expiry date (이노비즈만료일).",
+      "found_when": "The company is listed with valid or expired Inno-Biz status, showing the official expiry date, sector, and representative.",
+      "not_found_when": "The table returns empty or pagination displays 0 results for the company name.",
+      "couldnt_check_when": "The Inno-Biz ASP server is temporarily unreachable or the business operates under a newly changed corporate name not updated in the registry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the business have an international B2B directory profile on Kompass Korea with conflicting export details, address, or phone number?",
+      "why_it_matters": "International trade directories like Kompass often retain stale contact telephone numbers and outdated company management names seen by overseas buyers.",
+      "source": {
+        "name": "Kompass Korea B2B Directory",
+        "url": "https://kr.kompass.com/c/",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Google for '<business name>' site:kr.kompass.com/c/ and check the profile card for address, phone number, executive personnel, and product descriptions.",
+      "found_when": "An indexed company profile lists obsolete phone numbers, previous office addresses, or former executives no longer associated with the business.",
+      "not_found_when": "No profile page exists on kr.kompass.com/c/ for the business, or all listed contact info aligns with the company's verified details.",
+      "couldnt_check_when": "The company name matches multiple disparate manufacturers or suppliers, or the Kompass page requires registration to view full contact numbers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "companies with tech, creative, or corporate hiring presence",
+      "question": "Does the business appear on Wanted with conflicting office location, founding date, or corporate profile details?",
+      "why_it_matters": "Wanted company pages display corporate headquarters addresses, business scale, and hiring profiles that misinform candidates and B2B partners when left unmanaged.",
+      "source": {
+        "name": "Wanted Corporate Directory",
+        "url": "https://www.wanted.co.kr/company/",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Google for '<business name>' site:wanted.co.kr/company and inspect the company profile overview.",
+      "found_when": "An indexed Wanted company page presents outdated company headquarters addresses, obsolete founding dates, or misstated corporate scale.",
+      "not_found_when": "No company profile is indexed on wanted.co.kr/company, or the details match current public statements.",
+      "couldnt_check_when": "The company name is ambiguous or matches unrelated software or agency entities.",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Supreme Court of Korea Internet Registry Office (인터넷등기소)",
+      "url": "https://www.iros.go.kr",
+      "why": "Official corporate registration certificates (법인 등기부등본) require viewing fees (700 KRW), Korean proprietary security plugins (AnySign4PC), and session-gated form posts; cannot be queried free by open URL."
+    },
+    {
+      "name": "National Tax Service HomeTax (국세청 홈택스)",
+      "url": "https://www.hometax.go.kr",
+      "why": "Business registration status check (사업자등록상태조회) requires a 10-digit business registration number (which the automated system does not have), digital certificates, and encrypted AJAX POST requests with session tokens."
+    },
+    {
+      "name": "Financial Supervisory Service DART (전자공시시스템)",
+      "url": "https://dart.fss.or.kr",
+      "why": "Public disclosure search is restricted to external audit corporations (외감법인) and listed companies; web interface uses internal receipt IDs (rcpNo) rather than GET company name URLs, and OpenDART API requires private 40-character API key registration."
+    },
+    {
+      "name": "KIPRIS Trademark Register (특허정보넷 키프리스)",
+      "url": "https://www.kipris.or.kr",
+      "why": "Web search interface relies on POST form submission and session state cookies with dynamic JavaScript rendering; direct GET URL parameter queries redirect to home, and automated access is restricted to the KIPRIS Plus REST API requiring private API keys."
+    },
+    {
+      "name": "Republic of Korea Electronic Gazette (대한민국 전자관보)",
+      "url": "https://www.gwanbo.go.kr",
+      "why": "The electronic gazette search is implemented as a single-page application (SPA) submitting POST-based JSON API payloads without deep GET query string links."
+    },
+    {
+      "name": "Fair Trade Commission E-Commerce Vendor Search (공정거래위원회 통신판매사업자조회)",
+      "url": "https://www.ftc.go.kr",
+      "why": "The public verification popup endpoint (bizCommPop.do) strictly requires a valid business registration number (wrkr_no), and the main portal list search (bizCommList.do) uses CSRF-protected form submissions."
+    },
+    {
+      "name": "Public Procurement Service Nara Marketplace Disqualified Contractor Search (조달청 나라장터 부정당업자 제재정보)",
+      "url": "https://www.g2b.go.kr",
+      "why": "Hosted on non-standard port 8101 (g2b.go.kr:8101) with restricted external network routing and internal form-post session tokens."
+    },
+    {
+      "name": "KoDATA / CRETOP Corporate Intelligence (한국평가데이터 크레탑)",
+      "url": "https://www.cretop.com",
+      "why": "Commercial credit rating platform that requires paid corporate membership subscriptions and login authentication to view company profiles and financial ratings."
+    },
+    {
+      "name": "Korea Yellow Pages (한국옐로우페이지)",
+      "url": "http://www.yellowpage-kr.com",
+      "why": "Protects all page requests with an automated client-side JavaScript challenge and cookie wall (CUPID AES challenge) that blocks automated HTTP fetchers."
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-04T05:50:25.169Z",
+  "_pair": "KR-country-layer",
+  "_round": 1,
+  "_schema": 3
+}

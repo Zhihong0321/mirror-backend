@@ -1,0 +1,428 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "identity_registration",
+      "problem_type": [
+        "missing_credential",
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "The business holds itself out as an accountant, chartered accountant, akauntan, C.A.(M), audit firm or accounting firm, or shows an MIA logo or a firm number.",
+      "question": "Is this practice a member firm registered with the Malaysian Institute of Accountants, and do the firm number, address, phone, email and website on the public firm search match the website?",
+      "why_it_matters": "The Accountants Act 1967 protects the word accountant, and MIA tells the public that audit, accounting and tax services require an MIA member with a practising certificate, so a firm that is not on the search or that publishes another firm's details is holding out on a false footing.",
+      "source": {
+        "name": "Malaysian Institute of Accountants Members/Firm Search",
+        "url": "https://mia.org.my/members-firm-search/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "form post; the results address uses an opaque encoded token rather than the firm name, and a plain download of the search page is stopped by a Cloudflare bot check",
+      "how_to_query": "Open the Members/Firm Search and submit the firm name. On the results page read Firm No., Firm's Name, Address, State, Country, telephone, email and website. Compare each of those with the business website. Do not treat the separate Mergers and Affiliations listing as this register.",
+      "found_when": "The firm holds itself out as an accounting or audit firm but no matching member firm is returned, or a match is returned whose firm number, address, phone, email or website contradicts the site.",
+      "not_found_when": "A member firm of the same name is returned and the firm number, address, phone, email and website agree with the site.",
+      "couldnt_check_when": "The search form cannot be submitted, the page shows only a bot-verification interstitial, or the results table does not load.",
+      "not_applicable_when": "The business does not hold itself out as an accountant, chartered accountant, audit firm or accounting firm and shows no MIA logo or firm number.",
+      "possible_match_when": "A similar firm name is returned but the address and contact details are a different practice.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "tax practice",
+      "applies_when": "The site says a named person is a tax agent approved by the Ministry of Finance, or it quotes a tax-agent approval number.",
+      "question": "Is the named person on the Ministry of Finance MyCukai public tax-agent search, and is the approval still inside its certificate end date?",
+      "why_it_matters": "HASiL tells taxpayers to check this list before appointing an agent, and an expired or missing Ministry approval contradicts a claim that the firm can represent clients before HASiL.",
+      "source": {
+        "name": "MyCukai Carian Ejen Cukai",
+        "url": "https://mycukai.treasury.gov.my/portal/carian-lhdn-public",
+        "type": "government_register",
+        "access": "open",
+        "language": "ms"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "form post; the search posts to a Liferay portlet action with a session p_auth token, so the person's name is not in a fetchable URL",
+      "how_to_query": "On Carian Ejen Cukai, search the person's name in Nama Ejen (letters and spaces only). Optionally set Negeri to the firm's state and Nama Bermula Dengan Abjad to the first letter. Read Maklumat Ejen Cukai (name, address, phone and any red 'Tamat Tempoh Kelulusan'), Nombor Kelulusan and Tarikh Sijil Tamat. The result is the person, not the firm name. HASiL links this page from its appointment-of-tax-agent page.",
+      "found_when": "The site quotes an approval number or says the person is approved by the Ministry of Finance, but that person is not returned; or the person is returned with 'Tamat Tempoh Kelulusan' or a Tarikh Sijil Tamat that has passed while the site presents the approval as current.",
+      "not_found_when": "The named person is returned, the address fits the firm, the row is not marked tamat tempoh, and Tarikh Sijil Tamat is still in the future.",
+      "couldnt_check_when": "The form cannot be posted, or the site claims tax-agent approval but names no individual who can be typed into Nama Ejen.",
+      "not_applicable_when": "The site does not claim Ministry of Finance tax-agent approval and does not quote an approval number. A person who is only described as a professional accountant is outside this list.",
+      "possible_match_when": "The personal name matches but the address and phone are not the firm's.",
+      "used_in": "paid",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "audit firm",
+      "applies_when": "The firm says it audits listed companies, public-interest entities or schedule funds, or that it is registered with the Audit Oversight Board.",
+      "question": "Is the firm on the Audit Oversight Board register of audit firms dated 30 September 2026, or is it in that PDF's suspended-firms table?",
+      "why_it_matters": "Only an AOB-registered firm may audit a Malaysian public-interest entity or schedule fund, and a firm under suspension cannot keep that work.",
+      "source": {
+        "name": "Securities Commission Malaysia, Audit Oversight Board register of audit firms",
+        "url": "https://www.sc.com.my/aob/registration-of-audit-firm-and-individual-auditors",
+        "type": "regulator",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.sc.com.my/api/documentms/download.ashx?id=d9ccd757-0924-4f1f-bf40-ecb0145bc6a2",
+      "manual_reason": "",
+      "how_to_query": "Open the PDF linked as Register of Audit Firms as at 30 September 2026. Read the registered-firms table (audit firm, MIA number, LLP number) and the suspended-firms table, including the suspension note. Match on firm name and, if the site shows one, the AF number.",
+      "found_when": "The firm claims AOB registration or audits of listed companies, public-interest entities or schedule funds, but it is not in the registered table; or the firm appears in the suspended table.",
+      "not_found_when": "The firm makes that claim and appears in the registered table, and it does not appear in the suspended table.",
+      "couldnt_check_when": "The PDF does not open or the registered and suspended tables cannot be read.",
+      "not_applicable_when": "The firm does not claim AOB registration and does not claim audits of listed companies, public-interest entities or schedule funds.",
+      "possible_match_when": "A similar firm name appears but the MIA firm number does not match the number on the website.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "audit firm",
+      "applies_when": "The firm offers statutory audit, or the site names an audit partner, or the firm claims Audit Oversight Board registration.",
+      "question": "Has the Audit Oversight Board published a sanction against this firm or against a partner named on its site?",
+      "why_it_matters": "A published reprimand, monetary penalty, prohibition or suspension is a current regulatory record that clients of a listed-company auditor would expect the firm to disclose.",
+      "source": {
+        "name": "Audit Oversight Board sanctions",
+        "url": "https://www.sc.com.my/aob/aobs-sanctions",
+        "type": "regulator",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.sc.com.my/aob/aobs-sanctions",
+      "manual_reason": "",
+      "how_to_query": "Read every year section on the AOB sanctions page. Match the firm name and any named partner, and use the audit-firm number in the entry (AF) when the site shows one. Read the action taken and the date.",
+      "found_when": "The firm or a named partner appears in a sanction entry.",
+      "not_found_when": "Neither the firm nor any named partner appears in any year section on the page.",
+      "couldnt_check_when": "The sanctions page does not load or the year sections are empty of the table text.",
+      "not_applicable_when": "The business does not offer statutory audit, names no audit partner, and does not claim AOB registration.",
+      "possible_match_when": "A similar personal or firm name appears but the audit-firm number in the sanction is a different firm.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "audit firm",
+      "applies_when": "The site names an audit partner or says that a named person is an auditor registered with the Audit Oversight Board.",
+      "question": "Is each named audit partner on the Audit Oversight Board register of individual auditors dated 30 September 2026, and is that person in the suspended table?",
+      "why_it_matters": "A partner who has left the register, or who is suspended, cannot sign opinions on public-interest entities even if the firm is still registered.",
+      "source": {
+        "name": "Audit Oversight Board register of individual auditors",
+        "url": "https://www.sc.com.my/aob/registration-of-audit-firm-and-individual-auditors",
+        "type": "regulator",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.sc.com.my/api/documentms/download.ashx?id=7fd952b6-9481-402d-8a4f-c01720318abf",
+      "manual_reason": "",
+      "how_to_query": "Open the PDF linked as Register of Individual Auditors as at 30 September 2026. Read both the registered-individual-auditors table and the suspended-individual-auditors table. Match the person's name and the firm name beside it.",
+      "found_when": "The site says the person is an AOB-registered auditor but the person is not in the registered table, or the person appears in the suspended table.",
+      "not_found_when": "Each person the site presents as an AOB auditor is in the registered table, under this firm, and is not in the suspended table.",
+      "couldnt_check_when": "The PDF does not open or the registered and suspended tables cannot be read.",
+      "not_applicable_when": "The site names no audit partner and does not claim that any person is an AOB-registered auditor.",
+      "possible_match_when": "The personal name matches a row whose firm is a different practice.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "The site names a principal, partner or staff member, or shows an MIA membership number.",
+      "question": "Does the Malaysian Institute of Accountants Disciplinary Committee index name any person who is held out as part of this firm?",
+      "why_it_matters": "A published disciplinary order can suspend the member, cancel the practising certificate or record an unsatisfactory practice review, which the firm's own site may still omit.",
+      "source": {
+        "name": "MIA Disciplinary Committee decisions",
+        "url": "https://mia.org.my/regulatory-public-interest/complaints-sanctions/disciplinary-committees-decisions/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://mia.org.my/regulatory-public-interest/complaints-sanctions/disciplinary-committees-decisions/",
+      "manual_reason": "",
+      "how_to_query": "Read the index of names, membership numbers and dates. If a name or membership number matches someone on the website, open that person's decision page and read the firm name and the order. The index fetched in November 2026 runs from 12 January 2023 to 20 May 2026; do not treat older conduct as checked. Also look at the judicial-review list at https://mia.org.my/regulatory-public-interest/complaints-sanctions/judicial-review-decisions/ before reporting an order as final.",
+      "found_when": "A person named on the site, or a membership number the site shows, is on the index, and the linked decision names this firm or does not name a different firm.",
+      "not_found_when": "None of the people or membership numbers shown on the site appear on the index.",
+      "couldnt_check_when": "The index does not load, or the site names no person and no membership number, because the index is arranged by member rather than by firm.",
+      "not_applicable_when": "The business names no accountant and shows no MIA membership number.",
+      "possible_match_when": "The personal name matches but the membership number, or the firm named in the decision, is different.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "The site names a principal, partner or staff member, or shows an MIA membership number.",
+      "question": "Did the MIA Disciplinary Appeal Board later confirm, vary or set aside an order against a person this firm holds out?",
+      "why_it_matters": "The appeal order is the one in force, so quoting the original punishment, or ignoring a suspension the appeal left in place, misstates the member's status.",
+      "source": {
+        "name": "MIA Disciplinary Appeal Board decisions",
+        "url": "https://mia.org.my/regulatory-public-interest/complaints-sanctions/disciplinary-appeal-boards-decisions/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://mia.org.my/regulatory-public-interest/complaints-sanctions/disciplinary-appeal-boards-decisions/",
+      "manual_reason": "",
+      "how_to_query": "Read the appeal index of names, membership numbers and dates. Open a matching person's page and read whether the Board confirmed, varied or reversed the Disciplinary Committee order, and the date the order took effect.",
+      "found_when": "A person named on the site is on the appeal index and the appeal order still imposes a suspension, removal, fine, reprimand or other punishment, or the website describes a punishment that the appeal order changed.",
+      "not_found_when": "None of the people or membership numbers shown on the site appear on the appeal index.",
+      "couldnt_check_when": "The appeal index does not load, or the site names no person and no membership number.",
+      "not_applicable_when": "The business names no accountant and shows no MIA membership number.",
+      "possible_match_when": "The personal name matches but the membership number on the appeal page is different.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "contact_mess",
+        "contradiction",
+        "missing_credential"
+      ],
+      "sub_segment": "audit firm",
+      "applies_when": "The firm offers statutory audit or displays an audit-firm number.",
+      "question": "Does the SSM audit-firm profile list this firm, and are the auditors named on the website still the current auditors rather than former auditors?",
+      "why_it_matters": "The Companies Commission sells this profile as the record of the registered audit firm, its branches, and its current and former auditors, so a partner who has left can still be presented as signing.",
+      "source": {
+        "name": "SSM Profil Firma Juruaudit",
+        "url": "https://www.ssm.com.my/bm/Pages/Product/Maklumat-Korporat.aspx",
+        "type": "government_register",
+        "access": "paid",
+        "language": "ms"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "paid and login; Profil Firma Juruaudit is sold through the SSM information portals SSM e-Info, MyDATA-SSM, SSM Search and SAFEDATA, not as a free page",
+      "how_to_query": "Buy the audit-firm profile for the firm name or firm number from https://www.ssm-einfo.my/ or the other SSM information portals named on the product page. Read the firm particulars, branch particulars, current auditors and former auditors. Compare the current auditors with the people named on the website.",
+      "found_when": "No audit-firm profile exists for a firm that offers statutory audit or shows a firm number, or a person the website still names as an auditor appears only as a former auditor, or the registered address or firm number contradicts the website.",
+      "not_found_when": "A profile is returned for this firm and the current auditors, firm number and address agree with the website.",
+      "couldnt_check_when": "The portal requires an account or a payment that cannot be completed, or the profile product is marked unavailable.",
+      "not_applicable_when": "The business does not offer statutory audit and does not display an audit-firm number.",
+      "possible_match_when": "More than one firm profile is close to the name and the firm number is not shown on the website.",
+      "used_in": "paid",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "The site says the firm or a named person holds an MIA practising certificate, or that the firm is an active MIA member firm in public practice.",
+      "question": "Does MIA's official search confirm that the member is registered, that the practising certificate is valid, and that the member firm is active?",
+      "why_it_matters": "MIA's own notice says audit, accounting and tax services require a practising certificate, and the public firm search does not show certificate validity or whether the firm is closed.",
+      "source": {
+        "name": "MIA Official Search",
+        "url": "https://mia.org.my/membership/official-search/",
+        "type": "professional_body",
+        "access": "paid",
+        "language": "en"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "fee and emailed form; the search is a PDF form sent to memberfirm@mia.org.my with a RM15 fee per search, not a public results page",
+      "how_to_query": "Complete the current Official Search form, linked from the Official Search page (Search Form May 2024 at https://mia.org.my/box/2024/05/Search-Form-May2024.pdf), for the individual and for the member firm. Pay the RM15 search fee unless the requester is in a fee-free category stated on the form, and email the form and payment slip to memberfirm@mia.org.my. Read registration, membership category, practising-certificate validity, firm status (active or closed), ownership, and the firm address and phone.",
+      "found_when": "MIA replies that the person is not a member, the practising certificate is not valid, or the firm is not registered or is closed, while the site says otherwise.",
+      "not_found_when": "MIA replies that the person is a member with a valid practising certificate and that the firm is registered and active, and the address MIA gives agrees with the site.",
+      "couldnt_check_when": "The fee cannot be paid or MIA has not replied.",
+      "not_applicable_when": "The site does not claim an MIA practising certificate and does not claim that the firm is an active MIA member firm.",
+      "possible_match_when": "MIA returns a member of the same name with a different membership number or a different firm.",
+      "used_in": "paid",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "The site says the firm is a MICPA Approved Training Employer, an Approved Accounting Firm for MICPA training, or an ATE.",
+      "question": "Is the firm on the current MICPA Approved Training Employers list, and is the row an Approved Accounting Firm rather than another kind of employer?",
+      "why_it_matters": "Students and clients treat ATE status as MICPA's approval of the practice, and the list is the only public record of that approval.",
+      "source": {
+        "name": "MICPA Approved Training Employers",
+        "url": "https://www.micpa.com.my/resources/ate/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "en"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.micpa.com.my/v2/wp-content/uploads/2026/09/MICPA-ATE-2026_111126.pdf",
+      "manual_reason": "",
+      "how_to_query": "Open the Approved Training Employers page and use the current 'full list of ATEs' PDF if the file name has changed. In the PDF, match Firm/Company Name. Read the ATE column: AAF is an approved accounting firm and ATO is an approved training organisation that is not an accounting firm. Also read city, state and website.",
+      "found_when": "The site claims MICPA ATE or approved-accounting-firm status and the firm is absent from the current PDF, or the site calls itself an approved accounting firm while the row is ATO or names a different website.",
+      "not_found_when": "The firm appears in the current PDF as AAF, and the city and website do not contradict the site.",
+      "couldnt_check_when": "The ATE page or the PDF it links does not open.",
+      "not_applicable_when": "The site makes no MICPA Approved Training Employer or approved-accounting-firm claim.",
+      "possible_match_when": "A similar name appears in another state or with a different website.",
+      "used_in": "preview",
+      "confidence": "medium"
+    },
+    {
+      "rank": 11,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "insolvency practitioner",
+      "applies_when": "The site says the firm or a named person is an approved liquidator or penyelesai under the Companies Act 2016.",
+      "question": "Is the named person an approved liquidator, as distinct from an accountant who has only passed MIA's public-practice steps?",
+      "why_it_matters": "Acting as a company liquidator requires Ministry of Finance approval, and MIA's own practice pathway sends that application through BLESS rather than through membership alone.",
+      "source": {
+        "name": "Accountant General's Department, approval of company auditors and liquidators",
+        "url": "https://www.anm.gov.my/perkhidmatan/kelulusan-juruaudit-dan-penyelesai-syarikat",
+        "type": "government_register",
+        "access": "walled",
+        "language": "ms"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "no public list; new and renewal applications are lodged in the BLESS licensing system at https://www.bless.gov.my/bless, and the Accountant General page publishes guidelines and interview schedules, not the roll of approved liquidators",
+      "how_to_query": "Read the Accountant General page only to confirm there is no downloadable roll. Do not infer approval from an interview schedule. A human check has to ask the firm for the approval letter or use a channel the Ministry actually answers. Do not use the Labuan IBFC liquidator page, which was last updated on 20 May 2021.",
+      "found_when": "A public document on the Accountant General site or a BLESS result that is actually obtained shows the application was refused, suspended or not renewed, while the site still says the person is an approved liquidator.",
+      "not_found_when": "This lookup cannot clear the claim. Absence from a page that is not a roll is not evidence that the person is approved.",
+      "couldnt_check_when": "No public roll can be opened, which is the usual case, or BLESS asks for a login.",
+      "not_applicable_when": "The site does not claim that the firm or a named person is an approved liquidator or penyelesai.",
+      "possible_match_when": "",
+      "used_in": "paid",
+      "confidence": "low"
+    },
+    {
+      "rank": 12,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "tax practice",
+      "applies_when": "The site uses ACTIM, FCTIM or CTP, or says a named person is a member of the Chartered Tax Institute of Malaysia.",
+      "question": "Can the Chartered Tax Institute of Malaysia membership claimed on the site be checked on a public member list?",
+      "why_it_matters": "ACTIM and FCTIM are membership designations, and a firm can print them without a public list that a client can use to test the claim.",
+      "source": {
+        "name": "Chartered Tax Institute of Malaysia",
+        "url": "https://www.ctim.org.my/",
+        "type": "professional_body",
+        "access": "walled",
+        "language": "en"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "no public list; the CTIM site publishes how to join and the council, and it does not publish a member or firm directory",
+      "how_to_query": "Search the CTIM site for the person's name and for a member directory. If none is published, record the claim as unchecked. Do not treat a council-member page as a member roll.",
+      "found_when": "CTIM publishes a page that names this person and says the membership has lapsed or been removed, while the site still uses ACTIM, FCTIM or CTP.",
+      "not_found_when": "This lookup cannot clear the claim, because there is no public directory in which a current member would be expected to appear.",
+      "couldnt_check_when": "No public member directory can be found, which is the usual case.",
+      "not_applicable_when": "The site does not claim CTIM membership and does not use ACTIM, FCTIM or CTP.",
+      "possible_match_when": "A council or event page names a person with the same name and no membership number is shown.",
+      "used_in": "paid",
+      "confidence": "low"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Labuan IBFC list of approved auditors",
+      "url": "https://labuanibfc.com/service-providers/approved-auditors",
+      "why": "The page says it was last updated on 20 May 2021, so a missing name would not prove the firm is unapproved today."
+    },
+    {
+      "name": "Labuan FSA COR@L entity search",
+      "url": "https://coral.labuanfsa.gov.my/lfsamaster/service/create.html?service=registerItemSearch",
+      "why": "The page says the search is for entities other than auditors and liquidators, and it asks for a CAPTCHA."
+    },
+    {
+      "name": "MIA Member Firms Mergers and Affiliations listing",
+      "url": "https://e-merger.mia.org.my/FirmListingv2.asp?strView=1",
+      "why": "It is a short opt-in commercial listing, and MIA says it does not check the entries and that the list is not a recommendation."
+    },
+    {
+      "name": "NACRA past winners",
+      "url": "https://mia.org.my/regulatory-public-interest/nacra/past-winners/",
+      "why": "The awards go to companies for their reports, not to accounting firms."
+    },
+    {
+      "name": "MCMC list of qualified auditors",
+      "url": "https://www.mcmc.gov.my/ms/sectors/digital-signature/list-of-qualified-auditors",
+      "why": "These are digital-signature technical auditors under the Digital Signature Regulations, not company auditors."
+    },
+    {
+      "name": "Bank Negara Malaysia approved financial advisers",
+      "url": "https://www.bnm.gov.my/-/approved-financial-advisers",
+      "why": "That is a financial-adviser licence, not an accounting-firm licence."
+    },
+    {
+      "name": "Jabatan Insolvensi e-Insolvensi",
+      "url": "https://e-insolvensi.mdi.gov.my/",
+      "why": "It searches bankruptcy and company winding-up status, which the country layer already covers, and it is behind a login."
+    },
+    {
+      "name": "ANM and BLESS company-auditor application",
+      "url": "https://www.anm.gov.my/perkhidmatan/kelulusan-juruaudit-dan-penyelesai-syarikat",
+      "why": "The page is the application route for company-auditor approval and does not publish the roll. The checkable records are the MIA firm search and the paid SSM audit-firm profile."
+    },
+    {
+      "name": "ACCA and CPA Australia directories",
+      "url": "https://www.cpaaustralia.com.au/",
+      "why": "Those are other countries' bodies. This run is limited to Malaysia's own bodies."
+    }
+  ],
+  "open_questions": [
+    "The MIA Members/Firm Search results that were readable show firm number, address, phone, email and website, but not practising-certificate validity or active/closed status. The exact form fields were not in the fetched text.",
+    "The Disciplinary Committee index that was fetched begins on 12 January 2023. Older orders may exist only outside that page.",
+    "HASiL defines a tax agent as a professional accountant or a person approved by the Minister. The precise class of professional accountant who may practise without a separate MyCukai approval number is not stated on the search page.",
+    "No current public roll of Labuan approved auditors was found. The marketing list is dated 20 May 2021, and the COR@L entity search says it excludes auditors."
+  ],
+  "_received_at": "2026-11-03T07:30:07.651Z",
+  "_pair": "MY-accounting-firm",
+  "_round": 1,
+  "_schema": 2
+}

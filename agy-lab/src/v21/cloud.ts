@@ -6,7 +6,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
 
 /** A value from the repo's .env, else the environment. */
-function envValue(name: string): string {
+export function envValue(name: string): string {
   const envPath = path.join(root, '.env');
   if (fs.existsSync(envPath)) {
     const m = fs.readFileSync(envPath, 'utf8').match(new RegExp(`^${name}=(.*)`, 'm'));
@@ -73,7 +73,7 @@ const BRAVE_SUPPORTED_COUNTRIES = new Set([
   'AR', 'AU', 'AT', 'BE', 'BR', 'CA', 'CL', 'DK', 'FI', 'FR', 'DE', 'GR', 'HK', 'IN', 'ID', 'IT', 'JP', 'KR', 'MY', 'MX', 'NL', 'NZ', 'NO', 'CN', 'PL', 'PT', 'PH', 'RU', 'SA', 'ZA', 'ES', 'SE', 'CH', 'TW', 'TR', 'GB', 'US', 'ALL'
 ]);
 
-export async function braveSearch(query: string, options: { count?: number; country?: string } = {}): Promise<BraveHit[]> {
+export async function braveSearch(query: string, options: { count?: number; country?: string; lang?: string } = {}): Promise<BraveHit[]> {
   const keys = await getCloudKeys();
   const count = options.count ?? 10;
   let lastErr: Error | null = null;
@@ -87,6 +87,8 @@ export async function braveSearch(query: string, options: { count?: number; coun
           q.set('country', cCode);
         }
       }
+      // The language of the results (Brave's search_lang, e.g. "ko"), for countries searched in their own language.
+      if (options.lang) q.set('search_lang', options.lang);
       const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${q}`, {
         headers: {
           'X-Subscription-Token': key,
@@ -273,14 +275,14 @@ export async function mapsSearch(keyword: string, max = 20): Promise<{ status: s
 /** One page or PDF read on a Local Gmap Worker PC (POST /api/fetch), whole page as markdown: the footer and
  *  menu links are what Step 1 reads the legal name and the about/contact pages from. Throws when no worker
  *  is online or the fetch failed, so the caller can fall back. A PDF reads at about 0.4 s a page. */
-export async function workerFetch(url: string): Promise<{ content: string; truncated: boolean }> {
+export async function workerFetch(url: string, format: 'markdown' | 'html' = 'markdown'): Promise<{ content: string; truncated: boolean }> {
   const health = await (await fetch(`${MAPS_URL}/health`)).json();
   if (!health.workersLive) throw new Error('no worker online');
   const headers = { authorization: `Bearer ${MAPS_KEY}`, 'content-type': 'application/json' };
   let res = await fetch(`${MAPS_URL}/api/fetch`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ url, mainContent: false, timeoutMs: 120_000, wait: 60 }),
+    body: JSON.stringify({ url, format, mainContent: false, timeoutMs: 120_000, wait: 60 }),
   });
   let data = await res.json();
   // 202: still running (a long PDF); each poll holds up to 60s, under the host's proxy limit.
@@ -313,5 +315,37 @@ export async function linkedinCompany(url: string): Promise<{ status: string; wo
     return { status: job.status, worker: job.worker, result: job.result, error: job.error ?? undefined };
   } catch (err: any) {
     return { status: 'failed', error: err.message };
+  }
+}
+
+// ---------------------------------------------------------------- Naver Place (South Korea)
+// Naver's mobile search page carries its Naver Place listings as data in the page: no key needed. Every listing is
+// kept as Naver returns it; which one is the company is Step 2's call. NAVER_SEARCH_URL can point elsewhere (a test).
+const NAVER_URL = process.env.NAVER_SEARCH_URL ?? 'https://m.search.naver.com/search.naver';
+const NAVER_FIELDS = ['category', 'address', 'roadAddress', 'phone', 'virtualPhone', 'visitorReviewCount', 'blogCafeReviewCount'] as const;
+
+export type NaverPlace = { id: string; name: string } & Partial<Record<(typeof NAVER_FIELDS)[number], string>>;
+
+export async function naverPlaceSearch(query: string): Promise<{ status: 'done' | 'empty' | 'failed'; places: NaverPlace[]; error?: string }> {
+  try {
+    // Read on a worker PC (owner, 2026-11-06: every page read goes through the local worker).
+    const { content: html } = await workerFetch(`${NAVER_URL}?query=${encodeURIComponent(query)}`, 'html');
+    // Each listing starts with "id":"<digits>","name":"..."; its fields run until the next listing starts.
+    const starts = [...html.matchAll(/"id":"(\d{6,})","name":("(?:[^"\\]|\\.)*")/g)];
+    const places = new Map<string, NaverPlace>();
+    starts.forEach((m, i) => {
+      if (places.has(m[1])) return;
+      const seg = html.slice(m.index!, starts[i + 1]?.index ?? m.index! + 3000);
+      const place: NaverPlace = { id: m[1], name: String(JSON.parse(m[2])).replace(/<\/?mark>/g, '') };
+      for (const k of NAVER_FIELDS) {
+        const v = seg.match(new RegExp(`"${k}":("(?:[^"\\\\]|\\\\.)*")`))?.[1];
+        const s = v ? String(JSON.parse(v)) : '';
+        if (s) place[k] = s;
+      }
+      places.set(m[1], place);
+    });
+    return { status: places.size ? 'done' : 'empty', places: [...places.values()] };
+  } catch (err: any) {
+    return { status: 'failed', places: [], error: err.message };
   }
 }

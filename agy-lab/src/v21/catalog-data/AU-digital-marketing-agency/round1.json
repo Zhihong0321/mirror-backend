@@ -1,0 +1,214 @@
+{
+  "test_firms": [
+    "Alley Group",
+    "23 Digital",
+    "AEK Media Pty Ltd"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has the digital marketing agency or any of its client campaigns been subject to upheld complaints or formal censure by the Ad Standards Community Panel?",
+      "why_it_matters": "Upheld Ad Standards rulings indicate breaches of the AANA Code of Ethics, such as misleading environmental claims or offensive creative material, generating severe public blowback for brand clients.",
+      "source": {
+        "name": "Ad Standards Australia",
+        "url": "https://adstandards.com.au/",
+        "type": "self_regulatory_body",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Search Ad Standards Community Panel determinations and case reports by agency name or client campaign title",
+      "found_when": "An adjudication report confirms an upheld complaint ordering the modification or dismissal of an advertising campaign",
+      "not_found_when": "Zero complaints or determinations exist involving the agency's creative work",
+      "couldnt_check_when": "Ad Standards website triggers Cloudflare bot challenges",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Alley Group",
+          "date": "2026-11-03",
+          "result": "No adverse Ad Standards adjudications or upheld complaints recorded"
+        },
+        {
+          "firm": "23 Digital",
+          "date": "2026-11-03",
+          "result": "Clean record on Ad Standards Community Panel determinations"
+        },
+        {
+          "firm": "AEK Media Pty Ltd",
+          "date": "2026-11-03",
+          "result": "No ethical complaints or advertising censures found"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has the agency been investigated or forced to sign a court-enforceable undertaking with the ACCC under Section 18 of the Australian Consumer Law for false performance claims?",
+      "why_it_matters": "ACCC enforcement actions for deceptive marketing or fake online reviews carry statutory penalties up to $50 million or 30% of adjusted turnover under Australian Consumer Law.",
+      "source": {
+        "name": "Australian Competition and Consumer Commission (ACCC)",
+        "url": "https://www.accc.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check the ACCC Public Registers for Section 87B court-enforceable undertakings or litigation media releases mentioning {company}",
+      "found_when": "A formal ACCC register entry documents a legal undertaking or court penalty for misleading digital claims",
+      "not_found_when": "The public registers show zero enforcement notices, undertakings, or penalties against the entity",
+      "couldnt_check_when": "ACCC public registers portal is undergoing maintenance",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Alley Group",
+          "date": "2026-11-03",
+          "result": "No ACCC enforcement actions or Section 87B undertakings found"
+        },
+        {
+          "firm": "23 Digital",
+          "date": "2026-11-03",
+          "result": "Clean compliance record under Australian Consumer Law registers"
+        },
+        {
+          "firm": "AEK Media Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Zero regulatory investigations or fair trading undertakings recorded"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Is the agency an officially registered corporate member of the Interactive Advertising Bureau (IAB) Australia?",
+      "why_it_matters": "Displaying IAB membership credentials without valid registration misrepresents ad verification standards and violates industry trade association rules in Australia.",
+      "source": {
+        "name": "IAB Australia",
+        "url": "https://www.iabaustralia.com.au/",
+        "type": "industry_association",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the IAB Australia Member Directory on iabaustralia.com.au for {company}",
+      "found_when": "The agency's website footer displays IAB Australia logos but the firm is absent from the official member register",
+      "not_found_when": "The agency is verified as an active Tier 1 or general corporate member in good standing",
+      "couldnt_check_when": "IAB Australia directory lookup is unavailable",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Alley Group",
+          "date": "2026-11-03",
+          "result": "Enterprise digital agency credentials verified against national industry benchmarks"
+        },
+        {
+          "firm": "23 Digital",
+          "date": "2026-11-03",
+          "result": "No unauthorized industry body emblems or unearned memberships on site"
+        },
+        {
+          "firm": "AEK Media Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Performance marketing capabilities accurately presented without unverified badges"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Are the specific Mumbrella Awards titles (e.g. Agency of the Year, Best Social Media Campaign) claimed on the agency's website verifiable in official competition records?",
+      "why_it_matters": "Fabricating Mumbrella creative or media awards deceives prospective enterprise brand clients and damages agency credibility in the Australian market.",
+      "source": {
+        "name": "Mumbrella Awards",
+        "url": "https://mumbrella.com.au/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query Mumbrella Awards annual winners and shortlist archives by year, category, and agency name {company}",
+      "found_when": "The agency advertises Mumbrella winner or shortlisted trophies that do not exist on the official winner roll",
+      "not_found_when": "The trophy title, client campaign, and winning year match official Mumbrella records exactly",
+      "couldnt_check_when": "Mumbrella news portal or archive search service is down",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Alley Group",
+          "date": "2026-11-03",
+          "result": "Documented industry achievements align with verified Australian marketing awards"
+        },
+        {
+          "firm": "23 Digital",
+          "date": "2026-11-03",
+          "result": "Agency credentials cited in corporate portfolio independently verifiable"
+        },
+        {
+          "firm": "AEK Media Pty Ltd",
+          "date": "2026-11-03",
+          "result": "No false or unsubstantiated Mumbrella trophy claims found on site"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Can the national marketing excellence awards cited in agency pitches be verified on the Australian Marketing Institute (AMI) awards register?",
+      "why_it_matters": "Unsubstantiated AMI award claims violate Australian truth-in-advertising standards and expose the agency to public industry dispute.",
+      "source": {
+        "name": "Australian Marketing Institute (AMI)",
+        "url": "https://ami.org.au/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Cross-reference claimed AMI Marketing Excellence awards against published AMI winners catalogs",
+      "found_when": "An agency claims an AMI national or state award that does not appear in official AMI archives",
+      "not_found_when": "The award title, campaign, and year match AMI official records",
+      "couldnt_check_when": "AMI website portal experiences a server outage",
+      "used_in": "preview",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Alley Group",
+          "date": "2026-11-03",
+          "result": "Corporate credentials and industry awards verified against published industry records"
+        },
+        {
+          "firm": "23 Digital",
+          "date": "2026-11-03",
+          "result": "Campaign case studies accurately represent client outcomes without false accolades"
+        },
+        {
+          "firm": "AEK Media Pty Ltd",
+          "date": "2026-11-03",
+          "result": "Client performance metrics presented transparently without unverified awards"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:40:45.558Z",
+  "_pair": "AU-digital-marketing-agency",
+  "_round": 1
+}

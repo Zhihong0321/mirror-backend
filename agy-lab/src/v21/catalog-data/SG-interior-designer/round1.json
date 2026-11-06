@@ -1,0 +1,160 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "sub_segment": "HDB renovation contractors",
+      "applies_when": "The business claims to be listed in HDB DRC or says it directly carries out HDB flat renovation",
+      "question": "Does the contractor’s identity and HDB directory listing match its HDB renovation claim?",
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "HDB says contractors must be listed before carrying out renovations in HDB flats.",
+      "source": {
+        "name": "HDB directory of renovation contractors",
+        "url": "https://www.hdb.gov.sg/business-partners/renovation-contractors/directory-of-renovation-contractors-drc",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "The HDB directory requires an interactive search and session; it is not a static company list.",
+      "how_to_query": "Use the HDB e-service to search the exact legal name and directory reference; distinguish designer from the actual contractor and check current status.",
+      "found_when": "A confirmed official record contradicts the entity or current DRC listing explicitly claimed.",
+      "not_found_when": "The same contractor is currently listed under the claimed details.",
+      "couldnt_check_when": "Search cannot be completed, entity ambiguous, subcontracting role uncertain, or absence alone is not independently confirmed.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "preview",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "sub_segment": "renovation contractors",
+      "applies_when": "The business claims CaseTrust renovation accreditation",
+      "question": "Does the stated CaseTrust renovation accreditation match the accredited legal entity and current period?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Accreditation is voluntary and a badge must accurately describe current status.",
+      "source": {
+        "name": "CaseTrust renovation accreditation",
+        "url": "https://case.org.sg/casetrust",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "CaseTrust site returned security verification; no bypass or automated lookup.",
+      "how_to_query": "Check the current official accreditation list for the exact legal entity and scheme, or obtain confirmation from CASE.",
+      "found_when": "Confirmed official accreditation details contradict the specific claim.",
+      "not_found_when": "Official current records confirm the same entity and scheme.",
+      "couldnt_check_when": "Site security verification blocks access, identity is ambiguous, list is incomplete or status cannot be confirmed.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "sub_segment": "commercial fit-out contractors",
+      "applies_when": "The business claims BCA CRS registration or a CR06 workhead and grade",
+      "question": "Does BCA’s directory show the claimed workhead, grade and validity for the same company?",
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Registration is relevant to the work and procurement claims made by the firm.",
+      "source": {
+        "name": "BCA directory",
+        "url": "https://www.bca.gov.sg/eBACS/bca_directory",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Directory uses an interactive company search; registration is not a universal licence for all design work.",
+      "how_to_query": "Search the company or UEN in BCA e-directory; compare the exact CRS workhead, grade and expiry against the claim.",
+      "found_when": "An identified current record explicitly contradicts the advertised workhead, grade or expiry.",
+      "not_found_when": "The record matches the entity and the precise current claim.",
+      "couldnt_check_when": "Search fails, firm identity uncertain, or no listing alone does not establish a legal breach.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "sub_segment": "interior design",
+      "applies_when": "The firm claims an IDCS 2025 I-DEA award",
+      "question": "Does the claimed IDCS I-DEA project, category and award tier match the organiser gallery?",
+      "category": "awards",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "why_it_matters": "Correct award attribution protects the accuracy of a portfolio.",
+      "source": {
+        "name": "IDCS 2025 I-DEA winners gallery",
+        "url": "https://idcs.sg/dea2025/gallery/idea/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "https://idcs.sg/dea2025/gallery/idea/",
+      "manual_reason": "",
+      "how_to_query": "Compare exact project, category, award tier and credited firm with the 2025 gallery and linked project.",
+      "found_when": "An official record for the same project contradicts an explicit claim with identity and roles confirmed.",
+      "not_found_when": "The gallery confirms the specific award, year and credited firm.",
+      "couldnt_check_when": "Different year or programme, gallery unavailable, attribution uncertain or project absent.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "sub_segment": "interior design",
+      "applies_when": "A named professional or firm claims IDCS membership",
+      "question": "Does the claimed IDCS membership match the relevant individual or firm listed?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Individual and firm memberships must not be conflated.",
+      "source": {
+        "name": "Interior Design Confederation Singapore members listing",
+        "url": "https://idcs.sg/members/listing",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Directory search and completeness require manual verification.",
+      "how_to_query": "Search the public listing, compare named person or firm and membership type; verify current status with IDCS if unclear.",
+      "found_when": "A confirmed record explicitly conflicts with the stated membership.",
+      "not_found_when": "The appropriate named member and stated current status are confirmed.",
+      "couldnt_check_when": "Listing unavailable, identity unclear, coverage or current status uncertain.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T09:05:57.067Z",
+  "_pair": "SG-interior-designer",
+  "_round": 1,
+  "_schema": 2
+}

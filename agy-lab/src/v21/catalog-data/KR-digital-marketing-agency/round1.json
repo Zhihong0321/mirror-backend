@@ -1,0 +1,316 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Digital advertising and performance agencies that enter the Korea Digital Advertising Awards, or that claim a 대한민국 디지털 광고 대상 win",
+      "question": "Is this agency named on the 2025 Korea Digital Advertising Awards (대한민국 디지털 광고 대상, KODAF) winner list, and at what prize level?",
+      "why_it_matters": "The owner may have a win they never put on the site, or may be showing a KODAF prize that this roster does not list.",
+      "source": {
+        "name": "Korea Digital Advertising Awards 2025 winner list (대한민국 디지털 광고 대상, 한국디지털광고협회)",
+        "url": "http://kodaa.or.kr/2025kodaf",
+        "type": "award winner list",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "http://kodaa.or.kr/2025kodaf",
+      "how_to_query": "Read this single page. The agency is the 회사명 column in the 2025 수상작 명단 (and the two 올해의 디지털 광고인 tables). Also note 부문, 수상 grade and 캠페인명. The 광고주 column is the client, not the agency. This file is the 2025 roster only; older 대한민국 온라인 광고 대상 tables are separate pages on kodaa.or.kr.",
+      "found_when": "The business name appears as 회사명 next to a prize (Grand Prix, 대상, 금상, 은상, 동상 or 우수상) and a campaign. Worth showing if the agency does not display that win, or displays a higher grade or a campaign that is not on this list.",
+      "not_found_when": "The name is not in the 2025 tables. Most agencies did not win. Absence is normal and is not itself a problem.",
+      "couldnt_check_when": "The page does not load, the name matches only the advertiser, a joint credit such as '대홍기획, 더에스엠씨' is ambiguous, or a short name matches a different firm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Web, app and social digital agencies that enter i-Awards (웹어워드코리아, 스마트앱어워드, 소셜아이어워드) or that claim a best-digital-agency rank",
+      "question": "Does i-Awards Korea list this agency as 제작사 or 대행사 on a winning entry, or on a best-digital-agency ranking?",
+      "why_it_matters": "Agencies often cite a Web Award Korea or best-agency rank that is missing from the association's own pages, or they omit a real credit.",
+      "source": {
+        "name": "i-Awards Korea (아이어워즈, 한국인터넷전문가협회)",
+        "url": "https://www.i-award.or.kr/",
+        "type": "award site",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the business name on host i-award.or.kr and read the top pages. On prize tables the agency is 제작사 (web and app) or 대행사 (social). 소속사 is usually the client. Candidate detail pages repeat 제작사. The 2022 best-agency table at /Ba/ba2022.aspx names agencies in text. The live /Ba/ board did not expose 2025-2026 ranking names as text when fetched.",
+      "found_when": "A prize page or the best-agency table names the business as 제작사, 대행사 or ranked agency, with a year, award name and category. Worth showing if that credit is absent from the agency's own site, or if the site claims a year or rank these pages do not support.",
+      "not_found_when": "No indexed i-award.or.kr page names the business as the maker or ranked agency. Most agencies have no i-Awards credit. That is normal.",
+      "couldnt_check_when": "The only hit is the client in 소속사, a short studio name matches another entrant, or the current best-agency board is an image with no readable names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential",
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Agencies that operate Kakao ads or that claim to be a Kakao official agency or Kakao Premium Partner",
+      "question": "Is this agency on Kakao's 2026 official agency list, and do the phone, site and KPP mark match what the agency says?",
+      "why_it_matters": "Clients use this list to avoid unofficial agencies, so a wrong phone, a missing KPP badge, or a false 'official Kakao agency' claim is invisible on the agency's own site.",
+      "source": {
+        "name": "Kakao Business official agency list 2026 (카카오비즈니스 공식 대행사 리스트)",
+        "url": "https://kakaobusiness.gitbook.io/main/partner/list",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://kakaobusiness.gitbook.io/main/partner/list",
+      "how_to_query": "Read this one page. It is the 2026 roster in 가나다 order. Each row has the agency name, phone, website, ad products (디스플레이, 검색, 메시지) and a KPP mark where Kakao Premium Partner applies. The page said it was last updated about three months before this check.",
+      "found_when": "The name is on the list. Tell the owner if the phone or website differs from the agency's own site, if a KPP mark is present and not shown by the agency, or if the agency claims KPP and the row has no mark.",
+      "not_found_when": "The name is not on the 2026 list. Most agencies are not Kakao official agencies. Absence is normal unless the agency claims that status.",
+      "couldnt_check_when": "The GitBook page fails to load, only part of the table is returned, or a short name matches a different row.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "search advertising agencies",
+      "applies_when": "Agencies that sell search or keyword ads, or that claim to be a Nate keyword-ad agency",
+      "question": "Is this agency on Nate's live keyword-ad agency list, as a 전문대행사 or a 일반대행사, and do the phone and email match?",
+      "why_it_matters": "This public roster still prints a phone and email that often disagree with Kakao, Ably and the agency's own site, and it is the list advertisers use to check who may sell Nate keyword ads.",
+      "source": {
+        "name": "Nate keyword-ad agency list (네이트 키워드광고 대행사)",
+        "url": "https://keywordshop.nate.com/board/AgentInfo",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://keywordshop.nate.com/board/AgentInfo",
+      "how_to_query": "Read this page. Two groups are printed in Korean: 전문대행사 and 일반대행사. Each entry has the agency name, a phone and an email. There is no 'as of' date on the page. Names are the Korean trade names, without a separate English column.",
+      "found_when": "The name appears under 전문대행사 or 일반대행사 with a phone and email. Worth showing when that phone or email differs from the agency's site or from another official roster, or when the agency claims the other tier.",
+      "not_found_when": "The name is in neither group. Many digital agencies do not sell Nate keyword ads. Absence is normal unless they claim this roster.",
+      "couldnt_check_when": "The page does not load, or the brand name on Google Maps is not the legal name printed here.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Performance and display agencies that have operated Naver display ads, or that still claim to be a Naver GFA or official partner",
+      "question": "Is this agency on Naver's last published GFA display-ad partner table, and do the phone, email and site still match?",
+      "why_it_matters": "The last full public table still carries phones and emails, and agencies keep citing a Naver partner badge after that contract window closed.",
+      "source": {
+        "name": "Naver GFA display-ad partner notice (네이버 성과형 디스플레이 광고 파트너사 안내)",
+        "url": "https://ads.naver.com/notice/16135",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://ads.naver.com/notice/16135",
+      "how_to_query": "Read notice 16135. The table columns are 파트너사명, 공식 Site, 대표 Mail and 전화번호, 72 rows, Korean legal names. The notice itself says the contract period is 2024-07-01 to 2025-06-30. The live card directory at https://ads.naver.com/sub/partner returned no company names when opened, so this notice is the readable roster, not proof of a current search-ad partnership.",
+      "found_when": "The name is a row in that table. A phone, email or site that differs from the agency's current site is worth showing. Treat the row as a historical GFA listing, not as a current Naver search-ad badge.",
+      "not_found_when": "The name is not among the 72 rows. That does not mean the agency is not a current Naver partner.",
+      "couldnt_check_when": "The notice fails to load, or the Maps name is a brand while the row uses 주식회사 plus the legal name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential",
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "performance agencies",
+      "applies_when": "Performance agencies that run Toss Ads or that claim Toss Ads Excellence Partner (TEP) status",
+      "question": "Is this agency on the 2026 second-half Toss Ads TEP list, and do the email and website match?",
+      "why_it_matters": "TEP is a selected badge agencies put on proposals, while this page is the one that actually names who holds it and which email Toss publishes.",
+      "source": {
+        "name": "Toss Ads TEP agency list 2026 H2 (토스애즈 TEP 에이전시)",
+        "url": "https://toss-ads.gitbook.io/guide/intro/agency",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://toss-ads.gitbook.io/guide/intro/agency",
+      "how_to_query": "Read the table headed 2026 하반기 TEP 에이전시. Columns are 에이전시명, a short blurb written by the agency, 메일주소 and 홈페이지, in 가나다 order. The page says the blurbs are supplied by the agencies and are not a Toss performance guarantee.",
+      "found_when": "The name is in the TEP table. Worth showing if the agency does not mention TEP, or if the published email or homepage differs from the agency's own site.",
+      "not_found_when": "The name is not in the 2026 H2 table. Most agencies are not TEP. Absence is normal unless they claim the badge.",
+      "couldnt_check_when": "The GitBook page fails, or a group name (for example a holding name versus a brand) does not match the row.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "fashion commerce marketplace agencies",
+      "applies_when": "Agencies that operate Ably ads or fashion-commerce performance ads, or that claim to be an Ably official agency",
+      "question": "Is this agency on Ably's official ad-agency list (2026), and do the phone and email match the agency's other listings?",
+      "why_it_matters": "Ably says non-official agencies cannot run its ads, and the phones and emails on this list often differ from the same firm's Zigzag or Nate row.",
+      "source": {
+        "name": "Ably official ad agency list (에이블리 광고 공식 대행사)",
+        "url": "https://www.ablyads.com/agency_list",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.ablyads.com/agency_list",
+      "how_to_query": "Read both tables on this page: 우수 대행사 (2026, with a blurb) and 전체 공식 대행사 (marked 2026.10, 가나다). Columns include 대행사명, 연락처, 이메일 and 홈페이지. The page states that agencies not on the list cannot operate Ably ads.",
+      "found_when": "The name is on either table. Worth showing when the phone or email differs from the agency's site or from another platform roster, or when the agency claims Ably status and is only on one of the two tables.",
+      "not_found_when": "The name is on neither table. Agencies that do not sell Ably ads will be absent. That is normal unless they claim the status.",
+      "couldnt_check_when": "The page does not load, or the same brand is listed under a different spelling.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "fashion commerce marketplace agencies",
+      "applies_when": "Agencies that operate Zigzag or Kakao Style ads, or that claim to be a 2026 Kakao Style official or premier agency",
+      "question": "Is this agency on Kakao Style's 2026 Zigzag official-agency list, and is it also a premier agency?",
+      "why_it_matters": "The premier mark and the phone on this 2026 list are what sellers see, and they do not always match the Ably or Nate contact for the same agency.",
+      "source": {
+        "name": "Kakao Style 2026 Zigzag official agencies (카카오스타일 공식 대행사)",
+        "url": "https://partnerlounge.kakaostyle.com/advertisement/agency/2026-zigzag-agency",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://partnerlounge.kakaostyle.com/advertisement/agency/2026-zigzag-agency",
+      "how_to_query": "Read this page, dated 2026-01-05. The first table is 지그재그 프리미어 에이전시 with name, phone and award notes (2026.01). The second table is the full 2026 official list in 가나다 order, with phone, email and a blurb. The page says non-contracted agencies cannot operate the ads and that the list can change.",
+      "found_when": "The name is on the premier table, the full table, or both. Worth showing if premier status is claimed but missing, or if the phone or email differs from the agency's site or from its Ably row.",
+      "not_found_when": "The name is on neither table. Absence is normal for agencies that do not run Zigzag ads, unless they claim this contract.",
+      "couldnt_check_when": "The partner-lounge page fails, or the list note that names can change means a very new contract is not on this January 2026 snapshot.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential"
+      ],
+      "sub_segment": "interior and lifestyle commerce agencies",
+      "applies_when": "Agencies that operate Today's House product ads, or that claim to be a 오늘의집 official agency",
+      "question": "Is this agency on the Today's House official agency list, and which phone and email does that page publish?",
+      "why_it_matters": "The page warns that unofficial operators can add fees or leak account data, and the contact it prints can differ from the agency's other official rows.",
+      "source": {
+        "name": "Today's House official ad agencies (오늘의집 공식 대행사)",
+        "url": "https://ohouse-ad.oopy.io/agency",
+        "type": "official partner directory",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://ohouse-ad.oopy.io/agency",
+      "how_to_query": "Read the single table marked 26.10 updated, sorted 가나다. Columns are 대행사명, 담당자명, 연락처, 이메일 and 홈페이지. When opened it listed two agencies only. A personal name in 담당자명 is part of the row.",
+      "found_when": "The name is a row. Worth showing if the phone, email or named contact differs from the agency's site, or if the agency does not mention this official status.",
+      "not_found_when": "The name is not in the small table. Almost all agencies will be absent. That is normal unless they claim 오늘의집 공식 대행사 status.",
+      "couldnt_check_when": "The Oopy page fails to load, or the October 2026 snapshot has been replaced and the fetch is empty.",
+      "confidence": "high"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Naver live official partner cards (네이버 공식 파트너사)",
+      "url": "https://ads.naver.com/sub/partner",
+      "why": "Opened the page. It describes partner types but the company cards did not render; the body said no matching partner exists. No name search is possible from the fetched page. The older GFA notice is used instead and is labelled as expired."
+    },
+    {
+      "name": "Coupang Ads certified partners (쿠팡 인증 광고 파트너사)",
+      "url": "https://ads.coupang.com/partner",
+      "why": "A direct open returned Access denied. The roster cannot be read without a permission gate."
+    },
+    {
+      "name": "TikTok Marketing Partner directory Korea",
+      "url": "https://partners.tiktok.com/directory/pc/en?specialties=7&countries=KR",
+      "why": "The directory URL returned no page content. It is a script app, so a static read and a name search could not be confirmed."
+    },
+    {
+      "name": "Google Partners directory South Korea",
+      "url": "https://partnersdirectory.withgoogle.com/?regions=KR",
+      "why": "The region-filtered directory returned no content. A web search did not surface a profile page that contains a Korean agency name the system could open."
+    },
+    {
+      "name": "Karrot official agency FAQ (당근 전문가모드 공식 대행사)",
+      "url": "https://cs.kr.karrotmarket.com/wv/faqs/10912",
+      "why": "The FAQ URL returned no content when opened."
+    },
+    {
+      "name": "11st official agencies (11번가 공식대행사)",
+      "url": "https://ads.11st.co.kr/manage/info/agency",
+      "why": "The page failed to load, so the roster was not confirmed."
+    },
+    {
+      "name": "Clutch South Korea digital marketing agencies",
+      "url": "https://clutch.co/kr/agencies/digital-marketing",
+      "why": "Profiles are English. The Mobidays profile does not contain the Korean name 모비데이즈, and a Korean-name search also hits unrelated firms such as MobiDev. The Maps name would not reliably return the right profile."
+    },
+    {
+      "name": "Meta Korea Agency First Program 2026",
+      "url": "https://biz.chosun.com/en/en-it/2026/01/28/YOYETXDEQNEZ7BMD454XDJT2K4/",
+      "why": "The Korean news story does not print the 26 names. The English article lists romanised names only (MADUP, Wisebirds). A Korean Maps name will not match, and Chosun is a general news domain."
+    },
+    {
+      "name": "Fair Trade Commission case decisions (공정거래위원회 온라인 사건 처리 시스템)",
+      "url": "https://case.ftc.go.kr/ocp/co/ltfr.do",
+      "why": "Decisions are public, but the system covers every industry, not digital-marketing agencies. The list browser is a date search form. A name search there is a general legal check, which this run must leave out."
+    },
+    {
+      "name": "Korea Advertising Review Board decisions (한국광고자율심의기구)",
+      "url": "https://www.karb.or.kr/",
+      "why": "The public pages explain the review rules and name committee members. No free, readable list of decisions that names the advertising agency was found."
+    },
+    {
+      "name": "Korea Advertising Industry Association members (한국광고산업협회)",
+      "url": "http://www.kaaa.co.kr/council",
+      "why": "The public page lists board officers from large agencies, not a member directory that can be searched by business name."
+    },
+    {
+      "name": "Korea Digital Advertising Association member roll (한국디지털광고협회 회원사)",
+      "url": "http://kodaa.or.kr/",
+      "why": "No public member roster was found. The award page is used instead. Membership itself cannot be checked."
+    },
+    {
+      "name": "KIPFA best digital agency board 2025-2026 (베스트 디지털에이전시)",
+      "url": "https://www.i-award.or.kr/Ba/",
+      "why": "The live ranking page describes the 2026 and 2025 boards but did not include agency names as text when opened. Prize pages on the same host are covered by the i-Awards site search. The 2022 table at /Ba/ba2022.aspx does name agencies but is not the current ranking."
+    },
+    {
+      "name": "Korea Advertising Federation billings ranking PDF (한국광고총연합회 광고회사 현황)",
+      "url": "https://data.ad.co.kr/lit/j15/54/0e/cc/73/190579.pdf",
+      "why": "The PDF cited as the 2024 billings ranking did not open. News recaps name only the top 10 and are not a full roster."
+    }
+  ],
+  "open_questions": [
+    "Naver's current search-ad partner cards at ads.naver.com/sub/partner did not return company names. A later full HTML or PDF roster may exist and was not found.",
+    "No public member roll was found for 한국디지털광고협회 or 한국광고산업협회. If one is published as a plain page, it should be added.",
+    "Coupang, TikTok, Google Partners and Karrot partner directories were blocked or empty on a direct open. They may be readable in a browser session this fetch could not complete."
+  ],
+  "_received_at": "2026-11-04T06:51:12.155Z",
+  "_pair": "KR-digital-marketing-agency",
+  "_round": 1,
+  "_schema": 3
+}

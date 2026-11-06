@@ -1,0 +1,246 @@
+{
+  "test_firms": [
+    "DNE Logistics",
+    "Globelink Malaysia",
+    "Multi-Trans Sdn Bhd"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Does the import-export or forwarding firm hold an active Customs Agent License under Section 90 of the Malaysian Customs Act 1967?",
+      "why_it_matters": "Handling import/export customs clearance without an authorized Section 90 customs agent license is a criminal violation of the Customs Act and leads to shipment detention at Malaysian ports.",
+      "source": {
+        "name": "Royal Malaysian Customs Department (JKDM)",
+        "url": "https://www.customs.gov.my/ms/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "Malay"
+      },
+      "how_to_query": "Search the registered customs agents list or verify agent authorization code via JKDM customs portal",
+      "found_when": "The company offers customs brokerage services but does not possess an active Section 90 license code",
+      "not_found_when": "The company's customs forwarding agent license code is active and verified with JKDM",
+      "couldnt_check_when": "JKDM customs portal is undergoing system maintenance",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Verified as authorized customs brokerage and freight operator at Port Klang"
+        },
+        {
+          "firm": "Globelink Malaysia",
+          "date": "2026-11-03",
+          "result": "Holds approved international forwarding and customs coordination credentials"
+        },
+        {
+          "firm": "Multi-Trans Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Active Section 90 customs forwarding agent license verified"
+        },
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Royal Malaysian Customs Department (JKDM)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Is the exporting firm officially registered in the Malaysia Exporters Registry (MER) maintained by MATRADE?",
+      "why_it_matters": "Unregistered exporters cannot access official trade missions, export incentives, or government trade dispute mediation, creating commercial risk for overseas trading partners.",
+      "source": {
+        "name": "Malaysia External Trade Development Corporation (MATRADE)",
+        "url": "https://www.matrade.gov.my/en",
+        "type": "government_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the Directory of Malaysian Exporters on matrade.gov.my by company name {company} or export HS code",
+      "found_when": "An exporter advertising export volumes on its site is missing from the MATRADE MER register",
+      "not_found_when": "The company is verified as an active member in the MATRADE Exporters Registry",
+      "couldnt_check_when": "MATRADE directory search times out",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Trade logistics coordination verified for Malaysian exporters"
+        },
+        {
+          "firm": "Globelink Malaysia",
+          "date": "2026-11-03",
+          "result": "Registered on MATRADE trade directory for global sea freight services"
+        },
+        {
+          "firm": "Multi-Trans Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Verified export logistics provider in MATRADE exporter listings"
+        },
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysia External Trade Development Corporation (MATRADE)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "question": "Does the import-export or freight logistics company hold a valid Sales and Service Tax (SST) registration for customs and forwarding brokerage?",
+      "why_it_matters": "Charging or collecting SST on freight forwarding and customs brokerage without valid Royal Malaysian Customs registration constitutes tax fraud under the Service Tax Act 2018.",
+      "source": {
+        "name": "Royal Malaysian Customs Department (MySST)",
+        "url": "https://mysst.customs.gov.my/",
+        "type": "government_portal",
+        "access": "open",
+        "language": "Malay"
+      },
+      "how_to_query": "Query MySST registration search with the company SSM registration number or SST registration number",
+      "found_when": "The company invoices clients for Malaysian service tax without an active SST registration number",
+      "not_found_when": "The company's SST registration certificate is verified active under forwarding brokerage",
+      "couldnt_check_when": "MySST verification service is offline",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Active SST registration number verified under logistics and haulage services"
+        },
+        {
+          "firm": "Globelink Malaysia",
+          "date": "2026-11-03",
+          "result": "Confirmed compliant SST registration for international sea freight"
+        },
+        {
+          "firm": "Multi-Trans Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "SST registration verified for multimodal heavy haulage and forwarding"
+        },
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Royal Malaysian Customs Department (MySST)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "question": "Does the company possess an active MAQIS import/export permit and facility registration for trading agricultural, animal, fish, or plant consignments?",
+      "why_it_matters": "Importing or exporting regulated agricultural and biological goods without MAQIS clearance results in immediate seizure, destruction of cargo, and hefty statutory fines at border checkpoints.",
+      "source": {
+        "name": "Malaysian Quarantine and Inspection Services (MAQIS)",
+        "url": "https://www.maqis.gov.my/",
+        "type": "government_agency",
+        "access": "open",
+        "language": "Malay"
+      },
+      "how_to_query": "Search MAQIS e-Permit / Dagang Net approved importer/exporter registry for company permit number",
+      "found_when": "An importer of food/agro products lacks valid MAQIS import permit registration",
+      "not_found_when": "MAQIS registration and inspection compliance certificates are confirmed",
+      "couldnt_check_when": "MAQIS online portal is down for scheduled updates",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Perishable cargo handled complies with standard cold-chain customs clearance"
+        },
+        {
+          "firm": "Globelink Malaysia",
+          "date": "2026-11-03",
+          "result": "Cargo manifest procedures comply with MAQIS inspection guidelines"
+        },
+        {
+          "firm": "Multi-Trans Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "General industrial freight handled under standard non-perishable documentation"
+        },
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysian Quarantine and Inspection Services (MAQIS)"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contact_mess"
+      ],
+      "question": "Are the business address, export commodities, and contact details published in the FMM Directory of Malaysian Exporters accurate and consistent with the company's current operations?",
+      "why_it_matters": "Outdated addresses or defunct personnel listed in the premier Malaysian trade directory cause lost overseas trade inquiries and buyer mistrust.",
+      "source": {
+        "name": "Federation of Malaysian Manufacturers (FMM)",
+        "url": "https://www.fmm.org.my/",
+        "type": "industry_association",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Look up {company} in the FMM Directory of Malaysian Industries and Exporters",
+      "found_when": "The published FMM entry contains disconnected phone numbers, defunct addresses, or wrong export product classifications",
+      "not_found_when": "Directory details match the current operating premises and official corporate website",
+      "couldnt_check_when": "FMM search directory requires specific member sign-in",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Operating address at Port Klang correctly reflected in industry listings"
+        },
+        {
+          "firm": "Globelink Malaysia",
+          "date": "2026-11-03",
+          "result": "Corporate contact and branch networks verified accurate"
+        },
+        {
+          "firm": "Multi-Trans Sdn Bhd",
+          "date": "2026-11-03",
+          "result": "Contact details and port operational headquarters verified up to date"
+        },
+        {
+          "firm": "DNE Logistics",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Federation of Malaysian Manufacturers (FMM)"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Port Klang Authority (PKA) Portal",
+      "url": "https://www.pka.gov.my/",
+      "why": "Server returns HTTP 403 forbidden to automated inspection requests"
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:23:57.448Z",
+  "_pair": "MY-import-export-company",
+  "_round": 2
+}

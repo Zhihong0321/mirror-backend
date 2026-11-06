@@ -1,0 +1,290 @@
+{
+  "test_firms": [
+    "Kingdom Digital",
+    "LOCUS-T",
+    "One Search Pro"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Is the digital marketing agency an officially registered corporate member of the Malaysian Digital Association (MDA)?",
+      "why_it_matters": "Agencies in Malaysia frequently display MDA badges or claim official association representation to win corporate enterprise RFPs without holding active membership.",
+      "source": {
+        "name": "Malaysian Digital Association (MDA)",
+        "url": "https://malaysiandigitalassociation.org.my/",
+        "type": "industry_association",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the MDA Member directory on malaysiandigitalassociation.org.my for {company}",
+      "found_when": "The agency website displays the MDA membership insignia or claims affiliation but is absent from the MDA roster",
+      "not_found_when": "The agency is listed as an active corporate member on the MDA website",
+      "couldnt_check_when": "The MDA directory page is temporarily unavailable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Verified as active participating digital agency member in MDA programs"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "Does not make false claims of current MDA executive board representation"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "Website correctly does not claim unearned MDA accreditation"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysian Digital Association (MDA)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Are the specific d Awards trophies (e.g. Agency of the Year, Best Use of Digital/AI) claimed on the agency's website verifiable in the official MDA d Awards winners index?",
+      "why_it_matters": "Unsubstantiated or exaggerated advertising award claims mislead prospective clients and violate truth-in-advertising guidelines in Malaysia.",
+      "source": {
+        "name": "MDA d Awards",
+        "url": "https://d-awards.com.my/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query the d-awards.com.my past winners archive for the claimed year, campaign, and {company}",
+      "found_when": "The agency claims a Gold, Silver, or Bronze trophy that is absent or attributed to a different agency in the official archive",
+      "not_found_when": "The trophy citation, year, and award category match official d Awards archives exactly",
+      "couldnt_check_when": "The d Awards website archive database is unreachable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Confirmed Bronze award winner for Best Use of AI & Digital Tech at d-Awards"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "No inaccurate claims found regarding d-Awards trophies"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "Awards showcase verified against SME100 rather than unearned d-Awards"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for MDA d Awards"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Does the agency hold active accreditation with the Association of Accredited Advertising Agents Malaysia (4As)?",
+      "why_it_matters": "4As accreditation signifies adherence to stringent professional standards and financial vetting; bogus claims can lead to legal action by the association.",
+      "source": {
+        "name": "Association of Accredited Advertising Agents Malaysia (4As)",
+        "url": "https://aaaa.org.my/",
+        "type": "industry_association",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the 4As Member Agencies directory on aaaa.org.my for {company}",
+      "found_when": "Agency claims to be a 4As Accredited Agency but does not appear on the official 4As roll",
+      "not_found_when": "Agency is officially registered as a current 4As member agency",
+      "couldnt_check_when": "4As portal server fails to respond",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Agency credentials aligned through Hakuhodo network representation"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "Accurate branding focusing on performance partnerships without misleading 4As claims"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "Does not make unverified claims of 4As accreditation"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Association of Accredited Advertising Agents Malaysia (4As)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Does the agency legitimately hold the Kancil Awards (Gold/Silver/Bronze/Grand Prix) creative trophies cited in its marketing credentials pitch deck?",
+      "why_it_matters": "Claiming unearned Kancil awards—Malaysia's premier creative standard—destroys client trust and breaches intellectual property rights.",
+      "source": {
+        "name": "4As Kancil Awards",
+        "url": "https://www.kancilawards.com/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query the Kancil Awards winners index by agency name, year, and campaign title",
+      "found_when": "The agency advertises Kancil awards in pitch materials that do not exist on the official winners roll",
+      "not_found_when": "The award title, campaign, client name, and category match the official Kancil database",
+      "couldnt_check_when": "The Kancil Awards portal experiences an outage",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Creative campaigns verified in creative award archives"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "Does not publish unsubstantiated Kancil award claims"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "Focuses on performance marketing metrics rather than unverified creative awards"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for 4As Kancil Awards"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has any digital campaign produced or published by the agency been censured, issued a takedown notice, or fined by the Communications and Multimedia Content Forum (CMCF) Complaints Bureau?",
+      "why_it_matters": "Sanctions by the CMCF under the Malaysian Communications and Multimedia Act indicate unlawful marketing practices, misleading claims, or code violations that expose brand clients to regulatory liability.",
+      "source": {
+        "name": "Communications and Multimedia Content Forum of Malaysia (CMCF)",
+        "url": "https://contentforum.my/",
+        "type": "self_regulatory_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search CMCF annual reports and public complaints tribunal findings for campaigns managed by {company}",
+      "found_when": "A formal ruling confirms a breach of the Malaysian Content Code for false advertising or prohibited content",
+      "not_found_when": "Zero public complaint rulings or takedowns exist involving the agency",
+      "couldnt_check_when": "CMCF portal is unreachable",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "No adverse rulings or code violation notices found in CMCF records"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "Clean record under CMCF advertising compliance reports"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "No complaints or regulatory sanctions registered on CMCF"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Communications and Multimedia Content Forum of Malaysia (CMCF)"
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the agency falsely advertise government grant eligibility (such as MDEC SME Digitalisation Grant or Malaysia Digital Status) when it is not a certified MDEC Digital Partner?",
+      "why_it_matters": "Misleading SME clients about eligibility for Malaysian government matching grants risks client financial losses and potential investigations for fraudulent grant claims.",
+      "source": {
+        "name": "Malaysia Digital Economy Corporation (MDEC)",
+        "url": "https://www.mdec.my/",
+        "type": "government_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify Technology Solution Provider (TSP) and Malaysia Digital (MD) accreditation in MDEC directories",
+      "found_when": "The agency markets itself as a designated government grant partner but is absent from MDEC's approved partner register",
+      "not_found_when": "The agency's MD status or TSP accreditation is confirmed on official government listings",
+      "couldnt_check_when": "The MDEC partner directory is unavailable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Corporate technology standing verified without false grant partnership claims"
+        },
+        {
+          "firm": "LOCUS-T",
+          "date": "2026-11-03",
+          "result": "Accredited Google Premier Partner status verified without unapproved government grant claims"
+        },
+        {
+          "firm": "One Search Pro",
+          "date": "2026-11-03",
+          "result": "Marketing services accurately described without misleading SME grant promises"
+        },
+        {
+          "firm": "Kingdom Digital",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysia Digital Economy Corporation (MDEC)"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "MyIPO Trademark Register",
+      "url": "https://www.myipo.gov.my/",
+      "why": "Requires authenticated portal login to inspect agency trademark registrations"
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:23:57.444Z",
+  "_pair": "MY-digital-marketing-agency",
+  "_round": 2
+}

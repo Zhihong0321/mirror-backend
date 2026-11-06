@@ -1,0 +1,132 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "sub_segment": "digital marketing",
+      "applies_when": "The agency claims a Singapore Effie award for a campaign",
+      "question": "Does the claimed Effie Singapore campaign, year, award level and agency role match the organiser’s record?",
+      "category": "awards",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "why_it_matters": "Clients rely on accurate award and campaign credits.",
+      "source": {
+        "name": "Effie Worldwide Singapore",
+        "url": "https://effie.org/partners/singapore/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "The landing page shows selected cases; the complete archive search and access for each claim require manual checking.",
+      "how_to_query": "Search the Effie Singapore programme case archive for the exact campaign and year; open the case, compare award level and credited role. Landing page examples alone do not establish all winners.",
+      "found_when": "A confirmed record for the exact campaign contradicts the stated award or credited role.",
+      "not_found_when": "Official case evidence confirms the specific claim and agency role.",
+      "couldnt_check_when": "Case not in available archive, attribution ambiguous, paywall or coverage incomplete.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "sub_segment": "digital marketing",
+      "applies_when": "The agency claims IMDA SMEs Go Digital pre-approved status or PSG support for a named solution",
+      "question": "Does the claimed pre-approved solution and vendor match the official programme listing and eligibility terms?",
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "why_it_matters": "A blanket grant claim can create unrealistic customer expectations.",
+      "source": {
+        "name": "IMDA pre-approval of ICM vendors solutions",
+        "url": "https://www.imda.gov.sg/how-we-can-help/smes-go-digital/pre-approval-of-icm-vendors-solutions",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Vendor and solution listing may require interactive or authenticated portal access; verify exact listing manually.",
+      "how_to_query": "Identify exact solution, vendor, status, approval period and offer in the applicable official listing; do not infer client eligibility from a vendor claim.",
+      "found_when": "A current, confirmed official record contradicts the exact solution or vendor claim.",
+      "not_found_when": "The official listing confirms the same solution and vendor and the claim correctly describes eligibility.",
+      "couldnt_check_when": "No accessible listing, approval period unclear, reseller relationship uncertain, or absence alone.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "sub_segment": "advertising agency",
+      "applies_when": "The agency explicitly claims AAMS agency membership",
+      "question": "Is the claimed AAMS agency membership current and correctly attributed to this legal entity?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "A professional membership badge should accurately describe the organisation.",
+      "source": {
+        "name": "AAMS membership",
+        "url": "https://aams.org.sg/types-of-memberships",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "AAMS membership information is public but no complete, current searchable member register was established.",
+      "how_to_query": "Compare the exact entity and membership type with an authoritative current member list or confirm with AAMS.",
+      "found_when": "A confirmed official membership record explicitly conflicts with the claim.",
+      "not_found_when": "The same legal entity and stated current membership are confirmed.",
+      "couldnt_check_when": "No comprehensive accessible list, ambiguous entity, or no response from AAMS.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "sub_segment": "advertising agency",
+      "applies_when": "A named campaign or agency is reported in an ASAS outcome",
+      "question": "Is there a published ASAS outcome concerning the identified campaign, and is the agency’s role accurately described?",
+      "category": "regulator_action",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "why_it_matters": "A public advertising ruling may merit a factual response or correction.",
+      "source": {
+        "name": "Advertising Standards Authority of Singapore",
+        "url": "https://asas.org.sg/News",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "ASAS publishes selected outcomes, not an established complete searchable list of agency sanctions.",
+      "how_to_query": "Search ASAS published news for campaign and agency; open the original outcome and verify who is named, their role and date.",
+      "found_when": "A published ASAS outcome explicitly identifies this agency and its role; report exact wording and distinguish the advertiser from the agency.",
+      "not_found_when": "Relevant searchable published items contain no confirmed matching published outcome, without claiming no complaints exist.",
+      "couldnt_check_when": "Agency attribution unclear, relevant item unavailable, or no reliable search coverage.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [
+    "Locate a complete current AAMS membership directory and machine-readable PSG solution catalogue; no absence-based accusation without coverage."
+  ],
+  "_received_at": "2026-11-03T09:05:14.504Z",
+  "_pair": "SG-digital-marketing-agency",
+  "_round": 2,
+  "_schema": 2
+}

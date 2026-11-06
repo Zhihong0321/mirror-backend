@@ -48,6 +48,19 @@ const AU_SAMPLE_BATCH: ResearchInput[] = [
   { company: 'Chromatix', country: 'Australia', industry: 'Web design company', website: 'https://www.chromatix.com.au/' },
 ];
 
+// South Korea: names as on Google Maps (the native-language search list), searched in Korean.
+const KR_SAMPLE_BATCH: ResearchInput[] = [
+  { company: '세무법인 혜움', country: 'South Korea', industry: 'Accounting firm', website: 'https://www.heumtax.com/' },
+  // 이상한 마케팅 (isanghan.co.kr) was skipped by the gate on 2026-11-04: its site serves a script cookie check
+  // that no reader got past. 애드이피션시 stands in for the industry.
+  { company: '애드이피션시', country: 'South Korea', industry: 'Digital marketing agency', website: 'http://www.adef.co.kr/' },
+  // 제이엘무역 (worldjltrade.com) was skipped by the gate on 2026-11-04: its site is all images (the name is only in
+  // <title>), so there is no readable baseline. 한국동지무역 stands in for the industry.
+  { company: '한국동지무역(주)', country: 'South Korea', industry: 'Import export company', website: 'http://www.dongjitrading.com/' },
+  { company: '은민에스엔디', country: 'South Korea', industry: 'Interior designer', website: 'https://eunmin.co.kr/' },
+  { company: '(주)플랜아이', country: 'South Korea', industry: 'Web design company', website: 'http://www.plani.co.kr/' },
+];
+
 async function main() {
   const opts = parseArgs();
 
@@ -60,8 +73,9 @@ async function main() {
     const b = opts.batch.toLowerCase();
     const isSg = b.includes('sg');
     const isAu = b.includes('au');
-    const batchList = isAu ? AU_SAMPLE_BATCH : isSg ? SG_SAMPLE_BATCH : MY_SAMPLE_BATCH;
-    const batchName = isAu ? 'Australia' : isSg ? 'Singapore' : 'Malaysia';
+    const isKr = b.includes('kr');
+    const batchList = isKr ? KR_SAMPLE_BATCH : isAu ? AU_SAMPLE_BATCH : isSg ? SG_SAMPLE_BATCH : MY_SAMPLE_BATCH;
+    const batchName = isKr ? 'South Korea' : isAu ? 'Australia' : isSg ? 'Singapore' : 'Malaysia';
     console.log(`Running ${batchName} batch of ${batchList.length} companies:\n`);
     for (let i = 0; i < batchList.length; i++) {
       const item = batchList[i];

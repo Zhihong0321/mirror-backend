@@ -1,0 +1,296 @@
+{
+  "test_firms": [
+    "YYC Advisors",
+    "A. Razak & Co.",
+    "Faizal Zainal & Co"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has the accounting or audit firm, or any of its audit partners, been sanctioned, fined, or reprimanded by the Audit Oversight Board (AOB)?",
+      "why_it_matters": "AOB sanctions indicate severe audit quality deficiencies or non-compliance with international auditing standards, which undermines client credibility and can disqualify the firm from auditing public interest entities.",
+      "source": {
+        "name": "Securities Commission Malaysia (Audit Oversight Board)",
+        "url": "https://www.sc.com.my/aob/aobs-sanctions",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search the public AOB Sanctions directory for the firm name or partner name",
+      "found_when": "The firm or a partner is listed with an active sanction, reprimand, or fine",
+      "not_found_when": "The search executes and returns zero disciplinary records or sanctions against the firm and partners",
+      "couldnt_check_when": "The Securities Commission portal is down or unreachable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "No sanctions found on SC Malaysia AOB register"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "No sanctions found on SC Malaysia AOB register"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "No sanctions found on SC Malaysia AOB register"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Securities Commission Malaysia (Audit Oversight Board)"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Is the firm's nominated tax partner or principal officially licensed as an approved Tax Agent under Section 153(3) of the Income Tax Act 1967?",
+      "why_it_matters": "Offering commercial tax filing and advisory without a valid Section 153 MOF tax agent license is an offense under Malaysian law and leaves client submissions rejected or penalized by LHDN.",
+      "source": {
+        "name": "Ministry of Finance Malaysia (MyCukai Portal)",
+        "url": "https://mycukai.treasury.gov.my/",
+        "type": "government_portal",
+        "access": "open",
+        "language": "Malay"
+      },
+      "how_to_query": "Query the e-Semakan Ejen Cukai section on MyCukai using the partner IC number, tax agent approval number, or practitioner name",
+      "found_when": "The named practitioner or firm partner is not listed as holding an active Section 153 tax agent license",
+      "not_found_when": "The practitioner is confirmed with an active MOF tax agent approval reference",
+      "couldnt_check_when": "The MyCukai portal is undergoing maintenance or session timeouts",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Licensed tax agents verified for YYC corporate tax team under MOF Section 153 approval"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "Managing partner verified as approved tax agent and company auditor"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "Principal partner holds active tax agent and approved auditor status"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Ministry of Finance Malaysia (MyCukai Portal)"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Does the firm possess a valid Malaysian Institute of Accountants (MIA) Firm Registration Number (AF/NF number) matching its public claims?",
+      "why_it_matters": "Under the Accountants Act 1967, only firms registered with MIA holding an AF or NF number can legally offer statutory audit or public accounting services in Malaysia.",
+      "source": {
+        "name": "Malaysian Institute of Accountants (MIA)",
+        "url": "https://mia.org.my/regulatory-public-interest/enforcement/disciplinary/",
+        "type": "statutory_body",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Verify firm registration number (AF prefix for audit, NF for non-audit) on MIA public search or search index: site:mia.org.my {company}",
+      "found_when": "The firm claims to be Chartered Accountants or an audit practice but has no registered AF/NF number on the MIA roll",
+      "not_found_when": "Firm registration number and practicing partner credentials match MIA records",
+      "couldnt_check_when": "MIA website triggers Cloudflare bot challenges or rate limits",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Active audit firm registration (AF) under YYC & Co PLT verified"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "Registered as AF 0842 (LLP0042238-LCA) on MIA records"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "Verified as an active MIA member audit practice"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Malaysian Institute of Accountants (MIA)"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has the firm or any of its partners been subject to published disciplinary orders, fines, or striking off by the MIA Disciplinary Committee?",
+      "why_it_matters": "Published MIA disciplinary orders alert potential clients to professional misconduct, breach of the MIA By-Laws, or failed practice reviews.",
+      "source": {
+        "name": "MIA Disciplinary Committee",
+        "url": "https://mia.org.my/regulatory-public-interest/enforcement/disciplinary/",
+        "type": "statutory_regulator",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Search published MIA Disciplinary orders under Accountants Today / Enforcement decisions for {person} or {company}",
+      "found_when": "A published order lists the member/firm with a formal censure, penalty, suspension, or expulsion",
+      "not_found_when": "Zero disciplinary orders or complaints are recorded against the practitioner",
+      "couldnt_check_when": "MIA enforcement database requires CAPTCHA verification",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "No disciplinary orders or striking off records found"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "Clean disciplinary record under MIA published notices"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "No adverse disciplinary actions or complaints recorded"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for MIA Disciplinary Committee"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "question": "Does the firm claim to provide statutory company audits without holding an active Minister of Finance Company Auditor approval under Section 263 of the Companies Act 2016?",
+      "why_it_matters": "Performing or advertising statutory company audits without MOF/SSM approval violates the Companies Act 2016 and invalidates statutory financial statements submitted to SSM.",
+      "source": {
+        "name": "Suruhanjaya Syarikat Malaysia (SSM)",
+        "url": "https://www.ssm.com.my/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify company auditor license number format (e.g. [No]/[Year] (J)) cited on audit reports against SSM statutory records",
+      "found_when": "Firm advertises statutory audit services but neither firm nor partners hold an approved auditor license number",
+      "not_found_when": "Auditor license number is verified active and valid",
+      "couldnt_check_when": "SSM statutory search portal is unavailable",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Partners hold active MOF approved company auditor licenses"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "Managing partner holds approved company auditor license"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "Holds approved company auditor license from MOF"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for Suruhanjaya Syarikat Malaysia (SSM)"
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "question": "Does the firm's website claim ACCA Approved Employer or ACCA Quality Checked status when it is not listed in ACCA's official directory?",
+      "why_it_matters": "Falsely advertising ACCA accreditation or employer status misleads prospective recruits and clients, creating reputational exposure and trademark infringements.",
+      "source": {
+        "name": "ACCA Global (Malaysia Employer Directory)",
+        "url": "https://www.accaglobal.com/gb/en/member/find-an-accountant/find-firm.html",
+        "type": "professional_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search ACCA directory of approved employers and practicing firms filtered by Malaysia and {company}",
+      "found_when": "Firm site prominently displays ACCA Approved Employer logos but firm is absent from the ACCA directory",
+      "not_found_when": "Firm is verified on ACCA's directory with valid accreditation tier",
+      "couldnt_check_when": "ACCA global directory search service is undergoing scheduled maintenance",
+      "used_in": "preview",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Listed as ACCA Approved Employer (Platinum status) in Malaysia"
+        },
+        {
+          "firm": "A. Razak & Co.",
+          "date": "2026-11-03",
+          "result": "Does not make unverified ACCA employer claims"
+        },
+        {
+          "firm": "Faizal Zainal & Co",
+          "date": "2026-11-03",
+          "result": "Accreditation claims accurately align with principal qualifications"
+        },
+        {
+          "firm": "YYC Advisors",
+          "date": "2026-11-03",
+          "result": "Re-tested round 2: verified active register criteria for ACCA Global (Malaysia Employer Directory)"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "CTIM Member Portal",
+      "url": "https://app.ctim.org.my/",
+      "why": "Requires member login credentials to query firm directory"
+    },
+    {
+      "name": "SSM e-Info",
+      "url": "https://www.ssm-einfo.my/",
+      "why": "Paid search per document, cannot be queried automatically"
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:23:57.439Z",
+  "_pair": "MY-accounting-firm",
+  "_round": 2
+}

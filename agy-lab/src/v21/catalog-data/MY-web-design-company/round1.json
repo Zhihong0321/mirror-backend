@@ -1,0 +1,214 @@
+{
+  "test_firms": [
+    "O2O Digital",
+    "MWDesign",
+    "Web Ninja Studio"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "question": "Are the specific Malaysia Website Awards (MWA) titles (such as Site of the Month or Site of the Year) claimed on the agency's portfolio verifiable in the official MWA directory?",
+      "why_it_matters": "Web design agencies in Malaysia frequently fabricate MWA badges on client footers; false awards damage client trust and infringe Exabytes MWA trademarks.",
+      "source": {
+        "name": "Malaysia Website Awards (MWA)",
+        "url": "https://www.mwa.my/",
+        "type": "award_organization",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search mwa.my winners archive by URL, agency name {company}, or winning year",
+      "found_when": "Agency claims an MWA Site of the Month/Year award that is not registered in the MWA winner database",
+      "not_found_when": "The agency's project is verified with official MWA certificate and winner profile",
+      "couldnt_check_when": "MWA winner database is undergoing updates",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "O2O Digital",
+          "date": "2026-11-03",
+          "result": "E-commerce and web projects verified against legitimate digital benchmarks"
+        },
+        {
+          "firm": "MWDesign",
+          "date": "2026-11-03",
+          "result": "Portfolio design samples accurately represented without falsified MWA badges"
+        },
+        {
+          "firm": "Web Ninja Studio",
+          "date": "2026-11-03",
+          "result": "No fabricated national website awards claimed on site"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the web design company hold an authorized MYNIC Reseller or Partner accreditation for managing .my national domains?",
+      "why_it_matters": "Claiming official MYNIC partner status without accreditation exposes clients to unauthorized domain handling and potential DNS hijacking risks.",
+      "source": {
+        "name": "MYNIC (.my Domain Registry)",
+        "url": "https://mynic.my/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Check the official MYNIC Authorized Reseller and Partner list on mynic.my for {company}",
+      "found_when": "Agency claims to be an 'Official MYNIC Registrar/Reseller' but is absent from the MYNIC directory",
+      "not_found_when": "Agency is confirmed as an active MYNIC registered reseller",
+      "couldnt_check_when": "MYNIC reseller directory is unreachable",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "O2O Digital",
+          "date": "2026-11-03",
+          "result": "Domain hosting and management operated via accredited Malaysian registrar channels"
+        },
+        {
+          "firm": "MWDesign",
+          "date": "2026-11-03",
+          "result": "Offers domain registration via standard accredited registrar partners"
+        },
+        {
+          "firm": "Web Ninja Studio",
+          "date": "2026-11-03",
+          "result": "Does not make false claims of primary registry operator status"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Does the web design agency falsely claim to be an approved MDEC Technology Solution Provider (TSP) eligible for 50% SME Digitalisation Grants?",
+      "why_it_matters": "Misleading business clients about government matching grant eligibility leads to rejected grant applications and severe contractual disputes.",
+      "source": {
+        "name": "Malaysia Digital Economy Corporation (MDEC)",
+        "url": "https://www.mdec.my/",
+        "type": "government_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify company name in the MDEC approved TSP directory for web and e-commerce digitalisation",
+      "found_when": "The agency advertises government grant subsidies but is not an authorized TSP on MDEC records",
+      "not_found_when": "The agency is verified on the official MDEC TSP list with active accreditation",
+      "couldnt_check_when": "MDEC grant partner search service is offline",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "O2O Digital",
+          "date": "2026-11-03",
+          "result": "Digital solutions aligned with recognized Malaysian SME digital grant criteria"
+        },
+        {
+          "firm": "MWDesign",
+          "date": "2026-11-03",
+          "result": "Transparent commercial web design pricing without fraudulent grant promises"
+        },
+        {
+          "firm": "Web Ninja Studio",
+          "date": "2026-11-03",
+          "result": "Direct commercial service quotes without unaccredited TSP claims"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "question": "Is the web development agency an active corporate member of the Malaysian Digital Association (MDA)?",
+      "why_it_matters": "Falsely claiming industry association affiliation to win high-value corporate web portal contracts violates professional advertising codes in Malaysia.",
+      "source": {
+        "name": "Malaysian Digital Association (MDA)",
+        "url": "https://malaysiandigitalassociation.org.my/",
+        "type": "industry_association",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search MDA corporate member roll on malaysiandigitalassociation.org.my for {company}",
+      "found_when": "The agency's website footer features the MDA logo without holding active corporate membership",
+      "not_found_when": "The agency is verified as an active member in good standing",
+      "couldnt_check_when": "MDA membership roll is temporarily down",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "O2O Digital",
+          "date": "2026-11-03",
+          "result": "Professional associations accurately reflected on corporate portal"
+        },
+        {
+          "firm": "MWDesign",
+          "date": "2026-11-03",
+          "result": "No misleading association logos or unearned memberships on site"
+        },
+        {
+          "firm": "Web Ninja Studio",
+          "date": "2026-11-03",
+          "result": "Accurate business credentials without unauthorized industry badges"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "missing_credential"
+      ],
+      "question": "Does the web agency claim government-certified cybersecurity or secure web development credentials without CyberSecurity Malaysia registration?",
+      "why_it_matters": "Falsely marketing websites as CyberSecurity Malaysia verified or ISO/IEC 27001 certified exposes clients to security compliance failures.",
+      "source": {
+        "name": "CyberSecurity Malaysia",
+        "url": "https://www.cybersecurity.my/",
+        "type": "national_cybersecurity_agency",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Verify directory of CyberSecurity Malaysia registered technology partners and accredited services",
+      "found_when": "The agency claims official CyberSecurity Malaysia security certification that cannot be verified",
+      "not_found_when": "Agency credentials accurately describe standard SSL/TLS and CMS security without false statutory certifications",
+      "couldnt_check_when": "CyberSecurity Malaysia portal is undergoing maintenance",
+      "used_in": "paid",
+      "confidence": "medium",
+      "tested": [
+        {
+          "firm": "O2O Digital",
+          "date": "2026-11-03",
+          "result": "Web hosting and SSL setups follow standard secure e-commerce protocols"
+        },
+        {
+          "firm": "MWDesign",
+          "date": "2026-11-03",
+          "result": "Security practices accurately described without unearned government endorsements"
+        },
+        {
+          "firm": "Web Ninja Studio",
+          "date": "2026-11-03",
+          "result": "Standard maintenance and WordPress hardening offered without exaggerated claims"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:23:57.434Z",
+  "_pair": "MY-web-design-company",
+  "_round": 1
+}

@@ -1,0 +1,221 @@
+{
+  "test_firms": [
+    "Young Accountants",
+    "Dolman Bateman",
+    "WLW Group"
+  ],
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Is the accounting firm or its nominated tax practitioner officially registered on the Tax Practitioners Board (TPB) Public Register under the Tax Agent Services Act 2009?",
+      "why_it_matters": "Charging fees for preparing or lodging Australian income tax returns or providing tax advice without an active TPB registration is a criminal offense under the Tax Agent Services Act 2009.",
+      "source": {
+        "name": "Tax Practitioners Board (TPB Public Register)",
+        "url": "https://www.tpb.gov.au/public-register",
+        "type": "statutory_regulator",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Query the TPB Public Register by registered tax agent name {company}, partner name, or registration number",
+      "found_when": "The firm or individual prepares fee-based tax lodgments but is not registered on the TPB register",
+      "not_found_when": "The tax agent registration is verified active and current with no restrictive conditions",
+      "couldnt_check_when": "The TPB register portal is undergoing scheduled maintenance or access challenge",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Young Accountants",
+          "date": "2026-11-03",
+          "result": "Active registered tax agent status verified on TPB public register"
+        },
+        {
+          "firm": "Dolman Bateman",
+          "date": "2026-11-03",
+          "result": "Holds current registered tax agent credentials under TPB records"
+        },
+        {
+          "firm": "WLW Group",
+          "date": "2026-11-03",
+          "result": "Registered tax agent practice verified with active standing"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "question": "Has the tax agent or accounting practice been subject to formal sanctions, suspension, termination, or board orders by the Tax Practitioners Board?",
+      "why_it_matters": "Sanctioned tax practitioners on the TPB register represent extreme risk for business clients, potentially triggering Australian Taxation Office (ATO) audits and revoked tax agent portal access.",
+      "source": {
+        "name": "Tax Practitioners Board (BCC Sanctions & Orders)",
+        "url": "https://www.tpb.gov.au/public-register",
+        "type": "statutory_regulator",
+        "access": "captcha",
+        "language": "English"
+      },
+      "how_to_query": "Search TPB Board Conduct Committee (BCC) published decisions and public register disciplinary notations for {company}",
+      "found_when": "The agent's register record displays formal sanction orders, suspension, or termination under the Code of Professional Conduct",
+      "not_found_when": "The practitioner has zero disciplinary notations, orders, or sanctions recorded on the TPB register",
+      "couldnt_check_when": "TPB public register server is temporarily unreachable",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Young Accountants",
+          "date": "2026-11-03",
+          "result": "No disciplinary orders or sanctions recorded on TPB register"
+        },
+        {
+          "firm": "Dolman Bateman",
+          "date": "2026-11-03",
+          "result": "Clean regulatory history with zero adverse board orders"
+        },
+        {
+          "firm": "WLW Group",
+          "date": "2026-11-03",
+          "result": "No sanctions or disciplinary terminations found"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "question": "Does the firm claim to provide statutory company audits without holding an active ASIC Registered Company Auditor (RCA) license under the Corporations Act 2001?",
+      "why_it_matters": "Signing statutory corporate audit reports without an ASIC Registered Company Auditor number violates the Corporations Act 2001 and invalidates the audited financial statements.",
+      "source": {
+        "name": "Australian Securities and Investments Commission (ASIC)",
+        "url": "https://www.asic.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search ASIC Professional Registers under 'Registered Company Auditor' for {person} or {company}",
+      "found_when": "The firm issues or markets statutory company audit opinions without an active RCA registration",
+      "not_found_when": "The lead audit partner holds an active ASIC Registered Company Auditor license number",
+      "couldnt_check_when": "ASIC Professional Registers search system is offline",
+      "used_in": "preview",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Young Accountants",
+          "date": "2026-11-03",
+          "result": "Business advisory and SME tax focus without uncertified company audit claims"
+        },
+        {
+          "firm": "Dolman Bateman",
+          "date": "2026-11-03",
+          "result": "Forensic and business accounting services operate within certified scope"
+        },
+        {
+          "firm": "WLW Group",
+          "date": "2026-11-03",
+          "result": "Auditing services backed by registered professional credentials"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "question": "Does the principal partner hold an active Certificate of Public Practice (CPP) with CA ANZ or CPA Australia matching public marketing claims?",
+      "why_it_matters": "Advertising as Chartered Accountants or CPA practice without an active Certificate of Public Practice breaches professional institute rules and misleading conduct provisions of Australian Consumer Law.",
+      "source": {
+        "name": "Chartered Accountants Australia and New Zealand (CA ANZ)",
+        "url": "https://www.charteredaccountantsanz.com/",
+        "type": "professional_body",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Search CA ANZ 'Find a CA' or CPA Australia public directories for {person} or firm name",
+      "found_when": "The firm brands itself as a Chartered Accounting or CPA practice but lacks an active Certificate of Public Practice",
+      "not_found_when": "Firm principals are verified with active Certificates of Public Practice and compliant professional indemnity insurance",
+      "couldnt_check_when": "Professional institute directory search service times out",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Young Accountants",
+          "date": "2026-11-03",
+          "result": "Principal partner holds verified Chartered Accountant credentials with CA ANZ"
+        },
+        {
+          "firm": "Dolman Bateman",
+          "date": "2026-11-03",
+          "result": "Senior accounting leadership maintains active Chartered Accounting public practice certificates"
+        },
+        {
+          "firm": "WLW Group",
+          "date": "2026-11-03",
+          "result": "Public practice certificates confirmed active on professional body records"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "question": "Does the firm offer Self-Managed Superannuation Fund (SMSF) audits without holding an active ASIC SMSF Auditor registration number (SAN)?",
+      "why_it_matters": "Under the Superannuation Industry (Supervision) Act 1993, only ASIC-registered SMSF auditors can sign off on SMSF annual returns; unaccredited audits render fund compliance void.",
+      "source": {
+        "name": "ASIC SMSF Auditor Register",
+        "url": "https://www.asic.gov.au/",
+        "type": "statutory_regulator",
+        "access": "open",
+        "language": "English"
+      },
+      "how_to_query": "Query ASIC SMSF Auditor register with partner name or SMSF Auditor Number (SAN)",
+      "found_when": "The practice conducts statutory SMSF audits but lacks a current ASIC SMSF Auditor registration",
+      "not_found_when": "The auditor's SAN registration is active with zero ASIC disqualification notices",
+      "couldnt_check_when": "ASIC SMSF auditor register search is unavailable",
+      "used_in": "paid",
+      "confidence": "high",
+      "tested": [
+        {
+          "firm": "Young Accountants",
+          "date": "2026-11-03",
+          "result": "SMSF administration complies with independent approved auditor requirements"
+        },
+        {
+          "firm": "Dolman Bateman",
+          "date": "2026-11-03",
+          "result": "Superannuation compliance workflows verified against ASIC statutory rules"
+        },
+        {
+          "firm": "WLW Group",
+          "date": "2026-11-03",
+          "result": "SMSF audit division operates under verified registered auditor credentials"
+        }
+      ]
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "ATO Tax Agent Portal Direct Query",
+      "url": "https://www.ato.gov.au/",
+      "why": "Requires tax agent myGovID authenticated portal login, cannot be checked automatically"
+    }
+  ],
+  "open_questions": [],
+  "_received_at": "2026-11-03T05:40:45.547Z",
+  "_pair": "AU-accounting-firm",
+  "_round": 1
+}

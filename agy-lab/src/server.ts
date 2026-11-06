@@ -30,6 +30,7 @@ import { searchListPage } from './search-list-page.ts';
 import { researchLeadsPage } from './research-leads-page.ts';
 import * as contactKeys from './contact-keys.ts';
 import * as v21Bench from './v21-bench-store.ts';
+import * as v21Step1 from './v21-step1-http.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
 import { page as companyDivePage } from './companydive-page.ts';
@@ -427,6 +428,9 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
 
   // ---- V2.1 Step 2 benchmark rows (judge + recheck runs, written once) ----
   if (await v21Bench.handle(req, res, url, { json, readJson })) return;
+
+  // ---- V2.1 Step 1 research on the hub (page reads through the Local Gmap Worker) ----
+  if (await v21Step1.handle(req, res, url, { json, readJson })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
     if (await contactKeys.handleKeys(req, res, url, { json, readJson })) return;

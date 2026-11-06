@@ -1,0 +1,233 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses with indexed Saramin profiles",
+      "question": "Does Saramin show a different address, representative or business description for the company?",
+      "why_it_matters": "An out-of-date profile can mislead customers, candidates and partners.",
+      "source": {
+        "name": "Saramin company profiles",
+        "url": "https://www.saramin.co.kr/zf_user/company-info/view/csn/dTNDVFNVMnQ2UlRjUnNoMFNWQlV6dz09/company_nm/%EA%B0%9C%EB%BF%94",
+        "type": "public directory",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the exact company name on site:www.saramin.co.kr and inspect the top three results for company profiles. Test: 개뿔(최진범 대표자) returns a profile with its representative and Seoul address.",
+      "found_when": "A matching company profile has details inconsistent with current verified company details.",
+      "not_found_when": "No matching profile in the top three results; absence is normal.",
+      "couldnt_check_when": "Results are ambiguous, indexed snippets are stale, or profile content cannot be fetched. Confirm legal entity and address before comparison.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses with indexed Wanted company profiles",
+      "question": "Does Wanted show an inconsistent company location, founding year or business profile?",
+      "why_it_matters": "Candidates and partners may encounter a profile based on data that updates with delay.",
+      "source": {
+        "name": "Wanted company profiles",
+        "url": "https://www.wanted.co.kr/company/52477",
+        "type": "public directory",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the exact business name on site:www.wanted.co.kr and inspect top three results for a company profile. Test: 위하다글로벌 returns company/52477 with location and founding year.",
+      "found_when": "A matching profile contains a location, founding year or business description differing from verified information.",
+      "not_found_when": "No matching company profile in the top three results; absence is normal.",
+      "couldnt_check_when": "Results lead only to job postings, name matching is ambiguous, or data is stale or inaccessible.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses listed on Kompass, particularly B2B suppliers",
+      "question": "Does a Kompass Korea company profile show inconsistent location, management or business activities?",
+      "why_it_matters": "A stale or misclassified listing can mislead overseas buyers.",
+      "source": {
+        "name": "Kompass Korea company profiles",
+        "url": "https://kr.kompass.com/c/comp-korea-co-ltd/kr212659/",
+        "type": "public directory",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the exact business name on site:kr.kompass.com and inspect the top three results for a company profile. Test: Comp Korea Co., Ltd. returns its company profile, region, website, CEO and activities.",
+      "found_when": "A matching profile contains an inconsistent region, executive, website or description.",
+      "not_found_when": "No matching company profile in the top three results; absence is normal.",
+      "couldnt_check_when": "The match is ambiguous, profile is inaccessible, or a detail requires login or payment. Do not treat a call-routing number as the business telephone.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Employers appearing in the Ministry public wage-arrears disclosure",
+      "question": "Is the employer named in the Ministry of Employment and Labor public wage-arrears disclosure?",
+      "why_it_matters": "An official public disclosure may affect the business reputation; identify the employer accurately before reporting it.",
+      "source": {
+        "name": "Ministry of Employment and Labor wage-arrears disclosure",
+        "url": "https://www.moel.go.kr/info/defaulter/defaulterList.do",
+        "type": "government disclosure",
+        "language": "Korean"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.moel.go.kr/info/defaulter/defaulterList.do?searchField=4&searchText={company}",
+      "how_to_query": "Open the encoded company-name URL and read the returned table. Test: 주식회사가인들 returns a matching row; a nonsense company name returned zero results. Record disclosure cycle, employer, business name, location and amount.",
+      "found_when": "A row names the business and corroborating location or employer details match; report the disclosure period and arrears as published, not a current conclusion.",
+      "not_found_when": "The table explicitly reports zero results. This does not prove the business has no wage arrears.",
+      "couldnt_check_when": "The page fails, returns an unfiltered list or ambiguous names, or the disclosure has expired. Do not attribute a row on name alone.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses with profiles on THE VC, especially startups and growth companies",
+      "question": "Does THE VC show outdated address, representative, founding date or business description for the business?",
+      "why_it_matters": "Public company profiles can carry stale information seen by partners and investors.",
+      "source": {
+        "name": "THE VC company profiles",
+        "url": "https://thevc.kr/haijiyo",
+        "type": "company directory",
+        "language": "Korean"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the exact business name on site:thevc.kr and inspect the top three results for its own profile. Verified searches for 하지요 and 제놀루션 returned their profiles, with headquarters address and representative visible.",
+      "found_when": "A profile for the same business gives a conflicting public address, representative, founding date or description.",
+      "not_found_when": "No matching company profile is among the top three; this is normal.",
+      "couldnt_check_when": "Name shared with another business, unrelated result, inaccessible field or login-only information. Confirm entity identity and date before inferring a discrepancy.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 6,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses whose executives received the Korean Academic Society of Business Administration strong-small-business entrepreneur award",
+      "question": "Is the business listed with a recipient of the Korean Academic Society of Business Administration strong-small-business entrepreneur award?",
+      "why_it_matters": "A past award to an executive associated with the company may be a usable public credibility point.",
+      "source": {
+        "name": "KASBA strong-small-business entrepreneur award recipients",
+        "url": "https://kasba.or.kr/sub/giantsmall",
+        "type": "award organizer",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://kasba.or.kr/sub/giantsmall",
+      "how_to_query": "Read the full 역대 수상자 명단 table, match the business and record the award year and named person. Verified the list names 주식회사 구마에스앤씨(S&C) in 2026 and ㈜AMFM in 2025.",
+      "found_when": "The listed company and named recipient match; report this as an award to the person, with the year and company as listed.",
+      "not_found_when": "The company is absent from this specific historical recipient table; no negative inference.",
+      "couldnt_check_when": "Page fails, year entries are stale, or entity/name variations prevent a confident match. The award is to an individual, not necessarily the company itself.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 7,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Businesses whose executives received the Korean Academic Society of Business Administration mid-sized company CEO award",
+      "question": "Is the business named in KASBA’s mid-sized company CEO award recipients list?",
+      "why_it_matters": "A historical award to a company leader could be a relevant public distinction.",
+      "source": {
+        "name": "KASBA mid-sized company CEO award recipients",
+        "url": "https://kasba.or.kr/sub/mid_grand",
+        "type": "award organizer",
+        "language": "Korean"
+      },
+      "query_type": "static_list",
+      "query_url": "https://kasba.or.kr/sub/mid_grand",
+      "how_to_query": "Read the complete 역대 수상자 명단 table, match the company and record year and recipient. Verified 제너시스BBQ그룹 in 2026 and ㈜아성 in 2025.",
+      "found_when": "The company and recipient match; record the award as an award to the named leader with the stated year.",
+      "not_found_when": "No match in this specific award list; this is normal.",
+      "couldnt_check_when": "The page fails, may not be up to date, or the name could refer to another legal entity. A group name does not prove an award to every subsidiary.",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Korea Fair Trade Commission case system",
+      "url": "https://case.ftc.go.kr/ocp/co/ltfr.do",
+      "why": "The case listing is public, but the host-wide name search was not verified to return a specific listed respondent among the top three; the homepage redirected in testing. Do not infer a clean record from a failed search."
+    },
+    {
+      "name": "INNO-BIZ company registry",
+      "url": "https://www.innobiz.net/company/company2_list.asp",
+      "why": "The first-pass name-query parameters were not independently verified against a known listed company. Do not claim an active or expired certification from an untested query."
+    },
+    {
+      "name": "JobKorea company profiles",
+      "url": "https://www.jobkorea.co.kr/company/43257093",
+      "why": "Indexed company profiles show useful details, but the page states that unauthorized collection and distribution of posted information is prohibited. Assess permission before automated collection."
+    },
+    {
+      "name": "Supreme Court Internet Registry Office",
+      "url": "https://www.iros.go.kr",
+      "why": "First-pass assessment: official registry documents require payment and interactive access; no free name-only automated lookup was verified in this pass."
+    },
+    {
+      "name": "National Tax Service HomeTax",
+      "url": "https://www.hometax.go.kr",
+      "why": "The business-status lookup needs a business registration number, which the system does not have; no suitable name-only route was verified."
+    },
+    {
+      "name": "KIPRIS trademark register",
+      "url": "https://www.kipris.or.kr",
+      "why": "No working public name-only GET lookup was verified under the stated automation constraints."
+    },
+    {
+      "name": "Electronic Gazette",
+      "url": "https://www.gwanbo.go.kr",
+      "why": "No directly readable, current name-search URL or complete static notice list was verified."
+    },
+    {
+      "name": "Financial Supervisory Service DART",
+      "url": "https://dart.fss.or.kr",
+      "why": "No qualifying unauthenticated name-based URL was verified in this pass; coverage also excludes many small businesses."
+    },
+    {
+      "name": "RocketPunch company profiles",
+      "url": "https://www.rocketpunch.com/companies/rocketpunch",
+      "why": "Its public site explicitly objects to collection by technical means without data subject consent; permission needs to be assessed before automated use."
+    }
+  ],
+  "open_questions": [
+    "Test additional Korean local listing platforms for indexed profiles, automated access and coverage.",
+    "Determine whether the fair-trade case system has a working unauthenticated name-query GET endpoint and test it against a known respondent.",
+    "Find additional broad SME award lists that name companies, beyond KASBA’s awards to individual business leaders."
+  ],
+  "_received_at": "2026-11-04T06:26:45.232Z",
+  "_pair": "KR-country-layer",
+  "_round": 2,
+  "_schema": 3
+}

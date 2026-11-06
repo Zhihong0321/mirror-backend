@@ -1,0 +1,160 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "sub_segment": "statutory audit",
+      "applies_when": "The firm offers statutory audit or identifies a public accountant",
+      "question": "Has ACRA published a disciplinary order against the firm or an identified public accountant associated with it?",
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "why_it_matters": "A published disciplinary order may need attention or explanation.",
+      "source": {
+        "name": "ACRA disciplinary proceedings",
+        "url": "https://www.acra.gov.sg/manage/public-accountant-accounting-entity/regulation-compliance/regulatory-notices/disciplinary-proceedings/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.acra.gov.sg/manage/public-accountant-accounting-entity/regulation-compliance/regulatory-notices/disciplinary-proceedings/",
+      "manual_reason": "",
+      "how_to_query": "Search named notices, open the order, confirm the same person or entity and the relationship and date.",
+      "found_when": "A published order identifies the subject and specifies an action; report the exact order and date.",
+      "not_found_when": "The accessible published list contains no confirmed match; this is not proof of a clean record.",
+      "couldnt_check_when": "Page or order unavailable, identity or association uncertain, or source coverage incomplete.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "preview",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "sub_segment": "statutory audit",
+      "applies_when": "A named person claims to be an ACRA registered public accountant",
+      "question": "Does the claimed public accountant have an active registration and the stated accounting entity in ACRA Bizfile?",
+      "category": "licence",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "A misleading public accountant claim can affect confidence in statutory audit services.",
+      "source": {
+        "name": "ACRA Bizfile search guide",
+        "url": "https://www.acra.gov.sg/resources/guides-forms/using-bizfiles-search-functions/",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Interactive Bizfile search and results require a form and cannot be fetched as a static list.",
+      "how_to_query": "In Bizfile People search enter the person and 5-digit PA number; open More information and compare status and related entity.",
+      "found_when": "The confirmed profile contradicts the current claimed registration or association.",
+      "not_found_when": "The confirmed profile shows active status and the stated relationship.",
+      "couldnt_check_when": "Registration number is unavailable, profiles are ambiguous, or search cannot be completed.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 3,
+      "sub_segment": "tax advisory",
+      "applies_when": "A named tax practitioner claims SCTP accreditation",
+      "question": "Does the named professional claim the same SCTP tax accreditation and specialisation as the public member directory?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Incorrectly described tax credentials can mislead prospective clients.",
+      "source": {
+        "name": "SCTP members directory",
+        "url": "https://www.sctp.org.sg/Members.aspx?from=bc",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Directory search uses interactive fields and an alphabet selector; only consenting members are published.",
+      "how_to_query": "Search the named professional and compare accreditation and specialisation; the directory only includes consenting members.",
+      "found_when": "A confirmed directory entry explicitly conflicts with the specific claimed designation or specialisation.",
+      "not_found_when": "The confirmed entry matches the stated current designation and specialisation.",
+      "couldnt_check_when": "Not listed, search unavailable, identity uncertain or membership not published by consent.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 4,
+      "sub_segment": "accountancy professionals",
+      "applies_when": "A named individual claims CA (Singapore) or ISCA membership",
+      "question": "Does the identified individual appear with the claimed designation in the ISCA member directory?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "A professional designation belongs to an individual and needs accurate attribution.",
+      "source": {
+        "name": "ISCA member directory",
+        "url": "https://www.isca.org.sg/membership/member-services/member-directory",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Interactive member search; directory allows members to opt out and may use verification.",
+      "how_to_query": "Search the person and compare the claimed designation, confirming identity independently.",
+      "found_when": "A confirmed public record expressly differs from the specific claim.",
+      "not_found_when": "The confirmed record matches the claimed current status.",
+      "couldnt_check_when": "No entry, opt-out, matching name is ambiguous, CAPTCHA or search unavailable.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "sub_segment": "accountancy training",
+      "applies_when": "The firm claims to be an ISCA Singapore CA Qualification accredited training organisation",
+      "question": "Does the firm match the ISCA accredited training organisation listing?",
+      "category": "professional_membership",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "why_it_matters": "Accurate training accreditation claims matter to prospective candidates.",
+      "source": {
+        "name": "ISCA accredited training organisations",
+        "url": "https://www.isca.org.sg/qualifications/accredited-training-organisations",
+        "type": "official",
+        "access": "open",
+        "language": "English"
+      },
+      "query_type": "manual",
+      "query_url": "",
+      "manual_reason": "Follow the linked ATO list and verify current access and entity coverage manually.",
+      "how_to_query": "Open the linked ATO list and compare exact legal entity and any claimed tier; the list excludes subsidiaries and associates.",
+      "found_when": "An explicit claim conflicts with confirmed official accreditation details for the same entity.",
+      "not_found_when": "The current official listing confirms the same entity and the claim.",
+      "couldnt_check_when": "List inaccessible, entity differs, listing coverage unclear, or entry absent without confirmation from ISCA.",
+      "not_applicable_when": "The relevant service or claim is not present.",
+      "possible_match_when": "The name matches but identity or entity relationship is not independently established.",
+      "used_in": "paid",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [],
+  "open_questions": [],
+  "_received_at": "2026-11-03T09:03:18.428Z",
+  "_pair": "SG-accounting-firm",
+  "_round": 1,
+  "_schema": 2
+}

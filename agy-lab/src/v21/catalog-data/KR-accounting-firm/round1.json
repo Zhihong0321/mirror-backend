@@ -1,0 +1,294 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "sub_segment": "회계법인",
+      "applies_when": "Korean accounting corporations (회계법인) that file a business report with the Financial Supervisory Service. A tax corporation (세무법인) or a bookkeeping office is not expected here.",
+      "question": "Does the Financial Supervisory Service accounting-firm core-information list name this firm, and do the registered-CPA headcount, audit volume, revenue, profit and settlement month differ from what the firm says?",
+      "why_it_matters": "This is the public supervisory snapshot of an accounting corporation, so a missing row or a different headcount or revenue is something the firm may not be watching.",
+      "source": {
+        "name": "Financial Supervisory Service accounting-firm core information (금융감독원 회계법인 핵심정보)",
+        "url": "https://www.fss.or.kr/fss/job/cprCoreInfo/list.do?menuNo=200429",
+        "type": "regulator register",
+        "language": "ko"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.fss.or.kr/fss/job/cprCoreInfo/list.do?menuNo=200429&pageIndex=1&searchStr={company}",
+      "how_to_query": "Open that address with the business name in {company}. The form is a GET. Read the result count and the single table row: firm name, registered CPAs, trainee CPAs, other staff, total staff, staff by service line, external-audit counts, assets, liabilities, operating revenue, audit revenue, operating profit, net income, and the settlement month (결산년월). The page says the figures come from the firm's business report (사업보고서). Do not use a site search on fss.or.kr.",
+      "found_when": "The count reads 전체 1 건 and one row names the firm. Confirmed for 한영회계법인: 1,287 registered CPAs, operating revenue 485,937, settlement month 2026.06.",
+      "not_found_when": "The count reads 전체 0 건 and there is no data row. Confirmed for 화우세무법인, which is a tax corporation and is not on this accounting-firm register.",
+      "couldnt_check_when": "The page did not load, the count line is missing, or more than one firm row is returned. A zero count can also mean the settlement-month window excluded the latest filing; this address sends no start or end month and still returned 한영회계법인's latest row.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "회계법인",
+      "applies_when": "Accounting corporations (회계법인) that act as auditors. Most firms have no current inspection sanction, and a tax office is not expected here.",
+      "question": "Does the Financial Supervisory Service audit-inspection sanction list (감리제재) name this firm, and for which audited company, year and measure date?",
+      "why_it_matters": "A published inspection measure can sit on the regulator's site for years without appearing on the firm's own pages.",
+      "source": {
+        "name": "Financial Supervisory Service audit-inspection sanctions (금융감독원 감리제재)",
+        "url": "https://www.fss.or.kr/fss/job/accnutAdtorInfo/list.do?menuNo=200732&acntnWrkCode=01",
+        "type": "regulator sanction list",
+        "language": "ko"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.fss.or.kr/fss/job/accnutAdtorInfo/list.do?menuNo=200732&acntnWrkCode=01&searchCnd=1&pageIndex=1&searchWrd={company}",
+      "how_to_query": "Open that address with the business name in {company}. searchCnd=1 searches the auditor name (감사인). Read the count and any row: auditor, audited company, years covered, measure date (조치일), department, and the attached measure file. The date filter is left empty so the search is not limited to six months.",
+      "found_when": "The count reads 전체 1 건 and a row names the firm. Confirmed for 신우회계법인: audited company (주)국보, year 2019, measure date 20260225, file 조사·감리결과 지적사항 및 조치내역_신우회계법인.hwp.",
+      "not_found_when": "The count reads 전체 0 건. Confirmed for 광교회계법인. Absence is normal.",
+      "couldnt_check_when": "The page did not load, the count line is missing, or several auditors share the name so the row cannot be tied to this firm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "회계법인",
+      "applies_when": "Accounting corporations that have been through a quality-control inspection. Recommendations stay public for about three years. A firm that has not been inspected is not expected here.",
+      "question": "Does the Financial Supervisory Service list a quality-control improvement recommendation (개선권고사항) for this audit firm, and what period and recommendation date does it show?",
+      "why_it_matters": "A quality-control recommendation is a public mark on audit quality that the firm may not mention in its own marketing.",
+      "source": {
+        "name": "Financial Supervisory Service auditor improvement recommendations (금융감독원 감사인 개선권고사항)",
+        "url": "https://www.fss.or.kr/fss/bbs/B0000291/list.do?menuNo=200620&cl1Cd=01",
+        "type": "regulator sanction list",
+        "language": "ko"
+      },
+      "query_type": "url_template",
+      "query_url": "https://www.fss.or.kr/fss/bbs/B0000291/list.do?menuNo=200620&cl1Cd=01&searchCnd=35&pageIndex=1&searchWrd={company}",
+      "how_to_query": "Open that address with the business name in {company}. searchCnd=35 is the auditor-name search on the improvement-recommendation board. Read the count and any row: auditor, inspection period (감리대상기간), recommendation date (개선권고일), and the attached hwpx file.",
+      "found_when": "The count reads 전체 1 건 and a row names the firm. Confirmed for 한미회계법인: period 2021-04-01 to 2024-06-30, recommendation date 2025-06-09, file 한미회계법인_개선권고사항.hwpx. 광교회계법인 is also a one-row hit, for 2021-04-01 to 2024-03-31, recommended 2025-06-04.",
+      "not_found_when": "The count reads 전체 0 건 and there is no data row. Confirmed for 화우세무법인. Absence is normal for firms outside the current publication window.",
+      "couldnt_check_when": "The page did not load, the count line is missing, or more than one row matches the name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "contact_mess",
+        "missing_credential"
+      ],
+      "sub_segment": "세무법인",
+      "applies_when": "Tax corporations (세무법인) registered with the Korea Association of Certified Public Tax Accountants. An accounting corporation (회계법인) or a sole tax-accountant office is not on this corporation list.",
+      "question": "Does the Korea Association of Certified Public Tax Accountants corporation directory list this firm, and which phone number and regional tax office does it show?",
+      "why_it_matters": "The association page can keep an old phone or show that a firm presenting itself as a 세무법인 is not on the corporation roll.",
+      "source": {
+        "name": "Korea Association of Certified Public Tax Accountants tax-corporation directory (한국세무사회 세무법인 목록)",
+        "url": "https://www.kacpta.or.kr/kacpta_view/kac_taxbiz/taxAccountantSearch_n_Proc.asp?keyfield=2",
+        "type": "association directory",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.kacpta.or.kr/kacpta_view/kac_taxbiz/taxAccountantSearch_n_Proc.asp?keyfield=2",
+      "how_to_query": "Read this one GET page. It is the current full corporation list (keyfield=2), in EUC-KR, from the start of the alphabet through 화우세무법인, with a phone and a regional tax office beside each name. The on-page keyword box posts a form; do not use it. Do not build a detail URL from the name: that detail address only works with EUC-KR percent-encoding, and the system encodes {company} as UTF-8.",
+      "found_when": "The firm name appears with a phone and a regional tax office. Confirmed: 화우세무법인, 02-6261-3100, 서울지방국세청; 김앤장세무법인, 02-739-0004, 서울지방국세청.",
+      "not_found_when": "The name is not in the page. Confirmed: 삼일회계법인 is absent, which is expected because it is an accounting corporation, not a 세무법인.",
+      "couldnt_check_when": "The page did not load, the response is not the corporation list, or the download is cut off before the name's place in the alphabet.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "세무법인",
+      "applies_when": "Tax accountants and tax corporations whose office name is printed in the association's current disciplinary table. Most firms are not on it.",
+      "question": "Does the Korea Association of Certified Public Tax Accountants disciplinary table name this office, and what measure, reason and dates does it give?",
+      "why_it_matters": "A fine or a suspension is published on the association site under the office name, which the firm may not show itself.",
+      "source": {
+        "name": "Korea Association of Certified Public Tax Accountants disciplinary list (한국세무사회 세무사 징계현황)",
+        "url": "https://www.kacpta.or.kr/kacpta_view/kac_search/disciplinary_n.asp",
+        "type": "association disciplinary list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.kacpta.or.kr/kacpta_view/kac_search/disciplinary_n.asp",
+      "how_to_query": "Read this page, which is page 1 of the public disciplinary table (the newest decisions). Columns are registration number, name, office address and name, measure, reason, period, and decision date. The office name sits in the address cell and may include a space (세무법인 대성) or none (세무법인온앤원). Older rows are on the same path with ?page=2; this prompt reads page 1 only. The name search posts to sdisciplinary_n.asp, so do not use it.",
+      "found_when": "The office name appears in a row with a measure. Confirmed on page 1: 세무법인 대성, 안보현, 직무정지 2년, 2026-07-01 to 2028-06-30, decision 제157차 2026.05.29. Also on page 1: 세무법인 정화, 세무법인온앤원, 두현 세무법인, 아세아세무법인.",
+      "not_found_when": "The office name is not in page 1. That is normal, including when the only matching row is on page 2.",
+      "couldnt_check_when": "The page did not load, or the office string is only a person's name or a branch label that cannot be tied to this firm.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 6,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Accounting corporations and tax corporations named as an awardee's office on the 60th Taxpayer's Day (2026) cooperation roll. Most firms are not on it.",
+      "question": "Is this firm named on the 60th Taxpayer's Day tax-cooperation award list, and which prize and person are listed beside it?",
+      "why_it_matters": "A ministerial or tax-service commendation can be missing from the firm's own site, or the firm can display a 2026 award this roll does not show.",
+      "source": {
+        "name": "Sejung Ilbo 60th Taxpayer's Day cooperation-award roll (세정일보 제60회 납세자의 날 세정협조자 명단)",
+        "url": "https://www.sejungilbo.com/news/articleView.html?idxno=57322",
+        "type": "award list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.sejungilbo.com/news/articleView.html?idxno=57322",
+      "how_to_query": "Read this one article. Use the 세정협조자 section, titled as 241 people for the 60th ceremony (2026). Each line gives the prize, then the office, then the person, for example 재경부장관, 국세청장 or 세무서장. Match the office name. A branch is part of the name, such as 태일회계법인 제일지점 or 태림회계법인(구로). The same article also lists 1,052 모범납세자; do not treat that taxpayer list as this roll. This is one year only.",
+      "found_when": "The office is named next to a person and a prize. Confirmed: 대교회계법인, 이재헌 회계사, 재경부장관 표창. 동신회계법인, 주양복 회계사, is on the same ministerial list.",
+      "not_found_when": "The office name is not in the 241-person 세정협조자 section. That is normal. Most firms received no 2026 cooperation award.",
+      "couldnt_check_when": "The article did not load, or the only similar string is a branch office that is not this firm.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 7,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "세무사·세무법인",
+      "applies_when": "Tax accountants and tax corporations. This page is the 60th Taxpayer's Day (2026) cooperation-award roll, not an accounting-corporation award.",
+      "question": "Is this office named on the 60th Taxpayer's Day tax-cooperation award list published by the Tax Accountants' Newspaper, and which prize and person are listed?",
+      "why_it_matters": "A ministerial or tax-office commendation can be missing from the firm's own site, or the firm can display an award that this roll does not show.",
+      "source": {
+        "name": "Tax Accountants' Newspaper 60th Taxpayer's Day award roll (세무사신문 제60회 납세자의 날 세정협조자 포상자 명단)",
+        "url": "https://webzine.kacta.or.kr/news/articleView.html?idxno=24789",
+        "type": "award list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://webzine.kacta.or.kr/news/articleView.html?idxno=24789",
+      "how_to_query": "Read this one article. It is the current list, the 60th ceremony, 134 people, grouped by prize (재정경제부장관 표창, 국세청장 표창, 지방청장 표창, 세무서장 표창) and by region. Each line is registration number, person name, then office name. Match the office name, allowing a space or a branch note such as (마포지점). This is one year only.",
+      "found_when": "The office name is the third field on a line. Confirmed: 35090 / 김현규 / 세무법인 선우 under the finance minister's commendation, and 20182 / 배정희 / 세무법인 현우 on the same list.",
+      "not_found_when": "The office name is not in the article. That is normal for firms that did not receive a 2026 cooperation award. Accounting corporations are not the subject of this roll.",
+      "couldnt_check_when": "The article did not load, or the only similar string is a person's office with different spacing or a branch suffix that is not this firm.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 8,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Tax and accounting offices that keep a public expert card on Semutong. Firms that never joined the marketplace will not appear.",
+      "question": "Does Semutong list this office on its expert directory, and what star rating, review count and branch name does the card show?",
+      "why_it_matters": "Clients compare tax and accounting offices here, and the card can show a rating or a branch name the firm does not repeat on its own site.",
+      "source": {
+        "name": "Semutong expert directory (세무통 전문가 찾기)",
+        "url": "https://www.semutong.com/experts",
+        "type": "review platform",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.semutong.com/experts",
+      "how_to_query": "Read the rendered expert directory. Each card has a person, an office name, an area, and a rating such as 5.0 (21건) or the label 신규 파트너. The profile address is an opaque id under /experts/, not the firm name, so do not build a URL from the name. A web search for the firm on semutong.com did not return the card, so use this page rather than a site search.",
+      "found_when": "A card's office line names the firm and shows a rating or partner label. Confirmed: 창의회계법인 (장재우, 신규 파트너), 호수회계법인 (조영학, 5.0 from 21 reviews), 동성회계법인 (이충신, 4.9 from 15 reviews).",
+      "not_found_when": "No card contains the office name. That is normal for firms that are not on Semutong.",
+      "couldnt_check_when": "The page returns a script shell without cards, or several unrelated offices share the same short name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 9,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "Accounting firms and tax offices that registered with Invest Korea to advise foreign investors. Most domestic-only firms are not listed.",
+      "question": "Does the Invest Korea accounting-firm directory list this firm, and do the address, representative, accountant count and contact differ from the firm's own site?",
+      "why_it_matters": "Foreign-investor clients use this directory, and it can keep an old address, a personal mobile, or a headcount the firm no longer states.",
+      "source": {
+        "name": "Invest Korea accounting-firm directory (인베스트코리아 회계법인)",
+        "url": "https://www.investkorea.org/ik-kr/pgm/i-227/accnt/front/list.do?pageIndex=1&pageItm=200&searchOrderSort=0",
+        "type": "industry directory",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.investkorea.org/ik-kr/pgm/i-227/accnt/front/list.do?pageIndex=1&pageItm=200&searchOrderSort=0",
+      "how_to_query": "Read this one GET page. With pageItm=200 it currently returns the whole directory on a single page (전체 161건, 1/1페이지). Each entry has 법인명, 대표자, 주소, 소속 회계사수, a contact name, languages, a phone or email, and the service offered. The on-page search posts a form; do not use it. Many large firms are listed under a short or brand name, so 삼일회계법인 will not match the row 삼일 PwC, and 한영회계법인 will not match 한영.",
+      "found_when": "The legal name string appears as 법인명 with an address and a contact. Confirmed: 삼화회계법인, representative 이용규, 서울시 강남구 봉은사로 407 삼화빌딩, 170 accountants. 동성회계법인 is also on the page.",
+      "not_found_when": "The exact name string is absent. Confirmed: 삼일회계법인 is absent even though 삼일 PwC is listed. Absence is also normal for firms that never registered.",
+      "couldnt_check_when": "The page did not load, the count is no longer a single page, or the only hit is a shortened brand that cannot be tied to this legal name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 10,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "회계법인",
+      "applies_when": "Accounting corporations and CPA offices named as the current workplace of a CPA in the association's live disciplinary table. The table is short and changes as publication periods end.",
+      "question": "Does the Korean Institute of Certified Public Accountants disciplinary table name this firm as a sanctioned CPA's office, and what measure and dates does it show?",
+      "why_it_matters": "A CPA's suspension is published with the firm's name and address even when the firm itself was not the named respondent.",
+      "source": {
+        "name": "Korean Institute of Certified Public Accountants disciplinary notices (한국공인회계사회 징계)",
+        "url": "https://www.kicpa.or.kr/web/etc/punish/list.jsp",
+        "type": "association disciplinary list",
+        "language": "ko"
+      },
+      "query_type": "static_list",
+      "query_url": "https://www.kicpa.or.kr/web/etc/punish/list.jsp",
+      "how_to_query": "Read this page, the individual-CPA tab (개인 징계 정보 열람). It currently has 2 rows. Columns include the CPA's name and registration number, the current office name and address, the authority, the measure, the reason, and the effective dates. The office-name search on the page is a POST; do not use it. The separate corporate-measure page list_gam.jsp currently says 총 0 건, so it is not used.",
+      "found_when": "The office column names the firm and a measure is shown. Confirmed: 정승욱 (9197), 신한회계법인, 서울특별시 영등포구 의사당대로 8, 금융위원회, 공인회계사 직무정지, 2026-03-19 to 2027-03-18, for weak audit procedures.",
+      "not_found_when": "The firm name is not in the current rows. That is normal. The other current row, 신용완, has no firm name in the office column.",
+      "couldnt_check_when": "The page did not load, or it shows the empty corporate tab (총 0 건 and 징계내역이 없습니다) instead of the individual table.",
+      "confidence": "medium"
+    }
+  ],
+  "sources_rejected": [
+    {
+      "name": "Financial Supervisory Service registered listed-company auditor roster (금융감독원 주권상장법인 감사인 등록 현황)",
+      "url": "https://www.fss.or.kr/fss/bbs/B0000142/view.do?nttId=207477&menuNo=200462&pageIndex=1",
+      "why": "The firm column uses a short name such as 삼일, 한영 and 안진. The Maps name 삼일회계법인 does not appear, so a name lookup misses a firm that is on the roster."
+    },
+    {
+      "name": "KICPA English member directory (한국공인회계사회 Find Our Members)",
+      "url": "https://kicpa.or.kr/portal/default/kicpa/gnb/en_pc/menu01/menu07.page",
+      "why": "Names are romanised only, for example Deloitte Anjin LLC and Samil-style English names. A Korean Maps name does not match."
+    },
+    {
+      "name": "KICPA accounting-corporation disciplinary tab (한국공인회계사회 법인 징계)",
+      "url": "https://www.kicpa.or.kr/web/etc/punish/list_gam.jsp",
+      "why": "The page currently says 총 0 건 and that there is no disciplinary record, so it cannot return a known firm. The tab is also opened by posting a form."
+    },
+    {
+      "name": "KACPTA individual tax-accountant list (한국세무사회 개인 세무사 검색)",
+      "url": "https://www.kacpta.or.kr/kacpta_view/kac_taxbiz/taxAccountantSearch_n_Proc.asp?keyfield=1",
+      "why": "The public GET is about 11 million characters, above the size that can be read as one list. The name search on the association site is a POST form."
+    },
+    {
+      "name": "Invest Korea English accounting-firm list",
+      "url": "https://www.investkorea.org/ik-en/pgm/i-5059/accnt/front/list.do",
+      "why": "The English list uses romanised or short names such as Anjin and Samil PwC, so a Korean Maps name does not match. The Korean list is used instead."
+    },
+    {
+      "name": "2025 Excellent Brand Awards tax-accounting article (올해의 우수브랜드 대상)",
+      "url": "https://www.joongang.co.kr/article/25393454",
+      "why": "The article is a single-firm advertisement for 바른세금 / 범하세무회계. It is not a list of firms that can be checked for any business."
+    }
+  ],
+  "open_questions": [
+    "No public Korean-script directory of every accounting corporation was found on the Korean Institute of Certified Public Accountants site without a login.",
+    "The 2026 Taxpayer's Day press list on 세정일보 names some accounting corporations in full, including 대교회계법인 and 지성회계법인. There is still no standing official roll updated as a register. Big-firm press mentions often use a brand such as 삼일PwC or 삼정KPMG, which will not match 삼일회계법인 or 삼정회계법인."
+  ],
+  "_received_at": "2026-11-04T07:06:23.276Z",
+  "_pair": "KR-accounting-firm",
+  "_round": 1,
+  "_schema": 3
+}
