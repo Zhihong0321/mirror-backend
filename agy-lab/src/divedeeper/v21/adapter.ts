@@ -1,0 +1,79 @@
+// Translate the saved V2.1 research into the input the existing lanes read.
+import type { RawKind } from '../../v21-store.ts';
+
+type Kind = Extract<RawKind, 'checkpoint' | 'assets' | 'tidy' | 'result'>;
+type Raw = { id: number; payload: any };
+export type Reader = {
+  getReport: (id: string) => Promise<Record<string, unknown> | null>;
+  latestRaw: (id: string, kind: Kind) => Promise<Raw | null>;
+};
+const kinds: Kind[] = ['checkpoint', 'assets', 'tidy', 'result'];
+const strings = (value: unknown): string[] => Array.isArray(value) ? value.filter((x): x is string => typeof x === 'string') : typeof value === 'string' ? [value] : [];
+
+// A bracket just before the legal form belongs to the registered name: "DNE Forwarding (M) Sdn Bhd".
+const LEGAL_BRACKET = /\(([^()]*)\)(?=\s*(?:sdn\.?\s*bhd|bhd|berhad|plt|pte\.?\s*ltd|ltd)\b)/gi;
+
+/** Bracketed annotations in the baseline are notes, not part of the name or address. */
+function clean(value: string): string {
+  // Park the legal-name brackets while the notes are removed, then put them back.
+  let out = value.replace(LEGAL_BRACKET, '\u0001$1\u0002');
+  while (/\([^()]*\)|\[[^\[\]]*\]/.test(out)) out = out.replace(/\([^()]*\)|\[[^\[\]]*\]/g, ' ');
+  return out.replace(/\u0001/g, '(').replace(/\u0002/g, ')').replace(/\s+/g, ' ').trim();
+}
+const address = (value: string) => clean(value).replace(/^[\p{L}][\p{L} .'-]{0,40}:\s*/u, '').trim();
+const unique = (values: string[]) => [...new Map(values.filter(Boolean).map((x) => [x.toLowerCase(), x])).values()];
+
+function host(value: string): string {
+  const bare = clean(value).replace(/^(?:website|domain|official site)\s*:\s*/i, '').trim();
+  try {
+    const url = new URL(/^https?:\/\//i.test(bare) ? bare : 'https://' + bare);
+    return /^https?:$/.test(url.protocol) ? url.hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '') : '';
+  } catch { return ''; }
+}
+
+// Match the company's brand against the domain's own label, never a directory's subdomain.
+function domainLabel(domain: string): string {
+  const parts = domain.split('.');
+  const suffix = /\.(?:com|net|org|edu|gov|co)\.[a-z]{2}$/.test(domain) ? 2 : 1;
+  return parts.at(-suffix - 1) ?? '';
+}
+
+export async function loadV21Dive(reportId: string, reader?: Reader) {
+  const source = reader ?? await import('../../v21-store.ts');
+  const report = await source.getReport(reportId);
+  if (!report) throw new Error(`V2.1 report ${reportId} is missing`);
+  for (const step of [1, 2]) {
+    if (report[`step${step}_status`] !== 'done') throw new Error(`V2.1 report ${reportId}: Step ${step} is not done (${report[`step${step}_status`] ?? 'missing'})`);
+  }
+  const raw = Object.fromEntries(await Promise.all(kinds.map(async (kind) => [kind, await source.latestRaw(reportId, kind)]))) as Record<Kind, Raw | null>;
+  if (raw.checkpoint?.payload?.skipped) throw new Error(`V2.1 report ${reportId}: checkpoint is skipped`);
+  if (!raw.result) throw new Error(`V2.1 report ${reportId}: no result row`);
+  if (!raw.checkpoint) throw new Error(`V2.1 report ${reportId}: no checkpoint row`);
+  const baseline = raw.result.payload?.baseline ?? {};
+  const legal = strings(baseline.legal_names);
+  const legalName = clean(legal[0] ?? '') || String(report.company);
+  const aliases = unique(strings(baseline.brand_names).map(clean)).filter((x) => x.toLowerCase() !== legalName.toLowerCase());
+  const registrations = unique([...legal, ...strings(baseline.claimed_numbers)].flatMap((x) =>
+    [...x.matchAll(/\b(?:\d{5,7}-[A-Z]|(?:19|20)\d{10})\b/gi)].map((m) => m[0].toUpperCase())));
+  const brandWords = unique([...aliases, legalName, String(report.company)].map((x) => x.toLowerCase().match(/[a-z0-9]+/)?.[0] ?? ''));
+  const gate = host(String(raw.checkpoint.payload?.official_site?.domain ?? ''));
+  const domains = [...strings(baseline.websites), ...strings(baseline.official_domain)].map(host)
+    .filter((d) => d && brandWords.some((brand) => brand.length >= 3 && domainLabel(d).includes(brand)));
+  const addresses = strings(baseline.addresses).map(address);
+  const pages: { label?: string; text?: string }[] = raw.tidy?.payload?.official?.pages ?? [];
+  return {
+    dive: {
+      company: String(report.company), country: String(report.country),
+      result: {
+        identity: { legal_name: legalName, aliases, address: addresses[0] ?? '', industry: report.industry, official_domains: unique([gate, ...domains]), registration_numbers: registrations },
+        facts: [
+          ...addresses.map((a) => ({ topic: 'identity', fact: `Office: ${a}` })),
+          ...pages.map((p) => ({ topic: 'products_services', fact: `${p.label ?? 'Official page'}: ${String(p.text ?? '').slice(0, 1500)}` })),
+        ],
+        people: { people: [] }, sources: [],
+      },
+      v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [] },
+    },
+    rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),
+  };
+}

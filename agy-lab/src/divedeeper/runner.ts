@@ -48,8 +48,8 @@ export function stageDive(diveId: string, dive: unknown): void {
 }
 
 /** Never throws: a crashed lane, or one past its time limit, comes back failed with the reason. */
-export async function runLane(section: string, lane: string, diveId: string, dive: any, limitMs = laneLimitMs()): Promise<LaneResult> {
-  const ctx = makeCtx(diveId, section, lane);
+export async function runLane(section: string, lane: string, diveId: string, dive: any, limitMs = laneLimitMs(), opts?: { worker?: 'myworker' }): Promise<LaneResult> {
+  const ctx = makeCtx(diveId, section, lane, opts);
   let findings: Finding[] = [];
   let notes: Record<string, unknown> = {};
   let failure: string | null = null;

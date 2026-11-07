@@ -142,7 +142,7 @@ export type MapsRow = { name: string; rating: number | null; reviews: number | n
 
 export type Ctx = ReturnType<typeof makeCtx>;
 
-export function makeCtx(diveId: string, section: string, lane: string) {
+export function makeCtx(diveId: string, section: string, lane: string, opts?: { worker?: 'myworker' }) {
   const warnings: string[] = [];
   const meter: Meter = {
     started: Date.now(),
@@ -222,6 +222,15 @@ export function makeCtx(diveId: string, section: string, lane: string) {
   async function mapsSearch(keyword: string, place: string, max: number): Promise<MapsRow[] | null> {
     meter.maps.calls++;
     const what = place ? `"${keyword}" in ${place}` : `"${keyword}"`;
+    if (opts?.worker === 'myworker') {
+      const { scan } = await import('./v21/myworker.ts');
+      const out = await track(`maps ${what}`, scan(keyword, place, max));
+      if (out.rows === null) {
+        warn(`maps ${what}: ${out.error}`.slice(0, 300));
+        meter.maps.failed++;
+      }
+      return out.rows;
+    }
     if (!jobs.liveTypes().includes('gmap.scan')) {
       warn(`maps ${what}: no Gmap worker online`);
       meter.maps.failed++;
