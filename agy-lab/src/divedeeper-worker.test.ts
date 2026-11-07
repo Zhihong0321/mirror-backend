@@ -160,6 +160,18 @@ test('V2.1 Exa and both fallbacks discard paid text and worker-read at most the 
   });
 });
 
+test('V2.1 URL-only news searches retain dates for lane ranking without fetching paid or worker text', async () => {
+  await network((r) => {
+    assert.ok(r.url.startsWith('https://api.exa.ai/'));
+    assert.ok(!('contents' in r.body));
+    return json({ results: [{ url: 'https://news.test/story', title: 'Acme', publishedDate: '2026-11-07', text: 'Paid text', highlights: ['Paid snippet'] }] });
+  }, async (requests) => {
+    const ctx = makeCtx('worker-news-test', 'N', 'news', { worker: 'myworker' });
+    assert.deepEqual(await ctx.exa('Acme', { category: 'news' }), [{ url: 'https://news.test/story', title: 'Acme', text: '', publishedDate: '2026-11-07' }]);
+    assert.equal(requests.length, 1);
+  });
+});
+
 test('text true caps worker text at 4000; a failed worker read does not trigger another search engine', async () => {
   let failed = false;
   await network((r) => {

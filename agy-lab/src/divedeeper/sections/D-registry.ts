@@ -13,8 +13,10 @@
 import zlib from 'node:zlib';
 import type { Ctx, Finding } from '../lib.ts';
 import { extractClaims, companyNames, host, type Claim, type Verdict, type SelfGrade } from './D-common.ts';
+import { lookupCompany, skipPeople } from '../site-handlers.ts';
+import { MY_HANDLERS } from '../site-handler-catalog.ts';
 
-type Rec = { register: string; url: string; found: boolean; record: string; cannot?: string; notes?: string[]; pii?: string[] };
+type Rec = { register: string; url: string; found: boolean; record: string; cannot?: string; notes?: string[]; pii?: string[]; handler?: string };
 
 export const REGISTERS: Record<string, { name: string; url: string; auto: string; how: string }> = {
   CIDB: { name: 'CIDB CIMS contractor search', url: 'https://cims.cidb.gov.my/smis/regcontractor/reglocalsearchcontractor.vbhtml', auto: 'yes', how: 'read-only search form (POST, no CAPTCHA), swept for every company: 12-digit SSM number, then names, each with the Valid and the Expired filter. Rows give grade, state, phone, PPK/SPKK/STB; no expiry date (the detail view and the CSV export add nothing readable). Old-format SSM numbers do not match.' },
@@ -389,19 +391,57 @@ async function lookup(ctx: Ctx, dive: any, c: Claim, cache: Map<string, Promise<
   }
 }
 
+async function workerRecords(ctx: Ctx, dive: any, claims: Claim[]): Promise<Rec[]> {
+  skipPeople(ctx);
+  if (!claims.length) return [];
+  const picked = ctx.parseJson<{ claims: any[] }>(await ctx.llm(
+    `Choose the issuing body and ONE site handler for each official claim by ${companyNames(dive).legal}.\n` +
+    `Match the handler's question to the exact credential claimed. A discipline/alert list does not prove a licence, and accreditation of a certification body does not prove its customer's ISO certificate.\n` +
+    `Use handler=null and explain why if no question can check the claim. Never invent a handler. Do not pick person checks: V2.1 has no key people step. Tier 4 sources cannot be checked automatically.\n` +
+    `Claims from V2.1 Step 2: ${JSON.stringify(claims)}\n` +
+    `Handler list: ${JSON.stringify(MY_HANDLERS.map(({ id, question, tier }) => ({ id, question, tier })))}\n` +
+    `Return JSON only: {"claims":[{"id":"C01","issuer":"issuing body or SELF_COUNT","handler":"exact handler id or null","value":"exact number, grade or date claimed, or empty","reason":"why this handler or none"}]}`,
+  ));
+  if (!picked || !Array.isArray(picked.claims)) ctx.warn("can't check automatically: claim-to-handler selection did not parse");
+  const choices: any[] = Array.isArray(picked?.claims) ? picked.claims : [];
+  const recs: Rec[] = [];
+  for (const c of claims) {
+    const choice = choices.find((x) => x?.id === c.id);
+    c.issuer = String(choice?.issuer || 'OTHER');
+    c.value = String(choice?.value ?? '');
+    const handler = typeof choice?.handler === 'string' ? choice.handler : '';
+    const spec = MY_HANDLERS.find((h) => h.id === handler);
+    if (!spec) {
+      recs.push({ register: c.issuer, url: '', found: false, record: '', handler: handler || undefined, cannot: choice?.handler ? `no site handler exists: ${handler}` : String(choice?.reason || 'no handler can check this claim automatically') });
+      continue;
+    }
+    const out = await lookupCompany(ctx, dive, handler);
+    const pii = piiPresent(out.records).map(() => `${spec.label} exposes a personal identity field`);
+    // Scrub structured personal fields before either the judge or saved notes see them.
+    // Also remove identity numbers, personal phone numbers and emails embedded in free text.
+    const redact = (text: string) => text.replace(/\b\d{6}-?\d{2}-?\d{4}\b/g, '[private identity number]')
+      .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, '[private email]')
+      .replace(/\b(?:\+?60|0)1[0-9 -]{7,12}\b/g, '[private phone]');
+    recs.push({ register: spec.label, url: out.source_url || spec.url, found: out.status === 'found', handler,
+      record: redact([out.records.length ? JSON.stringify(scrub(out.records)) : '', out.excerpt].filter(Boolean).join('\n')) || (out.status === 'not_found' ? `not found by ${handler} for this company` : ''),
+      ...(out.status === 'couldnt_check' ? { cannot: redact(out.reason) } : {}), pii });
+  }
+  return recs;
+}
+
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
   const id = dive.result?.identity ?? {};
   const { claims, pages, selfGrades = [], cached } = await extractClaims(ctx, dive);
   ctx.log(`${claims.length} claims: ${claims.map((c) => `${c.id} ${c.issuer} ${c.value}`).join(' | ')}`);
 
   // Step 1b: the CIDB sweep runs for every company, whatever it claims.
-  const sweep = await cidbSweep(ctx, dive);
-  ctx.log(`CIDB sweep: ${sweep.cannot ?? (sweep.main ? rowText(sweep.main) : 'no rows')} (${sweep.queries.length} searches; ${sweep.rows.length} matching entries; shown grades: ${selfGrades.map((g) => g.grade).join(',') || '-'}${sweep.mydigital ? '; MyDigital ' + sweep.mydigital.grade : ''})`);
+  const sweep: Sweep = ctx.v21 ? { rows: [], main: null, queries: [], ssm: '', ssmName: null, names: [], mydigital: null } : await cidbSweep(ctx, dive);
+  if (!ctx.v21) ctx.log(`CIDB sweep: ${sweep.cannot ?? (sweep.main ? rowText(sweep.main) : 'no rows')} (${sweep.queries.length} searches; ${sweep.rows.length} matching entries; shown grades: ${selfGrades.map((g) => g.grade).join(',') || '-'}${sweep.mydigital ? '; MyDigital ' + sweep.mydigital.grade : ''})`);
 
   // Step 2: register lookups (sequential: polite, and the big SEDA/MyHijau pages are fetched once).
   const cache = new Map<string, Promise<Rec>>();
-  const recs: Rec[] = [];
-  for (const c of claims) {
+  const recs: Rec[] = ctx.v21 ? await workerRecords(ctx, dive, claims) : [];
+  for (const c of ctx.v21 ? [] : claims) {
     const rec = await lookup(ctx, dive, c, cache).catch((e) => ({ register: c.issuer, url: '', found: false, record: '', cannot: `lookup failed: ${(e as Error).message}` } as Rec));
     recs.push(rec);
     ctx.log(`${c.id} ${c.issuer}: ${rec.cannot ? "can't check: " + rec.cannot : rec.found ? 'record found' : 'not found'}`);
@@ -420,14 +460,14 @@ For each claim decide:
 - "not_shown": use ONLY when the whole claim is a specific number or date (e.g. "PPK no. 0120250324-WP152634") that the record does not display at all. If the record confirms the main status (registered, member, winner, grade) but not a side detail (a year, a number, "unlimited tender capacity"), the verdict is "verified" and the missing detail goes in "why".
 Being listed in a body's own directory IS the registration or membership. Free-text fields inside a listing (e.g. "certificates listed", market-segment ticks) were typed by the company itself; a gap there is a "disagreement", never a contradiction of the registration.
 A claim with a small wording gap (e.g. the certificate is real but covers a service, not the product the claim names) is "contradicted" only if the gap would mislead a customer; otherwise "verified" and name the gap in "why".
-Also list "disagreements": details in the register record that differ from the company identity above or from the claim (address, unit number, phone, website, state, category, missing market segments). Keep each short. Do not repeat personal data.
+Also list "disagreements": details in the register record that differ from the company identity above or from the claim (address, unit number, phone, website, state, category, missing market segments). Keep each short. Do not repeat personal data.${ctx.v21 ? '\nUse "cant_check" if these handler records cannot establish the claim or belong to a namesake. A handler match alone never verifies the claim.' : ''}
 
 ${judged.map(({ c, r }) => `## ${c.id}\nClaim: ${c.claim} (value: ${c.value || '-'}; said on ${c.where.join(' ')})\nRegister: ${r.register} (${r.url})\nRecord: ${r.record}${r.notes?.length ? '\nOther notes: ' + r.notes.join('; ') : ''}`).join('\n\n')}
 
-Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_shown","why":"one sentence citing the record","disagreements":["..."]}]}`;
+Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_shown${ctx.v21 ? '|cant_check' : ''}","why":"one sentence citing the record","disagreements":["..."]}]}`;
     const out = ctx.parseJson<{ results: any[] }>(await ctx.llm(prompt));
-    for (const x of out?.results ?? []) if (x?.id) verdicts[x.id] = { verdict: x.verdict === 'contradicted' ? 'contradicted' : x.verdict === 'not_shown' ? "can't check automatically" : 'verified', why: String(x.why ?? ''), disagreements: (x.disagreements ?? []).map(String) };
-    if (!out) ctx.warn('judge answer did not parse; records found are reported as verified without a comparison');
+    for (const x of out?.results ?? []) if (x?.id) verdicts[x.id] = { verdict: x.verdict === 'contradicted' ? 'contradicted' : x.verdict === 'not_shown' || (ctx.v21 && x.verdict !== 'verified') ? "can't check automatically" : 'verified', why: String(x.why ?? ''), disagreements: (x.disagreements ?? []).map(String) };
+    if (!out) ctx.warn(ctx.v21 ? "can't check automatically: registry comparison did not parse" : 'judge answer did not parse; records found are reported as verified without a comparison');
   }
 
   const findings: Finding[] = [];
@@ -438,7 +478,7 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
     let verdict: Verdict, why: string;
     if (r.cannot) { verdict = "can't check automatically"; why = r.cannot; }
     else if (!r.found) { verdict = 'not found'; why = r.record; }
-    else { const v = verdicts[c.id]; verdict = v?.verdict ?? 'verified'; why = v?.why || r.record; }
+    else { const v = verdicts[c.id]; verdict = v?.verdict ?? (ctx.v21 ? "can't check automatically" : 'verified'); why = v?.why || (ctx.v21 && !v ? 'handler records were found but the comparison supplied no verdict' : r.record); }
     // Rule in code: a specific value the register record does not display cannot be verified.
     const missing = r.found && !r.cannot ? notShown(c, r.record) : [];
     if (verdict === 'verified' && missing.length) { verdict = "can't check automatically"; why = `the register does not show ${missing.join(', ')} (${why})`; }
@@ -463,8 +503,8 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
     });
   });
   const claimedGrades = new Set(claims.filter((c) => c.issuer === 'CIDB').map((c) => c.value.match(/\bG[1-7]\b/i)?.[0]?.toUpperCase()).filter(Boolean) as string[]);
-  findings.unshift(...sweepFindings(ctx, dive, sweep, selfGrades, claimedGrades));
+  if (!ctx.v21) findings.unshift(...sweepFindings(ctx, dive, sweep, selfGrades, claimedGrades));
   if (pii.size) findings.push({ title: 'PRIVATE: a public register exposes your staff MyKad numbers', detail: [...pii].join('. ') + '. The numbers sit in the page data (not shown on screen) and can be read by anyone. Ask the register to remove them. (Report privately, never as bait.)', severity: 'high', source: null, checked_at: ctx.now(), verdict: 'risk', private: true });
 
-  return { findings, notes: { claims, claims_cached: !!cached, pages_read: pages, self_grades: selfGrades, cidb_sweep: sweep, registers: REGISTERS, records: recs.map((r, i) => ({ id: claims[i].id, ...r })) } };
+  return { findings, notes: { claims, claims_cached: !!cached, pages_read: pages, self_grades: selfGrades, cidb_sweep: ctx.v21 ? null : sweep, registers: ctx.v21 ? Object.fromEntries(recs.map((r) => [r.handler || r.register, { name: r.register, url: r.url, auto: r.cannot ? 'no' : 'yes', how: 'myworker site handler' }])) : REGISTERS, records: recs.map((r, i) => ({ id: claims[i].id, ...r })) } };
 }

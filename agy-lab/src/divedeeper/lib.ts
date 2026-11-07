@@ -286,7 +286,8 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
     const texts = async (rows: any[]) => {
       if (!v21) return rows;
       // Never let paid page text or snippets through, even if an engine sends them unasked.
-      const hits = rows.map((r) => ({ url: r.url, title: r.title, text: '' }));
+      const hits = rows.map((r) => ({ url: r.url, title: r.title, text: '',
+        ...(opts.category === 'news' ? { publishedDate: r.publishedDate ?? r.page_age ?? null } : {}) }));
       if (opts.text) {
         const limit = typeof opts.text === 'number' ? opts.text : 4000;
         await Promise.all(hits.slice(0, 5).map(async (hit) => {

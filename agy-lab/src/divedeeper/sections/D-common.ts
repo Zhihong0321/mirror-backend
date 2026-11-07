@@ -114,6 +114,18 @@ function filterOnly(set: ClaimSet): ClaimSet {
 /** Step 1: the claim list (dive facts + a fresh read of the official site), one LLM call.
  *  Stored once per dive in out/D-claims-<id>.json so reruns check the same claims; D_FRESH_CLAIMS=1 rebuilds it. */
 export async function extractClaims(ctx: Ctx, dive: any): Promise<ClaimSet> {
+  if (ctx.v21) {
+    // Step 2 already read the company's claims. Do not read the site or use the legacy claim cache.
+    const saved = dive.v21?.claims ?? {};
+    const credentials: string[] = Array.isArray(saved.claimed_credentials) ? saved.claimed_credentials : [];
+    const numbers: string[] = Array.isArray(saved.claimed_numbers) ? saved.claimed_numbers : [];
+    const where = (dive.v21?.pages ?? []).map((p: any) => String(p.url ?? '')).filter(Boolean);
+    const claims: Claim[] = [...new Set([...credentials, ...numbers].filter((x) => typeof x === 'string' && x.trim()))].map((claim, i) => ({
+      id: 'C' + String(i + 1).padStart(2, '0'), claim, kind: credentials.includes(claim) ? 'certificate' : 'count', issuer: 'OTHER', value: '', where, quote: claim,
+    }));
+    if (!claims.length) ctx.warn('V2.1 Step 2 supplied no claimed credentials or numbers.');
+    return { claims, pages: [], selfGrades: [], cached: false };
+  }
   if (!process.env.D_FRESH_CLAIMS) {
     try {
       const cached = readLaneStrict(ctx.diveId, 'D-claims') as ClaimSet | undefined;

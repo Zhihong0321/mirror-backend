@@ -50,6 +50,9 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
   if (!raw.result) throw new Error(`V2.1 report ${reportId}: no result row`);
   if (!raw.checkpoint) throw new Error(`V2.1 report ${reportId}: no checkpoint row`);
   const baseline = raw.result.payload?.baseline ?? {};
+  const lookups = Object.fromEntries((raw.checkpoint.payload?.probes ?? [])
+    .filter((p: any) => p?.lookup?.handler)
+    .map((p: any) => [p.lookup.handler, p.lookup]));
   const legal = strings(baseline.legal_names);
   const legalName = clean(legal[0] ?? '') || String(report.company);
   const aliases = unique(strings(baseline.brand_names).map(clean)).filter((x) => x.toLowerCase() !== legalName.toLowerCase());
@@ -90,7 +93,8 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
         facts, contradictions,
         people: { people: [] }, sources: pages.filter((p) => p.url).map((p, i) => ({ id: i + 1, url: p.url, title: p.label })),
       },
-      v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide },
+      v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide,
+        lookups, claims: { claimed_credentials: strings(baseline.claimed_credentials), claimed_numbers: strings(baseline.claimed_numbers) } },
     },
     rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),
   };

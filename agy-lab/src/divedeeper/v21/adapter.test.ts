@@ -95,6 +95,19 @@ test('adapter gives the G judge phones, credentials, full official text and both
   assert.match(dive.result.contradictions[0], /07-1234567.*07-7654321/);
 });
 
+test('adapter preserves handler results, including failures, and both kinds of Step 2 claims', async () => {
+  const { reader, raw } = fixture();
+  const done = { handler: 'MY-bnm.gov.my/w1', status: 'not_found', records: [], source_url: 'https://bnm.gov.my/', excerpt: 'no match' };
+  const failed = { handler: 'MY-sc.com.my/w2', status: 'couldnt_check', reason: 'blocked', records: [] };
+  raw.checkpoint!.payload.probes = [{ lookup: done }, { query: 'no lookup' }, { lookup: failed }];
+  raw.result!.payload.baseline.claimed_credentials = ['Customs forwarding licence'];
+  const { dive } = await loadV21Dive('report', reader);
+  assert.deepEqual(dive.v21.lookups, { [done.handler]: done, [failed.handler]: failed });
+  assert.strictEqual(dive.v21.lookups[done.handler], done);
+  assert.deepEqual(dive.v21.claims, { claimed_credentials: ['Customs forwarding licence'], claimed_numbers: raw.result!.payload.baseline.claimed_numbers });
+  assert.deepEqual(dive.result.people.people, []);
+});
+
 test('adapter reads every report in V21_DEEPER_ROWS without a database', { skip: !process.env.V21_DEEPER_ROWS }, async (t) => {
   const folder = process.env.V21_DEEPER_ROWS!;
   const entries = (await fs.readdir(folder, { withFileTypes: true })).filter((entry) => entry.isDirectory());
@@ -116,6 +129,10 @@ test('adapter reads every report in V21_DEEPER_ROWS without a database', { skip:
       assert.equal(dive.result.identity.legal_name, 'DNE Forwarding (M) Sdn Bhd');
     }
     const checkpoint = await reader.latestRaw(report.report_id, 'checkpoint');
+    assert.deepEqual(dive.v21.lookups, Object.fromEntries((checkpoint!.payload.probes ?? []).filter((p: any) => p.lookup?.handler).map((p: any) => [p.lookup.handler, p.lookup])));
+    const result = await reader.latestRaw(report.report_id, 'result');
+    assert.deepEqual(dive.v21.claims, { claimed_credentials: result!.payload.baseline.claimed_credentials ?? [], claimed_numbers: result!.payload.baseline.claimed_numbers ?? [] });
+    if (/DNE/i.test(report.company)) assert.ok(dive.v21.claims.claimed_credentials.length, 'DNE has credentials to check');
     assert.ok(dive.result.identity.official_domains.includes(checkpoint!.payload.official_site.domain.toLowerCase().replace(/^www\./, '')));
     assert.ok(dive.result.identity.official_domains.every((d) => !/(?:newpages\.com\.my|onesync\.my|contact\.page)$/.test(d)), 'no directory hosts');
     assert.ok(dive.result.identity.address);
