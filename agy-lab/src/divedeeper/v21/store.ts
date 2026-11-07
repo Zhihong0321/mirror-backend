@@ -49,6 +49,15 @@ export async function laneRows(id: string): Promise<Lane[]> {
   await ensureTables();
   return (await db.sql<Lane>(`select * from v21_deeper_lane where run_id = $1 order by id`, [id])).rows;
 }
+/** The trades and towns the report's newest H-maps lane searched, from any earlier run; a lane that ran beats a failed
+ *  try. null when the report has never run H-maps. */
+export async function lastPlan(reportId: string): Promise<unknown> {
+  await ensureTables();
+  const out = await db.sql<{ plan: unknown }>(`select payload->'notes'->'plan' as plan from v21_deeper_lane
+    where report_id = $1 and lane = 'H-maps' and payload->'notes'->'plan' is not null
+    order by (status <> 'failed') desc, id desc limit 1`, [reportId]);
+  return out.rows[0]?.plan ?? null;
+}
 export async function saveLane(run: Run, result: LaneResult): Promise<void> {
   await ensureTables();
   await db.sql(`insert into v21_deeper_lane (run_id, report_id, lane, status, payload) values ($1, $2, $3, $4, $5::jsonb)`,

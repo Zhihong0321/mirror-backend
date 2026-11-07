@@ -12,7 +12,7 @@ function result(status: LaneResult['status']): LaneResult {
     ...(status === 'failed' ? { failure: 'worker offline' } : {}),
   };
 }
-async function fixture(statuses: LaneResult['status'][], saved: Lane[] = []) {
+async function fixture(statuses: LaneResult['status'][], saved: Lane[] = [], earlierPlan: unknown = null) {
   const row: Run = { run_id: 'run', report_id: 'report', company_uid: null, status: 'queued', stage: '', log: [], error: null, created_at: '', updated_at: '', finished_at: null };
   const loaded = await loadV21Dive('report', {
     getReport: async () => ({ company: 'Acme', country: 'Malaysia', industry: 'Solar', company_uid: 'co_acme', step1_status: 'done', step2_status: 'done' }),
@@ -28,6 +28,7 @@ async function fixture(statuses: LaneResult['status'][], saved: Lane[] = []) {
       laneRows: async () => saved,
       update: async (_id, values) => { Object.assign(row, values); },
       saveLane: async (_row, lane) => { attempts.push(lane); events.push('saved'); },
+      lastPlan: async (reportId) => { assert.equal(reportId, 'report'); return earlierPlan; },
     },
     loadV21Dive: async () => loaded,
     stageDive: (id) => { assert.equal(id, 'v21-report'); events.push('staged'); },
@@ -87,6 +88,30 @@ test('recovery retries a failed lane while keeping its saved trade and town plan
   assert.deepEqual(f.files[0].data, plan);
   assert.equal(f.attempts.length, 1);
   assert.equal(f.row.status, 'done');
+}));
+
+test('a new run of a report reuses the plan of its last run', async () => switchedOn(async () => {
+  const earlier = { trades: ['freight forwarder'], areas: ['Klang'], offices: ['Klang'], picked_at: '2026-11-07' };
+  const f = await fixture(['done'], [], earlier);
+  await executeRun('run', f.runtime);
+  assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: earlier }]);
+  assert.match(f.row.log[0].msg, /Maps plan from the last run of this report/);
+  assert.equal(f.row.status, 'done');
+}));
+
+test("this run's own saved plan beats the report's earlier plan", async () => switchedOn(async () => {
+  const earlier = { trades: ['old'], areas: ['Old'], offices: ['Old'], picked_at: '2026-01-01' };
+  const f = await fixture(['done'], [{ id: 1, run_id: 'run', report_id: 'report', lane: 'H-maps', status: 'failed', payload: result('failed'), created_at: '' }], earlier);
+  await executeRun('run', f.runtime);
+  assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
+  assert.match(f.row.log[0].msg, /Maps plan from this run/);
+}));
+
+test('a report that never ran H-maps picks a new plan', async () => switchedOn(async () => {
+  const f = await fixture(['done']);
+  await executeRun('run', f.runtime);
+  assert.deepEqual(f.files, []);
+  assert.match(f.row.log[0].msg, /Maps plan picked new/);
 }));
 
 test('an adapter rejection fails the run without staging a dive or running a lane', async () => switchedOn(async () => {

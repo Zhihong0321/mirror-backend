@@ -14,7 +14,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // The same run can be exercised with in-memory storage and lanes, without a hub or workers.
 const live = { store, loadV21Dive, stageDive, restoreLane, writeLane, runLane, sleep };
 export type Runtime = Omit<typeof live, 'store'> & {
-  store: Pick<typeof store, 'getRun' | 'laneRows' | 'update' | 'saveLane'>;
+  store: Pick<typeof store, 'getRun' | 'laneRows' | 'update' | 'saveLane' | 'lastPlan'>;
 };
 
 export async function executeRun(id: string, runtime: Runtime = live): Promise<void> {
@@ -35,12 +35,21 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
     const kept = new Map<string, LaneResult>();
     // H-maps keeps its plan in notes. Restore it even when that attempt failed, so a
     // fresh container keeps the same trades and towns as the interrupted attempt.
+    let plan: unknown = null;
     for (const lane of saved) {
-      if (lane.lane === 'H-maps' && lane.payload.notes?.plan) writeLane(key, 'H-plan', lane.payload.notes.plan, 2);
+      if (lane.lane === 'H-maps' && lane.payload.notes?.plan) plan = lane.payload.notes.plan;
       if (lane.status !== 'failed') kept.set(lane.lane, lane.payload);
     }
+    // A new run of the same report searches the same trades and towns as its last run, so its Maps ranks can be
+    // compared with that run's. The lane files live in the container's temp folder and are gone after a deploy.
+    let planFrom = plan ? 'this run' : '';
+    if (!plan) {
+      plan = await store.lastPlan(row.report_id);
+      if (plan) planFrom = 'the last run of this report';
+    }
+    if (plan) writeLane(key, 'H-plan', plan, 2);
     for (const result of kept.values()) restoreLane(result);
-    await say('running', `V2.1 rows: ${JSON.stringify(rows)}; ${kept.size} saved lanes restored`, { status: 'running', company_uid: dive.v21.company_uid as string | null, error: null, finished_at: null });
+    await say('running', `V2.1 rows: ${JSON.stringify(rows)}; ${kept.size} saved lanes restored; Maps plan ${planFrom ? 'from ' + planFrom : 'picked new'}`, { status: 'running', company_uid: dive.v21.company_uid as string | null, error: null, finished_at: null });
     const failures: string[] = [];
     for (const [section, lane] of V21_DEEPER_LANES) {
       const name = `${section}-${lane}`;
