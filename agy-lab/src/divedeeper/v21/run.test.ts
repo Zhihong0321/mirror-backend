@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeRun, type Runtime } from './run.ts';
+import { executeRun, V21_DEEPER_LANES, type Runtime } from './run.ts';
 import { loadV21Dive } from './adapter.ts';
 import type { Run, Lane } from './store.ts';
 import type { LaneResult } from '../runner.ts';
@@ -22,12 +22,17 @@ async function fixture(statuses: LaneResult['status'][], saved: Lane[] = [], ear
   const attempts: LaneResult[] = [];
   const restored: LaneResult[] = [];
   const files: { id: string; name: string; data: unknown }[] = [];
+  const started: string[] = [];
+  const savedAll: LaneResult[] = [];
   const runtime: Runtime = {
     store: {
       getRun: async () => row,
       laneRows: async () => saved,
       update: async (_id, values) => { Object.assign(row, values); },
-      saveLane: async (_row, lane) => { attempts.push(lane); events.push('saved'); },
+      saveLane: async (_row, lane) => {
+        savedAll.push(lane);
+        if (lane.section === 'H' && lane.lane === 'maps') { attempts.push(lane); events.push('saved'); }
+      },
       lastPlan: async (reportId) => { assert.equal(reportId, 'report'); return earlierPlan; },
     },
     loadV21Dive: async () => loaded,
@@ -35,14 +40,16 @@ async function fixture(statuses: LaneResult['status'][], saved: Lane[] = [], ear
     restoreLane: (r) => { restored.push(r); },
     writeLane: (id, name, data) => { files.push({ id, name, data }); },
     runLane: async (section, lane, key, _dive, _limit, opts) => {
-      assert.deepEqual([section, lane, key, opts], ['H', 'maps', 'v21-report', { worker: 'myworker' }]);
+      assert.deepEqual([key, opts], ['v21-report', { worker: 'myworker' }]);
+      started.push(`${section}-${lane}`);
+      if (section !== 'H' || lane !== 'maps') return { ...result('done'), section, lane, notes: {} };
       events.push('ran');
       assert.ok(statuses.length, 'unexpected extra lane attempt');
       return result(statuses.shift()!);
     },
     sleep: async (ms) => { events.push(`wait ${ms}`); },
   };
-  return { row, runtime, events, attempts, restored, files };
+  return { row, runtime, events, attempts, restored, files, started, savedAll };
 }
 async function switchedOn(work: () => Promise<void>) {
   const before = process.env.V21_DEEPER;
@@ -69,6 +76,8 @@ test('three failed attempts leave an incomplete run with the lane reason', async
   assert.equal(f.attempts.length, 3);
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
+  assert.deepEqual(f.started, ['H-maps', 'G-fixed', 'G-grounded', 'H-maps', 'H-maps', 'H-web', 'B-brand']);
+  assert.equal(f.savedAll.length, 7);
 }));
 
 test('recovery restores a successful lane and its plan without another Maps call', async () => switchedOn(async () => {
@@ -79,6 +88,7 @@ test('recovery restores a successful lane and its plan without another Maps call
   assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
   assert.deepEqual(f.events, ['staged']);
   assert.equal(f.row.status, 'done');
+  assert.deepEqual(f.started, ['G-fixed', 'G-grounded', 'H-web', 'B-brand']);
 }));
 
 test('recovery retries a failed lane while keeping its saved trade and town plan', async () => switchedOn(async () => {
@@ -121,4 +131,63 @@ test('an adapter rejection fails the run without staging a dive or running a lan
   assert.equal(f.row.status, 'failed');
   assert.equal(f.row.error, 'Step 2 is not done');
   assert.deepEqual(f.events, []);
+}));
+
+test('stages start their lanes together and save every lane before starting the next stage', async () => switchedOn(async () => {
+  assert.deepEqual(V21_DEEPER_LANES, [[['H', 'maps'], ['G', 'fixed'], ['G', 'grounded']], [['H', 'web']], [['B', 'brand']]]);
+  const f = await fixture([]);
+  const started: string[] = [];
+  const finish = new Map<string, () => void>();
+  const saved: string[] = [];
+  const stages = V21_DEEPER_LANES.map((s) => s.map(([section, lane]) => `${section}-${lane}`));
+  const gate = () => {
+    let open!: () => void;
+    const ready = new Promise<void>((resolve) => { open = resolve; });
+    return { ready, open };
+  };
+  const starts = new Map(stages.flat().map((name) => [name, gate()]));
+  const firstTwoSaved = gate();
+  f.runtime.runLane = async (section, lane) => {
+    const name = `${section}-${lane}`;
+    started.push(name);
+    if (name === 'H-web') assert.deepEqual(saved.sort(), [...stages[0]].sort());
+    if (name === 'B-brand') assert.ok(saved.includes('H-web'));
+    const done = new Promise<void>((resolve) => finish.set(name, resolve));
+    starts.get(name)!.open();
+    await done;
+    return { ...result('done'), section, lane };
+  };
+  f.runtime.store.saveLane = async (_row, lane) => {
+    saved.push(`${lane.section}-${lane.lane}`);
+    if (saved.length === 2) firstTwoSaved.open();
+  };
+  const running = executeRun('run', f.runtime);
+  await Promise.all(stages[0].map((name) => starts.get(name)!.ready));
+  assert.deepEqual(started, stages[0]);
+  finish.get('G-fixed')!();
+  finish.get('H-maps')!();
+  await firstTwoSaved.ready;
+  assert.equal(started.length, 3, 'H-web waits for the last first-stage lane');
+  finish.get('G-grounded')!();
+  await starts.get('H-web')!.ready;
+  assert.equal(started[3], 'H-web');
+  finish.get('H-web')!();
+  await starts.get('B-brand')!.ready;
+  assert.equal(started[4], 'B-brand');
+  finish.get('B-brand')!();
+  await running;
+  assert.equal(f.row.status, 'done');
+}));
+
+test('resume restores all completed stages and runs no lane again', async () => switchedOn(async () => {
+  const saved: Lane[] = V21_DEEPER_LANES.flatMap((s) => s.map(([section, lane], i) => ({
+    id: i + 1, run_id: 'run', report_id: 'report', lane: `${section}-${lane}`, status: 'done' as const,
+    payload: { ...result('done'), section, lane }, created_at: '',
+  })));
+  const f = await fixture([], saved);
+  await executeRun('run', f.runtime);
+  assert.equal(f.restored.length, 5);
+  assert.deepEqual(f.started, []);
+  assert.deepEqual(f.savedAll, []);
+  assert.equal(f.row.status, 'done');
 }));

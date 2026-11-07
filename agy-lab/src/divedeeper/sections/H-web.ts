@@ -45,6 +45,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     });
   }
 
+  // V2.1 already checked namesakes and stale details in Steps 1 and 2. This lane measures ranks only.
+  if (ctx.v21) return { findings, notes: { plan, ranks, nameRows: [], unique: [], classified: [] } };
+
   // 2. A search for the company's own name, deduped by URL across the queries.
   const nameQueries = [...new Set([shortName, String(id.legal_name ?? dive.company), `${shortName} review`])];
   const nameRows: any[] = [];

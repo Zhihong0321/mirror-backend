@@ -4,6 +4,76 @@ export type WorkerRow = MapsRow & { place_id: string | null };
 type Options = { baseUrl?: string; apiKey?: string };
 type Answer = { rows: WorkerRow[]; error?: never } | { rows: null; error: string };
 
+type Failed = { error: string };
+export type FetchOptions = { format: 'markdown' | 'html'; keepErrors?: boolean; headers?: boolean };
+export type Page = {
+  url: string; finalUrl: string; status: number; content: string;
+  headers: Record<string, string>; redirects: Array<{ url: string; status: number; location: string }>;
+  worker?: string;
+};
+export type Lookup = {
+  status: string; reason: string | null; records: unknown[]; source_url: string; excerpt: string;
+  handler: string; version: string;
+};
+export type ShotAsk = { url: string; device?: 'desktop' | 'mobile'; find?: string };
+export type Shot = {
+  image?: string | null; found?: boolean; blocked: boolean; detail?: unknown;
+  status: number; finalUrl: string; [key: string]: unknown;
+};
+
+/** These jobs expire on the service. Each long poll gets its own 90-second request limit. */
+async function job(path: string, payload: Record<string, unknown>, opts: Options): Promise<any> {
+  const base = (opts.baseUrl ?? process.env.V21_DEEPER_WORKER_URL ?? process.env.GMAP_API_URL ?? 'https://myworker.up.railway.app').replace(/\/+$/, '');
+  const key = opts.apiKey ?? secret('GMAP_API_KEY');
+  if (!key) throw new Error('GMAP_API_KEY is missing');
+  const headers = { authorization: 'Bearer ' + key, 'content-type': 'application/json' };
+  const request = async (route: string, init: RequestInit = {}) => {
+    const res = await fetch(base + route, { ...init, headers, signal: AbortSignal.timeout(90_000) });
+    if (!res.ok) throw new Error(`myworker: HTTP ${res.status}`);
+    const body = await res.json() as any;
+    if (!body.job) throw new Error('myworker returned no job');
+    return body.job;
+  };
+  let out = await request(path, { method: 'POST', body: JSON.stringify({ ...payload, wait: 60 }) });
+  while (out.status === 'pending' || out.status === 'running') {
+    if (!out.id) throw new Error('myworker returned no job id');
+    out = await request(`/api/jobs/${encodeURIComponent(out.id)}?wait=60`);
+  }
+  if (out.status === 'failed') throw new Error(String(out.error ?? 'myworker job failed'));
+  if (out.status !== 'done') throw new Error(`unexpected myworker job status: ${out.status}`);
+  if (!out.result || typeof out.result !== 'object') throw new Error('myworker returned no result');
+  return out.result;
+}
+
+const reason = (err: unknown) => err instanceof Error ? err.message : String(err);
+
+export async function fetchPage(url: string, ask: FetchOptions, opts: Options = {}): Promise<Page | Failed> {
+  try {
+    const out = await job('/api/fetch', { url, ...ask, mainContent: false }, opts);
+    if (typeof out.status !== 'number' || typeof out.content !== 'string') throw new Error('myworker returned no page');
+    return { url: out.url ?? url, finalUrl: out.finalUrl ?? out.url ?? url, status: out.status, content: out.content,
+      headers: out.headers ?? {}, redirects: out.redirects ?? [], worker: out.worker };
+  } catch (err) {
+    // Older workers fail error pages even when keepErrors was requested. Keep their HTTP status.
+    const status = reason(err).match(/the site answered HTTP ([45]\d{2})\b/i);
+    if (status) return { url, finalUrl: url, status: Number(status[1]), content: '', headers: {}, redirects: [] };
+    return { error: reason(err) };
+  }
+}
+
+export async function lookup(handler: string, keyword: string, opts: Options = {}): Promise<Lookup | Failed> {
+  try {
+    const out = await job('/api/lookup', { handler, keyword }, opts);
+    if (!out.result || typeof out.result.status !== 'string') throw new Error('myworker returned no lookup result');
+    return { ...out.result, handler: out.handler ?? handler, version: out.version };
+  } catch (err) { return { error: reason(err) }; }
+}
+
+export async function shot(ask: ShotAsk, opts: Options = {}): Promise<Shot | Failed> {
+  try { return await job('/api/shot', { ...ask }, opts); }
+  catch (err) { return { error: reason(err) }; }
+}
+
 /** Each request holds for at most 60 seconds. The service, rather than this client, expires jobs. */
 export async function scan(keyword: string, place: string, max: number, opts: Options = {}): Promise<Answer> {
   // V21_DEEPER_WORKER_URL points only the deeper dive elsewhere (V2.1 Step 1 keeps GMAP_API_URL), e.g. at a dead

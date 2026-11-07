@@ -33,13 +33,22 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const pick = [...crawled.filter((u) => { try { return new URL(u).pathname === '/'; } catch { return false; } }), ...crawled.filter((u) => PITCH.test(u))];
   const urls = [...new Set(pick.length ? pick : homes)].slice(0, 7);
   const own: { url: string; text: string }[] = [];
-  for (const u of urls) {
+  if (ctx.v21) {
+    // Reuse only the official pages Step 1 read. Search-only snippets are not page reads.
+    for (const p of dive.v21?.pages ?? []) {
+      // The same 4500 characters a page gets on the old path, so the prompt stays the size it was.
+      const text = String(p.text ?? '').replace(/\s+/g, ' ').slice(0, 4500);
+      if (p.url && text.trim()) own.push({ url: p.url, text });
+    }
+    if (!own.length) ctx.warn('V2.1 has no saved official page text; own-page comparison skipped');
+  }
+  for (const u of ctx.v21 ? [] : urls) {
     const p = await ctx.read(u);
     if (p.status !== 200) { ctx.warn(`could not read ${u}: ${p.status === 0 ? p.error : 'HTTP ' + p.status}`); continue; }
     const text = p.text.replace(/\s+/g, ' ').slice(0, 4500);
     if (text.length > 200) own.push({ url: p.finalUrl || u, text });
   }
-  if (!own.length) ctx.warn('none of the company pages could be read; the comparison uses outside sources only');
+  if (!own.length && !ctx.v21) ctx.warn('none of the company pages could be read; the comparison uses outside sources only');
 
   // ---- 2. What others say. ----
   const searchRows = (HW.unique ?? []).filter((x: any) => !x.official).slice(0, 14).map((x: any) => `${x.title} | ${x.url} | ${x.description}${x.class ? ` [${x.class}]` : ''}`);
@@ -53,6 +62,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const got = ctx.parseJson(await ctx.llm(
     `You are a brand and marketing consultant auditing how well the internet understands ${N.legal} (${N.industry}, ${N.address}). Be concrete and fair; British English.\n\n` +
     `A. WHAT THE COMPANY SAYS ABOUT ITSELF (its own pages):\n${own.map((p) => `### ${p.url}\n${p.text}`).join('\n\n') || '(could not be read)'}\n\n` +
+    (ctx.v21 && dive.v21?.site_wide ? `OFFICIAL HEADER / MENU / FOOTER:\n${dive.v21.site_wide}\n\n` : '') +
     `B. WHAT OTHERS SAY (search results for its name, independent pages, research notes):\n${searchRows.join('\n') || '(none)'}\n${outside.map((x: any) => `### ${x.title} | ${x.url} | ${x.date ?? ''}\n${x.text}`).join('\n\n')}\nResearch notes:\n${research.join('\n') || '(none)'}\n\n` +
     `C. WHAT AN AI ASSISTANT SAYS WHEN ASKED (from memory):\n${ai.join('\n\n') || '(not asked)'}\n\n` +
     `Return JSON only:\n{\n` +
@@ -70,7 +80,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- 4. Findings. ----
   const flat = (s: string) => s.toLowerCase().replace(/[\s ]+/g, ' ').replace(/[’‘]/g, "'").trim();
-  const ownAll = flat(own.map((p) => p.text).join(' '));
+  const ownAll = flat(own.map((p) => p.text).join(' ') + (ctx.v21 ? ' ' + String(dive.v21?.site_wide ?? '') : ''));
   const points = (got?.selling_points ?? []).map((p: any) => ({ ...p, quote: p.quote && ownAll.includes(flat(String(p.quote))) ? String(p.quote) : '' }));
   const offer: any[] = got?.offer ?? [];
   if (got) {

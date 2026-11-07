@@ -60,19 +60,37 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
   const domains = [...strings(baseline.websites), ...strings(baseline.official_domain)].map(host)
     .filter((d) => d && brandWords.some((brand) => brand.length >= 3 && domainLabel(d).includes(brand)));
   const addresses = strings(baseline.addresses).map(address);
-  const pages: { label?: string; text?: string }[] = raw.tidy?.payload?.official?.pages ?? [];
+  const pages: { label: string; url: string; text: string }[] = (raw.tidy?.payload?.official?.pages ?? []).map((p: any) => ({
+    label: String(p.label ?? 'Official page'), url: String(p.url ?? ''), text: String(p.text ?? ''),
+  }));
+  const siteWide = String(raw.tidy?.payload?.official?.site_wide ?? '');
+  // V2.1 has official claims, not the old dive's verified fact sheet. Keep that distinction for the judge.
+  const facts = [
+    ...addresses.map((a) => ({ topic: 'footprint', fact: `Office: ${a}` })),
+    ...strings(baseline.phones).map((p) => ({ topic: 'contact', fact: `Official phone: ${p}` })),
+    ...strings(baseline.claimed_credentials).map((c) => ({ topic: 'credentials', fact: `Official site claims: ${c}` })),
+    ...strings(baseline.claimed_numbers).map((n) => ({ topic: 'identity', fact: `Official site claims: ${n}` })),
+    ...pages.map((p) => ({ topic: 'products_services', fact: `${p.label}: ${p.text}` })),
+    ...(siteWide ? [{ topic: 'identity', fact: `Official header and footer: ${siteWide}` }] : []),
+  ].map((f) => ({ ...f, confidence: 'medium' }));
+  // Step 2 rules v1 keeps contradictions among its findings; rules v2 has its own list with every version of the fact.
+  const contradictions: string[] = [
+    ...(raw.result.payload?.findings ?? [])
+      .filter((f: any) => ['contradiction', 'profile_drift'].includes(f.type))
+      .map((f: any) => `Official claim: ${f.claim ?? ''}; ${f.source_name ?? 'outside source'}: ${f.outside_source ?? ''} (${f.source_url ?? ''})`),
+    ...(raw.result.payload?.contradictions ?? [])
+      .map((c: any) => `${c.title ?? ''}: ${(c.versions ?? []).map((v: any) => `${v.value ?? ''} (${v.source ?? ''})`).join(' vs ')}`),
+  ];
   return {
     dive: {
       company: String(report.company), country: String(report.country),
       result: {
-        identity: { legal_name: legalName, aliases, address: addresses[0] ?? '', industry: report.industry, official_domains: unique([gate, ...domains]), registration_numbers: registrations },
-        facts: [
-          ...addresses.map((a) => ({ topic: 'identity', fact: `Office: ${a}` })),
-          ...pages.map((p) => ({ topic: 'products_services', fact: `${p.label ?? 'Official page'}: ${String(p.text ?? '').slice(0, 1500)}` })),
-        ],
-        people: { people: [] }, sources: [],
+        identity: { legal_name: legalName, aliases, address: addresses[0] ?? '', industry: report.industry, official_domains: unique([gate, ...domains]), registration_numbers: registrations,
+          summary: pages.map((p) => `${p.label}: ${p.text}`).join('\n').slice(0, 1500) },
+        facts, contradictions,
+        people: { people: [] }, sources: pages.filter((p) => p.url).map((p, i) => ({ id: i + 1, url: p.url, title: p.label })),
       },
-      v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [] },
+      v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide },
     },
     rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),
   };

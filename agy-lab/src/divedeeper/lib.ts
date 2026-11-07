@@ -23,6 +23,7 @@ import * as pagefetch from '../pagefetch.ts';
 import { startCall, type ApiCall, type ApiName } from '../cost.ts';
 import { evidenceActive } from '../evidence/context.ts';
 import { handoff, isOpaque, record as recordEvidence } from '../evidence/store.ts';
+import type { ShotAsk } from './v21/myworker.ts';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const SECTIONS = path.join(HERE, 'sections');
@@ -143,6 +144,7 @@ export type MapsRow = { name: string; rating: number | null; reviews: number | n
 export type Ctx = ReturnType<typeof makeCtx>;
 
 export function makeCtx(diveId: string, section: string, lane: string, opts?: { worker?: 'myworker' }) {
+  const v21 = opts?.worker === 'myworker';
   const warnings: string[] = [];
   const meter: Meter = {
     started: Date.now(),
@@ -193,6 +195,34 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
   }
   const waitingOn = (): string[] => [...inFlight.values()].sort((a, b) => a.since - b.since)
     .map((c) => `${c.what} (${Math.round((Date.now() - c.since) / 1000)}s)`);
+
+  // Worker reads and handlers are free HTTP calls. Their failures warn; they do not fail a lane.
+  async function workerCall<T extends object>(what: string, work: () => Promise<T | { error: string }>): Promise<T | { error: string }> {
+    meter.http.calls++;
+    const c = call('fetch', what, { provider: 'myworker' });
+    try {
+      const out = await track(`myworker ${what}`, work());
+      if ('error' in out && typeof out.error === 'string') throw new Error(out.error);
+      c.done({ ok: true }, out);
+      return out;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      meter.http.failed++;
+      warn(`myworker ${what}: ${error}`);
+      c.done({ ok: false, note: error.slice(0, 200) }, null);
+      return { error };
+    }
+  }
+
+  async function lookup(handler: string, keyword: string) {
+    if (!v21) return { error: 'site handlers require V2.1 mode' };
+    return workerCall(`lookup ${handler}: ${keyword}`, async () => (await import('./v21/myworker.ts')).lookup(handler, keyword));
+  }
+
+  async function shot(ask: ShotAsk) {
+    if (!v21) return { error: 'screenshots require V2.1 mode' };
+    return workerCall(`shot ${ask.url}`, async () => (await import('./v21/myworker.ts')).shot(ask));
+  }
 
   /** One chat call through the app's LLM router (core/llm.ts); '' when every lane and MiniMax failed. */
   async function llm(prompt: string, opts: { model?: string; system?: string; temperature?: number; label?: string } = {}): Promise<string> {
@@ -249,9 +279,23 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
 
   /** Exa search (core/exa.ts, the hub's key pool). `text: true` adds page text (capped by Exa's own maxCharacters).
    *  When every Exa key fails, Tavily and then Brave answer instead (their snippets as `text`), so a
-   *  lane gets results whenever any engine is up; only all three failing counts as a failed call. */
+   *  lane gets results whenever any engine is up; only all three failing counts as a failed call.
+   *  V2.1 uses the engines for addresses only and reads at most five pages on myworker. */
   async function exa(query: string, opts: { numResults?: number; text?: boolean | number; type?: string; category?: string; includeDomains?: string[]; excludeDomains?: string[]; startPublishedDate?: string } = {}): Promise<any[]> {
     meter.exa.calls++;
+    const texts = async (rows: any[]) => {
+      if (!v21) return rows;
+      // Never let paid page text or snippets through, even if an engine sends them unasked.
+      const hits = rows.map((r) => ({ url: r.url, title: r.title, text: '' }));
+      if (opts.text) {
+        const limit = typeof opts.text === 'number' ? opts.text : 4000;
+        await Promise.all(hits.slice(0, 5).map(async (hit) => {
+          const page = await read(hit.url);
+          hit.text = page.status >= 200 && page.status < 300 ? page.text.slice(0, limit) : '';
+        }));
+      }
+      return hits;
+    };
     const body = {
       query,
       numResults: opts.numResults ?? 10,
@@ -260,7 +304,7 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
       ...(opts.includeDomains ? { includeDomains: opts.includeDomains } : {}),
       ...(opts.excludeDomains?.length ? { excludeDomains: opts.excludeDomains } : {}),
       ...(opts.startPublishedDate ? { startPublishedDate: opts.startPublishedDate } : {}),
-      ...(opts.text ? { contents: { text: typeof opts.text === 'number' ? { maxCharacters: opts.text } : true } } : {}),
+      ...(!v21 && opts.text ? { contents: { text: typeof opts.text === 'number' ? { maxCharacters: opts.text } : true } } : {}),
     };
     const errors: string[] = [];
     try {
@@ -268,7 +312,7 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
       const results = out.results ?? [];
       meter.exa.results += results.length;
       if (out.costDollars?.total != null) { meter.exa.priced++; meter.exa.dollars += Number(out.costDollars.total); }
-      return results;
+      return await texts(results);
     } catch (e) {
       errors.push(`exa: ${(e as Error).message.slice(0, 150)}`);
     }
@@ -280,14 +324,14 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
     try {
       const hits = await track(`tavily ${q}`, core.tavily.search(q, { maxResults: opts.numResults ?? 10, depth: 'advanced', timeoutMs: SEARCH_TIMEOUT_MS, log: meter.calls, what: query }));
       log(`exa failed, Tavily answered: ${query}`);
-      return hits.filter((h) => !drop(h.url)).map((h) => ({ url: h.url, title: h.title, text: h.content }));
+      return await texts(hits.filter((h) => !drop(h.url)).map((h) => ({ url: h.url, title: h.title, text: h.content })));
     } catch (e) {
       errors.push(`tavily: ${(e as Error).message.slice(0, 150)}`);
     }
     try {
       const rows = await track(`brave ${q}`, core.brave.searchRaw(q, { count: opts.numResults ?? 10, country: 'MY', log: meter.calls }));
       log(`exa and Tavily failed, Brave answered: ${query}`);
-      return rows.filter((r) => !drop(String(r.url))).map((r) => ({ url: r.url, title: r.title, text: [r.description, ...(r.extra_snippets ?? [])].filter(Boolean).join(' '), publishedDate: r.page_age ?? null }));
+      return await texts(rows.filter((r) => !drop(String(r.url))).map((r) => ({ url: r.url, title: r.title, text: [r.description, ...(r.extra_snippets ?? [])].filter(Boolean).join(' '), publishedDate: r.page_age ?? null })));
     } catch (e) {
       errors.push(`brave: ${(e as Error).message.slice(0, 150)}`);
     }
@@ -332,6 +376,14 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
    * Lanes that need the raw HTML, headers or timing keep using page().
    */
   async function read(url: string): Promise<{ url: string; finalUrl: string; status: number; text: string; via: string; error?: string }> {
+    if (v21) {
+      const out = await workerCall(url, async () => {
+        const page = await (await import('./v21/myworker.ts')).fetchPage(url, { format: 'markdown' });
+        return !('error' in page) && page.status >= 400 ? { error: `HTTP ${page.status}` } : page;
+      });
+      if ('error' in out) return { url, finalUrl: url, status: 0, text: '', via: 'myworker', error: out.error };
+      return { url, finalUrl: out.finalUrl, status: out.status, text: out.content, via: out.worker ?? 'myworker' };
+    }
     const c = call('fetch', url);
     try {
       const out = await track(`fetch worker ${url}`, pagefetch.read([url]));
@@ -351,6 +403,17 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
 
   /** Plain GET of a page. Never throws: a failure comes back as status 0 with `error`. */
   async function page(url: string, init: RequestInit = {}): Promise<{ url: string; finalUrl: string; status: number; ms: number; headers: Record<string, string>; html: string; error?: string }> {
+    if (v21) {
+      const t = Date.now();
+      if ((init.method ?? 'GET').toUpperCase() !== 'GET') {
+        const error = 'only GET runs on the worker; use a site handler';
+        warn(error);
+        return { url, finalUrl: url, status: 0, ms: Date.now() - t, headers: {}, html: '', error };
+      }
+      const out = await workerCall(url, async () => (await import('./v21/myworker.ts')).fetchPage(url, { format: 'html', keepErrors: true, headers: true }));
+      if ('error' in out) return { url, finalUrl: url, status: 0, ms: Date.now() - t, headers: {}, html: '', error: out.error };
+      return { url, finalUrl: out.finalUrl, status: out.status, ms: Date.now() - t, headers: out.headers, html: out.content };
+    }
     meter.http.calls++;
     const t = Date.now();
     const c = call('web', url);
@@ -388,7 +451,7 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
     }
   }
 
-  return { diveId, section, lane, warnings, meter, warn, log, call, track, waitingOn, llm, mapsSearch, exa, brave, page, read, parseJson, htmlText, now: () => new Date().toISOString() };
+  return { diveId, section, lane, v21, warnings, meter, warn, log, call, track, waitingOn, llm, mapsSearch, exa, brave, page, read, lookup, shot, parseJson, htmlText, now: () => new Date().toISOString() };
 }
 
 /** First JSON object or array in a model answer, or null. Never throws. */

@@ -9,7 +9,7 @@ function fixture() {
   const raw: Record<string, { id: number; payload: any } | null> = {
     checkpoint: { id: 1, payload: { official_site: { domain: 'WWW.ETERNALGY.ME' }, google_maps: { result: { businesses: [{ name: 'Eternalgy', place_id: 'kept' }] } } } },
     assets: { id: 2, payload: {} },
-    tidy: { id: 3, payload: { official: { pages: [{ label: 'home', text: 'a'.repeat(1700) }] } } },
+    tidy: { id: 3, payload: { official: { pages: [{ label: 'home', url: 'https://eternalgy.me/', text: 'a'.repeat(1700) }] } } },
     result: { id: 4, payload: { baseline: {
       legal_names: ['Eternalgy Sdn Bhd (Co. Reg. 202301000001) [HQ]'],
       brand_names: ['Eternalgy (brand)', 'eternalgy', 'Eternalgy Sdn Bhd'],
@@ -35,10 +35,15 @@ test('adapter cleans notes, extracts SSM numbers, keeps brand domains and preser
   assert.equal(identity.industry, 'Solar PV');
   assert.deepEqual(identity.official_domains, ['eternalgy.me', 'eternalgy.com', 'eternalgy.com.my']);
   assert.deepEqual(dive.result.facts, [
-    { topic: 'identity', fact: 'Office: 1 Jalan Satu, Johor Bahru' },
-    { topic: 'identity', fact: 'Office: 2 Jalan Dua' },
-    { topic: 'products_services', fact: 'home: ' + 'a'.repeat(1500) },
+    { topic: 'footprint', fact: 'Office: 1 Jalan Satu, Johor Bahru', confidence: 'medium' },
+    { topic: 'footprint', fact: 'Office: 2 Jalan Dua', confidence: 'medium' },
+    ...raw.result!.payload.baseline.claimed_numbers.map((n: string) => ({ topic: 'identity', fact: `Official site claims: ${n}`, confidence: 'medium' })),
+    { topic: 'products_services', fact: 'home: ' + 'a'.repeat(1700), confidence: 'medium' },
   ]);
+  assert.deepEqual(dive.v21.pages, raw.tidy!.payload.official.pages);
+  assert.equal(dive.result.identity.summary, ('home: ' + 'a'.repeat(1700)).slice(0, 1500));
+  assert.deepEqual(dive.result.contradictions, []);
+  assert.deepEqual(dive.result.sources, [{ id: 1, url: 'https://eternalgy.me/', title: 'home' }]);
   assert.strictEqual(dive.v21.maps_own, raw.checkpoint!.payload.google_maps.result.businesses);
   assert.deepEqual(rows, { checkpoint: 1, assets: 2, tidy: 3, result: 4 });
 });
@@ -67,6 +72,27 @@ test('optional assets and tidy can be absent; legal name falls back to the repor
   assert.equal(dive.result.identity.legal_name, 'Eternalgy Sdn Bhd');
   assert.equal(rows.assets, null);
   assert.equal(rows.tidy, null);
+  assert.deepEqual(dive.v21.pages, []);
+});
+
+test('adapter gives the G judge phones, credentials, full official text and both sides of contradictions', async () => {
+  const { reader, raw } = fixture();
+  raw.result!.payload.baseline.phones = ['07-1234567'];
+  raw.result!.payload.baseline.claimed_credentials = ['SEDA registered'];
+  raw.tidy!.payload.official.site_wide = 'Founded in 2018. Director: A Person.';
+  raw.result!.payload.findings = [
+    { type: 'contradiction', claim: 'Phone 07-1234567', outside_source: 'Phone 07-7654321', source_name: 'Directory', source_url: 'https://directory.test' },
+    { type: 'profile_drift', claim: 'Private company', outside_source: 'Public company', source_name: 'LinkedIn' },
+    { type: 'missed_advantage', claim: 'Award absent', outside_source: 'Won an award' },
+  ];
+  const { dive } = await loadV21Dive('report', reader);
+  const sheet = dive.result.facts.map((f) => f.fact).join('\n');
+  assert.match(sheet, /Official phone: 07-1234567/);
+  assert.match(sheet, /Official site claims: SEDA registered/);
+  assert.match(sheet, /Founded in 2018. Director: A Person/);
+  assert.equal(dive.v21.site_wide, raw.tidy!.payload.official.site_wide);
+  assert.equal(dive.result.contradictions.length, 2);
+  assert.match(dive.result.contradictions[0], /07-1234567.*07-7654321/);
 });
 
 test('adapter reads every report in V21_DEEPER_ROWS without a database', { skip: !process.env.V21_DEEPER_ROWS }, async (t) => {
@@ -96,6 +122,11 @@ test('adapter reads every report in V21_DEEPER_ROWS without a database', { skip:
     assert.doesNotMatch(dive.result.identity.address, /[()[\]]|^(?:HQ|KL):/);
     assert.ok(dive.result.facts.length);
     assert.deepEqual(dive.v21.maps_own, checkpoint!.payload.google_maps.result.businesses);
+    const tidy = await reader.latestRaw(report.report_id, 'tidy');
+    assert.deepEqual(dive.v21.pages, (tidy?.payload?.official?.pages ?? []).map((p: any) => ({ label: p.label ?? 'Official page', url: p.url ?? '', text: p.text ?? '' })));
+    assert.ok(dive.result.facts.every((f) => f.confidence === 'medium'));
+    assert.equal(typeof dive.result.identity.summary, 'string');
+    assert.ok(Array.isArray(dive.result.contradictions));
     for (const kind of ['checkpoint', 'assets', 'tidy', 'result'] as const) assert.equal(rows[kind], (await reader.latestRaw(report.report_id, kind))?.id ?? null);
     await assert.rejects(loadV21Dive(report.report_id, { ...reader, getReport: async () => ({ ...report, step2_status: 'running' }) }), /Step 2 is not done/);
     await assert.rejects(loadV21Dive(report.report_id, { ...reader, latestRaw: async (id, kind) => {

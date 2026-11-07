@@ -5,7 +5,11 @@ import { loadV21Dive } from './adapter.ts';
 import * as store from './store.ts';
 
 export const enabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.V21_DEEPER === 'on';
-export const V21_DEEPER_LANES = [['H', 'maps']] as const;
+export const V21_DEEPER_LANES = [
+  [['H', 'maps'], ['G', 'fixed'], ['G', 'grounded']],
+  [['H', 'web']],
+  [['B', 'brand']],
+] as const;
 export const waiting: string[] = [];
 export let active: string | null = null;
 const waits = [60_000, 180_000];
@@ -23,9 +27,15 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
   const row = await store.getRun(id);
   if (!row) return;
   const log = row.log ?? [];
-  const say = async (stage: string, msg: string, extra: Parameters<typeof store.update>[1] = {}) => {
-    log.push({ at: new Date().toISOString(), stage, msg });
-    await store.update(id, { stage, log, ...extra });
+  let logging = Promise.resolve();
+  const say = (stage: string, msg: string, extra: Parameters<typeof store.update>[1] = {}) => {
+    // Parallel lanes must not overwrite a newer log with an earlier database update.
+    const saved = logging.then(async () => {
+      log.push({ at: new Date().toISOString(), stage, msg });
+      await store.update(id, { stage, log, ...extra });
+    });
+    logging = saved.catch(() => {});
+    return saved;
   };
   try {
     const { dive, rows } = await loadV21Dive(row.report_id);
@@ -51,19 +61,19 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
     for (const result of kept.values()) restoreLane(result);
     await say('running', `V2.1 rows: ${JSON.stringify(rows)}; ${kept.size} saved lanes restored; Maps plan ${planFrom ? 'from ' + planFrom : 'picked new'}`, { status: 'running', company_uid: dive.v21.company_uid as string | null, error: null, finished_at: null });
     const failures: string[] = [];
-    for (const [section, lane] of V21_DEEPER_LANES) {
+    for (const stage of V21_DEEPER_LANES) await Promise.all(stage.map(async ([section, lane]) => {
       const name = `${section}-${lane}`;
-      if (kept.has(name)) continue;
+      if (kept.has(name)) return;
       for (let attempt = 1; attempt <= 3; attempt++) {
         const result = await runLane(section, lane, key, dive, undefined, { worker: 'myworker' });
-        // Every try is immutable and durable before another try can start.
+        // Every try is immutable and durable before this lane's next try can start.
         await store.saveLane(row, result);
         await say(name, `${name} try ${attempt}: ${result.status}${result.failure ? ': ' + result.failure : ''}`);
         if (result.status !== 'failed') break;
         if (attempt === 3) failures.push(`${name}: ${result.failure ?? 'failed'}`);
         else await sleep(waits[attempt - 1]);
       }
-    }
+    }));
     const status = failures.length ? 'incomplete' : 'done';
     await say(status, failures.length ? failures.join('; ') : 'Every lane finished', {
       status, error: failures.length ? failures.join('; ') : null, finished_at: new Date().toISOString(),
