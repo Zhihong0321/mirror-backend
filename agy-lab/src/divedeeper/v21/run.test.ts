@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { executeRun, V21_DEEPER_LANES, type Runtime } from './run.ts';
+import { executeRun, V21_DEEPER_LANES, V21_DEEPER_WRITING, type Runtime } from './run.ts';
 import { loadV21Dive } from './adapter.ts';
 import type { Run, Lane } from './store.ts';
 import type { LaneResult } from '../runner.ts';
 
 const plan = { trades: ['solar'], areas: ['Johor'], offices: ['Johor'], picked_at: '2026-01-01' };
+const writing = V21_DEEPER_WRITING.map(([s, l]) => `${s}-${l}`);
 function result(status: LaneResult['status']): LaneResult {
   return { section: 'H', lane: 'maps', diveId: 'v21-report', company: 'Acme', status,
     ran_at: '2026-01-01', ms: 1, findings_count: 0, meter: {}, warnings: [], notes: { plan }, findings: [],
@@ -48,6 +49,7 @@ async function fixture(statuses: LaneResult['status'][], saved: Lane[] = [], ear
       return result(statuses.shift()!);
     },
     sleep: async (ms) => { events.push(`wait ${ms}`); },
+    buildReport: () => '<!doctype html><title>Audit</title>',
   };
   return { row, runtime, events, attempts, restored, files, started, savedAll };
 }
@@ -77,24 +79,25 @@ test('three failed attempts leave an incomplete run with the lane reason', async
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
   assert.deepEqual(f.started, ['H-maps', 'G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'C-merged', 'R-contacts', 'A-assets', 'B-brand']);
-  assert.equal(f.savedAll.length, 13);
+  assert.equal(f.savedAll.length, 14);
+  assert.equal(f.row.report_html, null);
 }));
 
 test('recovery restores a successful lane and its plan without another Maps call', async () => switchedOn(async () => {
   const kept = result('partial');
   const f = await fixture([], [{ id: 1, run_id: 'run', report_id: 'report', lane: 'H-maps', status: 'partial', payload: kept, created_at: '' }]);
   await executeRun('run', f.runtime);
-  assert.deepEqual(f.restored, [kept]);
+  assert.deepEqual(f.restored.filter((r) => r.section !== 'W'), [kept]);
   assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
   assert.deepEqual(f.events, ['staged']);
   assert.equal(f.row.status, 'done');
-  assert.deepEqual(f.started, ['G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-web', 'D-registry', 'C-merged', 'R-contacts', 'A-assets', 'B-brand']);
+  assert.deepEqual(f.started, ['G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-web', 'D-registry', 'C-merged', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
 }));
 
 test('recovery retries a failed lane while keeping its saved trade and town plan', async () => switchedOn(async () => {
   const f = await fixture(['done'], [{ id: 1, run_id: 'run', report_id: 'report', lane: 'H-maps', status: 'failed', payload: result('failed'), created_at: '' }]);
   await executeRun('run', f.runtime);
-  assert.deepEqual(f.restored, []);
+  assert.deepEqual(f.restored.map((r) => `${r.section}-${r.lane}`), ['W-speed']);
   assert.deepEqual(f.files[0].data, plan);
   assert.equal(f.attempts.length, 1);
   assert.equal(f.row.status, 'done');
@@ -149,8 +152,9 @@ test('stages start their lanes together and save every lane before starting the 
   const firstTwoSaved = gate();
   f.runtime.runLane = async (section, lane) => {
     const name = `${section}-${lane}`;
+    if (section.startsWith('S')) return { ...result('done'), section, lane };
     started.push(name);
-    if (stages[1].includes(name)) assert.deepEqual([...saved].sort(), [...stages[0]].sort());
+    if (stages[1].includes(name)) assert.deepEqual(saved.filter((lane) => lane !== 'W-speed').sort(), [...stages[0]].sort());
     if (stages[2].includes(name)) assert.ok(stages[1].every((lane) => saved.includes(lane)));
     const done = new Promise<void>((resolve) => finish.set(name, resolve));
     starts.get(name)!.open();
@@ -159,7 +163,7 @@ test('stages start their lanes together and save every lane before starting the 
   };
   f.runtime.store.saveLane = async (_row, lane) => {
     saved.push(`${lane.section}-${lane.lane}`);
-    if (saved.length === 2) firstTwoSaved.open();
+    if (saved.filter((name) => name !== 'W-speed').length === 2) firstTwoSaved.open();
   };
   const running = executeRun('run', f.runtime);
   await Promise.all(stages[0].map((name) => starts.get(name)!.ready));
@@ -186,13 +190,13 @@ test('stages start their lanes together and save every lane before starting the 
 }));
 
 test('resume restores all completed stages and runs no lane again', async () => switchedOn(async () => {
-  const saved: Lane[] = V21_DEEPER_LANES.flatMap((s) => s.map(([section, lane], i) => ({
+  const saved: Lane[] = [...V21_DEEPER_LANES.flat(), ['W', 'speed'], ...V21_DEEPER_WRITING].map(([section, lane], i) => ({
     id: i + 1, run_id: 'run', report_id: 'report', lane: `${section}-${lane}`, status: 'done' as const,
     payload: { ...result('done'), section, lane }, created_at: '',
-  })));
+  }));
   const f = await fixture([], saved);
   await executeRun('run', f.runtime);
-  assert.equal(f.restored.length, 11);
+  assert.equal(f.restored.length, 16);
   assert.deepEqual(f.started, []);
   assert.deepEqual(f.savedAll, []);
   assert.equal(f.row.status, 'done');

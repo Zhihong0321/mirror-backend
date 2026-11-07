@@ -2,6 +2,8 @@ import * as db from '../../reportdb.ts';
 import { writeLane } from '../lib.ts';
 import { restoreLane, runLane, stageDive, type LaneResult } from '../runner.ts';
 import { loadV21Dive } from './adapter.ts';
+import { buildReport } from '../report-html.ts';
+import { speedLane } from './speed.ts';
 import * as store from './store.ts';
 
 export const enabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.V21_DEEPER === 'on';
@@ -10,13 +12,14 @@ export const V21_DEEPER_LANES = [
   [['H', 'web'], ['D', 'registry'], ['C', 'merged']],
   [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']],
 ] as const;
+export const V21_DEEPER_WRITING = [['S2', 'consult'], ['S3', 'editor'], ['S4', 'analysis'], ['S5', 'plan']] as const;
 export const waiting: string[] = [];
 export let active: string | null = null;
 const waits = [60_000, 180_000];
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // The same run can be exercised with in-memory storage and lanes, without a hub or workers.
-const live = { store, loadV21Dive, stageDive, restoreLane, writeLane, runLane, sleep };
+const live = { store, loadV21Dive, stageDive, restoreLane, writeLane, runLane, buildReport, sleep };
 export type Runtime = Omit<typeof live, 'store'> & {
   store: Pick<typeof store, 'getRun' | 'laneRows' | 'update' | 'saveLane' | 'lastPlan'>;
 };
@@ -59,9 +62,17 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
     }
     if (plan) writeLane(key, 'H-plan', plan, 2);
     for (const result of kept.values()) restoreLane(result);
-    await say('running', `V2.1 rows: ${JSON.stringify(rows)}; ${kept.size} saved lanes restored; Maps plan ${planFrom ? 'from ' + planFrom : 'picked new'}`, { status: 'running', company_uid: dive.v21.company_uid as string | null, error: null, finished_at: null });
+    await say('running', `V2.1 rows: ${JSON.stringify(rows)}; ${kept.size} saved lanes restored; Maps plan ${planFrom ? 'from ' + planFrom : 'picked new'}`, { status: 'running', company_uid: dive.v21.company_uid as string | null, error: null, finished_at: null, report_html: null });
+    if (!kept.has('W-speed')) {
+      const speed = speedLane(key, dive);
+      await store.saveLane(row, speed);
+      restoreLane(speed);
+      kept.set('W-speed', speed);
+    }
+    for (const warning of kept.get('W-speed')!.warnings) await say('W-speed', warning);
+    for (const warning of dive.v21.warnings ?? []) await say('adapter', warning);
     const failures: string[] = [];
-    for (const stage of V21_DEEPER_LANES) await Promise.all(stage.map(async ([section, lane]) => {
+    const one = async (section: string, lane: string) => {
       const name = `${section}-${lane}`;
       if (kept.has(name)) return;
       for (let attempt = 1; attempt <= 3; attempt++) {
@@ -69,14 +80,23 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
         // Every try is immutable and durable before this lane's next try can start.
         await store.saveLane(row, result);
         await say(name, `${name} try ${attempt}: ${result.status}${result.failure ? ': ' + result.failure : ''}`);
-        if (result.status !== 'failed') break;
+        if (result.status !== 'failed') { kept.set(name, result); break; }
         if (attempt === 3) failures.push(`${name}: ${result.failure ?? 'failed'}`);
         else await sleep(waits[attempt - 1]);
       }
-    }));
-    const status = failures.length ? 'incomplete' : 'done';
-    await say(status, failures.length ? failures.join('; ') : 'Every lane finished', {
-      status, error: failures.length ? failures.join('; ') : null, finished_at: new Date().toISOString(),
+    };
+    for (const stage of V21_DEEPER_LANES) await Promise.all(stage.map(([section, lane]) => one(section, lane)));
+    for (const [section, lane] of V21_DEEPER_WRITING) {
+      if (failures.length) break;
+      await one(section, lane);
+    }
+    if (failures.length) {
+      await say('incomplete', failures.join('; '), { status: 'incomplete', error: failures.join('; '), finished_at: new Date().toISOString() });
+      return;
+    }
+    const html = runtime.buildReport(dive, Object.fromEntries(kept));
+    await say('done', 'Report ready: every lane and writing stage finished', {
+      status: 'done', error: null, report_html: html, finished_at: new Date().toISOString(),
     });
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);

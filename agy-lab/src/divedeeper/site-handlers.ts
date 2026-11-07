@@ -25,17 +25,17 @@ function result(handler: string, raw: any): HandlerResult {
 export async function lookupCompany(ctx: Ctx, dive: any, handler: string): Promise<HandlerResult> {
   if (!ctx.v21) throw new Error('site handlers require V2.1 mode');
   // Even a failed or empty Step 1 check is reused, never submitted again under another name.
+  const N = nameOf(dive);
   const prior = dive.v21?.lookups;
-  if (prior && Object.hasOwn(prior, handler)) return report(ctx, result(handler, prior[handler]));
+  if (prior && Object.hasOwn(prior, handler)) return report(ctx, await readPdf(ctx, N, handler, prior[handler]));
   let cache = checks.get(dive);
   if (!cache) { cache = new Map(); checks.set(dive, cache); }
   if (!cache.has(handler)) cache.set(handler, (async () => {
     const spec = MY_HANDLERS.find((h) => h.id === handler);
     if (!spec || spec.tier === 4) return result(handler, { reason: spec?.reason || 'no site handler exists for this check' });
-    const N = nameOf(dive);
     if (!N.legal) return result(handler, { reason: 'company legal name is missing' });
     const ask = async (keyword: string) => {
-      try { return result(handler, await ctx.lookup(handler, keyword)); }
+      try { return await readPdf(ctx, N, handler, await ctx.lookup(handler, keyword)); }
       catch (err) { return result(handler, { error: err instanceof Error ? err.message : String(err) }); }
     };
     const first = await ask(N.legal);
@@ -43,6 +43,22 @@ export async function lookupCompany(ctx: Ctx, dive: any, handler: string): Promi
     return ask(N.short);
   })());
   return report(ctx, await cache.get(handler)!);
+}
+
+/** A pdf handler answers with the list's PDF address (reason "pdf"), not a verdict: read the PDF on the worker and
+ *  look for the company's name in it, as V2.1 Step 1 does with a static list. Any other answer passes through. */
+async function readPdf(ctx: Ctx, N: ReturnType<typeof nameOf>, handler: string, raw: any): Promise<HandlerResult> {
+  if (raw?.reason !== 'pdf' || !raw?.source_url) return result(handler, raw);
+  const page = await ctx.read(String(raw.source_url));
+  if (page.status < 200 || page.status >= 300 || !page.text) {
+    return result(handler, { reason: `the list's PDF could not be read: ${page.error ?? 'HTTP ' + page.status}`, source_url: raw.source_url });
+  }
+  const text = page.text.replace(/\s+/g, ' ');
+  const lower = text.toLowerCase();
+  const names = [N.bare, N.short].map((x) => String(x ?? '').toLowerCase().trim()).filter((x) => x.length >= 4);
+  const at = names.map((n) => lower.indexOf(n)).filter((i) => i >= 0).sort((a, b) => a - b)[0];
+  if (at === undefined) return result(handler, { status: 'not_found', reason: `name not in the list (${text.length} characters read)`, source_url: raw.source_url });
+  return result(handler, { status: 'found', reason: 'name found in the list', source_url: raw.source_url, excerpt: text.slice(Math.max(0, at - 300), at + 500) });
 }
 
 function report(ctx: Ctx, out: HandlerResult): HandlerResult {

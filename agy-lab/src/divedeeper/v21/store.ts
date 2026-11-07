@@ -7,6 +7,7 @@ export type Run = {
   run_id: string; report_id: string; company_uid: string | null; status: Status; stage: string;
   log: { at: string; stage: string; msg: string }[]; error: string | null;
   created_at: string; updated_at: string; finished_at: string | null;
+  report_html?: string | null;
 };
 export type Lane = { id: number; run_id: string; report_id: string; lane: string; status: LaneResult['status']; payload: LaneResult; created_at: string };
 const jsonb = (value: unknown) => JSON.stringify(value, (_k, v) => typeof v === 'string' ? v.toWellFormed() : v);
@@ -20,6 +21,7 @@ export function ensureTables(): Promise<void> {
       stage text not null default '', log jsonb not null default '[]'::jsonb, error text,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now(), finished_at timestamptz
     )`);
+    await db.sql(`alter table v21_deeper_run add column if not exists report_html text`);
     await db.sql(`create table if not exists v21_deeper_lane (
       id serial primary key, run_id text not null references v21_deeper_run(run_id), report_id text not null,
       lane text not null, status text not null check (status in ('done', 'partial', 'failed')), payload jsonb not null,
@@ -63,7 +65,7 @@ export async function saveLane(run: Run, result: LaneResult): Promise<void> {
   await db.sql(`insert into v21_deeper_lane (run_id, report_id, lane, status, payload) values ($1, $2, $3, $4, $5::jsonb)`,
     [run.run_id, run.report_id, `${result.section}-${result.lane}`, result.status, jsonb(result)]);
 }
-export async function update(id: string, values: Partial<Pick<Run, 'company_uid' | 'status' | 'stage' | 'log' | 'error' | 'finished_at'>>): Promise<void> {
+export async function update(id: string, values: Partial<Pick<Run, 'company_uid' | 'status' | 'stage' | 'log' | 'error' | 'finished_at' | 'report_html'>>): Promise<void> {
   await ensureTables();
   const args: unknown[] = [id];
   const set = Object.entries(values).map(([key, value]) => `${key} = $${args.push(key === 'log' ? jsonb(value) : value)}${key === 'log' ? '::jsonb' : ''}`);

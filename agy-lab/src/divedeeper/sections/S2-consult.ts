@@ -11,6 +11,7 @@
 // and the action plan read across everything afterwards (S4-analysis, S5-plan).
 import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES } from '../editor.ts';
+import { savedReviews } from '../v21/reviews.ts';
 
 const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
@@ -104,7 +105,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const regRule = regTruth
     ? `\n\nRegister checks (these OVERRIDE the facts above):\n${regTruth}\nRules: proof points and credentials may only use CONFIRMED items, with the register's value. Never repeat a WRONG claim. Never state a NOT VERIFIED claim as fact. Where facts conflict with each other, leave the point out.\n`
     : '';
-  const reviews: any[] = lanes['E-maps']?.notes?.reviews ?? [];
+  const laneReviews: any[] = (ctx.v21 ? readLane(ctx.diveId, 'E-maps') : lanes['E-maps'])?.notes?.reviews ?? [];
+  const reviews: any[] = ctx.v21 && !laneReviews.length ? savedReviews(dive).reviews : laneReviews;
   const goodQuotes = reviews.filter((x) => x.stars >= 4 && String(x.text ?? '').length > 80).slice(0, 6).map((x) => `"${clip(String(x.text), 300)}"`).join('\n');
   const plan = lanes['H-maps']?.notes?.plan ?? {};
 

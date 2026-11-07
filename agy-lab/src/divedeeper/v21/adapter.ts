@@ -87,6 +87,7 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
   return {
     dive: {
       company: String(report.company), country: String(report.country),
+      finished_at: raw.result.payload?.created_at ?? report.updated_at ?? null,
       result: {
         identity: { legal_name: legalName, aliases, address: addresses[0] ?? '', industry: report.industry, official_domains: unique([gate, ...domains]), registration_numbers: registrations,
           summary: pages.map((p) => `${p.label}: ${p.text}`).join('\n').slice(0, 1500) },
@@ -95,6 +96,8 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
       },
       v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide,
         assets: raw.assets?.payload ?? null, baseline,
+        warnings: ['V2.1 has no company-dive background dossier; that appendix is omitted.',
+          ...(raw.assets?.payload?.google_reviews?.data?.truncated ? ['Step 1.5 Google reviews are a saved sample; review counts in the analysis cover only that sample.'] : [])],
         lookups, claims: { claimed_credentials: strings(baseline.claimed_credentials), claimed_numbers: strings(baseline.claimed_numbers) } },
     },
     rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),

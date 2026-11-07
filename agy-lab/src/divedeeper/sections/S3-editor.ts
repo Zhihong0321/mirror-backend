@@ -11,6 +11,7 @@
 import { readLane, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES, resolve, type Item } from '../editor.ts';
 import { takeShots, type ShotAsk } from '../shots.ts';
+import { takeWorkerShots } from '../v21/shots.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
 
@@ -81,7 +82,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- 2. Proof screenshots. ----
   const ownSite = (L['S2-consult']?.notes?.own_sites ?? [])[0] ?? (R.identity.domains[0] ? `https://${R.identity.domains[0]}/` : null);
-  const shots = await takeShots(shotAsks(R, ownSite), ctx.warn);
+  const asks = shotAsks(R, ownSite);
+  const shots = ctx.v21 ? await takeWorkerShots(ctx, asks) : await takeShots(asks, ctx.warn);
   // A shot asked to find text that was not there proves nothing; keep it only for the cover and 404s.
   const kept = shots.filter((s) => s.found || !s.find);
   ctx.log(`screenshots: ${kept.length} of ${shots.length} kept`);

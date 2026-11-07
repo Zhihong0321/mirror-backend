@@ -4,6 +4,7 @@
 //
 // Where sources conflict, the official register wins over the company-dive's research
 // (a CIDB grade read from CIDB beats one a website or directory printed).
+import { savedReviews } from './v21/reviews.ts';
 
 // The malaysia-deeper-dive report is read in six research parts, then one full analysis and one action plan. A lane can feed two
 // parts: C-merged's website checks are sorted by what each one is about (see partOfCheck).
@@ -88,7 +89,7 @@ export function resolve(dive: any, L: Record<string, any>) {
   const all = items(L);
 
   // ---- reviews ----
-  const en = L['E-maps']?.notes ?? {};
+  const en = dive?.v21 && !L['E-maps']?.notes?.reviews?.length ? savedReviews(dive) : L['E-maps']?.notes ?? {};
   const reviews: any[] = en.reviews ?? [];
   const perListing: any[] = en.per_listing ?? [];
   const totalReviews = perListing.reduce((t, x) => t + Number(x.pulled ?? 0), 0);
