@@ -28,7 +28,8 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
   if (!enabled()) return;
   const { store, loadV21Dive, stageDive, restoreLane, writeLane, runLane, sleep } = runtime;
   const row = await store.getRun(id);
-  if (!row) return;
+  // A run cancelled while it waited in the queue is not run.
+  if (!row || !['queued', 'running'].includes(row.status)) return;
   const log = row.log ?? [];
   let logging = Promise.resolve();
   const say = (stage: string, msg: string, extra: Parameters<typeof store.update>[1] = {}) => {
@@ -76,7 +77,9 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
       const name = `${section}-${lane}`;
       if (kept.has(name)) return;
       for (let attempt = 1; attempt <= 3; attempt++) {
-        const result = await runLane(section, lane, key, dive, undefined, { worker: 'myworker' });
+        // No lane time limit (owner's wait rule): a slow LLM answer is waited for, never cut and restarted. A call that
+        // will never answer still fails by itself in the LLM router's idle check. 2^31-1 ms is setTimeout's maximum.
+        const result = await runLane(section, lane, key, dive, 2_147_483_647, { worker: 'myworker' });
         // Every try is immutable and durable before this lane's next try can start.
         await store.saveLane(row, result);
         await say(name, `${name} try ${attempt}: ${result.status}${result.failure ? ': ' + result.failure : ''}`);
