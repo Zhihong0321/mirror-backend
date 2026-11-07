@@ -19,6 +19,7 @@
 import tls from 'node:tls';
 import dns from 'node:dns/promises';
 import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { savedDomain } from '../asset-reuse.ts';
 
 const PER_DOMAIN = Number(process.env.C_PER_DOMAIN ?? 15);
 const TOTAL_PAGES = Number(process.env.C_TOTAL_PAGES ?? 50);
@@ -304,6 +305,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const todayMs = Date.now();
   const today = ctx.now().slice(0, 10);
   const year = new Date().getFullYear();
+  const audited = ctx.v21 && dive.v21?.assets?.site_audit?.status === 'done';
   const findings: Finding[] = [];
   const add = (check: string, f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, check, checked_at: ctx.now() } as Finding);
   ctx.meter.other.tls = 0;
@@ -332,15 +334,18 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   for (const rd of redirects) add('redirect-domain', { title: `${rd.domain} redirects to ${bareHost(rd.to)}`, detail: `Typing ${rd.domain} lands on ${rd.to}. Fine if intended.`, severity: 'info', source: `https://${rd.domain}/`, evidence: rd.to });
 
   // 1. SSL and http -> https.
-  const tlsHosts = [...new Set(sites.flatMap((s) => [new URL(s.home).hostname, s.domain, ...s.aliases]))];
+  const tlsHosts = audited ? [] : [...new Set(sites.flatMap((s) => [new URL(s.home).hostname, s.domain, ...s.aliases]))];
   const certs = await pool(tlsHosts, 3, async (h) => { ctx.meter.other.tls++; return sslCert(h); });
   for (const c of certs) {
     if (!c.ok) add('ssl', { title: `SSL problem on ${c.host}`, detail: `The certificate is not trusted: ${c.error}.`, severity: 'high', source: `https://${c.host}/`, evidence: c.error });
     else if ((c.daysLeft ?? 99) < 21) add('ssl', { title: `SSL certificate on ${c.host} expires in ${c.daysLeft} days`, detail: `Valid to ${c.validTo} (${c.issuer}).`, severity: (c.daysLeft ?? 0) < 7 ? 'high' : 'low', source: `https://${c.host}/`, evidence: c.validTo });
   }
-  const httpChecks = await pool([...new Set(sites.flatMap((s) => [s.domain, ...s.aliases]))], 3, async (d) => ({ d, r: await ctx.page(`http://${d}/`, { redirect: 'manual' }) }));
+  const httpChecks = await pool(audited ? [] : [...new Set(sites.flatMap((s) => [s.domain, ...s.aliases]))], 3, async (d) => ({ d, r: await ctx.page(`http://${d}/`, { redirect: 'manual' }) }));
   for (const { d, r: h } of httpChecks) {
     const loc = h.headers['location'] ?? '';
+    if (ctx.v21 && (h.status === 0 || h.error)) { ctx.warn(`Could not read http://${d}/: ${h.error ?? 'no answer'}`); continue; }
+    // The worker follows redirects; its final URL proves the upgrade to https.
+    if (ctx.v21 && h.finalUrl.startsWith('https:')) continue;
     if (h.status === 0) add('https-redirect', { title: `http://${d}/ does not answer`, detail: h.error ?? '', severity: 'medium', source: `http://${d}/` });
     else if (!(h.status >= 300 && h.status < 400 && /^https:/i.test(new URL(loc || '/', `http://${d}/`).href))) add('https-redirect', { title: `http://${d}/ does not redirect to https`, detail: `HTTP ${h.status}${loc ? ' -> ' + loc : ''}. Visitors on the plain-http address get a page marked "Not secure".`, severity: 'medium', source: `http://${d}/` });
   }
@@ -352,23 +357,26 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   for (const p of crawled) {
     const u = p.finalUrl;
     const path_ = (() => { try { return new URL(u).pathname; } catch { return u; } })();
+    if (ctx.v21 && (p.status === 0 || p.error || !p.html || (audited && p.status >= 400))) { ctx.warn(`Could not read ${p.url}: ${p.error ?? `HTTP ${p.status}`}`); continue; }
     if (p.status !== 200) { add('page-status', { title: `Page ${path_} returns HTTP ${p.status || 'no answer'}`, detail: p.error ?? `Linked from the homepage of ${p.site} but answers ${p.status}.${p.status === 403 ? ' A 403 can mean the server blocks bots; check in a browser.' : ''}`, severity: p.status === 404 || p.status >= 500 || p.status === 0 ? 'high' : 'medium', source: p.url }); continue; }
     const x: Agg = agg.get(p.site) ?? { pages: 0, noTitle: [], longTitle: [], shortTitle: [], noDesc: [], longDesc: [], shortDesc: [], noViewport: [], zoomOff: [], slowFirst: [], mixed: [], junkAlt: 0, imgs: 0 };
     agg.set(p.site, x);
     x.pages++;
-    const title = decode(p.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '');
-    const desc = decode(metaContent(p.html, 'description') ?? '');
-    const viewport = metaContent(p.html, 'viewport');
-    if (!title) x.noTitle.push(path_);
-    else {
-      titles.set(title, [...new Set([...(titles.get(title) ?? []), normUrl(u)])]);
-      if (title.length > 70) x.longTitle.push(`${path_} (${title.length})`);
-      if (title.length < 15) x.shortTitle.push(`${path_} (${title.length})`);
+    if (!audited) {
+      const title = decode(p.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '');
+      const desc = decode(metaContent(p.html, 'description') ?? '');
+      const viewport = metaContent(p.html, 'viewport');
+      if (!title) x.noTitle.push(path_);
+      else {
+        titles.set(title, [...new Set([...(titles.get(title) ?? []), normUrl(u)])]);
+        if (title.length > 70) x.longTitle.push(`${path_} (${title.length})`);
+        if (title.length < 15) x.shortTitle.push(`${path_} (${title.length})`);
+      }
+      if (!desc) x.noDesc.push(path_); else if (desc.length > 170) x.longDesc.push(`${path_} (${desc.length})`); else if (desc.length < 50) x.shortDesc.push(`${path_} (${desc.length})`);
+      if (!viewport) x.noViewport.push(path_); else if (/user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0)?\b/i.test(viewport)) x.zoomOff.push(path_);
     }
-    if (!desc) x.noDesc.push(path_); else if (desc.length > 170) x.longDesc.push(`${path_} (${desc.length})`); else if (desc.length < 50) x.shortDesc.push(`${path_} (${desc.length})`);
-    if (!viewport) x.noViewport.push(path_); else if (/user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0)?\b/i.test(viewport)) x.zoomOff.push(path_);
-    if (p.ms > 3000) x.slowFirst.push(p);
-    if (u.startsWith('https:') && /<(?:img|script|iframe|source|link)\b[^>]*\b(?:src|href)\s*=\s*["']http:\/\//i.test(p.html)) x.mixed.push(path_);
+    if (!audited && p.ms > 3000) x.slowFirst.push(p);
+    if (!audited && u.startsWith('https:') && /<(?:img|script|iframe|source|link)\b[^>]*\b(?:src|href)\s*=\s*["']http:\/\//i.test(p.html)) x.mixed.push(path_);
     for (const m of p.html.matchAll(/<img\b[^>]*>/gi)) { x.imgs++; const alt = attr(m[0], 'alt'); if (alt && alt.length >= 16 && !/\s/.test(alt) && /[0-9+\/=]/.test(alt) && /[A-Z]/.test(alt) && /[a-z]/.test(alt)) x.junkAlt++; }
     // Placeholder page: the page's own content is little more than "coming soon" / "under construction".
     const own = (p.isHome ? p.text : p.unique).replace(/\[image\]/g, '').trim();
@@ -471,12 +479,15 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     for (const m of p.html.matchAll(/<a\b([^>]*)>([\s\S]{0,300}?)<\/a>/gi)) anchors.push({ href: attr(m[1], 'href') ?? '', text: cleanText(m[2]), page: p.finalUrl });
   }
   const internal = [...linkFrom.keys()].filter((u) => /^https?:/i.test(u) && isInternal(u) && !ASSET.test(u) && !/\/cdn-cgi\//.test(u)).map(normUrl);
-  const uncrawled = [...new Set(internal)].filter((u) => !pageByUrl.has(u)).sort((a, b) => (linkFrom.get(b)?.size ?? 0) - (linkFrom.get(a)?.size ?? 0));
+  const uncrawled = audited ? [] : [...new Set(internal)].filter((u) => !pageByUrl.has(u))
+    .filter((u) => !ctx.v21 || !sites.some((s) => s.host === bareHost(u) && s.disallow.some((p) => new URL(u).pathname.startsWith(p))))
+    .sort((a, b) => (linkFrom.get(b)?.size ?? 0) - (linkFrom.get(a)?.size ?? 0));
   if (uncrawled.length > LINK_CAP) ctx.log(`${uncrawled.length} internal links not crawled; checking the ${LINK_CAP} linked most often`);
   const checkedLinks = await pool(uncrawled.slice(0, LINK_CAP), 3, async (u) => ({ u, r: await ctx.page(u) }));
   const linkStatus: any[] = [];
   for (const { u, r: h } of checkedLinks) {
     linkStatus.push({ url: u, status: h.status, final: h.finalUrl });
+    if (ctx.v21 && (h.status === 0 || h.error || (h.status >= 400 && !h.html))) { ctx.warn(`Could not read ${u}: ${h.error ?? `HTTP ${h.status}`}`); continue; }
     const from = [...(linkFrom.get(u) ?? linkFrom.get(u + '/') ?? [])];
     if (h.status === 0 || h.status >= 400) add('broken-link', { title: `Broken internal link: ${new URL(u).pathname} (HTTP ${h.status || 'no answer'})`, detail: `Linked from ${from.slice(0, 3).map((x) => new URL(x).pathname).join(', ') || 'a crawled page'}.${h.status === 403 ? ' A 403 can mean the server blocks bots; check in a browser.' : ''}`, severity: h.status === 403 ? 'low' : 'medium', source: u, evidence: String(h.status) });
   }
@@ -494,6 +505,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const from = [...linkFrom.keys()].filter((k) => k.includes(n)).flatMap((k) => [...linkFrom.get(k)!]);
     waStatus.push({ number: n, status: h.status, business: biz || null, valid: !!normPhone(n) });
     const tokens = companyTokens.filter((t) => t.length >= 4);
+    if (ctx.v21 && (h.status === 0 || h.error || (h.status >= 400 && !h.html))) { ctx.warn(`Could not read wa.me/${n}: ${h.error ?? `HTTP ${h.status}`}`); continue; }
     if (h.status !== 200) add('whatsapp', { title: `WhatsApp link wa.me/${n} answers HTTP ${h.status}`, detail: h.error ?? '', severity: 'medium', source: from[0] ?? null });
     else if (!normPhone(n)) add('whatsapp', { title: `WhatsApp link wa.me/${n} is not a valid Malaysian number`, detail: 'The link opens WhatsApp with a number that cannot exist.', severity: 'high', source: from[0] ?? null, evidence: n });
     else if (biz && !companyWords.some((w) => biz.toLowerCase().includes(w)) && !tokens.some((t) => biz.toLowerCase().includes(t))) add('whatsapp', { title: `WhatsApp ${fmtPhone(n)} opens a chat named "${biz}", not the company`, detail: `The WhatsApp Business name a customer sees is "${biz}", where they expect ${dive.company}.`, severity: 'medium', source: from[0] ?? null, evidence: biz });
@@ -505,9 +517,13 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const mailStatus: any[] = [];
   for (const m of [...new Set([...linkFrom.keys()].filter((h) => /^mailto:/i.test(h)).map((h) => decodeURIComponent(h.slice(7)).split('?')[0].toLowerCase()))]) {
     const dom = m.split('@')[1] ?? '';
-    ctx.meter.other.dns++;
     let mx: any[] = [];
-    try { mx = await dns.resolveMx(dom); } catch (e) { ctx.warn(`MX lookup for ${dom} failed: ${(e as Error).message}`); }
+    const prior = ctx.v21 ? savedDomain(dive, dom) : undefined;
+    if (prior) mx = (prior.dns?.mx ?? []).map((exchange: string) => ({ exchange }));
+    else {
+      ctx.meter.other.dns++;
+      try { mx = await dns.resolveMx(dom); } catch (e) { ctx.warn(`MX lookup for ${dom} failed: ${(e as Error).message}`); }
+    }
     mailStatus.push({ email: m, mx: mx.map((x) => x.exchange) });
     if (!mx.length) add('mailto', { title: `Email link ${m} has no mail server (no MX record)`, detail: 'Emails sent to this address bounce.', severity: 'high', source: null, evidence: m });
   }
@@ -660,6 +676,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   return {
     findings: [...uniq.values()],
     notes: {
+      ...(ctx.v21 ? { site_audit_reused: audited } : {}),
       redirects, certs, linkStatus, waStatus, mailStatus, forms,
       defaced: allSites.filter((s) => s.defaced).map((s) => ({ domain: s.domain, ...s.defaced })),
       sitePhones: Object.fromEntries([...sitePhones].map(([k, v]) => [fmtPhone(k), [...v]])),

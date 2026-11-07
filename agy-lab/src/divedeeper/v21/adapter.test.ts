@@ -45,6 +45,8 @@ test('adapter cleans notes, extracts SSM numbers, keeps brand domains and preser
   assert.deepEqual(dive.result.contradictions, []);
   assert.deepEqual(dive.result.sources, [{ id: 1, url: 'https://eternalgy.me/', title: 'home' }]);
   assert.strictEqual(dive.v21.maps_own, raw.checkpoint!.payload.google_maps.result.businesses);
+  assert.strictEqual(dive.v21.assets, raw.assets!.payload);
+  assert.strictEqual(dive.v21.baseline, raw.result!.payload.baseline);
   assert.deepEqual(rows, { checkpoint: 1, assets: 2, tidy: 3, result: 4 });
 });
 
@@ -71,6 +73,7 @@ test('optional assets and tidy can be absent; legal name falls back to the repor
   const { dive, rows } = await loadV21Dive('report', reader);
   assert.equal(dive.result.identity.legal_name, 'Eternalgy Sdn Bhd');
   assert.equal(rows.assets, null);
+  assert.equal(dive.v21.assets, null);
   assert.equal(rows.tidy, null);
   assert.deepEqual(dive.v21.pages, []);
 });
@@ -131,6 +134,9 @@ test('adapter reads every report in V21_DEEPER_ROWS without a database', { skip:
     const checkpoint = await reader.latestRaw(report.report_id, 'checkpoint');
     assert.deepEqual(dive.v21.lookups, Object.fromEntries((checkpoint!.payload.probes ?? []).filter((p: any) => p.lookup?.handler).map((p: any) => [p.lookup.handler, p.lookup])));
     const result = await reader.latestRaw(report.report_id, 'result');
+    const assets = await reader.latestRaw(report.report_id, 'assets');
+    assert.strictEqual(dive.v21.assets, assets?.payload ?? null);
+    assert.strictEqual(dive.v21.baseline, result!.payload.baseline);
     assert.deepEqual(dive.v21.claims, { claimed_credentials: result!.payload.baseline.claimed_credentials ?? [], claimed_numbers: result!.payload.baseline.claimed_numbers ?? [] });
     if (/DNE/i.test(report.company)) assert.ok(dive.v21.claims.claimed_credentials.length, 'DNE has credentials to check');
     assert.ok(dive.result.identity.official_domains.includes(checkpoint!.payload.official_site.domain.toLowerCase().replace(/^www\./, '')));

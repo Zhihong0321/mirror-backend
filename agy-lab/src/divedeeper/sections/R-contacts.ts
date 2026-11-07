@@ -14,6 +14,8 @@
 // No kill gates: a failed search or an unparsed answer leaves that point "unclear".
 import dnsp from 'node:dns/promises';
 import { readLane, nameOf, type Ctx, type Finding } from '../lib.ts';
+import { savedDomain } from '../asset-reuse.ts';
+import { skipPeople } from '../site-handlers.ts';
 
 const FREE_MAIL = /@(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|aol|proton|protonmail|qq|163|126)\./i;
 const ROLE_BOX = /^(info|sales|enquir(y|ies)|inquir(y|ies)|admin|hr|support|contact|marketing|accounts?|office|hello|cs|service|customerservice|orders?|billing|finance|careers?|jobs|recruit(ment)?|general|enquiry|mail|team|project|projects|purchas(e|ing)|procurement|export|import|quotation|quote|booking|reservations?|help|noreply|no-reply|webmaster)\d*$/i;
@@ -55,7 +57,7 @@ type Point = {
   id: string; kind: 'phone' | 'email' | 'whatsapp' | 'address'; value: string; key: string;
   where: string[]; on_site: boolean; on_maps: boolean; in_research: boolean;
   whatsapp_name?: string | null; mx?: string[] | null; problem?: string | null;
-  web?: { title: string; url: string; snippet: string; own: boolean; names_company: boolean }[];
+  web?: { title: string; url: string; snippet: string; own: boolean; names_company: boolean; rank?: number; text?: string }[];
 };
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
@@ -88,6 +90,12 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   for (const [, list] of Object.entries(C.emails ?? {}) as [string, string[]][]) for (const e of list) put('email', e.toLowerCase(), e.toLowerCase(), 'your website', 'site');
   for (const m of factText.matchAll(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi)) put('email', m[0].toLowerCase(), m[0].toLowerCase(), 'background research', 'research');
   if (N.address) put('address', N.address, N.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'background research', 'research');
+  if (ctx.v21) {
+    const baseline = dive.v21?.baseline ?? {};
+    for (const ph of baseline.phones ?? []) put('phone', ph, normPhone(ph), 'Step 2 baseline', 'research');
+    for (const e of baseline.emails ?? []) put('email', e.toLowerCase(), e.toLowerCase(), 'Step 2 baseline', 'research');
+    for (const a of baseline.addresses ?? []) put('address', a, a.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'Step 2 baseline', 'research');
+  }
   for (const w of C.waStatus ?? []) {
     const key = normPhone(w.number);
     put('whatsapp', showPhone(key || w.number), key, 'your website (WhatsApp link)', 'site');
@@ -100,38 +108,67 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const mailStatus = new Map<string, string[]>((C.mailStatus ?? []).map((x: any) => [String(x.email).toLowerCase(), x.mx ?? []]));
   for (const p of [...points.values()].filter((x) => x.kind === 'email')) {
     const dom = p.key.split('@')[1];
-    p.mx = mailStatus.get(p.key) ?? (await dnsp.resolveMx(dom).then((x) => x.map((m) => m.exchange)).catch(() => []));
+    const prior = ctx.v21 ? savedDomain(dive, dom) : undefined;
+    p.mx = mailStatus.get(p.key) ?? (prior ? prior.dns?.mx ?? [] : (await dnsp.resolveMx(dom).then((x) => x.map((m) => m.exchange)).catch(() => [])));
     if (!p.mx.length) p.problem = `${dom} has no mail server, so email to it bounces`;
   }
 
   // ---- 3. Where else each number and address is published. ----
-  const phones = [...points.values()].filter((p) => (p.kind === 'phone' || p.kind === 'whatsapp') && !badPhone(p.key));
-  const uniqPhones = [...new Map(phones.map((p) => [p.key, p])).values()].slice(0, 10);
-  const emails = [...points.values()].filter((p) => p.kind === 'email').slice(0, 6);
-  const snippet = (x: any) => String(x.description ?? '').replace(/<[^>]+>/g, '');
-  await Promise.all([
-    ...uniqPhones.map(async (p) => {
-      const local = '0' + p.key.slice(2);
-      const rows = await ctx.brave(`"${showPhone(p.key)}" OR "${local}" OR "+${p.key}"`, { count: 15 });
-      const tail = p.key.slice(-7);
-      const web = rows.filter((x: any) => (x.title + snippet(x) + x.url).replace(/\D/g, '').includes(tail)).map((x: any) => ({ title: x.title, url: x.url, snippet: snippet(x).slice(0, 240), own: N.own(x.url), names_company: N.mentions(x.title + ' ' + snippet(x)) }));
-      for (const q of phones.filter((y) => y.key === p.key)) q.web = web;
-    }),
-    ...emails.map(async (p) => {
-      const rows = await ctx.brave(`"${p.key}"`, { count: 15 });
-      p.web = rows.filter((x: any) => (x.title + snippet(x)).toLowerCase().includes(p.key)).map((x: any) => ({ title: x.title, url: x.url, snippet: snippet(x).slice(0, 240), own: N.own(x.url), names_company: N.mentions(x.title + ' ' + snippet(x)) }));
-    }),
-  ]);
+  const phones = [...points.values()].filter((p) => (p.kind === 'phone' || p.kind === 'whatsapp') && (ctx.v21 || !badPhone(p.key)));
+  const uniqPhones = [...new Map(phones.map((p) => [p.key, p])).values()].slice(0, ctx.v21 ? undefined : 10);
+  const emails = [...points.values()].filter((p) => p.kind === 'email').slice(0, ctx.v21 ? undefined : 6);
+  if (ctx.v21) {
+    await Promise.all([...uniqPhones, ...emails].map(async (p) => {
+      const query = p.kind === 'email' ? `"${p.key}"` : `"${showPhone(p.key)}" OR "0${p.key.slice(2)}" OR "+${p.key}"`;
+      const rows = await ctx.brave(query, { count: 15 });
+      // Search finds addresses. Only myworker supplies the evidence the judge reads.
+      const web = rows.map((x: any, i: number) => ({
+        title: String(x.title ?? ''), url: String(x.url), rank: i + 1, snippet: '', own: N.own(x.url), names_company: false,
+      })).filter((x) => /^https?:\/\//i.test(x.url));
+      if (p.kind === 'email') p.web = web;
+      else for (const q of phones.filter((q) => q.key === p.key)) q.web = web;
+    }));
+    const urls = [...new Set([...uniqPhones, ...emails].flatMap((p) => (p.web ?? []).filter((w) => !w.own).map((w) => w.url)))];
+    if (urls.length > 15) ctx.warn(`${urls.length} contact evidence URLs; reading the first 15`);
+    const text = new Map<string, string>();
+    await Promise.all(urls.slice(0, 15).map(async (url) => {
+      try {
+        const page = await ctx.read(url);
+        if (page.status >= 200 && page.status < 300 && page.text.trim()) text.set(url, page.text.slice(0, 6000));
+        else ctx.warn(`Contact evidence unreadable: ${url} (${page.error ?? `HTTP ${page.status}`})`);
+      } catch (err) { ctx.warn(`Contact evidence unreadable: ${url} (${String(err)})`); }
+    }));
+    for (const p of points.values()) for (const w of p.web ?? []) {
+      w.text = text.get(w.url);
+      w.names_company = !!w.text && N.mentions(w.text);
+    }
+  } else {
+    const snippet = (x: any) => String(x.description ?? '').replace(/<[^>]+>/g, '');
+    await Promise.all([
+      ...uniqPhones.map(async (p) => {
+        const local = '0' + p.key.slice(2);
+        const rows = await ctx.brave(`"${showPhone(p.key)}" OR "${local}" OR "+${p.key}"`, { count: 15 });
+        const tail = p.key.slice(-7);
+        const web = rows.filter((x: any) => (x.title + snippet(x) + x.url).replace(/\D/g, '').includes(tail)).map((x: any) => ({ title: x.title, url: x.url, snippet: snippet(x).slice(0, 240), own: N.own(x.url), names_company: N.mentions(x.title + ' ' + snippet(x)) }));
+        for (const q of phones.filter((y) => y.key === p.key)) q.web = web;
+      }),
+      ...emails.map(async (p) => {
+        const rows = await ctx.brave(`"${p.key}"`, { count: 15 });
+        p.web = rows.filter((x: any) => (x.title + snippet(x)).toLowerCase().includes(p.key)).map((x: any) => ({ title: x.title, url: x.url, snippet: snippet(x).slice(0, 240), own: N.own(x.url), names_company: N.mentions(x.title + ' ' + snippet(x)) }));
+      }),
+    ]);
+  }
 
   // ---- 4. Who the people behind personal mailboxes and WhatsApp names are. ----
-  const people: any[] = (r.people?.people ?? []).map((p: any) => ({ name: p.name, role: p.role, current: p.current, relation: p.relation }));
+  if (ctx.v21) skipPeople(ctx);
+  const people: any[] = (ctx.v21 ? [] : r.people?.people ?? []).map((p: any) => ({ name: p.name, role: p.role, current: p.current, relation: p.relation }));
   const personal = [...points.values()].flatMap((p) => {
     if (p.kind === 'email' && !ROLE_BOX.test(p.key.split('@')[0])) return [{ point: p.id, hint: p.key.split('@')[0].replace(/[._-]+/g, ' ') }];
     if (p.kind === 'whatsapp' && p.whatsapp_name && !N.mentions(p.whatsapp_name) && !(N.brand && p.whatsapp_name.toLowerCase().includes(N.brand))) return [{ point: p.id, hint: p.whatsapp_name }];
     return [];
   });
   const lookups: Record<string, any[]> = {};
-  for (const x of personal.slice(0, 4)) {
+  for (const x of ctx.v21 ? [] : personal.slice(0, 4)) {
     const known = people.find((p) => p.name && x.hint.length >= 3 && p.name.toLowerCase().includes(x.hint.toLowerCase().split(' ')[0]));
     if (known && known.current !== undefined) continue;
     const rows = await ctx.exa(`${x.hint} ${N.short} Malaysia`, { numResults: 5, text: 600 });
@@ -143,12 +180,14 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const brief = list.map((p) => ({
     id: p.id, kind: p.kind, value: p.value, published_on: p.where.slice(0, 6), on_official_site: p.on_site, on_google_maps: p.on_maps, only_in_research: !p.on_site && !p.on_maps,
     whatsapp_registered_name: p.whatsapp_name, mail_servers: p.mx, known_problem: p.problem ?? null,
-    other_pages: (p.web ?? []).filter((w) => !w.own).slice(0, 8).map((w) => `${w.title} | ${w.url} | ${w.snippet}`),
+    other_pages: (p.web ?? []).filter((w) => !w.own && (!ctx.v21 || w.text)).slice(0, ctx.v21 ? undefined : 8)
+      .map((w) => ctx.v21 ? { title: w.title, url: w.url, rank: w.rank, text: w.text } : `${w.title} | ${w.url} | ${w.snippet}`),
     person_lookup: lookups[p.id]?.map((y) => `${y.title} | ${y.url} | ${y.text}`) ?? undefined,
   }));
   const verdict = list.length ? ctx.parseJson(await ctx.llm(
     `You are checking how customers can reach ${N.legal} (${N.industry}; address on record: ${N.address || 'unknown'}). Official domains: ${N.domains.join(', ') || 'none'}.\n` +
     `People the research found (current=false means they have left):\n${JSON.stringify(people.slice(0, 30))}\n\n` +
+    (ctx.v21 ? 'Search titles and ranks identify pages only. Judge external evidence from worker-read text; an unread page proves nothing. Key people have not been researched.\n' : '') +
     `Every contact point we found, with where it is published and what a web search for it shows:\n${JSON.stringify(brief)}\n\n` +
     `For EACH contact point decide its status:\n` +
     `- current: the company's working, official contact (on its own site or Maps, and nothing suggests otherwise)\n` +
@@ -166,7 +205,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- 6. Findings. ----
   const label = (p: Point) => (p.kind === 'phone' ? 'Phone' : p.kind === 'whatsapp' ? 'WhatsApp' : p.kind === 'email' ? 'Email' : 'Address');
-  const sourceOf = (p: Point) => (p.web ?? []).find((w) => !w.own)?.url ?? null;
+  const sourceOf = (p: Point) => (p.web ?? []).find((w) => !w.own && (!ctx.v21 || w.text))?.url ?? null;
   for (const p of list) {
     const j = judged.get(p.id);
     const status = p.problem && (!j || j.status === 'unclear') ? 'broken' : String(j?.status ?? 'unclear');
@@ -189,6 +228,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   return {
     findings,
     notes: {
+      ...(ctx.v21 ? { evidence: list.map((p) => ({ point: p.id, pages: (p.web ?? []).map(({ title, url, rank, text }) => ({ title, url, rank, text })) })) } : {}),
       inventory: list.map((p: any) => ({ id: p.id, kind: p.kind, value: p.value, where: p.where, on_site: p.on_site, on_maps: p.on_maps, status: p.status, owner: p.owner, left: p.left, reason: p.reason, fix: p.fix, also_on: (p.web ?? []).filter((w: any) => !w.own).length })),
       judged: !!verdict, summary: verdict?.summary ?? null, inconsistent: verdict?.inconsistent ?? [], lookups,
     },

@@ -94,6 +94,7 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
         people: { people: [] }, sources: pages.filter((p) => p.url).map((p, i) => ({ id: i + 1, url: p.url, title: p.label })),
       },
       v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide,
+        assets: raw.assets?.payload ?? null, baseline,
         lookups, claims: { claimed_credentials: strings(baseline.claimed_credentials), claimed_numbers: strings(baseline.claimed_numbers) } },
     },
     rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),

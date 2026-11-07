@@ -20,6 +20,7 @@ import net from 'node:net';
 import tls from 'node:tls';
 import dnsp from 'node:dns/promises';
 import { readLane, nameOf, type Ctx, type Finding } from '../lib.ts';
+import { savedDomain } from '../asset-reuse.ts';
 
 const FREE_MAIL = /^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|me|aol|proton|protonmail|qq|163|126|zoho)\./i;
 const PARKED = /\b(domain (is )?for sale|buy this domain|this domain (name )?(is|may be) (for sale|parked|available)|parked (free|domain)|sedo|dan\.com|afternic|hugedomains|domain has expired|renew (this|your) domain|website (is )?coming soon)\b/i;
@@ -137,21 +138,23 @@ function certOf(host: string): Promise<{ ok: boolean; issuer: string | null; val
 }
 
 /** What runs the site, from headers and the page itself. */
-function techOf(headers: Record<string, string>, html: string): { stack: string[]; cms: string | null; version: string | null } {
+function techOf(headers: Record<string, string>, html: string, useHeaders = false): { stack: string[]; cms: string | null; version: string | null } {
+  if (useHeaders) headers = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
   const stack = new Set<string>();
-  const gen = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)/i)?.[1] ?? null;
+  const gen = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)/i)?.[1]
+    ?? (useHeaders ? headers['x-generator'] ?? headers['x-powered-by'] : null) ?? null;
   if (headers.server) stack.add(`server: ${headers.server}`);
   if (headers['x-powered-by']) stack.add(`powered by: ${headers['x-powered-by']}`);
   if (/cloudflare/i.test(headers.server ?? '') || headers['cf-ray']) stack.add('Cloudflare');
   if (gen) stack.add(gen);
   let cms: string | null = null;
-  if (/wp-content|wp-includes/i.test(html) || /wordpress/i.test(gen ?? '')) cms = 'WordPress';
+  if (/wp-content|wp-includes/i.test(html) || /wordpress/i.test(gen ?? '') || (useHeaders && /wp-json/i.test(headers.link ?? ''))) cms = 'WordPress';
   else if (/cdn\.shopify|shopify/i.test(html)) cms = 'Shopify';
   else if (/wix\.com|wixstatic/i.test(html)) cms = 'Wix';
   else if (/squarespace/i.test(html)) cms = 'Squarespace';
   else if (/joomla/i.test(gen ?? '')) cms = 'Joomla';
   if (cms) stack.add(cms);
-  const version = (gen ?? '').match(/(?:wordpress|joomla)\s+([\d.]+)/i)?.[1] ?? null;
+  const version = (gen ?? '').match(useHeaders ? /(?:wordpress|joomla)[\s/]+([\d.]+)/i : /(?:wordpress|joomla)\s+([\d.]+)/i)?.[1] ?? null;
   return { stack: [...stack], cms, version };
 }
 
@@ -243,7 +246,11 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- 2. Each domain: registration, DNS, hosting, the site. ----
   const assets = await Promise.all(domains.map(async (d) => {
-    const [reg, dns] = await Promise.all([registration(d), dnsOf(d)]);
+    const prior = ctx.v21 ? savedDomain(dive, d) : undefined;
+    const [reg, dns] = prior ? [
+      { registrar: null, created: null, expires: null, updated: null, org: null, status: [], ns: [], source: 'Step 1.5', ...prior.registration } as Reg,
+      { a: [], ns: [], mx: [], spf: null, dmarc: null, ...prior.dns } as Awaited<ReturnType<typeof dnsOf>>,
+    ] : await Promise.all([registration(d), dnsOf(d)]);
     if (reg.error && reg.error !== 'not registered') ctx.warn(`${d}: registration lookup failed (${reg.error})`);
     const host = dns.a[0] ? await ipOwner(dns.a[0]) : null;
     let site: any = null;
@@ -255,12 +262,14 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       const title = q.html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '';
       site = {
         status: q.status, final: q.finalUrl, https: !fallback || !fallback.status, error: q.status ? undefined : (q.error ?? p.error),
-        title, parked: PARKED.test(title + ' ' + text) && text.length < 3000, ...techOf(q.headers, q.html),
+        title, parked: PARKED.test(title + ' ' + text) && text.length < 3000, ...techOf(q.headers ?? {}, q.html, ctx.v21),
+        ...(ctx.v21 ? { cms_note: Object.keys(q.headers ?? {}).length ? 'CMS checked from worker headers and HTML.' : 'Worker sent no headers; CMS checked from HTML only.' } : {}),
         social: [...new Set([...q.html.matchAll(/href=["'](https?:\/\/[^"'#]+)["']/gi)].map((m) => m[1]).filter((u) => SOCIAL.test(N.hostOf(u))))].slice(0, 12),
       };
     }
-    const cert = dns.a.length ? await certOf(d) : null;
-    return { domain: d, why: [...why.get(d)!], reg, dns, host, site, cert };
+    const cert = prior ? (prior.tls ? { ok: prior.tls.valid, issuer: prior.tls.issuer ?? null, validTo: prior.tls.expires_at ?? null, daysLeft: prior.tls.days_remaining ?? null, error: prior.tls.error } : null)
+      : dns.a.length ? await certOf(d) : null;
+    return { domain: d, why: [...why.get(d)!], reg, dns, host, site, cert, prior };
   }));
 
   // ---- 3. Findings, domain by domain. ----
@@ -269,28 +278,32 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const d = a.domain;
     const used = a.why.join(', ');
     const src = a.reg.source === 'MYNIC whois' ? `https://whois.mynic.my/` : `https://lookup.icann.org/en/lookup?name=${d}`;
-    if (a.reg.error === 'not registered') {
-      add({ title: `${d} is not registered to anyone`, detail: `It is ${used}, yet nobody holds the domain. Anyone can register it today and receive your customers' emails or show them their own page.`, severity: 'high', source: src, check: 'unregistered', domain: d });
-      continue;
-    }
-    const left = a.reg.expires ? Math.floor((Date.parse(a.reg.expires) - now) / day) : null;
-    if (left !== null && left < 0) add({ title: `${d} expired on ${a.reg.expires!.slice(0, 10)}`, detail: `The registration has run out. Renew it before the registrar releases it to someone else.`, severity: 'high', source: src, check: 'expiry', domain: d });
-    else if (left !== null && left <= 90) add({ title: `${d} expires in ${left} days (${a.reg.expires!.slice(0, 10)})`, detail: `If the renewal fails (an old card, an ex-staff mailbox getting the reminder), the site and every email address on it stop working. Turn on auto-renew and check who receives the reminders.`, severity: left <= 30 ? 'high' : 'medium', source: src, check: 'expiry', domain: d });
-    if (a.reg.org && brand && !a.reg.org.toLowerCase().includes(brand)) add({ title: `${d} is registered to "${a.reg.org}", not to your company`, detail: `Whoever is the registrant controls the domain. If that is a web designer, an agency or a former staff member, you need their cooperation to move or renew it. Transfer it to the company's own name.`, severity: 'medium', source: src, check: 'registrant', domain: d });
-    if (!a.dns.a.length && !a.dns.mx.length) add({ title: `${d} does not point anywhere`, detail: `It is ${used}, but it has no website and no email server. A customer typing it or emailing it reaches nothing.`, severity: a.why.includes('official site') || a.why.includes('used for email') ? 'high' : 'medium', source: src, check: 'dns', domain: d });
-    if (a.why.includes('used for email')) {
-      if (!a.dns.mx.length) add({ title: `Email to @${d} cannot be delivered`, detail: `${d} has no mail server (MX) record, so messages customers send to your published address bounce.`, severity: 'high', source: src, check: 'mx', domain: d });
-      if (!a.dns.spf) add({ title: `No SPF record on ${d}`, detail: `Mail servers cannot tell which servers may send email as @${d}, so your real emails land in spam more often and fakes get through.`, severity: 'medium', source: src, check: 'spf', domain: d });
-      if (!a.dns.dmarc) add({ title: `Anyone can send email that looks like it came from @${d}`, detail: `${d} has no DMARC record. Scammers can send fake invoices or payment requests from your address and nothing tells the receiving bank or customer to reject them.`, severity: 'medium', source: src, check: 'dmarc', domain: d });
-      else if (/p=none/i.test(a.dns.dmarc)) add({ title: `Your DMARC on ${d} only watches, it does not block fakes`, detail: `The record says p=none, so fake emails from @${d} are still delivered. Move to p=quarantine once your own senders pass.`, severity: 'low', source: src, check: 'dmarc', domain: d, evidence: a.dns.dmarc });
+    // Step 1.5 already reported these domain checks. Keep its answers in the table.
+    if (!a.prior) {
+      if (a.reg.error === 'not registered') {
+        add({ title: `${d} is not registered to anyone`, detail: `It is ${used}, yet nobody holds the domain. Anyone can register it today and receive your customers' emails or show them their own page.`, severity: 'high', source: src, check: 'unregistered', domain: d });
+        continue;
+      }
+      const left = a.reg.expires ? Math.floor((Date.parse(a.reg.expires) - now) / day) : null;
+      if (left !== null && left < 0) add({ title: `${d} expired on ${a.reg.expires!.slice(0, 10)}`, detail: `The registration has run out. Renew it before the registrar releases it to someone else.`, severity: 'high', source: src, check: 'expiry', domain: d });
+      else if (left !== null && left <= 90) add({ title: `${d} expires in ${left} days (${a.reg.expires!.slice(0, 10)})`, detail: `If the renewal fails (an old card, an ex-staff mailbox getting the reminder), the site and every email address on it stop working. Turn on auto-renew and check who receives the reminders.`, severity: left <= 30 ? 'high' : 'medium', source: src, check: 'expiry', domain: d });
+      if (a.reg.org && brand && !a.reg.org.toLowerCase().includes(brand)) add({ title: `${d} is registered to "${a.reg.org}", not to your company`, detail: `Whoever is the registrant controls the domain. If that is a web designer, an agency or a former staff member, you need their cooperation to move or renew it. Transfer it to the company's own name.`, severity: 'medium', source: src, check: 'registrant', domain: d });
+      if (!a.dns.a.length && !a.dns.mx.length) add({ title: `${d} does not point anywhere`, detail: `It is ${used}, but it has no website and no email server. A customer typing it or emailing it reaches nothing.`, severity: a.why.includes('official site') || a.why.includes('used for email') ? 'high' : 'medium', source: src, check: 'dns', domain: d });
+      if (a.why.includes('used for email')) {
+        if (!a.dns.mx.length) add({ title: `Email to @${d} cannot be delivered`, detail: `${d} has no mail server (MX) record, so messages customers send to your published address bounce.`, severity: 'high', source: src, check: 'mx', domain: d });
+        if (!a.dns.spf) add({ title: `No SPF record on ${d}`, detail: `Mail servers cannot tell which servers may send email as @${d}, so your real emails land in spam more often and fakes get through.`, severity: 'medium', source: src, check: 'spf', domain: d });
+        if (!a.dns.dmarc) add({ title: `Anyone can send email that looks like it came from @${d}`, detail: `${d} has no DMARC record. Scammers can send fake invoices or payment requests from your address and nothing tells the receiving bank or customer to reject them.`, severity: 'medium', source: src, check: 'dmarc', domain: d });
+        else if (/p=none/i.test(a.dns.dmarc)) add({ title: `Your DMARC on ${d} only watches, it does not block fakes`, detail: `The record says p=none, so fake emails from @${d} are still delivered. Move to p=quarantine once your own senders pass.`, severity: 'low', source: src, check: 'dmarc', domain: d, evidence: a.dns.dmarc });
+      }
     }
     if (a.site) {
       if (a.site.parked) add({ title: `${d} shows a parked or for-sale page`, detail: `Visitors see "${a.site.title || 'a placeholder'}" instead of your business.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/`, check: 'parked', domain: d });
+      else if (ctx.v21 && (a.site.status === 0 || a.site.error)) ctx.warn(`${d}: worker could not read the site (${a.site.error ?? 'no answer'})`);
       else if (a.site.status >= 400 || a.site.status === 0) add({ title: `${d} does not open`, detail: `It is ${used}, and a customer who types it ${a.site.status ? `gets an error page (${a.site.status})` : 'waits for a server that never answers'}.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/`, check: 'site-down', domain: d });
-      if (!a.site.https && a.site.status) add({ title: `${d} only opens without https`, detail: `Browsers mark the site "Not secure", which makes customers hesitate to fill in a form.`, severity: 'medium', source: `http://${d}/`, check: 'https', domain: d });
+      if (!a.prior && !a.site.https && a.site.status) add({ title: `${d} only opens without https`, detail: `Browsers mark the site "Not secure", which makes customers hesitate to fill in a form.`, severity: 'medium', source: `http://${d}/`, check: 'https', domain: d });
       if (a.site.cms === 'WordPress' && a.site.version && Number(a.site.version.split('.')[0]) < 6) add({ title: `${d} runs WordPress ${a.site.version}, several years out of date`, detail: `Old WordPress versions have known security holes; hacked small-business sites are often turned into gambling or spam pages. Update WordPress and its plugins, or ask who maintains the site.`, severity: 'medium', source: `https://${d}/`, check: 'cms', domain: d });
     }
-    if (a.cert && a.site?.https && a.site.status) {
+    if (!a.prior && a.cert && a.site?.https && a.site.status) {
       if (!a.cert.ok) add({ title: `The security certificate on ${d} is not valid`, detail: `Browsers show a warning page (${a.cert.error}). Most customers turn back at that warning.`, severity: 'high', source: `https://${d}/`, check: 'cert', domain: d });
       else if (a.cert.daysLeft !== null && a.cert.daysLeft <= 14) add({ title: `The security certificate on ${d} runs out in ${a.cert.daysLeft} days`, detail: `Issued by ${a.cert.issuer ?? 'unknown'}. If it does not renew by itself, visitors get a warning page.`, severity: 'medium', source: `https://${d}/`, check: 'cert', domain: d });
     }
@@ -300,8 +313,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   // Each list is proved to answer first (its test entry 127.0.0.2 must come back listed), so a
   // list that refuses this network reads "could not check", never "clear".
   const working = new Set<string>();
-  for (const bl of BLACKLISTS) if ((await listed('127.0.0.2', bl.zone)) === 'listed') working.add(bl.id); else ctx.log(`${bl.name} blacklist did not answer its test lookup; shown as not checked`);
-  const email = await Promise.all(assets.filter((a) => a.dns.mx.length).map((a) => emailReputation(a.domain, a.dns.mx)));
+  // Email reputation also makes fresh DNS queries; never run it for a reused domain.
+  const emailAssets = assets.filter((a) => !a.prior && a.dns.mx.length);
+  for (const bl of ctx.v21 && !emailAssets.length ? [] : BLACKLISTS) if ((await listed('127.0.0.2', bl.zone)) === 'listed') working.add(bl.id); else ctx.log(`${bl.name} blacklist did not answer its test lookup; shown as not checked`);
+  const email = await Promise.all(emailAssets.map((a) => emailReputation(a.domain, a.dns.mx)));
   for (const e of email) {
     for (const bl of BLACKLISTS) {
       const l = e.lists[bl.id];
@@ -321,12 +336,25 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   for (const d of N.domains.slice(0, 3)) {
     const c = ctx.call('web', `crt.sh ${d}`);
     try {
-      const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(d)}&output=json`, { signal: AbortSignal.timeout(60_000) });
-      c.done({ ok: res.ok, note: `HTTP ${res.status}` });
-      if (!res.ok) { ctx.warn(`crt.sh ${d}: HTTP ${res.status}`); continue; }
-      const rows = await res.json() as any[];
+      let rows: any[];
+      const url = `https://crt.sh/?q=%25.${encodeURIComponent(d)}&output=json`;
+      if (ctx.v21) {
+        const res = await ctx.page(url);
+        c.done({ ok: res.status === 200, note: `HTTP ${res.status}` });
+        if (res.status !== 200) { ctx.warn(`crt.sh ${d}: ${res.error ?? `HTTP ${res.status}`}`); continue; }
+        rows = JSON.parse(res.html);
+        if (!Array.isArray(rows)) throw new Error('expected a JSON array');
+      } else {
+        const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
+        c.done({ ok: res.ok, note: `HTTP ${res.status}` });
+        if (!res.ok) { ctx.warn(`crt.sh ${d}: HTTP ${res.status}`); continue; }
+        rows = await res.json() as any[];
+      }
       const names = [...new Set(rows.flatMap((x) => String(x.name_value ?? '').split('\n')).map((n) => n.toLowerCase().replace(/^\*\./, '')).filter((n) => n.endsWith('.' + d) && n !== 'www.' + d))].slice(0, 25);
-      const live = await Promise.all(names.map(async (n) => ({ name: n, a: (await dnsp.resolve4(n).catch(() => [])) as string[] })));
+      const live = await Promise.all(names.map(async (n) => {
+        const prior = ctx.v21 ? savedDomain(dive, n) : undefined;
+        return { name: n, a: prior ? prior.dns?.a ?? [] : (await dnsp.resolve4(n).catch(() => [])) as string[] };
+      }));
       for (const s of live.filter((x) => x.a.length).slice(0, 10)) {
         const p = await ctx.page(`https://${s.name}/`, { headers: { accept: 'text/html' } });
         subs.push({ name: s.name, status: p.status, title: p.html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '', error: p.error });
@@ -346,9 +374,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const lookalikes: any[] = [];
   if (brand) {
     for (const d of [`${brand}.com`, `${brand}.com.my`, `${brand}.my`].filter((x) => !why.has(x))) {
-      const reg = await registration(d);
+      const prior = ctx.v21 ? savedDomain(dive, d) : undefined;
+      const reg = prior ? prior.registration as Reg : await registration(d);
       if (reg.error && reg.error !== 'not registered') continue;
-      const a = reg.error === 'not registered' ? [] : await dnsp.resolve4(d).catch(() => [] as string[]);
+      const a = reg.error === 'not registered' ? [] : prior ? prior.dns?.a ?? [] : await dnsp.resolve4(d).catch(() => [] as string[]);
       const title = a.length ? (await ctx.page(`https://${d}/`, { headers: { accept: 'text/html' } })).html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '' : '';
       lookalikes.push({ domain: d, registered: reg.error !== 'not registered', registrar: reg.registrar, created: reg.created, org: reg.org, live: a.length > 0, title });
     }
@@ -364,6 +393,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     return /google|googlemail/.test(m) ? 'Google Workspace' : /outlook|microsoft/.test(m) ? 'Microsoft 365' : /zoho/.test(m) ? 'Zoho Mail' : /hostinger/.test(m) ? 'Hostinger' : /zmail|qiye|163|qq\.com|aliyun/.test(m) ? 'a China-based mail service' : /amazonaws/.test(m) ? 'Amazon SES' : mx[0] ?? null;
   };
   const table = assets.map((a) => ({
+    ...(ctx.v21 ? { reused_step15: !!a.prior, step15: a.prior ?? null, cms_note: a.site?.cms_note ?? null } : {}),
     domain: a.domain, why: a.why, registrar: a.reg.registrar, created: a.reg.created?.slice(0, 10) ?? null, expires: a.reg.expires?.slice(0, 10) ?? null,
     registrant: a.reg.org, ns: (a.dns.ns.length ? a.dns.ns : a.reg.ns).slice(0, 2), ip: a.dns.a[0] ?? null, host: a.host,
     mail: a.dns.mx.length ? mailBy(a.dns.mx) : null, spf: !!a.dns.spf, dmarc: a.dns.dmarc ? (a.dns.dmarc.match(/p=(\w+)/i)?.[1] ?? 'set') : null,
@@ -372,5 +402,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }));
   const social = [...new Set(assets.flatMap((a) => a.site?.social ?? []))];
   add({ title: `${assets.length} domain${assets.length === 1 ? '' : 's'} traced to you`, detail: table.map((t) => `${t.domain} (${t.why.join(', ')}): ${t.registrar ? `registered with ${t.registrar}` : 'registrar unknown'}${t.expires ? `, renews by ${t.expires}` : ''}${t.host ? `, hosted at ${t.host}` : ''}${t.mail ? `, email by ${t.mail}` : ''}`).join('; ') + '.', severity: 'info', source: null, check: 'inventory' });
-  return { findings, notes: { domains: table, subdomains: subs, lookalikes, social, email, blacklists: BLACKLISTS.map((b) => ({ ...b, working: working.has(b.id) })) } };
+  return { findings, notes: {
+    ...(ctx.v21 ? { email_reputation_skipped: assets.filter((a) => a.prior).map((a) => a.domain),
+      email_reputation_note: 'Saved domains are not probed again for email reputation because those checks make fresh DNS queries.' } : {}),
+    domains: table, subdomains: subs, lookalikes, social, email, blacklists: BLACKLISTS.map((b) => ({ ...b, working: working.has(b.id) })),
+  } };
 }

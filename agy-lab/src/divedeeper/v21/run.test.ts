@@ -76,8 +76,8 @@ test('three failed attempts leave an incomplete run with the lane reason', async
   assert.equal(f.attempts.length, 3);
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
-  assert.deepEqual(f.started, ['H-maps', 'G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'B-brand']);
-  assert.equal(f.savedAll.length, 10);
+  assert.deepEqual(f.started, ['H-maps', 'G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'C-merged', 'R-contacts', 'A-assets', 'B-brand']);
+  assert.equal(f.savedAll.length, 13);
 }));
 
 test('recovery restores a successful lane and its plan without another Maps call', async () => switchedOn(async () => {
@@ -88,7 +88,7 @@ test('recovery restores a successful lane and its plan without another Maps call
   assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
   assert.deepEqual(f.events, ['staged']);
   assert.equal(f.row.status, 'done');
-  assert.deepEqual(f.started, ['G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-web', 'D-registry', 'B-brand']);
+  assert.deepEqual(f.started, ['G-fixed', 'G-grounded', 'K-credibility', 'N-news', 'H-web', 'D-registry', 'C-merged', 'R-contacts', 'A-assets', 'B-brand']);
 }));
 
 test('recovery retries a failed lane while keeping its saved trade and town plan', async () => switchedOn(async () => {
@@ -134,7 +134,7 @@ test('an adapter rejection fails the run without staging a dive or running a lan
 }));
 
 test('stages start their lanes together and save every lane before starting the next stage', async () => switchedOn(async () => {
-  assert.deepEqual(V21_DEEPER_LANES, [[['H', 'maps'], ['G', 'fixed'], ['G', 'grounded'], ['K', 'credibility'], ['N', 'news']], [['H', 'web'], ['D', 'registry']], [['B', 'brand']]]);
+  assert.deepEqual(V21_DEEPER_LANES, [[['H', 'maps'], ['G', 'fixed'], ['G', 'grounded'], ['K', 'credibility'], ['N', 'news']], [['H', 'web'], ['D', 'registry'], ['C', 'merged']], [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']]]);
   const f = await fixture([]);
   const started: string[] = [];
   const finish = new Map<string, () => void>();
@@ -150,8 +150,8 @@ test('stages start their lanes together and save every lane before starting the 
   f.runtime.runLane = async (section, lane) => {
     const name = `${section}-${lane}`;
     started.push(name);
-    if (['H-web', 'D-registry'].includes(name)) assert.deepEqual([...saved].sort(), [...stages[0]].sort());
-    if (name === 'B-brand') assert.ok(saved.includes('H-web') && saved.includes('D-registry'));
+    if (stages[1].includes(name)) assert.deepEqual([...saved].sort(), [...stages[0]].sort());
+    if (stages[2].includes(name)) assert.ok(stages[1].every((lane) => saved.includes(lane)));
     const done = new Promise<void>((resolve) => finish.set(name, resolve));
     starts.get(name)!.open();
     await done;
@@ -175,9 +175,12 @@ test('stages start their lanes together and save every lane before starting the 
   assert.deepEqual(started.slice(5), stages[1]);
   finish.get('H-web')!();
   finish.get('D-registry')!();
-  await starts.get('B-brand')!.ready;
-  assert.equal(started[7], 'B-brand');
-  finish.get('B-brand')!();
+  // Contacts, assets and brand must still wait for C-merged's crawl.
+  assert.equal(started.length, 8);
+  finish.get('C-merged')!();
+  await Promise.all(stages[2].map((name) => starts.get(name)!.ready));
+  assert.deepEqual(started.slice(8), stages[2]);
+  for (const name of stages[2]) finish.get(name)!();
   await running;
   assert.equal(f.row.status, 'done');
 }));
@@ -189,7 +192,7 @@ test('resume restores all completed stages and runs no lane again', async () => 
   })));
   const f = await fixture([], saved);
   await executeRun('run', f.runtime);
-  assert.equal(f.restored.length, 8);
+  assert.equal(f.restored.length, 11);
   assert.deepEqual(f.started, []);
   assert.deepEqual(f.savedAll, []);
   assert.equal(f.row.status, 'done');
