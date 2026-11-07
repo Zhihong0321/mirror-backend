@@ -6,7 +6,9 @@ type Answer = { rows: WorkerRow[]; error?: never } | { rows: null; error: string
 
 /** Each request holds for at most 60 seconds. The service, rather than this client, expires jobs. */
 export async function scan(keyword: string, place: string, max: number, opts: Options = {}): Promise<Answer> {
-  const base = (opts.baseUrl ?? process.env.GMAP_API_URL ?? 'https://myworker.up.railway.app').replace(/\/+$/, '');
+  // V21_DEEPER_WORKER_URL points only the deeper dive elsewhere (V2.1 Step 1 keeps GMAP_API_URL), e.g. at a dead
+  // address to make the worker-down path fail on purpose in a live test.
+  const base = (opts.baseUrl ?? process.env.V21_DEEPER_WORKER_URL ?? process.env.GMAP_API_URL ?? 'https://myworker.up.railway.app').replace(/\/+$/, '');
   try {
     const health = await fetch(base + '/health', { signal: AbortSignal.timeout(60_000) });
     if (!health.ok) throw new Error(`myworker health: HTTP ${health.status}`);
