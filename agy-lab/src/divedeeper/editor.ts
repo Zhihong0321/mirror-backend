@@ -11,7 +11,7 @@ import { savedReviews } from './v21/reviews.ts';
 export type Area = 'contact' | 'understanding' | 'voice' | 'credibility' | 'assets' | 'speed';
 export const AREAS: { id: Area; title: string; lanes: string[] }[] = [
   { id: 'contact', title: 'Contact and reachability', lanes: ['R-contacts', 'C-merged'] },
-  { id: 'understanding', title: 'How the internet understands you', lanes: ['B-brand', 'G-search', 'H-maps', 'H-web', 'C-merged'] },
+  { id: 'understanding', title: 'How the internet understands you', lanes: ['B-brand', 'G-search', 'G-recommend', 'H-maps', 'H-web', 'C-merged'] },
   { id: 'voice', title: 'Reviews, discussion and news', lanes: ['N-news'] },
   { id: 'credibility', title: 'Credibility and official records', lanes: ['K-credibility', 'D-registry', 'C-merged'] },
   { id: 'assets', title: 'Digital assets', lanes: ['A-assets', 'C-merged'] },
@@ -180,6 +180,71 @@ export function resolve(dive: any, L: Record<string, any>) {
   }
   const rivals = [...rivalCount.values()].sort((a, b) => b.n - a.n).slice(0, 4);
 
+  // ---- G-recommend: ChatGPT and Gemini asked as customers. Named without the name? Rated? Picked over the others? ----
+  const gr = L['G-recommend']?.notes ?? null;
+  const grAnswers: any[] = gr?.answers ?? [];
+  const grAsks: any[] = gr?.asks ?? [];
+  const grWho: string[] = gr?.assistants ?? [];
+  // "SS SOLAR Malaysia", "SS Solar (by Swee Seng)" and "Verdant Solar Holdings Berhad (Johor)" are one company each.
+  const nameKey = (n: string) => short(String(n).replace(/\([^)]*\)/g, ' ')).toLowerCase()
+    .replace(/\b(sdn|bhd|berhad|holdings?|group|malaysia|m|plt|enterprise|co|ltd)\b\.?/g, ' ').replace(/[^a-z0-9]+/g, '');
+  const grKeys: string[] = gr?.keys ?? [];
+  const isUs = (n: string) => { const t = ` ${String(n).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()} `; return grKeys.some((k) => t.includes(` ${k} `)); };
+  const mean = (xs: number[]) => (xs.length ? Math.round((xs.reduce((s, v) => s + v, 0) / xs.length) * 10) / 10 : null);
+  const finds = grAnswers.filter((a) => a.kind === 'find');
+  const recFind = grWho.map((w) => {
+    const xs = finds.filter((a) => a.assistant === w);
+    const pos = xs.filter((a) => a.named && a.position).map((a) => Number(a.position));
+    return { assistant: w, named: xs.filter((a) => a.named).length, of: xs.length, best: pos.length ? Math.min(...pos) : null, avg: mean(pos) };
+  });
+  const recByAsk = grAsks.filter((q) => q.kind === 'find').map((q) => ({
+    q: String(q.text).replace(/ Please check the web for current information\.$/, ''),
+    rows: grWho.map((w) => {
+      const xs = finds.filter((a) => a.id === q.id && a.assistant === w);
+      const pos = xs.filter((a) => a.named && a.position).map((a) => Number(a.position));
+      return { assistant: w, named: xs.filter((a) => a.named).length, of: xs.length, best: pos.length ? Math.min(...pos) : null, top: (xs[0]?.companies ?? []).slice(0, 4).map((n: string) => short(n)) };
+    }),
+  }));
+  const recShare = new Map<string, { name: string; by: Record<string, number>; total: number }>();
+  for (const a of finds) for (const n of new Set((a.companies ?? []) as string[])) {
+    const k = nameKey(n);
+    if (!k || isUs(n)) continue;
+    const v = recShare.get(k) ?? { name: short(n), by: {}, total: 0 };
+    v.by[a.assistant] = (v.by[a.assistant] ?? 0) + 1; v.total++;
+    if (short(n).length < v.name.length) v.name = short(n);
+    recShare.set(k, v);
+  }
+  const rates = grAnswers.filter((a) => a.kind === 'rate');
+  const rateRows = new Map<string, { name: string; by: Record<string, number[]> }>();
+  for (const a of rates) for (const s of a.scores ?? []) {
+    const k = nameKey(s.name);
+    if (!k || isUs(s.name)) continue;
+    const v = rateRows.get(k) ?? { name: short(s.name), by: {} };
+    (v.by[a.assistant] ??= []).push(Number(s.score));
+    rateRows.set(k, v);
+  }
+  const picks = grAnswers.filter((a) => a.kind === 'pick');
+  const rec = gr ? {
+    assistants: grWho, repeat: gr.repeat ?? null, asked_on: L['G-recommend']?.ran_at ?? null, method: gr.method ?? '', profile: gr.profile ?? null,
+    find: recFind, by_ask: recByAsk,
+    share: [...recShare.values()].sort((a, b) => b.total - a.total).slice(0, 8),
+    rating: {
+      you: Object.fromEntries(grWho.map((w) => [w, mean(rates.filter((a) => a.assistant === w && a.target_score != null).map((a) => Number(a.target_score)))])),
+      rivals: [...rateRows.values()].map((v) => ({ name: v.name, by: Object.fromEntries(grWho.map((w) => [w, mean(v.by[w] ?? [])])), n: Object.values(v.by).flat().length }))
+        .sort((a, b) => b.n - a.n).slice(0, 5),
+      why: rates.map((a) => ({ assistant: a.assistant, summary: a.summary })).filter((x) => x.summary),
+    },
+    pick: grWho.map((w) => {
+      const xs = picks.filter((a) => a.assistant === w);
+      // Recommended over the others only when its own pick is you, or it picked no one and said yes.
+      const yes = xs.filter((a) => a.picks_us || (!a.pick && a.recommends === 'yes')).length;
+      const others = [...new Set(xs.filter((a) => a.pick && !a.picks_us).map((a) => short(a.pick)))];
+      return { assistant: w, yes, of: xs.length, verdicts: xs.map((a) => a.recommends), others, summary: xs.find((a) => a.summary)?.summary ?? '' };
+    }),
+    answers: grAnswers.map((a) => ({ assistant: a.assistant, id: a.id, kind: a.kind, sample: a.sample, text: a.text, named: a.named, position: a.position })),
+    asks: grAsks,
+  } : null;
+
   // ---- credentials: the register's answer, claim by claim ----
   const reg = (L['D-registry']?.findings ?? []).filter((f: any) => !isPrivate(f));
   const cidb = reg.find((f: any) => /^CIDB sweep/i.test(f.title));
@@ -253,6 +318,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     reviews: { total: totalReviews, replied, listings: perListing.map((x) => ({ name: x.name, rating: x.listed_rating, count: x.listed_reviews, replied: x.replied, pulled: x.pulled })), unanswered_low: unansweredLow, monthly, bursts, cross_reviewers: crossReviewers, praise: [...praise.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5), good_quotes: goodQuotes },
     maps: { listings: listings.map((x) => ({ name: x.name, rating: x.rating, reviews: x.reviews, phone: x.phone })), by_area: byArea, no_listing_in: noListingIn, our: ourListing ? { name: ourListing.name, rating: ourListing.rating, reviews: ourListing.reviews } : null, web_line: webShown?.title ?? null },
     ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion },
+    rec,
     credentials: { cidb_grade: cidbGrade, cidb_detail: cidb?.detail ?? null, list: credentials, undersells },
     website: { issues: site.filter((x) => x.severity === 'high' || x.severity === 'medium').length, high: site.filter((x) => x.severity === 'high').length, copy_errors: copyErrors, phones },
     speed: { pages: psi, main_mobile: mainMobile },

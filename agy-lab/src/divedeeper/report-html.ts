@@ -742,6 +742,58 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
 </section>`;
   }
 
+  // ---------- How AI sees you, rates you, and whether it recommends you over your competitors (G-recommend) ----------
+  const rec = R.rec;
+  const hasRec = !!rec && rec.assistants.length > 0 && (rec.find.some((f: any) => f.of) || rec.pick.some((p: any) => p.of));
+  function recommendPage(): string {
+    if (!hasRec) return '';
+    const who: string[] = rec.assistants;
+    const named = rec.find.reduce((n: number, f: any) => n + f.named, 0);
+    const of = rec.find.reduce((n: number, f: any) => n + f.of, 0);
+    const [cls, lbl] = of === 0 ? ['info', 'Not measured'] : named === 0 ? ['urgent', 'Not recommended'] : named * 2 < of ? ['fix', 'Rarely named'] : ['good', 'Often named'];
+    const place = (x: any) => (x.named ? `Named ${x.named} of ${x.of}${x.best ? ` · best place ${x.best}` : ''}` : `Not named (0 of ${x.of})`);
+    const score = (v: number | null | undefined) => (v == null ? '<span class="muted">–</span>' : `${esc(String(v))}<span class="muted">/10</span>`);
+    // Who the assistants named instead, as a board with your row at the bottom.
+    const max = Math.max(1, ...rec.share.map((s: any) => s.total), named);
+    const bar = (n: number) => `<span class="bar"><i style="width:${((n / max) * 100).toFixed(1)}%"></i></span>`;
+    const board = rec.share.length || named ? `<figure class="chart"><table class="board"><thead><tr><th>Business named</th>${who.map((w) => `<th class="num">${esc(w)}</th>`).join('')}<th colspan="2">Across both</th></tr></thead><tbody>
+      ${rec.share.map((s: any) => `<tr><td>${esc(s.name)}</td>${who.map((w) => `<td class="num">${s.by[w] ?? 0}</td>`).join('')}<td class="barc">${bar(s.total)}</td><td class="num">${s.total} of ${of}</td></tr>`).join('')}
+      <tr class="me"><td>You</td>${rec.find.map((f: any) => `<td class="num">${f.named}</td>`).join('')}<td class="barc">${bar(named)}</td><td class="num">${named} of ${of}</td></tr></tbody></table>
+      <figcaption>Every company the assistants named in their answers to the ${rec.by_ask.length} questions above, counted once per answer.</figcaption></figure>` : '';
+    const asks = rec.by_ask.length ? `<table class="band"><thead><tr><th>A customer asks, without your name</th>${who.map((w) => `<th>${esc(w)}</th>`).join('')}</tr></thead><tbody>${rec.by_ask.map((q: any) => `<tr><td class="t">“${esc(typeset(q.q))}”</td>${q.rows.map((r: any) => `<td><b>${esc(place(r))}</b>${r.top.length ? `<p class="w">${esc(r.top.join(', '))}</p>` : ''}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '';
+    const rateQ = (rec.asks.find((q: any) => q.kind === 'rate')?.text ?? '').replace(/ Please check the web for current information\.$/, '');
+    const anyRate = who.some((w) => rec.rating.you[w] != null) || rec.rating.rivals.length;
+    const rating = anyRate ? `<table class="board"><thead><tr><th>Company</th>${who.map((w) => `<th class="num">${esc(w)}</th>`).join('')}</tr></thead><tbody>
+      <tr class="me"><td>You</td>${who.map((w) => `<td class="num">${score(rec.rating.you[w])}</td>`).join('')}</tr>
+      ${rec.rating.rivals.map((r: any) => `<tr><td>${esc(r.name)}</td>${who.map((w) => `<td class="num">${score(r.by[w])}</td>`).join('')}</tr>`).join('')}</tbody></table>
+      <p class="note">A customer asks: “${esc(typeset(rateQ))}” The assistant chose the competitors itself. Scores are the average of ${rec.repeat ?? 1} answer${rec.repeat === 1 ? '' : 's'} from each assistant.</p>
+      ${rec.rating.why.slice(0, 2).map((x: any) => `<p class="small"><b>${esc(x.assistant)}:</b> ${esc(typeset(x.summary))}</p>`).join('')}` : '<p class="note">Neither assistant gave you a score out of 10 when asked.</p>';
+    const pickQ = (rec.asks.find((q: any) => q.kind === 'pick')?.text ?? '').replace(/ Please check the web for current information\.$/, '');
+    const verdict = (p: any) => (!p.of ? 'Not asked' : p.yes === p.of ? 'Recommends you' : p.yes ? `Recommends you in ${p.yes} of ${p.of}` : 'Picks another company');
+    const picks = rec.pick.some((p: any) => p.of) ? `<p class="lead" style="font-size:14px">A customer asks: “${esc(typeset(pickQ))}”</p><div class="pair">${rec.pick.map((p: any, i: number) => `<div class="panel ${i === 0 ? 'dark' : 'light'}"><p class="lbl">${esc(p.assistant)}</p><p class="big" style="font-family:var(--display);font-weight:600;font-size:20px">${esc(verdict(p))}</p>${p.others.length ? `<p class="small"><b>Would pick instead:</b> ${esc(p.others.join(', '))}</p>` : ''}${p.summary ? `<p class="small">${esc(typeset(p.summary))}</p>` : ''}</div>`).join('')}</div>` : '';
+    const raw = rec.answers.length ? `<details><summary>Every answer, word for word <span class="muted">(${rec.answers.length})</span></summary>${rec.asks.map((q: any) => {
+      const xs = rec.answers.filter((a: any) => a.id === q.id);
+      return xs.length ? `<h4 class="tbl-h">“${esc(typeset(q.text.replace(/ Please check the web for current information\.$/, '')))}”</h4>${xs.map((a: any) => `<p class="small" style="margin:6px 0 2px"><b>${esc(a.assistant)}, answer ${a.sample + 1}</b>${q.kind === 'find' ? ` · ${a.named ? `names you${a.position ? `, place ${a.position}` : ''}` : 'does not name you'}` : ''}</p><p class="small" style="white-space:pre-line">${esc(typeset(clip(String(a.text), 2400)))}</p>`).join('')}` : '';
+    }).join('')}</details>` : '';
+    return `<section class="page" id="ai-recommend">
+  <p class="eyebrow">AI assistants · ${esc(who.join(' and '))}</p>
+  <h2 class="display">${twoTone('How AI sees you, rates you,', 'and whether it recommends you over your competitors.')}</h2>
+  <div class="opener"><p class="lead">More and more customers ask ChatGPT or Gemini who to hire instead of searching. They do not type your name: they ask for a ${esc(trade)} in ${esc(town)}, and call the names the assistant gives. We asked both assistants the questions a customer asks, as a stranger with no history, and recorded who they named, how they scored you, and whether they would send the customer to you or to a competitor.</p>
+    <div class="aside"><p class="lbl">Named without your name</p><p class="big">${esc(`${named} of ${of} answers`)}</p><span class="pill ${cls}">${esc(lbl)}</span><p class="checked">Checked ${esc(dateOf(rec.asked_on) || checkedOn)}</p></div></div>
+  <h3 class="sub">Does AI name you when a customer does not?</h3>
+  <p class="body">${rec.find.filter((f: any) => f.of).map((f: any) => `${esc(f.assistant)} named you in ${f.named} of ${f.of} answers${f.best ? `, at best in place ${f.best}` : ''}`).join('. ')}.</p>
+  ${asks}
+  ${board}
+  <h3 class="sub">How does AI rate you against your competitors?</h3>
+  ${rating}
+  <h3 class="sub">Would AI recommend you over your competitors?</h3>
+  ${picks}
+  ${raw}
+  <p class="note">${esc(rec.method)} This is what each assistant said, not a check of whether it is right; answers change from one day and one customer to the next.</p>
+  ${foot('How AI sees and recommends you')}
+</section>`;
+  }
+
   const count = (n: number) => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][n] ?? String(n);
   const partsOf = (themes: string[]) => themes.filter((t) => chapters.includes(t as any)).map((t) => `<a class="see" href="#ch-${t}">Part ${chapterNo(t)}</a>`).join(', ');
 
@@ -817,7 +869,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(R.reviews.total)} reviews read · ` : ''}${R.ai.answers ? `${esc(R.ai.answers)} AI answers read · ` : ''}every page of your sites tested</div></div>
 </section>
 
-<nav class="chapnav" aria-label="Sections"><a href="#glance">At a glance</a>${stories.length ? '<a href="#stories">Fix first</a>' : ''}${chapters.map((id) => `<a href="#ch-${id}">${esc(CHAPTER_EYEBROW[id])}</a>`).join('')}<a href="#analysis">Full analysis</a><a href="#stranger">Trust</a><a href="#plan">Action plan</a><a href="#ready">Ready to use</a><a href="#appendix">Checklist</a></nav>
+<nav class="chapnav" aria-label="Sections"><a href="#glance">At a glance</a>${stories.length ? '<a href="#stories">Fix first</a>' : ''}${chapters.map((id) => `<a href="#ch-${id}">${esc(CHAPTER_EYEBROW[id])}</a>`).join('')}${hasRec ? '<a href="#ai-recommend">AI recommends you?</a>' : ''}<a href="#analysis">Full analysis</a><a href="#stranger">Trust</a><a href="#plan">Action plan</a><a href="#ready">Ready to use</a><a href="#appendix">Checklist</a></nav>
 
 <section class="page dark" id="glance">
   <p class="eyebrow">At a glance</p>
@@ -839,6 +891,8 @@ ${stories.length ? `<section class="page" id="stories">
 </section>` : ''}
 
 ${chapters.map(chapter).join('\n')}
+
+${recommendPage()}
 
 ${analysis()}
 

@@ -8,7 +8,8 @@ import * as store from './store.ts';
 
 export const V21_DEEPER_LANES = [
   [['H', 'maps'], ['G', 'search'], ['K', 'credibility'], ['N', 'news']],
-  [['H', 'web'], ['D', 'registry'], ['C', 'merged']],
+  // G-recommend waits for G-search: it reuses that lane's company profile (trade, town), so both ask about the same thing.
+  [['H', 'web'], ['D', 'registry'], ['C', 'merged'], ['G', 'recommend']],
   [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']],
 ] as const;
 // S1-recheck looks again at what the judging lanes found, before anything is written about it; S6-check looks again at what was written.

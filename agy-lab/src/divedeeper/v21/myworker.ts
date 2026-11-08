@@ -69,6 +69,16 @@ export async function lookup(handler: string, keyword: string, opts: Options = {
   } catch (err) { return { error: reason(err) }; }
 }
 
+/** One prompt to web ChatGPT on a worker PC (myworker /api/chat). Each prompt is its own unpersonalized temporary chat
+ *  on that PC, with ChatGPT's default model; the service gives no model choice. */
+export async function chat(prompt: string, opts: Options & { timeoutMs?: number } = {}): Promise<{ answer: string; tookMs: number | null; worker?: string } | Failed> {
+  try {
+    const out = await job('/api/chat', { prompt, timeoutMs: opts.timeoutMs ?? 240_000 }, opts);
+    if (typeof out.answer !== 'string' || !out.answer.trim()) throw new Error('ChatGPT returned no answer');
+    return { answer: out.answer, tookMs: typeof out.tookMs === 'number' ? out.tookMs : null, worker: out.worker };
+  } catch (err) { return { error: reason(err) }; }
+}
+
 export async function shot(ask: ShotAsk, opts: Options = {}): Promise<Shot | Failed> {
   try { return await job('/api/shot', { ...ask }, opts); }
   catch (err) { return { error: reason(err) }; }
