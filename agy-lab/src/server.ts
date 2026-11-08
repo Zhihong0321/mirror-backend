@@ -37,8 +37,6 @@ import * as v21Store from './v21-store.ts';
 import * as v21Step3 from './v21-step3-http.ts';
 import * as v21DeeperHttp from './v21-deeper-http.ts';
 import * as v21DeeperRun from './divedeeper/v21/run.ts';
-import * as v21DeeperHttp from './v21-deeper-http.ts';
-import * as v21DeeperRun from './divedeeper/v21/run.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
 import { page as companyDivePage } from './companydive-page.ts';
@@ -449,7 +447,6 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   if (await v21Step2.handle(req, res, url, { json, readJson })) return;
   if (await v21Step3.handle(req, res, url, { json, readJson })) return;
   if (await v21DeeperHttp.handle(req, res, url, { json, readJson })) return;
-  if (await v21DeeperHttp.handle(req, res, url, { json, readJson })) return;
   if (await v21Store.handle(req, res, url, { json })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
@@ -570,9 +567,6 @@ server.listen(PORT, '0.0.0.0', () => {
     .then(() => diveDeeper.resumeInterrupted())
     .catch((err: Error) => console.warn('could not resume interrupted dive-deeper runs: ' + err.message))
     .finally(() => diveDeeper.startPreviewWorker());
-  // V2.1 deeper-dive runs cut off by the restart.
-  if (!IMPORTING) void v21DeeperRun.resumeInterrupted()
-    .catch((err: Error) => console.warn('could not resume V2.1 deeper runs: ' + err.message));
   // V2.1 deeper-dive runs cut off by the restart.
   if (!IMPORTING) void v21DeeperRun.resumeInterrupted()
     .catch((err: Error) => console.warn('could not resume V2.1 deeper runs: ' + err.message));
