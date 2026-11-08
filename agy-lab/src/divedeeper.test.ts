@@ -103,6 +103,50 @@ test('the report reads in six research parts, each drawn from its own lanes', ()
   assert.equal(R.items.find((x) => /WhatsApp link/.test(x.title))?.area, 'contact');
 });
 
+test('the report is a working tool: real tick boxes, copy buttons, no repeated filler, the re-audit card, no invented sales figure', () => {
+  const at = '2026-10-26T01:00:00Z';
+  const dive = { company: 'Acme Sdn Bhd', finished_at: '2026-10-25T10:00:00Z', dossier: '', result: { identity: { legal_name: 'Acme Sdn Bhd', official_domains: ['acme.my'] }, contradictions: ['Head office is unit 01-23 on one site and 23-01 on another'] } };
+  const same = 'This makes it harder for customers to verify your company status.';
+  const lanes = {
+    'R-contacts': { ran_at: at, findings: [], notes: { judged: true, inventory: [{ kind: 'phone', value: '012-345 6789', where: ['Google Maps: Acme'], status: 'personal', left: true, owner: 'Ali' }, { kind: 'email', value: 'info@acme.my', where: ['your website'], status: 'current' }] } },
+    'N-news': { ran_at: at, findings: [0, 1, 2].map((i) => ({ title: `Problem number ${i}`, detail: 'd', severity: 'high', source: null })) },
+    'S3-editor': { notes: { plain: Object.fromEntries([0, 1, 2].map((i) => [`N-news#${i}`, { title: `Problem number ${i}`, why: same }])) } },
+    'S5-plan': { notes: { depts: [{ dept: 'website', tasks: [{ dept: 'website', task: 'Fix the contact page', why: 'w', how: 'h', when: 'week', effort: '1 hour', theme: 'contact' }], also: [] }] } },
+    'S2-consult': { notes: {
+      site: { verdict: 'v', homepage: { headline: 'Solar for factories', subheadline: 's', proof_points: ['p'], cta: 'Call us', sections: [{ title: 'T', body: 'B' }] } },
+      replies: { replies: [{ i: 0, reply: 'We are sorry and will call you.' }], template_5star: 'Thank you!', ask_message: 'Could you leave a review?' },
+      reply_targets: [{ stars: 1, author: 'Sam', date: at, text: 'Bad' }],
+      ai: { actions: [], faq: [{ q: 'Do you install?', a: 'Yes.' }] },
+      jsonld: { '@context': 'https://schema.org', '@type': 'Organization', name: 'Acme' },
+    } },
+  };
+  const html = buildReport(dive, lanes);
+  // The file is UTF-8 and says so; no legacy-codepage garble of the curly quotes, dashes and dots.
+  assert.match(html, /<meta charset="utf-8">/);
+  assert.ok(!/Ã|â€|Â|�/.test(html), 'mojibake');
+  // The tick boxes are real inputs, one per task; the old text glyph is gone.
+  assert.match(html, /<input type="checkbox" data-tick="website-0" aria-label="Done: Fix the contact page">/);
+  assert.ok(!html.includes('☐'));
+  // Copy buttons point at elements that exist.
+  for (const id of ['schema-code', 'copy-home', 'reply-0', 'reply-5star', 'reply-ask', 'copy-faq']) {
+    assert.ok(html.includes(`data-copy="${id}"`), `button for ${id}`);
+    assert.ok(html.includes(`id="${id}"`), `target ${id}`);
+  }
+  // A consequence line shared by several findings is said once per table.
+  const tables = html.match(/<table class="band items">[\s\S]*?<\/table>/g) ?? [];
+  for (const t of tables) assert.ok(t.split(same).length - 1 <= 1, 'repeated filler in one table');
+  assert.ok(html.includes(same), 'first occurrence kept');
+  // The 30-day card names no price or address of its own; the leak strip counts, it does not estimate.
+  assert.ok(html.includes('Verify your fixes in 30 days') && html.includes('reply to the email that sent you this report'));
+  assert.ok(/id="plan"[\s\S]*class="followup"[\s\S]*id="ready"/.test(html), 'card closes the plan');
+  assert.ok(html.includes('Where customers can slip away') && html.includes('lead the wrong way'));
+  const leak = html.match(/<div class="leak">[\s\S]*?<\/div>/)?.[0] ?? '';
+  assert.ok(leak && !/%|per ?cent/i.test(leak), 'no invented rate');
+  // Every inline script is plain ASCII, so a wrong-charset reader cannot break it.
+  for (const s of html.match(/<script>[\s\S]*?<\/script>/g) ?? []) assert.ok(/^[\x00-\x7f]*$/.test(s), 'ascii script');
+  assert.ok(!/undefined|\[object Object\]|NaN/.test(html.replace(/<style[\s\S]*?<\/style>/, '')));
+});
+
 test('Malaysian phone numbers are read the way they are printed, and impossible ones are caught', () => {
   assert.equal(normPhone('+6011-2067 2895'), '601120672895');
   assert.equal(showPhone(normPhone('011-2067 2895')), '011-2067 2895');

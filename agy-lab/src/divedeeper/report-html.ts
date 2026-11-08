@@ -70,6 +70,9 @@ export const PART_OPENERS: Record<string, { q: [string, string]; body: (t: { tra
     body: () => 'Google runs its own test on every page it lists: how fast it shows on a phone and a computer, whether everyone can use it, whether it follows good practice, and whether Google can read it. A slow phone page loses visitors before it finishes loading, and Google counts speed when it decides who to show first. We ran Google’s own test, PageSpeed Insights, on your official homepages, and read what real Chrome visitors experienced over the last 28 days.',
   },
 };
+/** The follow-up offer closing the action plan: a 30-day re-audit and the same audit on a competitor.
+ *  With no booking email the card tells the reader to reply to the email that sent the report. */
+export const FOLLOW_UP = { email: '', reauditPrice: '$39', competitorPrice: '$59' };
 export const CHAPTER_ORDER = ['contact', 'understanding', 'voice', 'credibility', 'assets', 'speed'] as const;
 export const CHAPTER_EYEBROW: Record<string, string> = {
   contact: 'Contact and reachability', understanding: 'How the internet understands you', voice: 'Reviews, discussion and news', credibility: 'Credibility and official records', assets: 'Digital assets', speed: 'Website speed and quality',
@@ -215,7 +218,9 @@ svg { width:100%; height:auto; display:block; } svg text { font-family:var(--bod
 .depts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; } .depts a { background:var(--band); padding:12px 14px; display:grid; gap:3px; align-content:start; text-decoration:none; font-size:11.5px; }
 .depts a:first-child { background:var(--dark2); color:var(--on-dark); } .depts a:first-child .muted { color:var(--on-dark-2); } .depts b { font-family:var(--display); font-size:30px; font-weight:500; letter-spacing:-0.04em; line-height:1; } .depts span:nth-of-type(1) { font-weight:600; }
 .dept { display:grid; gap:6px; } .deptc { font-family:var(--body); font-size:11px; font-weight:400; letter-spacing:0; }
-.tasks .cb { width:7mm; font-size:15px; line-height:1.1; color:var(--grey); } .tasks .tg { width:34mm; } .tasks .tg div { display:grid; gap:4px; justify-items:end; font-size:11px; }
+.tasks .cb { width:7mm; line-height:1.1; } .tasks .cb input { width:16px; height:16px; margin:2px 0 0; cursor:pointer; accent-color:var(--ink); }
+.tasks tr:has(input:checked) .t, .tasks tr:has(input:checked) .w, .tasks tr:has(input:checked) .small { color:var(--muted); text-decoration:line-through; }
+.tasks .tg { width:34mm; } .tasks .tg div { display:grid; gap:4px; justify-items:end; font-size:11px; }
 .weeks { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; } .weeks > div { background:var(--band); padding:12px; } .weeks > div:first-child { background:var(--dark2); color:var(--on-dark); }
 .weeks h4 { font-size:14px; margin-bottom:6px; } .weeks ul { margin:0; padding-left:15px; font-size:11px; display:grid; gap:4px; }
 .hero { background:var(--dark2); color:var(--on-dark); padding:18px; display:grid; gap:8px; } .hero .hl { font-family:var(--display); font-size:24px; font-weight:600; letter-spacing:-0.02em; line-height:1.12; }
@@ -247,6 +252,14 @@ a:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 .quotes cite::before { content:"— "; }
 .colophon { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; border-top:1px solid var(--ink); padding-top:10px; margin-top:10px; font-size:11.5px; } .colophon p:not(.lbl) { color:var(--ink); }
 .method { max-width:62em; }
+/* copy buttons (screen only), the "where customers slip away" strip, the 30-day re-audit card */
+.copy { font:inherit; font-size:11px; font-weight:600; color:var(--ink); background:var(--paper); border:1px solid #cfd3d8; border-radius:3px; padding:4px 10px; cursor:pointer; align-self:flex-start; justify-self:start; white-space:nowrap; }
+.copyblock { display:grid; gap:10px; } .reply .copy { margin-bottom:6px; }
+.copy:hover { border-color:var(--ink); } .copy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; } .copy[data-done] { background:var(--ink); border-color:var(--ink); color:#fff; }
+.leak { display:grid; gap:6px; border-left:3px solid #fdd38a; padding:2px 0 2px 14px; margin-top:6px; }
+.leak ul { margin:0; padding:0; list-style:none; display:grid; gap:3px; font-size:13px; color:var(--on-dark); } .leak .note { color:var(--on-dark-2); }
+.followup { background:var(--dark); color:var(--on-dark); padding:22px 24px; display:grid; gap:8px; margin-top:6px; }
+.followup .lbl { color:var(--on-dark-2); margin:0; } .followup h3 { font-size:22px; color:#fff; } .followup p { color:var(--on-dark-2); max-width:46em; font-size:12.5px; } .followup b, .followup a { color:#fff; }
 /* Three versions of one document. The base above is the A4 sheet; on screen the <html> class picks
    v-a4 (sheets on a desk), v-desktop (wide sections) or v-mobile (one column). Print is always A4. */
 .viewbar, .chapnav { display:none; }
@@ -287,7 +300,7 @@ a:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
   .v-mobile .page.dark { border-bottom:0; }
   .v-mobile .display { font-size:32px; } .v-mobile .lead { font-size:16.5px; } .v-mobile .body { font-size:15.5px; } .v-mobile .kicker { font-size:18px; } .v-mobile .sub { font-size:22px; }
   .v-mobile .opener, .v-mobile .pair, .v-mobile .cover-mid, .v-mobile .cover-bot, .v-mobile .three .cols, .v-mobile .grid2, .v-mobile .grid3, .v-mobile .quotes, .v-mobile .reply { grid-template-columns:1fr; }
-  .v-mobile .depts { grid-template-columns:1fr 1fr; } .v-mobile .tasks .cb { display:none !important; } .v-mobile .tasks .tg { width:auto; } .v-mobile .tasks .tg div { display:flex; flex-wrap:wrap; gap:6px; justify-items:start; font-size:13px; }
+  .v-mobile .depts { grid-template-columns:1fr 1fr; } .v-mobile .tasks .tg { width:auto; } .v-mobile .tasks .tg div { display:flex; flex-wrap:wrap; gap:6px; justify-items:start; font-size:13px; }
   .v-mobile .weeks { grid-template-columns:1fr; } .v-mobile .aside { border-left:0; padding-left:0; border-top:1px solid var(--line); padding-top:12px; } .v-mobile .aside .big { font-size:21px; }
   .v-mobile .cover { min-height:100svh; padding:0; } .v-mobile .cover-top, .v-mobile .cover-mid, .v-mobile .cover-bot { padding-left:18px; padding-right:18px; } .v-mobile .cover-top { padding-top:28px; } .v-mobile .cover-bot { padding-bottom:84px; font-size:13px; }
   .v-mobile .cover h1 { font-size:42px; } .v-mobile .phone { width:min(62vw,240px); justify-self:center; }
@@ -301,15 +314,16 @@ a:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
   .v-mobile .fixes > div { grid-template-columns:1fr; gap:6px; } .v-mobile .fixes .tags { justify-items:start; display:flex; gap:6px; } .v-mobile .fixes h4 { font-size:15px; }
   .v-mobile .box, .v-mobile .panel { font-size:14.5px; } .v-mobile .hero .hl { font-size:24px; } .v-mobile figcaption, .v-mobile .note { font-size:12.5px; }
   .v-mobile .colophon { grid-template-columns:1fr 1fr; font-size:13.5px; } .v-mobile .empty { font-size:14px; }
+  .v-mobile .tasks tr { display:grid; grid-template-columns:28px minmax(0,1fr); column-gap:6px; } .v-mobile .tasks .cb { width:auto; padding-top:4px; } .v-mobile .tasks tr > td:not(.cb) { grid-column:2; }
   .v-mobile .gtop { flex-wrap:wrap; } .v-mobile pre { font-size:11px; } .v-mobile .small { font-size:14px; } .v-desktop .small { font-size:14px; }
 }
 /* A4 on a small screen: the sheets scroll sideways inside the desk instead of breaking. */
 @media screen and (max-width:840px) { .v-a4 body { overflow-x:auto; } .v-a4 .page { margin:12px; } }
 @page { size:A4; margin:0; }
 @media print {
-  .viewbar, .chapnav { display:none !important; }
+  .viewbar, .chapnav, .copy { display:none !important; }
   body { background:none; } .page { margin:0; box-shadow:none; width:210mm; min-height:297mm; break-after:page; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
-  .page:last-child { break-after:auto; } .band tr, .box, .panel, figure, .fixes > div, .depts, .gcard, .reply, .three .item, .weeks, .hero, .pair, .opener, pre { break-inside:avoid; }
+  .page:last-child { break-after:auto; } .band tr, .box, .panel, figure, .fixes > div, .depts, .gcard, .reply, .three .item, .weeks, .hero, .pair, .opener, pre, .leak, .followup { break-inside:avoid; page-break-inside:avoid; }
   h2, h3, h4, .sub, .tbl-h, .kicker, .lbl { break-after:avoid; }
   thead { display:table-header-group; } .board tr, .tasks tr, .quotes blockquote, .colophon, .aside, .empty { break-inside:avoid; } p, li { orphans:3; widows:3; }
   details > :not(summary) { display:block; } details::details-content { display:block; content-visibility:visible; } details > summary { list-style:none; }
@@ -357,6 +371,43 @@ ${body}
     mark();
   });
   mark();
+})();
+// Copy buttons (data-copy names the element to copy) and the action-plan tick boxes, which remember
+// what was ticked in this browser. Storage can be blocked; the page works without it.
+(function () {
+  var fallback = function (text) {
+    var t = document.createElement('textarea');
+    t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t); t.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) {}
+    document.body.removeChild(t);
+    return ok;
+  };
+  var say = function (b, words) {
+    var was = b.getAttribute('data-label') || b.textContent;
+    b.setAttribute('data-label', was); b.textContent = words; b.setAttribute('data-done', '');
+    setTimeout(function () { b.textContent = was; b.removeAttribute('data-done'); }, 1800);
+  };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button[data-copy]') : null;
+    if (!b) return;
+    var el = document.getElementById(b.getAttribute('data-copy'));
+    if (!el) return;
+    var text = (el.innerText || el.textContent || '').trim();
+    var ok = function () { say(b, 'Copied'); };
+    var no = function () { say(b, fallback(text) ? 'Copied' : 'Select and copy by hand'); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok, no); else no();
+  });
+  var key = 'dd-ticks:' + location.pathname, saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (err) {}
+  document.querySelectorAll('input[data-tick]').forEach(function (c) { if (saved[c.getAttribute('data-tick')]) c.checked = true; });
+  document.addEventListener('change', function (e) {
+    var c = e.target;
+    if (!c.matches || !c.matches('input[data-tick]')) return;
+    if (c.checked) saved[c.getAttribute('data-tick')] = 1; else delete saved[c.getAttribute('data-tick')];
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (err) {}
+  });
 })();
 </script>
 </body>
@@ -415,7 +466,23 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     return `${esc(a)}${b ? `<br><span class="g">${esc(b)}</span>` : ''}`;
   };
   /** Finding rows in a banded table: status, finding with what it means, where we saw it. */
-  const itemRows = (list: Item[]) => list.length ? `<table class="band items"><tbody>${list.map((x) => `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}</p>${why(x) ? `<p class="w">${esc(why(x))}</p>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`).join('')}</tbody></table>` : '';
+  const itemRows = (list: Item[]) => {
+    if (!list.length) return '';
+    // The editor reuses one consequence line for many findings ("This makes it harder for customers to
+    // verify your company status." on twenty rows). Within one table it is said once, on its first row;
+    // a line that only repeats the row's own title is dropped too.
+    const norm = (s: string) => s.toLowerCase().replace(/[\s.]+/g, ' ').trim();
+    const said = new Set<string>();
+    const consequence = (x: Item) => {
+      const w = why(x), k = norm(w);
+      if (!k || k === norm(T(x)) || said.has(k)) return '';
+      said.add(k);
+      return w;
+    };
+    return `<table class="band items"><tbody>${list.map((x) => { const w = consequence(x); return `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}</p>${w ? `<p class="w">${esc(w)}</p>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`; }).join('')}</tbody></table>`;
+  };
+  /** A "Copy" button for the element with the given id (the page script does the copying). Screen only. */
+  const copyBtn = (id: string, what: string) => `<button type="button" class="copy" data-copy="${esc(id)}" aria-label="Copy ${esc(what)}">Copy ${esc(what)}</button>`;
   let pageNo = 0;
   const foot = (section = '') => `<footer class="pf"><span>${esc(name)} · Online Presence Audit ${esc(R.checked_on.slice(0, 4))}</span><span>${section ? `<span class="sec">${esc(section)}</span>` : ''}<b>${String(++pageNo).padStart(2, '0')}</b></span></footer>`;
 
@@ -706,7 +773,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   function actionPlan(): string {
     const n = chapters.length + 2;
     const tasks = plan.reduce((t, d) => t + d.tasks.length, 0);
-    const rows = (d: any) => d.tasks.map((t: any) => `<tr><td class="cb" aria-hidden="true">☐</td><td><p class="t">${esc(t.task)}</p>${t.why ? `<p class="w">${esc(t.why)}</p>` : ''}${t.how ? `<p class="small">${esc(t.how)}</p>` : ''}${t.ready && READY_AT[t.ready] ? `<p class="small"><a class="see" href="#${READY_AT[t.ready]}">Done for you: ${esc(readyWords[t.ready] ?? 'a draft')}&nbsp;↓</a></p>` : ''}</td><td class="tg"><div><span class="pill ${(WHEN[t.when] ?? WHEN.month)[0]}">${esc((WHEN[t.when] ?? WHEN.month)[1])}</span>${t.effort ? `<span class="pill info">${esc(t.effort)}</span>` : ''}${t.theme && chapters.includes(t.theme) ? partsOf([t.theme]) : ''}</div></td></tr>`).join('');
+    const rows = (d: any) => d.tasks.map((t: any, i: number) => `<tr><td class="cb"><input type="checkbox" data-tick="${esc(d.dept)}-${i}" aria-label="Done: ${esc(t.task)}"></td><td><p class="t">${esc(t.task)}</p>${t.why ? `<p class="w">${esc(t.why)}</p>` : ''}${t.how ? `<p class="small">${esc(t.how)}</p>` : ''}${t.ready && READY_AT[t.ready] ? `<p class="small"><a class="see" href="#${READY_AT[t.ready]}">Done for you: ${esc(readyWords[t.ready] ?? 'a draft')}&nbsp;↓</a></p>` : ''}</td><td class="tg"><div><span class="pill ${(WHEN[t.when] ?? WHEN.month)[0]}">${esc((WHEN[t.when] ?? WHEN.month)[1])}</span>${t.effort ? `<span class="pill info">${esc(t.effort)}</span>` : ''}${t.theme && chapters.includes(t.theme) ? partsOf([t.theme]) : ''}</div></td></tr>`).join('');
     const also = (d: any) => d.also.map((a: any) => itemByKey.get(a.key)).filter(Boolean) as Item[];
     return `<section class="page" id="plan">
   <p class="eyebrow">Part ${n} · Action plan</p>
@@ -717,9 +784,29 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   ${p.tasks.length ? `<table class="band tasks"><tbody>${rows(p)}</tbody></table>` : ''}
   ${more.length ? `<p class="lbl">${p.tasks.length ? 'Also on this list' : 'To fix'}</p><ul class="plain small">${more.map((x) => `<li>${esc(T(x))} ${partsOf([x.area])}</li>`).join('')}</ul>` : ''}
   ${!p.tasks.length && !more.length ? '<p class="empty"><b>Nothing for this department right now.</b> No finding in this report needs its work.</p>' : ''}</div>`; }).join('')}
+  ${followUp()}
   ${foot(`Part ${n} · Action plan`)}
 </section>`;
   }
+  /** After the plan: check in 30 days that the fixes took, and the same audit for a competitor. No price or address is invented; see FOLLOW_UP. */
+  function followUp(): string {
+    const f = FOLLOW_UP;
+    const price = (p: string) => (p ? ` (${esc(p)})` : '');
+    const book = f.email ? `<a href="mailto:${esc(f.email)}?subject=${encodeURIComponent(`Re-audit: ${name}`)}">Book the 30-day re-audit →</a>` : 'To book it, reply to the email that sent you this report.';
+    return `<div class="followup"><p class="lbl">Next step · Check that the fixes worked</p><h3>Verify your fixes in 30 days</h3>
+    <p>Directories, search engines and AI assistants pick up changes at different speeds, so a fix made today does not show up everywhere on the same day. When your team has finished the tasks above, order a <b>30-day re-audit${price(f.reauditPrice)}</b>: we run the same checks again and show which problems are gone and which are still live.</p>
+    <p>${book} Want to see where a competitor stands? We can run this audit on them${price(f.competitorPrice)}.</p></div>`;
+  }
+
+  // Where a customer can slip away: counts taken from this run's own checks, never an estimated rate of lost sales.
+  const leaks: string[] = [];
+  if (areaOf('contact')?.ran && R.contact.judged && R.contact.bad > 0) leaks.push(`${R.contact.bad} of the ${R.contact.total} contact details published about you lead the wrong way`);
+  if (areaOf('voice')?.ran && R.reviews.unanswered_low.length > 0) leaks.push(`${R.reviews.unanswered_low.length} bad Google review${R.reviews.unanswered_low.length === 1 ? '' : 's'} still ${R.reviews.unanswered_low.length === 1 ? 'has' : 'have'} no reply from you`);
+  if (areaOf('understanding')?.ran && R.ai.trade_answers > 0 && R.ai.named_us < R.ai.trade_answers) leaks.push(`${R.ai.trade_answers - R.ai.named_us} of ${R.ai.trade_answers} AI answers about your trade do not recommend you`);
+  if (areaOf('speed')?.ran && R.speed.main_mobile && R.speed.main_mobile.scores.performance < 90) leaks.push(`your homepage scores ${R.speed.main_mobile.scores.performance} out of 100 for speed on a phone`);
+  if (mismatch.length > 0) leaks.push(`${mismatch.length} detail${mismatch.length === 1 ? '' : 's'} about your company ${mismatch.length === 1 ? 'is' : 'are'} not the same in every public source`);
+  if (areaOf('assets')?.ran && R.assets.issues > 0) leaks.push(`${R.assets.issues} risk${R.assets.issues === 1 ? '' : 's'} in the domains and email that carry your name`);
+  const leakHtml = leaks.length ? `<div class="leak"><p class="lbl">Where customers can slip away</p><ul>${leaks.slice(0, 5).map((x) => `<li>${esc(typeset(x.charAt(0).toUpperCase() + x.slice(1)))}</li>`).join('')}</ul><p class="note">Counted from the checks in this report. We do not guess how many sales each one costs.</p></div>` : '';
 
   return shell(`${name}: Online Presence Audit`, `<section class="page dark cover">
   <div class="cover-top"><b>${esc(name)}</b><span>Online Presence Audit ${esc(R.checked_on.slice(0, 4))}${refNo ? ` · ${esc(refNo)}` : ''}</span></div>
@@ -737,6 +824,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   <h2 class="display">Where you stand,<br><span class="g">in ${['no', 'one', 'two', 'three', 'four', 'five', 'six'][big.length] ?? big.length} numbers.</span></h2>
   ${big.length ? `<div class="stats">${big.map(([id, v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>` : ''}
   ${verdict ? `<p class="verdict" style="margin-top:14px">${esc(verdict)}</p>` : ''}
+  ${leakHtml}
   <div class="rows" style="margin-top:auto">${chapters.map((id) => { const a = areaOf(id)!; return `<a href="#ch-${id}"><b>${esc(a.title)}</b><span>${esc(a.metric ?? '')}</span><span class="pill ${a.status[0]}">${esc(a.status[1])}</span></a>`; }).join('')}</div>
   ${foot('At a glance')}
 </section>
@@ -779,18 +867,18 @@ ${actionPlan()}
   <p class="lead" style="max-width:40em">The drafts the action plan points to, written only from facts we verified. Read each one before you publish it.</p>
   <h3 class="sub" id="d-site">Your homepage, rewritten</h3>
   ${site ? `<p class="body">${esc(site.verdict)}</p>${site.one_site_or_two ? `<p class="body"><b>One site or two?</b> ${esc(site.one_site_or_two)}</p>` : ''}
-  ${site.homepage ? `<div class="hero"><div class="hl">${esc(site.homepage.headline)}</div><p>${esc(site.homepage.subheadline)}</p>${(site.homepage.proof_points ?? []).length ? `<ul>${site.homepage.proof_points.map((p: string) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<span class="btn">${esc(site.homepage.cta)}</span></div>
-  <div class="grid3">${(site.homepage.sections ?? []).map((x: any) => `<div class="box"><h4>${esc(x.title)}</h4><p>${esc(x.body)}</p></div>`).join('')}</div>` : ''}
+  ${site.homepage ? `${copyBtn('copy-home', 'homepage copy')}<div class="copyblock" id="copy-home"><div class="hero"><div class="hl">${esc(site.homepage.headline)}</div><p>${esc(site.homepage.subheadline)}</p>${(site.homepage.proof_points ?? []).length ? `<ul>${site.homepage.proof_points.map((p: string) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}<span class="btn">${esc(site.homepage.cta)}</span></div>
+  <div class="grid3">${(site.homepage.sections ?? []).map((x: any) => `<div class="box"><h4>${esc(x.title)}</h4><p>${esc(x.body)}</p></div>`).join('')}</div></div>` : ''}
   ${(site.pages_to_fix ?? []).length ? `<h4 class="tbl-h">Pages to fix</h4><table class="band"><thead><tr><th>Page</th><th>Problem</th><th>Fix</th></tr></thead><tbody>${site.pages_to_fix.map((p: any) => `<tr><td>${esc(p.page)}</td><td>${esc(p.problem)}</td><td>${esc(p.fix)}</td></tr>`).join('')}</tbody></table>` : ''}` : '<p class="note">The website plan was not written in this run.</p>'}
   ${(site?.pages_to_add ?? []).length ? `<h3 class="sub" id="d-pages">Pages to add, town by town</h3><div class="grid3">${site.pages_to_add.map((p: any) => `<div class="box"><code>${esc(p.slug)}</code><h4>${esc(p.title)}</h4><p class="muted">${esc(p.why)}</p><ul>${(p.outline ?? []).map((o: string) => `<li>${esc(o)}</li>`).join('')}</ul></div>`).join('')}</div>` : ''}
   <h3 class="sub" id="d-reviews">Review replies, ready to post</h3>
-  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(t.author ?? '')} · ${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(clip(String(t.text), 260)))}</p>` : '<p class="q">(star rating only)</p>'}</div><div><p class="a">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
-  <div class="grid2" style="margin-top:6px">${replies.template_5star ? `<div class="box"><h4>Thank-you reply for 5★ reviews</h4><p>${esc(replies.template_5star)}</p></div>` : ''}${replies.ask_message ? `<div class="box"><h4>WhatsApp message asking for a review</h4><p>${esc(replies.ask_message)}</p></div>` : ''}</div>` : '<p class="note">No unanswered reviews needed a draft.</p>'}
+  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any, n: number) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(t.author ?? '')} · ${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(clip(String(t.text), 260)))}</p>` : '<p class="q">(star rating only)</p>'}</div><div>${copyBtn(`reply-${n}`, 'reply')}<p class="a" id="reply-${n}">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
+  <div class="grid2" style="margin-top:6px">${replies.template_5star ? `<div class="box"><h4>Thank-you reply for 5★ reviews</h4>${copyBtn('reply-5star', 'reply')}<p id="reply-5star">${esc(replies.template_5star)}</p></div>` : ''}${replies.ask_message ? `<div class="box"><h4>WhatsApp message asking for a review</h4>${copyBtn('reply-ask', 'message')}<p id="reply-ask">${esc(replies.ask_message)}</p></div>` : ''}</div>` : '<p class="note">No unanswered reviews needed a draft.</p>'}
   <h3 class="sub" id="d-ai">Getting recommended by AI assistants</h3>
   ${ai ? `${(ai.actions ?? []).length ? `<div class="fixes">${ai.actions.map((a: any) => `<div><div><h4>${esc(tidy(a.action))}</h4><p class="w">${esc(tidy(a.why))}</p><p class="small" style="margin-top:3px">${esc(tidy(a.how))}</p></div><div class="tags"><span class="pill info">${esc(a.effort)}</span><span class="pill ${a.impact === 'high' ? 'urgent' : 'fix'}">${esc(a.impact)} impact</span></div></div>`).join('')}</div>` : ''}
-  ${(ai.faq ?? []).length ? `<h4 class="tbl-h">FAQ for your website</h4><div class="grid2">${ai.faq.map((x: any) => `<div class="box"><h4>${esc(x.q)}</h4><p>${esc(x.a)}</p></div>`).join('')}</div>` : ''}
+  ${(ai.faq ?? []).length ? `<h4 class="tbl-h">FAQ for your website</h4>${copyBtn('copy-faq', 'FAQ')}<div class="grid2" id="copy-faq">${ai.faq.map((x: any) => `<div class="box"><h4>${esc(x.q)}</h4><p>${esc(x.a)}</p></div>`).join('')}</div>` : ''}
   ${ai.measure ? `<p class="note"><b>How to track it:</b> ${esc(tidy(ai.measure))}</p>` : ''}` : '<p class="note">The AI plan was not written in this run.</p>'}
-  ${s2.jsonld ? `<h4 class="tbl-h" id="d-jsonld">Business details for Google and AI</h4><p class="note">Ask your web developer to paste this into the &lt;head&gt; of every page, after checking the phone and address are the ones you want everywhere.</p><pre>${esc('<script type="application/ld+json">\n' + JSON.stringify(s2.jsonld, null, 2) + '\n</script>')}</pre>` : ''}
+  ${s2.jsonld ? `<h4 class="tbl-h" id="d-jsonld">Business details for Google and AI</h4><p class="note">Ask your web developer to paste this into the &lt;head&gt; of every page, after checking the phone and address are the ones you want everywhere.</p>${copyBtn('schema-code', 'JSON-LD')}<pre id="schema-code">${esc('<script type="application/ld+json">\n' + JSON.stringify(s2.jsonld, null, 2) + '\n</script>')}</pre>` : ''}
   ${foot(`Part ${chapters.length + 2} · Ready to use`)}
 </section>
 
