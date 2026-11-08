@@ -120,7 +120,7 @@ export async function listGeminiContactKeys(): Promise<Array<{ id: number; kind:
 
 export async function replaceGeminiContactKeys(kind: GeminiKeyKind, secrets: string[]): Promise<void> {
   await migrate();
-  const clean = [...new Set(secrets.map((secret) => secret.trim()).filter((secret) => secret.length >= 10))];
+  const clean = [...new Set(secrets.map((secret) => secret.trim()).filter((secret) => secret.length >= 6))];
   await sql(`delete from gemini_contact_key where kind = $1`, [kind]);
   for (const secret of clean) {
     await sql(`insert into gemini_contact_key (kind, secret) values ($1, $2) on conflict (kind, secret) do nothing`, [kind, secret]);
