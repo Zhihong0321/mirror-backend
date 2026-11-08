@@ -12,8 +12,11 @@ Status: BUILT 2026-11-08, NOT YET RUN ON THE HUB. Unit tests pass with a fake hu
 - Kept on purpose: `G-shared.ts` and `G-free.ts` (the G-free script lane and the company profile `profileOf` use them; `profileOf` now
   reuses the profile of the last G-search run). B-brand still has its own LLM comparison of the assistant's answer with the company's
   pages ("ai: right / vague / wrong / missing" per line of business); that is B-brand's analysis, not a judge of the G lane.
-- NEEDED BEFORE THE HUB RUN: set `AGY_REMOTE_TOKEN` (the vault entry `AGY_WEB_CLOUD`'s secret) on the hub service. `AGY_REMOTE_URL`
-  defaults to `https://my-agy.up.railway.app`. Without the token the lane fails at once with "no AGY_REMOTE_TOKEN".
+- NEEDED BEFORE THE HUB RUN: save the Antigravity hub token on the hub's `/workers` page, under "Other API keys", in the box
+  "Antigravity hub token". It is stored in the hub database (key kind `agy_hub`, table `gemini_contact_key`; the table's allowed
+  kinds are widened on the hub's next boot). The `AGY_REMOTE_TOKEN` Railway variable is the fallback when that box is empty, and
+  the local vault on a dev machine. `AGY_REMOTE_URL` defaults to `https://my-agy.up.railway.app`. With no token the lane fails at
+  once with "no Antigravity hub token". Deploy first: the box exists only in the new build.
 - Not built: the spread across the 3 repeats is stored (every answer, with its worker) but the report shows only the first answer.
 - Tunables: `DD_G_REPEAT` (default 3), `DD_G_SLOW_SEC` (default 240: after this a second copy goes to an idle worker).
 

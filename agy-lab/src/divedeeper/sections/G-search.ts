@@ -10,6 +10,7 @@
 // LLM wait rule (owner): a slow call is never killed and restarted. When a call has run longer than SLOW_SEC, an idle worker
 // is given the same prompt and the first valid answer is used; the first call keeps running and is simply not waited for.
 // A worker that errors (quota, auth, not JSON) is skipped for that prompt and the next worker is tried.
+import { secrets } from '../../core/index.ts';
 import { parseJson, secret, type Ctx, type Finding } from '../lib.ts';
 import { profileOf, type Profile } from './G-shared.ts';
 
@@ -94,9 +95,11 @@ export type Hub = {
 /** Asked through POST /api/jobs and polled, so no request stays open long. A slow job is waited for, never cut. */
 export function liveHub(): Hub {
   const base = (process.env.AGY_REMOTE_URL ?? 'https://my-agy.up.railway.app').replace(/\/+$/, '');
-  const token = secret('AGY_REMOTE_TOKEN') || secret('AGY_WEB_CLOUD');
+  // The hub database's saved token (/workers, "Antigravity hub token"), else the AGY_REMOTE_TOKEN variable, else the local vault.
+  const readToken = async () => { await secrets.load(); return secret('AGY_REMOTE_TOKEN') || secret('AGY_WEB_CLOUD'); };
   const call = async (path: string, init?: { body?: unknown }) => {
-    if (!token) throw new Error('no AGY_REMOTE_TOKEN: the cloud Antigravity hub key is not set on this server');
+    const token = await readToken();
+    if (!token) throw new Error('no Antigravity hub token: save it on /workers ("Antigravity hub token") or set AGY_REMOTE_TOKEN');
     const res = await fetch(base + path, {
       method: init ? 'POST' : 'GET',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },

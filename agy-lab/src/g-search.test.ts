@@ -2,6 +2,7 @@
 // real hub works. The live proof is a run on the hub on Eternalgy.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { secrets } from './core/index.ts';
 import { makeCtx } from './divedeeper/lib.ts';
 import { buildReport } from './divedeeper/report-html.ts';
 import { liveHub, promptA, promptB, promptC, questions, readAnswers, readCompare, run, runJobs, type Hub } from './divedeeper/sections/G-search.ts';
@@ -126,4 +127,17 @@ test('the report shows what the assistant said, with its sources and the compari
   const html = buildReport(dive, { 'G-search': { ran_at: '2026-11-08T01:00:00Z', findings: out.findings, notes: out.notes } } as any).replace(/<style[\s\S]*?<\/style>/, '').replace(/ |&nbsp;/g, ' ');
   for (const s of ['A customer asks', 'Gemini (web search) answers', 'answer to phone', 'This is what it said, not a check of whether it is right', 'Who the assistant compares you with', 'Rival One, Rival Two', 'few reviews']) assert.ok(html.includes(s), s);
   for (const bad of ['from memory', 'Asked from memory', 'None of these is correct', 'wrong ·', 'undefined', '[object Object]', 'NaN']) assert.ok(!html.includes(bad), bad);
+});
+
+test('the hub token has its own slot in the key store: the Railway variable name is its fallback, and /workers can save it', () => {
+  assert.equal(secrets.KINDS.agy_hub, 'AGY_REMOTE_TOKEN');
+  assert.equal(secrets.get('agy_hub', { AGY_REMOTE_TOKEN: ' from-env ' } as NodeJS.ProcessEnv), 'from-env');
+  assert.equal(secrets.fromDbByEnvName('SOMETHING_ELSE'), '');
+});
+
+test('the /workers page has a text box for the hub token, and the database allows its kind', async () => {
+  const { readFileSync } = await import('node:fs');
+  assert.match(readFileSync(new URL('./workers.ts', import.meta.url), 'utf8'), /id="secret_agy_hub" data-secret="agy_hub"/);
+  const db = readFileSync(new URL('./reportdb.ts', import.meta.url), 'utf8');
+  assert.equal((db.match(/'agy_hub'/g) ?? []).length, 3, 'type, kind list and check constraint');
 });

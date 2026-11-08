@@ -1,4 +1,4 @@
-// The one-key providers' keys: MiniMax, Parallel, Smartlead and
+// The one-key providers' keys: MiniMax, Parallel, Smartlead, the Antigravity hub (G-search) and
 // the PageSpeed service account. They live in the hub database (gemini_contact_key,
 // one row per kind, edited on /workers under "Other API keys"); the Railway
 // variable of the same name only serves a hub whose row is empty, and the local
@@ -16,6 +16,8 @@ export const KINDS = {
   smartlead: 'SMARTLEAD_API_KEY',
   pagespeed: 'GOOGLE_PAGESPEED_SERVICE_ACCOUNT',
   scraper_tech: 'SCRAPER_TECH_KEY',
+  /** The cloud Antigravity hub's bearer token (my-agy): G-search asks Gemini, which searches the web, through it. */
+  agy_hub: 'AGY_REMOTE_TOKEN',
 } as const;
 
 export type Kind = keyof typeof KINDS;
