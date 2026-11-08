@@ -7,6 +7,8 @@
 //
 // Refused before anything runs (409): no Step 2 result, a rules-v1 result, or a Step 2 result that failed or was skipped.
 // Rows per run, both with the run_id: step 3 'report' and 'email'. Nothing is sent: the email is a draft.
+// V21_STEP3_REFINE=on: a second pass reads the Step 2 run's raw input (its 'tidy' row) and the checked draft, and refines
+// it (step3.ts refineStep3); both versions are in the rows, under 'refine'.
 // test (LAB_TOKEN only, to prove the failure paths live): 'dead_lane' (every lane refuses), 'not_json' (a lane answers
 // prose), 'bad_ids' (a lane answers JSON citing ids and numbers that are not in Step 2). Test rows are stored with
 // status 'test', so the public page never shows them.
@@ -14,7 +16,7 @@
 import type http from 'node:http';
 import crypto from 'node:crypto';
 import type { Lane } from './v21/judge.ts';
-import { missingPage, reportPage, writeStep3 } from './v21/step3.ts';
+import { missingPage, refineOn, reportPage, writeStep3 } from './v21/step3.ts';
 import * as store from './v21-store.ts';
 
 type Ctx = {
@@ -68,7 +70,9 @@ async function runStep3(reportId: string, s2row: { id: number; run_id: string; p
     if (test === 'bad_ids') stub = await stubLane(BAD_IDS_ANSWER);
     if (stub) lanes = [stub.lane];
 
-    const { report, email } = await writeStep3(s2row.payload, { row_id: s2row.id, run_id: s2row.run_id }, reportUrl, { lanes, test });
+    // The second pass reads the raw input this Step 2 run read: its 'tidy' row (same run_id). Only loaded when it runs.
+    const raw = refineOn() ? ((await store.latestRaw(reportId, 'tidy', s2row.run_id))?.payload ?? null) : null;
+    const { report, email } = await writeStep3(s2row.payload, { row_id: s2row.id, run_id: s2row.run_id }, reportUrl, { lanes, test, raw });
     await store.addRaw(reportId, 3, 'report', runId, report, test ? 'test' : report.status);
     await store.addRaw(reportId, 3, 'email', runId, email, test ? 'test' : email.status);
     const failed = report.status === 'failed' ? report.error : email.status === 'failed' ? email.error : null;

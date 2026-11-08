@@ -54,8 +54,33 @@ export type TidyData = {
     domains_checked: number;
     findings_count: number;
     items: Array<{ title: string; detail: string; severity: string; check: string }>;
+    /** The worker's SEO / GEO benchmark of the official website (Step 1.5 site_audit), when it ran. */
+    seo_score?: number;
+    geo_score?: number;
+    audit_groups?: string[];
   };
   could_not_check: Array<{ target: string; reason: string }>;
+};
+
+// How sure each check of the worker's SEO / GEO benchmark is, as the worker's own API page states it (site.audit,
+// "What the audit measures"). Step 2 is told: exact = measured; rule of thumb / hint = an estimate.
+const AUDIT_SOURCE = 'SEO / GEO benchmark (worker site.audit)';
+const AUDIT_SURE: Record<string, string> = {
+  crawl: 'exact',
+  onpage: 'exact',
+  speed: "exact, timed from the worker's connection on the HTML only (not Lighthouse)",
+  schema: "exact, against the worker's copy of Google's rules (not Google's Rich Results Test)",
+  security: 'exact',
+  ai_access: 'exact',
+  answer: 'rule of thumb, tuned for English',
+  trust: 'exact presence check',
+  citability: 'rule of thumb, tuned for English',
+  entity: 'exact lookup in Wikidata, Wikipedia and Common Crawl',
+};
+const AUDIT_SURE_CHECK: Record<string, string> = {
+  'ai_access.firewall': "hint: the bots' names were sent from the worker's address, not the real bots' addresses",
+  'ai_access.no_js_content': 'hint: judged from the HTML only',
+  'ai_access.training_bots': 'exact; blocking AI training bots is a fair choice, so it can only warn',
 };
 
 const PAGE_MAX = 15_000;
@@ -80,7 +105,47 @@ export function cleanText(s: string): string {
       .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
       .replace(/&([a-z]+|#39);/gi, (m, n) => ENTITIES[n.toLowerCase()] ?? m);
   }
-  return t.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  return stripMarkdown(t.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+}
+
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+const MASK = '\u0002';
+
+/**
+ * Markdown marks to plain text, for every page, snippet and passage Step 2 reads (and quotes onto the report): bold
+ * and italic marks that wrap text, heading marks, backslash escapes. A lone mark is text and stays: a directory masks a
+ * phone as "03-7971 9**XX"; "C#", "#1", "#hashtag", "snake_case" and "Lot # 12" are not formatting. Sites glue bold
+ * to the words around it ("Residential**Jendela**Renovation"): where removing a mark would join two words, a space
+ * goes in its place.
+ */
+export function stripMarkdown(s: string): string {
+  const spaced = (before: string, inner: string, after: string) => {
+    const l = WORD_CHAR.test(before) && WORD_CHAR.test(inner[0] ?? '') ? ' ' : '';
+    const end = inner.at(-1) ?? '';
+    const r = WORD_CHAR.test(after) && (WORD_CHAR.test(end) || /\s/.test(end)) ? ' ' : '';
+    return l + inner.trim() + r;
+  };
+  return (
+    String(s ?? '')
+      // masked digits are text: 9**XX (a bare 4*** can also close bold, "$20,000***", so it is not protected)
+      .replace(/(?<=\d)\*{2,}(?=[Xx]+(?![\p{L}]))/gu, (m) => MASK.repeat(m.length))
+      // bold **x** on one line, the text holding no other **
+      .replace(/\*\*(?=\S)((?:(?!\*\*)[^\n])+?)\*\*/gu, (m, inner: string, at: number, all: string) =>
+        spaced(all[at - 1] ?? '', inner, all[at + m.length] ?? ''),
+      )
+      // bold __x__ only outside words (snake__case and __init__ are text)
+      .replace(/(?<![\p{L}\p{N}_])__(?=\S)((?:(?!__)[^\n])+?)(?<=\S)__(?![\p{L}\p{N}_])/gu, '$1')
+      // italic *x* / _x_: only between spaces, brackets or punctuation
+      .replace(/(^|[\s(\[])([*_])(?=[^\s*_])([^*_\n]*?[^\s*_\\])\2(?=[\s).,;:!?\]]|$)/gmu, '$1$3')
+      // headings: at a line start; inside flattened text (## before anything, # before a word); closing ## after text
+      .replace(/^[ \t]*#{1,6}[ \t]+/gm, '')
+      .replace(/(^|[\s[(])#{2,6}\s+/gm, '$1')
+      .replace(/(^|\s)#\s+(?=\p{L})/gmu, '$1')
+      .replace(/(?<=\S)#{2,6}(?=\s|$)/gm, '')
+      // escapes: \_ -> _, \* -> * (an escaped mark is the page's own text)
+      .replace(/\\([`*_{}[\]()#+\-.!|>~])/g, '$1')
+      .replaceAll(MASK, '*')
+  );
 }
 
 function domainOf(rawUrl: string): string {
@@ -98,13 +163,13 @@ function onDomain(url: string, domain: string): boolean {
   return d === domain || d.endsWith('.' + domain);
 }
 
-/** Markdown to plain lines: drop images, keep link text, drop bare link targets. */
+/** Markdown to plain lines: drop images, keep link text, drop bare link targets and formatting marks. */
 function pageLines(markdown: string): string[] {
   return String(markdown ?? '')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]*)\]\((?:[^()]|\([^)]*\))*\)/g, '$1')
     .split('\n')
-    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .map((l) => stripMarkdown(l).replace(/\s+/g, ' ').trim())
     .filter((l) => l && !/^[-=*_#|\s]+$/.test(l));
 }
 
@@ -335,6 +400,46 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
         text: d.reviews.map(line).join('\n'),
       });
     }
+
+    // SEO / GEO benchmark of the official website (Step 1.5 site_audit, measured by the worker). One item with the
+    // scores and the checks that passed, then one item per check that warned or failed, each saying how sure it is.
+    // What the audit does not cover (notChecked), and an audit that did not run, are "could not check".
+    const sa = assets.site_audit;
+    const ar: any = sa?.status === 'done' ? sa.result : null;
+    if (sa && !ar?.scores) {
+      couldNotCheck.push({ target: 'SEO / GEO benchmark of the official website', reason: sa.reason || sa.error || `audit ${sa.status}` });
+    } else if (ar?.scores) {
+      const url = ar.finalUrl || sa?.target_url || '';
+      const checks: any[] = Array.isArray(ar.checks) ? ar.checks : [];
+      const groups = Object.entries(ar.scores.groups ?? {}).map(([g, v]: [string, any]) => `${g} (${String(v.area).toUpperCase()}, ${AUDIT_SURE[g] ?? 'how sure not stated'}) ${v.score}/100`);
+      const sure = (c: any) => AUDIT_SURE_CHECK[c.id] ?? AUDIT_SURE[c.group] ?? 'how sure not stated';
+      technicalAudit!.seo_score = ar.scores.seo;
+      technicalAudit!.geo_score = ar.scores.geo;
+      technicalAudit!.audit_groups = groups;
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: AUDIT_SOURCE,
+        url,
+        title: `SEO ${ar.scores.seo}/100 and GEO ${ar.scores.geo}/100 for ${url}`,
+        text: [
+          `SEO score ${ar.scores.seo}/100 (how well Google can crawl, read and trust the site) and GEO score ${ar.scores.geo}/100 (how well AI answer engines can reach, understand and quote it), over ${(ar.pages ?? []).length} pages read: ${(ar.pages ?? []).map((p: any) => p.url).join(', ')}.`,
+          `Group scores: ${groups.join('; ')}.`,
+          `Checks passed: ${checks.filter((c) => c.status === 'pass').map((c) => c.title).join('; ') || 'none'}.`,
+        ].join('\n'),
+      });
+      for (const c of checks.filter((x) => x.status === 'fail' || x.status === 'warn')) {
+        evidence.push({
+          id: `E${++n}`,
+          kind: 'search',
+          source_name: AUDIT_SOURCE,
+          url: c.worstUrl || url,
+          title: c.title,
+          text: `[${String(c.status).toUpperCase()}] ${c.title} (group ${c.group}; ${sure(c)}): ${cleanText(String(c.detail ?? ''))}`,
+        });
+      }
+      for (const x of ar.notChecked ?? []) couldNotCheck.push({ target: 'SEO / GEO benchmark', reason: String(x) });
+    }
   }
 
   // ---- Catalog probes: not run -> could not check; read pages -> passages where the name appears.
@@ -391,20 +496,27 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
   };
 }
 
-/** Lay the tidy data out as the Step 2 user prompt. Same order as the system prompt describes. */
-export function renderTidy(t: TidyData): string {
+/** Rules v2 (step2-v2.ts): each official page is citable as O1, O2... in page order; the site-wide lines as O0. */
+export function officialId(pageIndex: number): string {
+  return `O${pageIndex + 1}`;
+}
+
+/** Lay the tidy data out as the Step 2 user prompt. Same order as the system prompt describes.
+ *  `officialIds` (rules v2) puts the O0 / O1... ids on the official pages; the v1 prompt is laid out as before. */
+export function renderTidy(t: TidyData, opts: { officialIds?: boolean } = {}): string {
   const out: string[] = [];
+  const tag = (id: string) => (opts.officialIds ? `[${id}] ` : '');
   out.push(`# COMPANY: "${t.input.company}" | ${t.input.country} | ${t.input.industry} | official domain: ${t.official.domain || 'none'}`);
 
   out.push(`\n## A. OFFICIAL SITE (what the company says)`);
   out.push(`Pages read in full: ${t.official.pages.map((p) => p.label).join(', ') || 'none'}.`);
-  for (const p of t.official.pages) {
-    out.push(`\n### OFFICIAL PAGE ${p.label.toUpperCase()} — ${p.url}`);
+  t.official.pages.forEach((p, i) => {
+    out.push(`\n### ${tag(officialId(i))}OFFICIAL PAGE ${p.label.toUpperCase()} — ${p.url}`);
     out.push(p.text || '(empty)');
     if (p.cut_chars) out.push(`[${p.cut_chars} more characters of this page not shown]`);
-  }
+  });
   if (t.official.site_wide) {
-    out.push(`\n### SITE-WIDE HEADER / MENU / FOOTER (repeats on every page read)`);
+    out.push(`\n### ${tag('O0')}SITE-WIDE HEADER / MENU / FOOTER (repeats on every page read)`);
     out.push(t.official.site_wide);
   }
   if (t.official.other_own_pages.length) {
@@ -443,8 +555,11 @@ export function renderTidy(t: TidyData): string {
     if (!g.page_chars && !g.hits.length) out.push('Nothing was returned.');
   }
 
-  if (t.technical_audit && t.technical_audit.items.length > 0) {
-    out.push(`\n## E. TECHNICAL INFRASTRUCTURE & ASSET AUDIT (Google PageSpeed & Domain Security)`);
+  if (t.technical_audit && (t.technical_audit.items.length > 0 || t.technical_audit.seo_score !== undefined)) {
+    out.push(`\n## E. TECHNICAL INFRASTRUCTURE & ASSET AUDIT (Google PageSpeed, Domain Security, SEO / GEO benchmark)`);
+    if (t.technical_audit.seo_score !== undefined) {
+      out.push(`- SEO / GEO benchmark of the official website: SEO ${t.technical_audit.seo_score}/100, GEO ${t.technical_audit.geo_score}/100. Groups: ${(t.technical_audit.audit_groups ?? []).join('; ')}.`);
+    }
     if (t.technical_audit.mobile_score !== undefined) {
       out.push(`- Mobile PageSpeed Performance Score: ${t.technical_audit.mobile_score}/100`);
     }

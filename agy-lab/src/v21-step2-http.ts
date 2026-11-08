@@ -1,7 +1,7 @@
 // V2.1 Step 2 on the hub: judge one report's Step 1 research. Reads the checkpoint from the database by report UID and
 // writes every result back the moment it exists (src/v21-store.ts), so a crash keeps what was already paid for.
 //
-//   POST /api/v21/step2             { report_id, recheck? (default true) } -> 202 { report_id, run_id }
+//   POST /api/v21/step2             { report_id, recheck? (default true), rules? ('v1' default | 'v2') } -> 202 { report_id, run_id }
 //   GET  /api/v21/step2/{report_id} ?run_id=  -> { report_id, step2_status, step2_error, run_id, result? }
 //
 // One run = tidy (no judging) -> judge (DeepSeek lanes, then the code check) -> recheck (second call, same code check).
@@ -13,6 +13,7 @@ import crypto from 'node:crypto';
 import { tidyCheckpoint } from './v21/tidy.ts';
 import { judgeTidy } from './v21/judge.ts';
 import { recheckTidy } from './v21/recheck.ts';
+import { judgeV2, recheckV2 } from './v21/step2-v2.ts';
 import type { Step2AnalysisOutput } from './v21/analyse.ts';
 import { runStep1_5 } from './v21-step1-5-http.ts';
 import * as store from './v21-store.ts';
@@ -38,7 +39,7 @@ function failedOutput(report: any, error: string): Step2AnalysisOutput {
 }
 
 /** The whole run. Never throws: a failure is stored as a 'result' row with status failed. */
-async function runStep2(report: any, checkpoint: any, runId: string, recheck: boolean): Promise<void> {
+async function runStep2(report: any, checkpoint: any, runId: string, recheck: boolean, rules: 'v1' | 'v2' = 'v1'): Promise<void> {
   const id: string = report.report_id;
   try {
     if (checkpoint?.skipped) {
@@ -61,6 +62,17 @@ async function runStep2(report: any, checkpoint: any, runId: string, recheck: bo
 
     const tidy = tidyCheckpoint(checkpoint, assets);
     await store.addRaw(id, 2, 'tidy', runId, tidy);
+
+    // Rules v2 (step2-v2.ts): four lists for Step 3. Behind the switch until proven; v1 below is unchanged.
+    if (rules === 'v2') {
+      const judged = await judgeV2(tidy);
+      await store.addRaw(id, 2, 'judge', runId, judged, judged.status);
+      const final = recheck ? await recheckV2(tidy, judged) : judged;
+      if (final.recheck) await store.addRaw(id, 2, 'recheck', runId, final.recheck, final.recheck.status);
+      await store.addRaw(id, 2, 'result', runId, final, final.status);
+      await store.setStatus(id, 2, final.status === 'failed' ? 'failed' : 'done', final.status === 'failed' ? final.error ?? 'judge failed' : null);
+      return;
+    }
 
     let result = await judgeTidy(tidy);
     if (assets) (result as any).technical_audit = assets;
@@ -109,8 +121,9 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       const runId = crypto.randomUUID();
       await store.setStatus(reportId, 2, 'running');
       const recheck = b.recheck === undefined ? true : Boolean(b.recheck);
-      void runStep2(report, cp.payload, runId, recheck);
-      return json(res, 202, { report_id: reportId, run_id: runId, recheck }), true;
+      const rules = b.rules === 'v2' ? 'v2' : 'v1';
+      void runStep2(report, cp.payload, runId, recheck, rules);
+      return json(res, 202, { report_id: reportId, run_id: runId, recheck, rules }), true;
     }
 
     if (req.method === 'GET') {

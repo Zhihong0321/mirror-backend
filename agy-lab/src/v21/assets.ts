@@ -18,6 +18,12 @@ import { workerAudit } from './cloud.ts';
 const FREE_MAIL = /^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|me|aol|proton|protonmail|qq|163|126|zoho)\./i;
 const SOCIAL_DOMAINS = /^(?:[a-z0-9-]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twitter|xiaohongshu|threads|weibo|github|pinterest|whatsapp|telegram)\.com$/i;
 
+/** A registry transfer lock in the domain's status. WHOIS writes it run together (clientTransferProhibited), RDAP with
+ *  spaces (client transfer prohibited); either form counts, client or server. */
+export function isTransferLocked(status: string[]): boolean {
+  return status.some((s) => /transfer\s*prohibited/i.test(s));
+}
+
 export type DomainRegistration = {
   registrar: string | null;
   created: string | null;
@@ -238,7 +244,7 @@ function parseWhois(raw: string, source: string): DomainRegistration {
     }
   }
 
-  const isLocked = status.some((s) => /clienttransferprohibited|servertransferprohibited|transferprohibited/i.test(s));
+  const isLocked = isTransferLocked(status);
 
   return {
     registrar: field('Registrar', 'Sponsoring Registrar'),
@@ -299,7 +305,7 @@ export async function lookupRegistration(domain: string): Promise<DomainRegistra
       }
     }
     const status: string[] = j.status ?? [];
-    const isLocked = status.some((s) => /clienttransferprohibited|servertransferprohibited|transferprohibited/i.test(s));
+    const isLocked = isTransferLocked(status);
 
     return {
       registrar: vcardName(registrar),

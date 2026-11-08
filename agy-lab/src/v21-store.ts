@@ -8,6 +8,7 @@
 // Kinds: step 1 'checkpoint' (the whole RawResearchCheckpoint: searches, page text, probes, Maps, LinkedIn) and 'log';
 //        step 1.5 'assets' (PageSpeed + domain ownership and security audit);
 //        step 2 'tidy' (the exact input the judge got), 'judge', 'recheck' (each with its raw model answer) and 'result';
+//               a lenses run (v21-lenses-http.ts) writes its 'tidy' and one 'lens' row per lens;
 //        step 3 'report' (the free report's written parts) and 'email' (the drafted email; nothing is sent).
 // A Step 2 run groups its rows by run_id; Step 1 rows use the report UID as run_id.
 //
@@ -28,7 +29,7 @@ type Ctx = {
 
 export type ReportInput = { company: string; country: string; industry: string; website?: string };
 export type StepStatus = 'none' | 'running' | 'done' | 'failed' | 'skipped';
-export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets' | 'report' | 'email';
+export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets' | 'report' | 'email' | 'lens';
 
 const PATH = '/api/v21/report';
 
@@ -171,6 +172,13 @@ export async function latestRaw(id: string, kind: RawKind, runId?: string, statu
   );
   const r: any = out.rows[0];
   return r ? { ...r, id: Number(r.id) } : null;
+}
+
+/** Every row of one kind and one run of a report, oldest first, payload included. */
+export async function rawRows(id: string, kind: RawKind, runId: string): Promise<Array<{ id: number; status: string; created_at: string; payload: any }>> {
+  await ensureTables();
+  const out = await db.sql(`select id, status, created_at, payload from v21_raw where report_id = $1 and kind = $2 and run_id = $3 order by id`, [id, kind, runId]);
+  return out.rows.map((r: any) => ({ ...r, id: Number(r.id) }));
 }
 
 /** One row of a report by its row id, payload included. */
