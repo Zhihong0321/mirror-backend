@@ -6,33 +6,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeCtx } from './divedeeper/lib.ts';
 import * as jobs from './jobs.ts';
-import { handle } from './v21-deeper-http.ts';
-import { enabled, queue, waiting, active, resumeInterrupted, start } from './divedeeper/v21/run.ts';
-
-test('V21_DEEPER accepts only on', () => {
-  assert.equal(enabled({}), false);
-  for (const value of ['off', '1', 'true', 'yes']) assert.equal(enabled({ V21_DEEPER: value }), false);
-  assert.equal(enabled({ V21_DEEPER: 'on' }), true);
-});
-
-test('off switch declines every route and never queues or resumes work', async () => {
-  const before = process.env.V21_DEEPER;
-  process.env.V21_DEEPER = 'off';
-  try {
-    const ctx = { json: () => assert.fail('must decline'), readJson: async () => { assert.fail('must not read'); return {}; } };
-    for (const [method, path] of [['POST', '/api/v21/deeper'], ['GET', '/api/v21/deeper/run-id'], ['GET', '/api/v21/deeper?report_id=a']]) {
-      assert.equal(await handle({ method } as any, {} as any, new URL('http://local' + path), ctx), false);
-    }
-    queue('must-not-run');
-    await resumeInterrupted();
-    await assert.rejects(start('must-not-run'), /V21_DEEPER is off/);
-    assert.deepEqual(waiting, []);
-    assert.equal(active, null);
-  } finally {
-    if (before === undefined) delete process.env.V21_DEEPER;
-    else process.env.V21_DEEPER = before;
-  }
-});
 
 test('makeCtx without opts still uses the old job broker and never contacts myworker', async () => {
   const realFetch = globalThis.fetch;

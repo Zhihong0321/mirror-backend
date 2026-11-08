@@ -336,8 +336,6 @@ test('report endpoint returns 404 before HTML exists, serves HTML afterwards, an
   assert.equal(headers['content-type'], 'text/html; charset=utf-8');
   assert.equal(headers['cache-control'], 'no-store');
   assert.equal(body, row.report_html);
-  process.env.V21_DEEPER = 'off';
-  assert.equal(await handle({ method: 'GET' } as any, res, url, ctx, runtime), false);
   assert.equal(reads, 3);
 });
 

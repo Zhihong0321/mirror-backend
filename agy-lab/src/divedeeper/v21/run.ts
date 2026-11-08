@@ -6,7 +6,6 @@ import { buildReport } from '../report-html.ts';
 import { speedLane } from './speed.ts';
 import * as store from './store.ts';
 
-export const enabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.V21_DEEPER === 'on';
 export const V21_DEEPER_LANES = [
   [['H', 'maps'], ['G', 'search'], ['K', 'credibility'], ['N', 'news']],
   [['H', 'web'], ['D', 'registry'], ['C', 'merged']],
@@ -26,7 +25,6 @@ export type Runtime = Omit<typeof live, 'store'> & {
 };
 
 export async function executeRun(id: string, runtime: Runtime = live): Promise<void> {
-  if (!enabled()) return;
   const { store, loadV21Dive, stageDive, restoreLane, writeLane, runLane, sleep } = runtime;
   const row = await store.getRun(id);
   // A run cancelled while it waited in the queue is not run.
@@ -109,12 +107,12 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
 }
 
 export function queue(id: string): void {
-  if (!enabled() || active === id || waiting.includes(id)) return;
+  if (active === id || waiting.includes(id)) return;
   waiting.push(id);
   pump();
 }
 function pump(): void {
-  if (!enabled() || active || !waiting.length) return;
+  if (active || !waiting.length) return;
   const id = waiting.shift()!;
   active = id;
   void executeRun(id).catch((err) => console.error(`[v21-deeper ${id}] could not save run state`, err))
@@ -123,12 +121,11 @@ function pump(): void {
 
 /** Boot recovery only resumes queued and running runs; completed attempts stay saved. */
 export async function resumeInterrupted(): Promise<void> {
-  if (!enabled() || !db.configured()) return;
+  if (!db.configured()) return;
   for (const row of await store.interrupted()) queue(row.run_id);
 }
 
 export async function start(reportId: string): Promise<string> {
-  if (!enabled()) throw new Error('V21_DEEPER is off');
   const id = await store.createRun(reportId);
   queue(id);
   return id;

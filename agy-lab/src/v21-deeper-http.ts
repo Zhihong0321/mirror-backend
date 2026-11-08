@@ -1,6 +1,6 @@
 import type http from 'node:http';
 import * as db from './reportdb.ts';
-import { enabled, start } from './divedeeper/v21/run.ts';
+import { start } from './divedeeper/v21/run.ts';
 import { getRun, laneRows, listRuns, update } from './divedeeper/v21/store.ts';
 
 type Ctx = {
@@ -12,7 +12,7 @@ const live = { configured: db.configured, start, getRun, laneRows, listRuns };
 
 /** Registered behind the server's existing operator authorization. */
 export async function handle(req: http.IncomingMessage, res: http.ServerResponse, url: URL, ctx: Ctx, runtime: typeof live = live): Promise<boolean> {
-  if (!enabled() || (url.pathname !== PATH && !url.pathname.startsWith(PATH + '/'))) return false;
+  if ((url.pathname !== PATH && !url.pathname.startsWith(PATH + '/'))) return false;
   const { configured, start, getRun, laneRows, listRuns } = runtime;
   if (!configured()) { ctx.json(res, 503, { error: 'no report database configured' }); return true; }
   const report = url.pathname.match(/^\/api\/v21\/deeper\/([a-zA-Z0-9_-]+)\/report$/);
