@@ -7,7 +7,7 @@
 //      of the pages C-merged crawled; a homepage read when C-merged did not run);
 //   2. what others say: the search results for its name (H-web), independent pages that
 //      describe it (Exa, its own domains excluded) and the dive's research on its products;
-//   3. what AI assistants say when asked what it is and what it sells (G-fixed answers).
+//   3. what an AI assistant with web search says when asked what it is and what it sells (G-search answers).
 // One LLM call compares them: the offer, the selling points and their proof, the answer to
 // "why choose you", a five-second test of the homepage, what outside sources have out of date or
 // never mention, and how consistent the message is. Quotes from the company's pages are checked
@@ -25,7 +25,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const add = (f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, checked_at: ctx.now() } as Finding);
   const C = readLane(ctx.diveId, 'C-merged')?.notes ?? {};
   const HW = readLane(ctx.diveId, 'H-web')?.notes ?? {};
-  const G = readLane(ctx.diveId, 'G-fixed')?.notes ?? {};
+  const G = readLane(ctx.diveId, 'G-search')?.notes ?? {};
 
   // ---- 1. The company's own pitch. ----
   const crawled: string[] = [...new Set<string>([...(C.llm_pages ?? []), ...(C.sites ?? []).flatMap((s: any) => (s.pages ?? []).map((p: any) => p.url))])];
@@ -64,7 +64,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `A. WHAT THE COMPANY SAYS ABOUT ITSELF (its own pages):\n${own.map((p) => `### ${p.url}\n${p.text}`).join('\n\n') || '(could not be read)'}\n\n` +
     (ctx.v21 && dive.v21?.site_wide ? `OFFICIAL HEADER / MENU / FOOTER:\n${dive.v21.site_wide}\n\n` : '') +
     `B. WHAT OTHERS SAY (search results for its name, independent pages, research notes):\n${searchRows.join('\n') || '(none)'}\n${outside.map((x: any) => `### ${x.title} | ${x.url} | ${x.date ?? ''}\n${x.text}`).join('\n\n')}\nResearch notes:\n${research.join('\n') || '(none)'}\n\n` +
-    `C. WHAT AN AI ASSISTANT SAYS WHEN ASKED (from memory):\n${ai.join('\n\n') || '(not asked)'}\n\n` +
+    `C. WHAT AN AI ASSISTANT WITH WEB SEARCH SAYS WHEN ASKED:\n${ai.join('\n\n') || '(not asked)'}\n\n` +
     `Return JSON only:\n{\n` +
     `"offer": [{"item": "a product or service the company sells, per A", "own_pages": true, "outside": "well covered | mentioned | missing", "ai": "right | vague | wrong | missing", "note": ""}] (its main lines, at most 8),\n` +
     `"selling_points": [{"point": "a reason to choose them that A states", "quote": "the exact words from A (verbatim)", "proof": "what on the pages backs it: numbers, named clients, certificates, reviews; or 'none'", "repeated_outside": true}] (at most 6),\n` +

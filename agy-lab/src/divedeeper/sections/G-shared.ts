@@ -1,4 +1,4 @@
-// G / shared — helpers for the "How AI sees you" lanes (G-fixed, G-free, G-grounded).
+// G / shared — helpers for the memory-only G-free script lane and the company profile G-search uses. G-fixed and G-grounded are gone.
 // Not a lane on its own: it has no run(). It holds the profile pulled from the dive,
 // the ask-every-model loop, the judge prompt and the finding writer, so the lanes
 // differ only in WHICH prompts they send.
@@ -115,7 +115,7 @@ export async function profileOf(ctx: Ctx, dive: any): Promise<Profile> {
   // ("my house" / "my property" / "my house or business"). Reuse the profile of the last G run for
   // this dive (read-only from out/); DD_G_NEW_PROFILE=1 builds a fresh one.
   if (!process.env.DD_G_NEW_PROFILE) {
-    for (const lane of ['fixed', 'free', 'grounded']) {
+    for (const lane of ['search', 'free']) {
       const prev = readLane(ctx.diveId, `G-${lane}`);
       // Only reuse a v2 profile: v1 took the area from identity.address, which for Rienzo was a credit agency's office.
       if (prev?.notes?.profile?.trade && prev.notes.profile.v === PROFILE_VERSION) {

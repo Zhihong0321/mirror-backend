@@ -118,7 +118,7 @@ test('writing retries accept partial results and all saved stages can rebuild th
   const resumed = await runtimeFixture(allNames);
   resumed.runtime.runLane = async () => assert.fail('saved stage must not run');
   await executeRun('run', resumed.runtime);
-  assert.equal(resumed.restores.length, 16);
+  assert.equal(resumed.restores.length, 15);
   assert.equal(resumed.row.status, 'done');
   assert.equal(resumed.reports.length, 1);
 });

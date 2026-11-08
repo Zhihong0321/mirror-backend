@@ -3,7 +3,7 @@
 //   node scripts/dive-deeper/run.ts S2 consult <diveId>
 //
 // Reads the stage-1 outputs already in out/ (H-maps, H-web, C-merged, D-registry,
-// G-fixed, G-grounded for the same dive) and makes a handful of fresh reads: the company's
+// G-search for the same dive) and makes a handful of fresh reads: the company's
 // own homepages, the competitors AI names most, and the "best <trade> in <town>" list pages
 // AI read when it answered. Three LLM calls write the ready-to-use drafts: a website plan with
 // rewritten homepage copy, the FAQ for an AI-visibility plan built against those competitors, and
@@ -40,7 +40,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   // ---- Competitors AI names instead of the company, with their Maps review counts. ----
   const named = new Map<string, number>();
-  for (const l of ['G-fixed', 'G-grounded']) for (const f of lanes[l]?.findings ?? []) {
+  for (const l of ['G-search']) for (const f of lanes[l]?.findings ?? []) {
     const m = String(f.detail ?? '').match(/Companies they name instead: ([^.]+?)(?:\.|$| deepseek| gpt)/);
     for (const c of m?.[1]?.split(',').map((s: string) => s.trim()).filter(Boolean) ?? []) {
       const key = c.replace(/\s+(Sdn\.? Bhd\.?|Berhad|Holdings Berhad)$/i, '').trim();
@@ -62,7 +62,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   ctx.log(`competitors: ${competitors.map((c) => `${c.name} (${c.ai_mentions}× in AI, ${c.maps_reviews ?? '?'} reviews)`).join('; ')}`);
 
   // ---- The list pages AI read for the trade questions, and who is on them. ----
-  const sr = lanes['G-grounded']?.notes?.search_results ?? {};
+  const sr = lanes['G-search']?.notes?.search_results ?? {};
   const tradeUrls: string[] = Object.entries(sr).filter(([q]) => !q.toLowerCase().includes(brand)).flatMap(([, v]: any) => (Array.isArray(v) ? v : v?.rows ?? v?.results ?? []).map((x: any) => x.url ?? x)).filter(Boolean);
   for (const c of competitors) c.site = tradeUrls.find((u) => host(u).includes(c.token)) ?? null;
   const listPages = [...new Set(tradeUrls)].filter((u) => {
@@ -137,10 +137,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const ourReviews = Number(ourListing?.reviews ?? 0);
   const theirReviews = competitors.map((c) => c.maps_reviews).filter((n): n is number => typeof n === 'number');
   const medianTheirs = theirReviews.length ? [...theirReviews].sort((a, b) => a - b)[Math.floor(theirReviews.length / 2)] : null;
-  const gTitles = ['G-fixed', 'G-grounded'].flatMap((l) => (lanes[l]?.findings ?? []).map((f: Finding) => f.title));
+  const gTitles = ['G-search'].flatMap((l) => (lanes[l]?.findings ?? []).map((f: Finding) => f.title));
   const namedLine = gTitles.find((t) => /names you in \d+ of \d+/i.test(t)) ?? gTitles.find((t) => /names you/i.test(t));
-  const fakeDomain = gTitles.find((t) => /does not exist/i.test(t));
-  const wrongAddr = (lanes['G-fixed']?.findings ?? []).find((f: Finding) => /address/i.test(f.title) && /wrong claim/i.test(f.title));
   const noListing = (lanes['H-maps']?.findings ?? []).filter((f: Finding) => /^No Google Maps listing in /.test(f.title)).map((f: Finding) => f.title.replace('No Google Maps listing in ', ''));
   const webLine = (lanes['H-web']?.findings ?? []).find((f: Finding) => /customer searches/.test(f.title))?.title;
   const napIssues = (lanes['C-merged']?.findings ?? []).filter((f: Finding) => /phone|address|unit|masked/i.test(f.title) && ['high', 'medium'].includes(f.severity)).length;
@@ -160,7 +158,6 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   if ((site?.pages_to_add ?? []).length) actions.push({ action: 'Add one page per service and town', why: `Searches like "${(plan.trades ?? [''])[0]} ${(plan.areas ?? [''])[0]}" are answered from pages that name the service and the town.`, how: `Start with ${site.pages_to_add.slice(0, 3).map((p: any) => p.slug).join(', ')} (outlines in the website plan).`, effort: '1–2 days', impact: 'high' });
   actions.push({ action: 'Publish an FAQ page with the answers below', why: 'Assistants quote short, factual answers; the FAQ gives them correct ones in your words.', how: 'Put the questions and answers below on one FAQ page and add FAQ page data to it.', effort: 'half a day', impact: 'medium' });
   if (noListing.length) actions.push({ action: `Create a Google Maps listing in ${noListing.join(', ')}`, why: `You have an office there but no listing, so neither Maps nor assistants can place you there.`, how: 'Create and verify a Google Business Profile for each branch with its own address and number.', effort: '1 day plus Google verification', impact: 'medium' });
-  if (fakeDomain || wrongAddr) actions.push({ action: 'Correct the wrong details assistants give about you', why: [fakeDomain, wrongAddr?.title].filter(Boolean).join('; ') + '.', how: 'Make sure your LinkedIn page, directory listings and Wikipedia-style profiles (if any) all show the right website and address; assistants trained on old pages update as those pages change.', effort: '1 hour', impact: 'medium' });
 
   const faqOut = await askJson(ctx, 
     `Write the FAQ section for the website of ${name} (${id.industry}; HQ ${id.address}). Use ONLY these facts and say nothing they do not support:\n${facts}${regRule}\n` +

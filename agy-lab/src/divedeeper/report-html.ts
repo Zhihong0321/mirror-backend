@@ -470,18 +470,15 @@ export function buildReport(dive: any, L: Record<string, any>): string {
       <figcaption>A customer asks: “${esc(R.ai.trade_question ?? 'Who is the best?')}” Names given across ${R.ai.trade_answers} answers.</figcaption></figure>`;
   }
 
-  /** Right, wrong and "don't know" when customers ask AI about you by name: from memory, then with a web search. */
-  function aiAccuracy(): string {
-    const modes = [R.ai.memory, R.ai.search].filter(Boolean) as any[];
-    if (!modes.length) return '';
-    const bar = (m: any) => {
-      const t = m.right + m.mixed + m.wrong + m.dont_know || 1;
-      const seg = (n: number, cls: string, label: string) => (n ? `<i class="${cls}" style="width:${((n / t) * 100).toFixed(1)}%" title="${esc(label)}: ${n}"></i>` : '');
-      return `<tr><td>${esc(m.model)}</td><td class="barc"><span class="stack">${seg(m.right, 's-good', 'Right')}${seg(m.mixed, 's-fix', 'Partly right')}${seg(m.wrong, 's-urgent', 'Wrong')}${seg(m.dont_know, 's-none', "Didn't know you")}</span></td><td class="num">${m.right} right · ${m.wrong} wrong · ${m.dont_know} unknown</td></tr>`;
-    };
-    return `<figure class="chart"><table class="board">${modes.map((md) => `<thead><tr><th colspan="3">${esc(md.label)}</th></tr></thead><tbody>${md.models.map(bar).join('')}</tbody>`).join('')}</table>
-      <figcaption>Questions about you by name: phone, address, website, licences, reputation. <span class="k s-good"></span> right <span class="k s-fix"></span> partly right <span class="k s-urgent"></span> wrong <span class="k s-none"></span> did not know you</figcaption></figure>
-      ${(R.ai.memory?.wrong_examples ?? []).length ? `<div class="panel dark"><p class="lbl">What an assistant told a customer about you</p>${R.ai.memory!.wrong_examples.slice(0, 3).map((w: any) => `<p class="quote">“${esc(typeset(clip(w.claim, 140)))}”</p>`).join('')}<p class="small">None of these is correct.</p></div>` : ''}`;
+  /** What an AI assistant with web search told a customer who asked about you by name, and who it calls your closest competitors. */
+  function aiSaid(): string {
+    if (!R.ai.said?.length && !R.ai.compare) return '';
+    const when = R.ai.asked_on ? ` on ${esc(dateOf(R.ai.asked_on))}` : '';
+    const qa = (R.ai.said ?? []).length ? `<table class="band"><thead><tr><th>A customer asks</th><th>${esc(R.ai.assistant ?? 'The assistant')} answers</th></tr></thead><tbody>${R.ai.said.map((x: any) => `<tr><td class="t">${esc(x.q)}</td><td>${esc(typeset(x.a))}${(x.sources ?? []).length ? `<p class="w">${x.sources.slice(0, 3).map((u: string) => seeIt(u) || esc(u)).join(' · ')}</p>` : ''}</td></tr>`).join('')}</tbody></table>
+      <p class="note">Asked${when}, ${R.ai.repeat ?? 1} times each; the first answer is shown. The assistant searched the web before answering. This is what it said, not a check of whether it is right.</p>` : '';
+    const c = R.ai.compare;
+    const cmp = c ? `<div class="panel dark"><p class="lbl">Who the assistant compares you with</p><p class="quote">${esc((c.closest_competitors ?? []).slice(0, 4).join(', '))}</p>${['reputation', 'price_signals', 'recommend', 'weakest'].map((k) => c[k] ? `<p class="small"><b>${esc({ reputation: 'Reputation', price_signals: 'Price', recommend: 'It would recommend', weakest: 'Your weakest point' }[k] as string)}.</b> ${esc(typeset(c[k]))}</p>` : '').join('')}</div>` : '';
+    return `${qa}${cmp}`;
   }
 
   const shotFig = (s: any) => `<figure class="shot"><img src="data:image/jpeg;base64,${s.img}" alt="${esc(s.caption)}" loading="lazy"><figcaption><b>${esc(s.caption)}.</b> ${esc(hostOf(s.url))}${esc(pathOf(s.url))} · ${esc(dateOf(s.taken_at))}</figcaption></figure>`;
@@ -587,7 +584,7 @@ export function buildReport(dive: any, L: Record<string, any>): string {
 
   function visual(theme: string): string {
     if (theme === 'contact') return contactTable();
-    if (theme === 'understanding') return `${brandPanel()}${topic('findability', mapsBoard())}${topic('ai', aiVoice() + aiAccuracy())}${topic('website', proofShots.length ? `<div class="shots">${proofShots.slice(0, 3).map(shotFig).join('')}</div>` : '')}`;
+    if (theme === 'understanding') return `${brandPanel()}${topic('findability', mapsBoard())}${topic('ai', aiVoice() + aiSaid())}${topic('website', proofShots.length ? `<div class="shots">${proofShots.slice(0, 3).map(shotFig).join('')}</div>` : '')}`;
     if (theme === 'voice') { const n = newsTable(); return `${topic('reputation', `${R.reviews.unanswered_low.slice(-2).reverse().map(reviewCard).join('')}${timeline()}`)}${n ? `<h4 class="tbl-h">In the news, on forums and on social media</h4>${n}` : ''}`; }
     if (theme === 'credibility') return `${checksTable()}${creds.length || credUnchecked.length ? `<h4 class="tbl-h">${esc(OPENERS.credentials.q[0])} ${esc(OPENERS.credentials.q[1])}</h4>${credTable(creds)}${credUnchecked.length ? `<p class="note">No public register exists for ${credUnchecked.length} other claim${credUnchecked.length === 1 ? '' : 's'} (${esc(credUnchecked.slice(0, 4).map((c: any) => clip(c.claim, 40)).join('; '))}${credUnchecked.length > 4 ? '; …' : ''}), so a stranger has to take your word for them.</p>` : ''}` : ''}`;
     if (theme === 'assets') return assetTable();
@@ -637,7 +634,7 @@ export function buildReport(dive: any, L: Record<string, any>): string {
   const privateItems: string[] = [];
   for (const f of L['D-registry']?.findings ?? []) if (/^PRIVATE/i.test(f.title)) privateItems.push(`<b>${esc(f.title.replace(/^PRIVATE:\s*/i, ''))}.</b> ${esc(typeset(clip(String(f.detail ?? ''), 300)))}`);
   const searched = [
-    ...Object.values(L['G-grounded']?.notes?.search_results ?? {}).flatMap((v: any) => (Array.isArray(v) ? v : v?.rows ?? []).map((x: any) => x.url ?? x)),
+    ...Object.values(L['G-search']?.notes?.search_results ?? {}).flatMap((v: any) => (Array.isArray(v) ? v : v?.rows ?? []).map((x: any) => x.url ?? x)),
     ...(L['H-web']?.notes?.nameRows ?? []).map((x: any) => x.url),
   ].filter((u: any) => typeof u === 'string');
   const docs = [...new Set(searched.filter((u: string) => /proposal|invoice|\/inv[-/]|[?&]uid=|quotation/i.test(u)))];
@@ -646,8 +643,8 @@ export function buildReport(dive: any, L: Record<string, any>): string {
   const mismatch: any[] = an.mismatch?.length ? an.mismatch : (r.contradictions ?? []).slice(0, 5).map((c: string) => ({ issue: typeset(c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()), settled: null }));
   const checkedOn = dateOf(R.checked_on);
   const refNo = dive?.id != null && /^\d+$/.test(String(dive.id)) ? `No.${NB}${String(dive.id).padStart(4, '0')}` : '';
-  // The assistants section G actually asked (the hub asks DeepSeek only), named for the method note.
-  const modelNames = [...new Set(['G-fixed', 'G-grounded'].flatMap((l) => L[l]?.notes?.models ?? []).map((m: string) => (/deepseek/i.test(m) ? 'DeepSeek V4.1 Flash' : /gpt-6\.1/i.test(m) ? 'GPT-6.1' : m)))];
+  // The assistant section G asked (Gemini with a web search on the cloud Antigravity hub), named for the method note.
+  const modelNames = [...new Set((L['G-search']?.notes?.models ?? []) as string[])];
   const aiModels = modelNames.length ? modelNames.join(' and ') : 'AI assistants';
 
   // ---------- one chapter per area ----------
@@ -727,7 +724,7 @@ export function buildReport(dive: any, L: Record<string, any>): string {
     <h1>How customers, Google and AI<br><span class="g">see, reach and check your business.</span></h1>
     ${coverShot ? `<div><div class="phone"><img src="data:image/jpeg;base64,${coverShot.img}" alt="${esc(name)} homepage on a phone"></div><p class="phone-cap">${esc(hostOf(coverShot.url))} on a phone</p></div>` : ''}
   </div>
-  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(R.reviews.total)} reviews read · ` : ''}${R.ai.trade_answers ? `${esc((R.ai.memory?.models ?? []).concat(R.ai.search?.models ?? []).reduce((t: number, m: any) => t + m.asked + m.trade_asked, 0))} AI answers checked · ` : ''}every page of your sites tested</div></div>
+  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(R.reviews.total)} reviews read · ` : ''}${R.ai.answers ? `${esc(R.ai.answers)} AI answers read · ` : ''}every page of your sites tested</div></div>
 </section>
 
 <nav class="chapnav" aria-label="Sections"><a href="#glance">At a glance</a>${stories.length ? '<a href="#stories">Fix first</a>' : ''}${chapters.map((id) => `<a href="#ch-${id}">${esc(CHAPTER_EYEBROW[id])}</a>`).join('')}<a href="#analysis">Full analysis</a><a href="#stranger">Trust</a><a href="#plan">Action plan</a><a href="#ready">Ready to use</a><a href="#appendix">Checklist</a></nav>
@@ -806,7 +803,7 @@ ${actionPlan()}
     <div><p class="lbl">Background research</p><p>${esc(dateOf(dive.finished_at))}${sources.length ? `, from ${esc(sources.length)}${NB}public source${sources.length === 1 ? '' : 's'}` : ''}</p></div>
     <div><p class="lbl">Report</p><p>Online Presence Audit ${esc(R.checked_on.slice(0, 4))}${refNo ? ` · ${esc(refNo)}` : ''}</p></div>
   </div>
-  <div class="note method" style="margin-top:8px"><p class="lbl">How we checked</p><p>Every phone number, email and WhatsApp link published about you was searched on the web and traced to where it leads. Your homepage and service pages were compared with what search results, independent pages and AI assistants say about you. News, forums and social media were searched for your company and its key people. Bank Negara and Securities Commission alert lists, published court judgments, insolvency notices, Bursa Malaysia, government websites and trademark listings were searched for your name; the MyIPO trademark register needs a login and was not searched; paid registers (SSM documents, CTOS, CCRIS) were not bought. Each domain was looked up in its registry (MYNIC or RDAP), its DNS, its hosting network and the public certificate logs; each mail server was checked against the Barracuda and SpamCop spam blacklists, and each email domain’s SPF, DKIM and DMARC records were read. ${dive.v21 ? 'The website speed scores and Google review sample were reused from V2.1 Step 1.5; no new PageSpeed or review request was made. Review reply counts cover the saved sample, which may be smaller than the listing total.' : 'Each official homepage was tested with Google PageSpeed Insights on mobile and desktop. Every Google review on your Maps listings was read.'} Maps ranks come from Google Maps searches without a phone’s location, so a customer nearby may see a slightly different order; web ranks come from Brave Search set to Malaysia. Each licence and award was looked up in its issuer’s own register. Every page of your websites was read and its links and numbers tested. AI answers come from ${esc(aiModels)}, asked each question several times, from memory and with a web search. The ready-to-use drafts were written with AI from these findings. Checked ${esc(checkedOn)}; background research from ${esc(dateOf(dive.finished_at))}.</p></div>
+  <div class="note method" style="margin-top:8px"><p class="lbl">How we checked</p><p>Every phone number, email and WhatsApp link published about you was searched on the web and traced to where it leads. Your homepage and service pages were compared with what search results, independent pages and AI assistants say about you. News, forums and social media were searched for your company and its key people. Bank Negara and Securities Commission alert lists, published court judgments, insolvency notices, Bursa Malaysia, government websites and trademark listings were searched for your name; the MyIPO trademark register needs a login and was not searched; paid registers (SSM documents, CTOS, CCRIS) were not bought. Each domain was looked up in its registry (MYNIC or RDAP), its DNS, its hosting network and the public certificate logs; each mail server was checked against the Barracuda and SpamCop spam blacklists, and each email domain’s SPF, DKIM and DMARC records were read. ${dive.v21 ? 'The website speed scores and Google review sample were reused from V2.1 Step 1.5; no new PageSpeed or review request was made. Review reply counts cover the saved sample, which may be smaller than the listing total.' : 'Each official homepage was tested with Google PageSpeed Insights on mobile and desktop. Every Google review on your Maps listings was read.'} Maps ranks come from Google Maps searches without a phone’s location, so a customer nearby may see a slightly different order; web ranks come from Brave Search set to Malaysia. Each licence and award was looked up in its issuer’s own register. Every page of your websites was read and its links and numbers tested. AI answers come from ${esc(aiModels)}, asked each question several times with a web search. The ready-to-use drafts were written with AI from these findings. Checked ${esc(checkedOn)}; background research from ${esc(dateOf(dive.finished_at))}.</p></div>
   ${partnersHtml()}
   ${foot('Appendix')}
 </section>

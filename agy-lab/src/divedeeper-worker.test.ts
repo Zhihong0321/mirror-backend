@@ -238,10 +238,10 @@ test('H-web V2.1 uses the shared H-plan and ranks own pages without name search,
   } finally { await fs.unlink(laneFile(id, 'H-plan')); }
 });
 
-test('B-brand reuses saved V2.1 pages and earlier H-web/G-fixed outputs; legacy still reads its own pages', async () => {
+test('B-brand reuses saved V2.1 pages and earlier H-web/G-search outputs; legacy still reads its own pages', async () => {
   const id = randomUUID();
   writeLane(id, 'H-web', { notes: { unique: [{ official: false, title: 'External Acme', url: 'https://other.test/', description: 'Outside description' }] } });
-  writeLane(id, 'G-fixed', { notes: { prompts: [{ id: 'what', text: 'What is Acme?' }], answers: [{ id: 'what', sample: 0, answer: 'AI description of Acme' }] } });
+  writeLane(id, 'G-search', { notes: { prompts: [{ id: 'what', text: 'What is Acme?' }], answers: [{ id: 'what', sample: 0, answer: 'AI description of Acme' }] } });
   try {
     for (const v21 of [true, false]) {
       const ctx = makeCtx(id, 'B', 'brand', v21 ? { worker: 'myworker' } : undefined);
@@ -266,7 +266,7 @@ test('B-brand reuses saved V2.1 pages and earlier H-web/G-fixed outputs; legacy 
     ctx.llm = async () => '{}';
     await brand(ctx, { ...dive, v21: { pages: [] } });
     assert.match(ctx.warnings.join(' '), /no saved official page text/);
-  } finally { await Promise.all(['H-web', 'G-fixed'].map((name) => fs.unlink(laneFile(id, name)))); }
+  } finally { await Promise.all(['H-web', 'G-search'].map((name) => fs.unlink(laneFile(id, name)))); }
 });
 
 test('G shared helpers receive all needed identity and fact-sheet fields from the adapter', async () => {

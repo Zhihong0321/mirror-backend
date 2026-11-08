@@ -11,7 +11,7 @@ import { savedReviews } from './v21/reviews.ts';
 export type Area = 'contact' | 'understanding' | 'voice' | 'credibility' | 'assets' | 'speed';
 export const AREAS: { id: Area; title: string; lanes: string[] }[] = [
   { id: 'contact', title: 'Contact and reachability', lanes: ['R-contacts', 'C-merged'] },
-  { id: 'understanding', title: 'How the internet understands you', lanes: ['B-brand', 'G-fixed', 'G-grounded', 'H-maps', 'H-web', 'C-merged'] },
+  { id: 'understanding', title: 'How the internet understands you', lanes: ['B-brand', 'G-search', 'H-maps', 'H-web', 'C-merged'] },
   { id: 'voice', title: 'Reviews, discussion and news', lanes: ['N-news'] },
   { id: 'credibility', title: 'Credibility and official records', lanes: ['K-credibility', 'D-registry', 'C-merged'] },
   { id: 'assets', title: 'Digital assets', lanes: ['A-assets', 'C-merged'] },
@@ -138,39 +138,21 @@ export function resolve(dive: any, L: Record<string, any>) {
   const webShown = (L['H-web']?.findings ?? []).find((f: any) => /customer searches/.test(f.title)) ?? null;
   const ourListing = listings[0] ?? null;
 
-  // ---- AI assistants: "from memory" (G-fixed) and "with a web search" (G-grounded) kept apart ----
-  const modelName = (m: string) => (/deepseek/i.test(m) ? 'DeepSeek' : /gpt/i.test(m) ? 'GPT' : m);
-  const aiMode = (lane: string, label: string) => {
-    const n = L[lane]?.notes;
-    if (!n) return null;
-    const kind = new Map<string, string>((n.prompts ?? []).map((p: any) => [p.id, p.kind]));
-    const models = [...new Set((n.answers ?? []).map((a: any) => a.model))] as string[];
-    return {
-      label, lane,
-      models: models.map((m) => {
-        const as = (n.answers ?? []).filter((a: any) => a.model === m);
-        const company = as.filter((a: any) => kind.get(a.id) === 'company');
-        const trade = as.filter((a: any) => kind.get(a.id) === 'trade');
-        const count = (o: string) => company.filter((a: any) => a.outcome === o).length;
-        return {
-          model: modelName(m), asked: company.length,
-          right: count('correct'), mixed: count('mixed'), wrong: count('wrong'), dont_know: count('doesnt_know') + count('not_mentioned'),
-          trade_asked: trade.length, trade_named: trade.filter((a: any) => a.outcome && a.outcome !== 'not_mentioned').length,
-        };
-      }),
-      wrong_examples: (n.answers ?? []).flatMap((a: any) => (a.claims ?? []).filter((c: any) => c.verdict === 'wrong').map((c: any) => ({ model: modelName(a.model), q: a.id, claim: c.claim, note: c.note }))).slice(0, 4),
-      trade: (n.answers ?? []).filter((a: any) => kind.get(a.id) === 'trade'),
-    };
-  };
-  const memory = aiMode('G-fixed', 'Asked from memory');
-  const search = aiMode('G-grounded', 'Asked with a web search');
+  // ---- An AI assistant with a web search (G-search): what it said, who it names, who it calls the closest competitors ----
+  const gs = L['G-search']?.notes ?? null;
+  const gsAnswers: any[] = gs?.answers ?? [];
+  const gsPrompts: any[] = gs?.prompts ?? [];
+  const kind = new Map<string, string>(gsPrompts.map((p: any) => [p.id, p.kind]));
+  const said = gsPrompts.filter((p: any) => p.kind === 'company')
+    .map((p: any) => ({ p, a: gsAnswers.find((x: any) => x.id === p.id && x.sample === 0) })).filter((x) => x.a)
+    .map((x) => ({ id: x.p.id, q: x.p.text as string, a: String(x.a.answer), sources: (x.a.sources ?? []) as string[] }));
   const voice = new Map<string, { name: string; n: number }>();
-  let tradeAnswers = 0, namedUs = 0;
-  for (const mode of [memory, search]) for (const a of mode?.trade ?? []) {
-    tradeAnswers++;
-    if (a.outcome && a.outcome !== 'not_mentioned') namedUs++;
+  const tradeAll = gsAnswers.filter((a: any) => kind.get(a.id) === 'trade');
+  const tradeAnswers = tradeAll.length;
+  const namedUs = tradeAll.filter((a: any) => a.named).length;
+  for (const a of tradeAll) {
     const seen = new Set<string>();
-    for (const c of a.competitors ?? []) {
+    for (const c of a.companies ?? []) {
       const t = token(short(c));
       if (!t || t === brand || seen.has(t)) continue;
       seen.add(t);
@@ -181,8 +163,18 @@ export function resolve(dive: any, L: Record<string, any>) {
     }
   }
   const shareOfVoice = [...voice.values()].sort((a, b) => b.n - a.n).slice(0, 7);
-  const tradeQuestion = (L['G-fixed']?.notes?.prompts ?? L['G-grounded']?.notes?.prompts ?? []).find((p: any) => p.kind === 'trade')?.text ?? null;
-  const badDomain = [...(L['G-fixed']?.findings ?? []), ...(L['G-grounded']?.findings ?? [])].find((f: any) => /does not exist/i.test(f.title))?.title ?? null;
+  const tradeQuestion = gsPrompts.find((p: any) => p.kind === 'trade')?.text ?? null;
+  const compareRuns: any[] = gs?.compare ?? [];
+  const compare = compareRuns[0] ?? null;
+  const rivalCount = new Map<string, { name: string; n: number }>();
+  for (const c of compareRuns) for (const name of c.closest_competitors ?? []) {
+    const t = token(short(name));
+    if (!t || t === brand) continue;
+    const v = rivalCount.get(t) ?? { name: short(name), n: 0 };
+    v.n++;
+    rivalCount.set(t, v);
+  }
+  const rivals = [...rivalCount.values()].sort((a, b) => b.n - a.n).slice(0, 4);
 
   // ---- credentials: the register's answer, claim by claim ----
   const reg = (L['D-registry']?.findings ?? []).filter((f: any) => !isPrivate(f));
@@ -256,7 +248,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     identity: { legal_name: name, ssm: (id.registration_numbers ?? []).find((x: string) => /^\d{12}$/.test(x)) ?? (id.registration_numbers ?? [])[0] ?? null, address: id.address ?? null, domains: id.official_domains ?? [], industry: id.industry ?? null, summary: id.summary ?? null },
     reviews: { total: totalReviews, replied, listings: perListing.map((x) => ({ name: x.name, rating: x.listed_rating, count: x.listed_reviews, replied: x.replied, pulled: x.pulled })), unanswered_low: unansweredLow, monthly, bursts, cross_reviewers: crossReviewers, praise: [...praise.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5), good_quotes: goodQuotes },
     maps: { listings: listings.map((x) => ({ name: x.name, rating: x.rating, reviews: x.reviews, phone: x.phone })), by_area: byArea, no_listing_in: noListingIn, our: ourListing ? { name: ourListing.name, rating: ourListing.rating, reviews: ourListing.reviews } : null, web_line: webShown?.title ?? null },
-    ai: { memory: memory && { ...memory, trade: undefined }, search: search && { ...search, trade: undefined }, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion, bad_domain: badDomain },
+    ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion },
     credentials: { cidb_grade: cidbGrade, cidb_detail: cidb?.detail ?? null, list: credentials, undersells },
     website: { issues: site.filter((x) => x.severity === 'high' || x.severity === 'medium').length, high: site.filter((x) => x.severity === 'high').length, copy_errors: copyErrors, phones },
     speed: { pages: psi, main_mobile: mainMobile },

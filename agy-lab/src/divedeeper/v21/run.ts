@@ -8,7 +8,7 @@ import * as store from './store.ts';
 
 export const enabled = (env: NodeJS.ProcessEnv = process.env): boolean => env.V21_DEEPER === 'on';
 export const V21_DEEPER_LANES = [
-  [['H', 'maps'], ['G', 'fixed'], ['G', 'grounded'], ['K', 'credibility'], ['N', 'news']],
+  [['H', 'maps'], ['G', 'search'], ['K', 'credibility'], ['N', 'news']],
   [['H', 'web'], ['D', 'registry'], ['C', 'merged']],
   [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']],
 ] as const;

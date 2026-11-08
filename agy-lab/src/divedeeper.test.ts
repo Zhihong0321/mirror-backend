@@ -62,9 +62,9 @@ test('the report speaks the editor\'s plain words and never shows the lanes\' ma
   const dive = { company: 'Acme Sdn Bhd', finished_at: '2026-10-25T10:00:00Z', dossier: '', result: { identity: { legal_name: 'Acme Sdn Bhd' } } };
   const lanes = {
     'D-registry': { ran_at: '2026-10-26T01:00:00Z', findings: [{ title: 'CONTRADICTED: CIDB Grade G3', detail: 'register says G7', severity: 'high', verdict: 'contradicted', direction: 'undersell', source: 'https://cims.cidb.gov.my/' }] },
-    'G-fixed': { ran_at: '2026-10-26T01:00:00Z', findings: [{ title: 'gpt-6.1-sol, asked "Where?": 1 wrong claim about you. [2 of 3 asks; others: doesnt_know]', detail: 'Outcomes: what=correct', severity: 'high', source: null }] },
+    'G-search': { ran_at: '2026-10-26T01:00:00Z', findings: [{ title: 'gpt-6.1-sol, asked "Where?": 1 wrong claim about you. [2 of 3 asks; others: doesnt_know]', detail: 'Outcomes: what=correct', severity: 'high', source: null }] },
     'S3-editor': { notes: {
-      plain: { 'G-fixed#0': { title: 'An AI assistant gives customers the wrong office address', why: 'They may turn up at the wrong place.' } },
+      plain: { 'G-search#0': { title: 'An AI assistant gives customers the wrong office address', why: 'They may turn up at the wrong place.' } },
       verdict: 'You are better than your website says.',
       stories: [{ theme: 'understanding', headline: 'AI assistants send customers to the wrong address', body: 'b', cost: 'c', fix: 'f' }],
     } },
