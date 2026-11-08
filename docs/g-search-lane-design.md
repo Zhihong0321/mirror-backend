@@ -128,3 +128,18 @@ prove is only the new code: on the hub, on Eternalgy, run the G-search lane once
 
 Failure paths made to fail on purpose, then shown live: a dead worker; a non-JSON reply; an answer over 50 words; a reply
 missing a question id; all workers down (the lane must fail visibly, with the error, and not print empty text).
+
+## Prompt merges and rechecks (2026-11-08, built, not yet run on the hub)
+
+- Merged: C-merged reads the whole site in ONE call (was 1 per page plus 1 cross-page); S3 rewrites all findings in one call (was
+  batches of 35); S2's website plan and FAQ share one call. S2's review replies stay separate on purpose: third-party review text
+  is what trips the content filter, and one rude review must not take the website plan down. C-merged, S3 and the rechecks split a
+  call that fails in half and ask again, because the filter can refuse a whole call over one phrase.
+- S1-recheck (before S2): one prompt over the urgent and needs-work findings of the judging lanes (K, N, H-web, R-contacts, B-brand,
+  C-merged copy-edit). Each is real, weak or false. editor.ts items() drops the false and lowers the weak. Mechanical lanes, register
+  results and G-search are never sent.
+- S6-check (after S5): one prompt over every statement S4 and S5 wrote, with the findings and measured facts as the only evidence.
+  Unsupported statements are taken out when the report is built (check.ts applyCheck); a withdrawn task puts its findings back
+  under its department.
+- Guards for both: they only remove or lower; no answer changes nothing; "false" / "unsupported" needs a reason; a verdict set that
+  condemns more than 40% (of 5 or more) is ignored with a warning.

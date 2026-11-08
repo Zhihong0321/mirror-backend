@@ -8,7 +8,7 @@ import net from 'node:net';
 import tls from 'node:tls';
 import { htmlText, parseJson, writeLane, laneFile, type Ctx } from './divedeeper/lib.ts';
 import { serviceFailures } from './divedeeper/runner.ts';
-import { run as crawl } from './divedeeper/sections/C-merged.ts';
+import { run as crawl, groupBySize } from './divedeeper/sections/C-merged.ts';
 import { run as contacts } from './divedeeper/sections/R-contacts.ts';
 import { run as assets } from './divedeeper/sections/A-assets.ts';
 
@@ -221,4 +221,82 @@ test('A V2.1 still investigates lookalike domains', async (t) => {
   assert.ok(calls.some((u) => u.endsWith('/domain/acme.com')));
   assert.ok(calls.some((u) => u.startsWith('WHOIS ')));
   assert.ok(out.findings.some((x) => x.check === 'lookalike'));
+});
+
+const prose = (head: string) => `<p>${head} ${'Our team builds reliable equipment for every customer. '.repeat(5)}</p>`;
+async function threePages(t: TestContext, replies: string[]) {
+  const calls = network(t), f = context(), d = dive();
+  lanes(t, f.ctx, {}, { listings: [{ name: 'Acme', phone: '03-2234 5678' }] });
+  const pages: Record<string, string> = {
+    '/': `<title>X</title>${prose('We delivers excellent service to every customer.')}<p>We have 62 staff.</p><a href="/about">About</a><a href="/services">Services</a>`,
+    '/about': `<title>Y</title>${prose('Our company was founded with care.')}<p>We have 13 staff in our team.</p><a href="/">Home</a>`,
+    '/services': `<title>Z</title>${prose('Our services include solar installation.')}<p>Instal solar panels with us.</p><a href="/">Home</a>`,
+  };
+  f.ctx.page = async (url) => {
+    const path = new URL(url).pathname;
+    if (url.endsWith('/robots.txt')) return page(url, '');
+    return page(url, pages[path] ?? pages['/']);
+  };
+  let n = 0;
+  f.ctx.llm = async (q) => { f.prompts.push(q); return replies[Math.min(n++, replies.length - 1)]!; };
+  const out = await crawl(f.ctx, d);
+  return { out, f, calls };
+}
+
+test('C reads the whole site in ONE call: issues are tagged by page, contradictions come from the same call, a false quote is dropped', async (t) => {
+  const reply = JSON.stringify({
+    issues: [
+      { page: 'P1', type: 'grammar', quote: 'We delivers excellent service to every customer', severity: 'medium', why: 'Wrong verb' },
+      { page: 'P3', type: 'spelling', quote: 'Instal solar panels with us', severity: 'high', fix: 'Install solar panels with us', why: 'Misspelt' },
+      { page: 'P2', type: 'grammar', quote: 'We delivers excellent service to every customer', severity: 'high', why: 'That text is on page 1, not page 2' },
+      { page: 'P2', type: 'spelling', quote: 'Invented words never on any page', severity: 'high' },
+    ],
+    contradictions: [
+      { page_a: 'P1', quote_a: 'We have 62 staff', page_b: 'P2', quote_b: 'We have 13 staff in our team', severity: 'high', why: '62 staff against 13' },
+      { page_a: 'P1', quote_a: 'We have 99 staff', page_b: 'P2', quote_b: 'We have 13 staff in our team', severity: 'high', why: 'invented' },
+    ],
+  });
+  const { out, f } = await threePages(t, [reply]);
+  assert.equal(f.prompts.length, 1, 'one LLM call for the whole site');
+  for (const marker of ['[P1] ', '[P2] ', '[P3] ', 'TASK 1', 'TASK 2', 'acme.test/about', 'acme.test/services']) assert.ok(f.prompts[0].includes(marker), marker);
+  const llm = out.findings.filter((x) => x.check === 'llm');
+  assert.ok(llm.some((x) => x.evidence === 'Instal solar panels with us' && String(x.source).endsWith('/services')), 'the issue lands on the page it names');
+  assert.ok(llm.some((x) => x.type === 'inconsistency-cross' && /62 staff/.test(String(x.evidence)) && /13 staff/.test(String(x.evidence))), 'the cross-page contradiction is kept');
+  assert.ok(!llm.some((x) => /Invented words|99 staff/.test(String(x.evidence))), 'quotes that are not on the pages are dropped');
+  assert.ok(!llm.some((x) => String(x.source).endsWith('/about') && /delivers/.test(String(x.evidence))), 'a quote that sits on another page is not accepted for this one');
+  assert.ok(((out.notes as any).dropped as any[]).length >= 3);
+  assert.equal((out.notes as any).llm_calls, 1);
+  assert.equal(serviceFailures(f.ctx.meter), null);
+});
+
+test('C asks again once when the reply is not JSON, and warns when both replies fail', async (t) => {
+  const first = await threePages(t, ['Sorry, here is some prose.', JSON.stringify({ issues: [{ page: 'P3', type: 'spelling', quote: 'Instal solar panels with us', severity: 'high' }], contradictions: [] })]);
+  assert.equal(first.f.prompts.length, 2);
+  assert.ok(first.out.findings.some((x) => x.check === 'llm'));
+  assert.ok(first.f.warnings.some((w) => /no JSON for P1, P2, P3 \(attempt 1\)/.test(w)));
+});
+
+test('C keeps at most 5 issues for one page', async (t) => {
+  const issues = Array.from({ length: 7 }, (_, i) => ({ page: 'P1', type: 'spelling', quote: ['We delivers', 'excellent service', 'every customer', 'reliable equipment', 'Our team builds', 'for every', 'We have 62'][i], severity: 'high' }));
+  const { out } = await threePages(t, [JSON.stringify({ issues, contradictions: [] })]);
+  assert.equal(out.findings.filter((x) => x.check === 'llm' && x.type === 'spelling').length, 5);
+  assert.ok(((out.notes as any).dropped as any[]).some((d) => d.reason === 'more than 5 issues for one page'));
+});
+
+test('C groups pages by size: one run while they fit, a new run when the next page would not, an over-size page alone', () => {
+  assert.deepEqual(groupBySize([100, 200, 300], 1000), [[0, 1, 2]]);
+  assert.deepEqual(groupBySize([600, 500, 400], 1000), [[0], [1, 2]]);
+  assert.deepEqual(groupBySize([5000, 10], 1000), [[0], [1]]);
+  assert.deepEqual(groupBySize([], 1000), []);
+});
+
+test('C reads each half on its own when the whole call fails twice (the content filter can refuse a call over one page)', async (t) => {
+  const half1 = JSON.stringify({ issues: [{ page: 'P1', type: 'grammar', quote: 'We delivers excellent service to every customer', severity: 'medium' }], contradictions: [] });
+  const half2 = JSON.stringify({ issues: [{ page: 'P3', type: 'spelling', quote: 'Instal solar panels with us', severity: 'high' }], contradictions: [] });
+  const { out, f } = await threePages(t, ['refused', 'refused', half1, half2]);
+  assert.equal(f.prompts.length, 4, 'the whole site twice, then two halves');
+  assert.ok(f.prompts[2].includes('[P1] ') && f.prompts[2].includes('[P2] ') && !f.prompts[2].includes('[P3] '));
+  assert.ok(f.prompts[3].includes('[P3] ') && !f.prompts[3].includes('[P1] '));
+  assert.equal(out.findings.filter((x) => x.check === 'llm').length, 2);
+  assert.ok(f.warnings.some((w) => /read again as two calls/.test(w)));
 });

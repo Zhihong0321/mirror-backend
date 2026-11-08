@@ -15,6 +15,7 @@
 // Numbers come from editor.ts resolve(); plain titles from the S3 editor lane, the analysis from S4,
 // the action plan from S5, each when it ran, else built in here. Used by the hub (divedeeper.ts) and by scripts/dive-deeper/report.ts.
 // A missing lane only drops its block; the report still builds.
+import { applyCheck } from './check.ts';
 import { AREAS, DEPTS, deptOf, resolve, type Item } from './editor.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
 import { isPrivateUrl, publicSources, scrub } from './privacy.ts';
@@ -364,7 +365,9 @@ ${body}
 }
 
 /** lanes: { "H-maps": laneResult, …, "S2-consult": …, "S3-editor": … } as runLane returns them. */
-export function buildReport(dive: any, L: Record<string, any>): string {
+export function buildReport(dive: any, lanes: Record<string, any>): string {
+  // S6-check's unsupported statements are taken out of the analysis and the plan here (check.ts); S1-recheck's verdicts act in editor.ts items().
+  const L = applyCheck(lanes);
   const r = dive.result ?? {};
   const R = resolve(dive, L);
   const name = R.name;

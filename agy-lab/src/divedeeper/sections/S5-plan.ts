@@ -27,7 +27,7 @@ async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
 export type Task = { dept: Dept; task: string; why: string; how: string; when: typeof WHEN[number]; effort: string; impact: typeof IMPACT[number]; theme: string | null; ready: string | null; items: string[] };
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor', 'S4-analysis'].map((l) => [l, readLane(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S1-recheck', 'S2-consult', 'S3-editor', 'S4-analysis'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the plan skips what it covers`);
   const R = resolve(dive, L);
   const plain: Record<string, { title: string; why: string }> = L['S3-editor']?.notes?.plain ?? {};

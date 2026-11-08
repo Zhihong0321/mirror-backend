@@ -195,7 +195,7 @@ test('resume restores all completed stages and runs no lane again', async () => 
   }));
   const f = await fixture([], saved);
   await executeRun('run', f.runtime);
-  assert.equal(f.restored.length, 15);
+  assert.equal(f.restored.length, 17);
   assert.deepEqual(f.started, []);
   assert.deepEqual(f.savedAll, []);
   assert.equal(f.row.status, 'done');

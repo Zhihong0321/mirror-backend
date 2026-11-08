@@ -26,6 +26,20 @@ const TOTAL_PAGES = Number(process.env.C_TOTAL_PAGES ?? 50);
 const LINK_CAP = Number(process.env.C_LINK_CAP ?? 15);
 const MAX_LLM = Number(process.env.C_MAX_LLM ?? 40);
 const PAGE_CHARS = 12000;
+/** Most characters of page text sent in one LLM call; a bigger site is read in groups. */
+const CALL_CHARS = Number(process.env.C_CALL_CHARS ?? 300000);
+
+/** Splits page sizes into runs of consecutive pages that each stay within max characters; an over-size page gets a run to itself. Returns indexes. */
+export function groupBySize(sizes: number[], max: number): number[][] {
+  const runs: number[][] = [];
+  let total = 0;
+  sizes.forEach((n, i) => {
+    if (!runs.length || total + n > max) { runs.push([]); total = 0; }
+    runs[runs.length - 1].push(i);
+    total += n;
+  });
+  return runs;
+}
 const CONCURRENCY = 3;
 
 // ---------------------------------------------------------------------------------------------
@@ -600,17 +614,21 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `Phones seen elsewhere: ${[...divePhones, ...mapsPhones].map(fmtPhone).join(', ') || 'none'}`,
   ].join('\n');
   const system = "You are a meticulous copy editor auditing a Malaysian company's website for its owner. You report only real, specific problems a customer would notice, and you quote the page exactly.";
-  const prompt = (url: string, text: string) =>
-    `Company: ${dive.company}. Today is ${today}.\nKnown facts:\n${facts}\n\n` +
-    `Below is the visible text of ONE page of the company's website: ${url}\n` +
+  // One call reads the pages side by side, so the same call also finds claims that contradict across pages. A site too big
+  // for one call (C_CALL_CHARS characters) is read in groups; then contradictions are only found within a group.
+  const rules =
     `Notes on the text: menus, buttons and footers are flattened into lines. "[image]" marks an image; numbers or formulas shown as images are NOT missing, so never report a value missing next to [image]. Counter numbers are the values the page animates to.\n\n` +
-    `Report at most 5 issues, the ones a customer would notice most:\n- "spelling": misspelled words, including misspelled brand or product names.\n- "grammar": clear grammatical errors.\n- "wording": unclear or unprofessional wording (not style preferences).\n- "outdated": stale content as of today (old years, expired offers, past events written as upcoming). Not for dated news or blog posts.\n- "inconsistency": statements that contradict each other on this page or contradict the known facts.\n` +
+    `TASK 1. For EACH page, report at most 5 issues, the ones a customer would notice most:\n- "spelling": misspelled words, including misspelled brand or product names.\n- "grammar": clear grammatical errors.\n- "wording": unclear or unprofessional wording (not style preferences).\n- "outdated": stale content as of today (old years, expired offers, past events written as upcoming). Not for dated news or blog posts.\n- "inconsistency": statements that contradict each other on this page or contradict the known facts.\n` +
     `Do NOT report: Malay or Chinese text, brand and model names spelled as the maker spells them, units, British vs American spelling, the capitalisation of ALL-CAPS headings (but DO report wrong words in headings and buttons, like "DISCOVERY MORE"), menu labels, customer reviews or other third-party text, or a business address that differs from the registered address.\n` +
-    `"quote" must be copied character-for-character from the page text (3 to 25 words) so a text search finds it.\n` +
-    `Also list "claims": up to 10 short factual claims with a number or date (projects, capacity, staff, offices, years in business, warranty, phone, address), each copied exactly from the page.\n` +
-    `Return JSON only: {"issues":[{"type":"spelling|grammar|wording|outdated|inconsistency","quote":"...","fix":"...","why":"one short sentence","severity":"high|medium|low"}],"claims":["..."]}\n\nPAGE TEXT:\n${text}`;
+    `"quote" must be copied character-for-character from that page's text (3 to 25 words) so a text search finds it, and "page" is the page's marker (P1, P2 ...).\n\n` +
+    `TASK 2. Across the pages: find claims that CONTRADICT each other across pages or domains (different project counts, capacities, staff, offices, years in business, warranty terms, phone numbers, branch addresses, founding dates), or contradict the known facts. Only real conflicts, not the same thing worded differently, and not the registered address. Copy both claims exactly from their pages.\n\n`;
+  const prompt = (group: { id: string; page: CPage; text: string }[]) =>
+    `Company: ${dive.company}. Today is ${today}.\nKnown facts:\n${facts}\n\n` +
+    `Below is the visible text of ${group.length} page${group.length === 1 ? '' : 's'} of the company's website(s), each marked [P1], [P2] ... with its URL.\n` + rules +
+    `Return JSON only: {"issues":[{"page":"P1","type":"spelling|grammar|wording|outdated|inconsistency","quote":"...","fix":"...","why":"one short sentence","severity":"high|medium|low"}],"contradictions":[{"page_a":"P1","quote_a":"...","page_b":"P2","quote_b":"...","why":"one sentence","severity":"high|medium|low"}]}\n\n` +
+    group.map((g) => `[${g.id}] ${g.page.finalUrl}\n${g.text}`).join('\n\n=====\n\n');
 
-  const jobs: { page: CPage; text: string; hay: string }[] = [];
+  const jobs: { id: string; page: CPage; text: string; hay: string }[] = [];
   const skipped: string[] = [];
   for (const p of ok) {
     const pathq = new URL(p.finalUrl).pathname + '/';
@@ -621,41 +639,58 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     if (pre.length) text += `\n\n[WhatsApp pre-filled message]\n${pre.join('\n')}`;
     if (text.replace(/\[image\]/g, '').trim().length < 150) { skipped.push(`${p.finalUrl} (${text.length} chars)`); continue; }
     if (text.length > PAGE_CHARS) text = splitText(text, PAGE_CHARS)[0];
-    jobs.push({ page: p, text, hay: p.text + '\n' + pre.join('\n') });
+    jobs.push({ id: '', page: p, text, hay: p.text + '\n' + pre.join('\n') });
   }
   if (jobs.length > MAX_LLM - 1) { ctx.warn(`${jobs.length} prose pages; reading the first ${MAX_LLM - 1}`); jobs.length = MAX_LLM - 1; }
-  ctx.log(`LLM reads ${jobs.length} prose pages; skipped ${skipped.length}`);
-  const claims: { url: string; claims: string[] }[] = [];
+  jobs.forEach((j, i) => { j.id = `P${i + 1}`; });
+  const groups = groupBySize(jobs.map((j) => j.text.length), CALL_CHARS).map((run) => run.map((i) => jobs[i]));
+  ctx.log(`LLM reads ${jobs.length} prose pages in ${groups.length} call${groups.length === 1 ? '' : 's'}; skipped ${skipped.length}`);
+  if (groups.length > 1) ctx.warn(`${jobs.length} pages did not fit one call; read in ${groups.length} groups, so contradictions are only found within a group`);
   const dropped: any[] = [];
   const llmFindings: Finding[] = [];
-  await pool(jobs, 3, async (j) => {
-    const parsed = ctx.parseJson<any>(await ctx.llm(prompt(j.page.finalUrl, j.text), { system }));
-    if (!parsed) { ctx.warn(`no JSON for ${j.page.finalUrl}`); return; }
-    const okClaims = (Array.isArray(parsed.claims) ? parsed.claims : []).map(String).filter((c: string) => quoteOnPage(c, j.hay)).slice(0, 10);
-    if (okClaims.length) claims.push({ url: j.page.finalUrl, claims: okClaims });
-    for (const it of (Array.isArray(parsed.issues) ? parsed.issues : []).slice(0, 5)) {
+  const sev = (s: unknown, otherwise: 'high' | 'medium' | 'low') => (['high', 'medium', 'low'].includes(String(s)) ? (s as 'high' | 'medium' | 'low') : otherwise);
+  const readGroup = async (group: typeof jobs, attempts: number): Promise<void> => {
+    // A reply that is not JSON is asked for again once. If it still fails, the LLM router's content filter may have refused the
+    // whole call over one page, so each half of the group is read on its own; a lone page that fails loses its LLM checks, with a warning.
+    let parsed: any = null;
+    for (let attempt = 1; attempt <= attempts && !parsed; attempt++) {
+      parsed = ctx.parseJson<any>(await ctx.llm(prompt(group), { system }));
+      if (!parsed) ctx.warn(`no JSON for ${group.map((g) => g.id).join(', ')} (attempt ${attempt})`);
+    }
+    if (!parsed) {
+      if (group.length > 1) {
+        const half = Math.ceil(group.length / 2);
+        ctx.warn(`${group.map((g) => g.id).join(', ')} read again as two calls; contradictions between the halves are not checked`);
+        await Promise.all([readGroup(group.slice(0, half), 1), readGroup(group.slice(half), 1)]);
+      }
+      return;
+    }
+    const byId = new Map(group.map((g) => [g.id, g] as const));
+    // "P3", "p3" or "3" all name page 3. A group of one page needs no marker at all.
+    const pageOf = (v: unknown) => {
+      const n = String(v ?? '').replace(/\D/g, '');
+      return (n ? byId.get(`P${n}`) : undefined) ?? (group.length === 1 ? group[0] : undefined);
+    };
+    const perPage = new Map<string, number>();
+    for (const it of Array.isArray(parsed.issues) ? parsed.issues : []) {
+      const j = pageOf(it.page);
       const quote = String(it.quote ?? '').trim();
-      const sev = ['high', 'medium', 'low'].includes(it.severity) ? it.severity : 'low';
-      const f = { title: `${it.type ?? 'issue'}: "${quote.slice(0, 90)}"`, detail: `${it.why ?? ''}${it.fix ? ` Suggested: "${it.fix}".` : ''}`.trim(), severity: sev, source: j.page.finalUrl, checked_at: ctx.now(), evidence: quote, check: 'llm', type: it.type, fix: it.fix ?? null } as Finding;
+      const s = sev(it.severity, 'low');
+      const f = { title: `${it.type ?? 'issue'}: "${quote.slice(0, 90)}"`, detail: `${it.why ?? ''}${it.fix ? ` Suggested: "${it.fix}".` : ''}`.trim(), severity: s, source: j?.page.finalUrl ?? null, checked_at: ctx.now(), evidence: quote, check: 'llm', type: it.type, fix: it.fix ?? null } as Finding;
+      if (!j) { dropped.push({ ...f, reason: 'the issue names no page' }); continue; }
+      if ((perPage.get(j.id) ?? 0) >= 5) { dropped.push({ ...f, reason: 'more than 5 issues for one page' }); continue; }
+      perPage.set(j.id, (perPage.get(j.id) ?? 0) + 1);
       if (!quoteOnPage(quote, j.hay)) { dropped.push({ ...f, reason: 'quote not on page' }); continue; }
-      if (it.type === 'wording' && sev === 'low') { dropped.push({ ...f, reason: 'low-severity wording' }); continue; }
+      if (it.type === 'wording' && s === 'low') { dropped.push({ ...f, reason: 'low-severity wording' }); continue; }
       llmFindings.push(f);
     }
-  });
-  if (claims.length > 1 && ctx.meter.llm.calls < MAX_LLM) {
-    const list = claims.map((c, i) => `[P${i + 1}] ${c.url}\n${c.claims.map((x) => '  - ' + x).join('\n')}`).join('\n');
-    const parsed = ctx.parseJson<any>(await ctx.llm(
-      `Company: ${dive.company}. Today is ${today}. Known facts:\n${facts}\n\nThese claims were copied exactly from pages of the company's website(s). Find claims that CONTRADICT each other across pages or domains (different project counts, capacities, staff, offices, years in business, warranty terms, phone numbers, branch addresses, founding dates), or contradict the known facts. Only real conflicts, not the same thing worded differently, and not the registered address. Copy both claims exactly as listed. Return JSON only: {"issues":[{"page_a":"P1","quote_a":"...","page_b":"P2","quote_b":"...","why":"one sentence","severity":"high|medium|low"}]}\n\n${list}`,
-      { system },
-    ));
-    if (!parsed) ctx.warn('no JSON from the cross-page call');
-    for (const it of parsed?.issues ?? []) {
-      const a = claims[Number(String(it.page_a).replace(/\D/g, '')) - 1], b = claims[Number(String(it.page_b).replace(/\D/g, '')) - 1];
-      const pa = a && ok.find((p) => p.finalUrl === a.url), pb = b && ok.find((p) => p.finalUrl === b.url);
-      const f = { title: `inconsistency across pages: "${String(it.quote_a).slice(0, 70)}" vs "${String(it.quote_b).slice(0, 70)}"`, detail: `${it.why ?? ''} (${a?.url} vs ${b?.url})`, severity: ['high', 'medium', 'low'].includes(it.severity) ? it.severity : 'medium', source: a?.url ?? null, checked_at: ctx.now(), evidence: `${it.quote_a} | ${it.quote_b}`, check: 'llm', type: 'inconsistency-cross', also: b?.url ?? null } as Finding;
-      if (pa && pb && quoteOnPage(String(it.quote_a), pa.text) && quoteOnPage(String(it.quote_b), pb.text)) llmFindings.push(f); else dropped.push({ ...f, reason: 'cross quote not on page' });
+    for (const it of Array.isArray(parsed.contradictions) ? parsed.contradictions : []) {
+      const a = pageOf(it.page_a), b = pageOf(it.page_b);
+      const f = { title: `inconsistency across pages: "${String(it.quote_a).slice(0, 70)}" vs "${String(it.quote_b).slice(0, 70)}"`, detail: `${it.why ?? ''} (${a?.page.finalUrl} vs ${b?.page.finalUrl})`, severity: sev(it.severity, 'medium'), source: a?.page.finalUrl ?? null, checked_at: ctx.now(), evidence: `${it.quote_a} | ${it.quote_b}`, check: 'llm', type: 'inconsistency-cross', also: b?.page.finalUrl ?? null } as Finding;
+      if (a && b && a !== b && quoteOnPage(String(it.quote_a), a.hay) && quoteOnPage(String(it.quote_b), b.hay)) llmFindings.push(f); else dropped.push({ ...f, reason: 'cross quote not on page' });
     }
-  }
+  };
+  await Promise.all(groups.map((g) => readGroup(g, 2)));
   // Same quote on several pages -> one finding.
   const byQuote = new Map<string, Finding>();
   for (const f of llmFindings) {
@@ -684,7 +719,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       emails: emailsBySite, regsClean: regs,
       sites: allSites.map((s) => ({ domain: s.domain, host: s.host, aliases: s.aliases, defaced: !!s.defaced, pages: s.pages.map((p) => ({ url: p.finalUrl, status: p.status, ms: p.ms, kb: Math.round(p.bytes / 1024), chars: p.text.length, unique: p.unique.length })) })),
       pages_crawled: allSites.reduce((a, s) => a + s.pages.length, 0), http_total: ctx.meter.http.calls,
-      llm_pages: jobs.map((j) => j.page.finalUrl), llm_skipped: skipped, claims, dropped,
+      llm_pages: jobs.map((j) => j.page.finalUrl), llm_skipped: skipped, llm_calls: groups.length, dropped,
     },
   };
 }

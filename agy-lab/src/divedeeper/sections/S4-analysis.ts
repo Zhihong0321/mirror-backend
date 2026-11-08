@@ -43,7 +43,7 @@ export function factsOf(R: ReturnType<typeof resolve>) {
 }
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult', 'S3-editor'].map((l) => [l, readLane(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S1-recheck', 'S2-consult', 'S3-editor'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the analysis skips what it covers`);
   const R = resolve(dive, L);
   const name = R.name;

@@ -12,7 +12,8 @@ export const V21_DEEPER_LANES = [
   [['H', 'web'], ['D', 'registry'], ['C', 'merged']],
   [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']],
 ] as const;
-export const V21_DEEPER_WRITING = [['S2', 'consult'], ['S3', 'editor'], ['S4', 'analysis'], ['S5', 'plan']] as const;
+// S1-recheck looks again at what the judging lanes found, before anything is written about it; S6-check looks again at what was written.
+export const V21_DEEPER_WRITING = [['S1', 'recheck'], ['S2', 'consult'], ['S3', 'editor'], ['S4', 'analysis'], ['S5', 'plan'], ['S6', 'check']] as const;
 export const waiting: string[] = [];
 export let active: string | null = null;
 const waits = [60_000, 180_000];

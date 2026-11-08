@@ -59,15 +59,19 @@ const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.p
 /** Every finding in the report, with a stable key (lane#index) the editor's plain titles hang on. */
 export function items(L: Record<string, any>): Item[] {
   const out: Item[] = [];
+  // S1-recheck's verdicts (check.ts): a finding it found false is left out, one it found weak is lowered. Absent when it did not run.
+  const rechecked: Record<string, { verdict: string }> = L['S1-recheck']?.notes?.verdicts ?? {};
   for (const lane of STAGE1_LANES) (L[lane]?.findings ?? []).forEach((f: any, i: number) => {
     if (isPrivate(f)) return;
+    if (rechecked[`${lane}#${i}`]?.verdict === 'false') return;
     // Rollups repeat what the per-question findings say; the AI chart shows them instead.
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
     // Inventory and summary lines feed the part's table and headline number, not the finding list.
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
     const area = lane === 'C-merged' ? partOfCheck(f.check) : AREAS.find((a) => a.lanes.includes(lane))!.id;
     // The register showing better than the claim (G7 where the site says G3) is a fix, not an alarm.
-    const severity = f.direction === 'undersell' ? 'medium' : String(f.severity ?? 'info');
+    const first = f.direction === 'undersell' ? 'medium' : String(f.severity ?? 'info');
+    const severity = rechecked[`${lane}#${i}`]?.verdict === 'weak' && (first === 'high' || first === 'medium') ? 'low' : first;
     out.push({ key: `${lane}#${i}`, lane, area, severity, title: String(f.title ?? ''), detail: String(f.detail ?? ''), source: f.source ?? null, check: f.check, raw: f });
   });
   return out;

@@ -122,7 +122,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `"sections": [{"title": "", "body": "2-4 sentences of ready-to-paste copy"}] (4-6 sections, in page order)},\n` +
     `"pages_to_add": [{"slug": "/solar-installation-johor-bahru style", "title": "", "why": "1 sentence", "outline": ["3-5 bullet points"]}] (4-6 pages, service x town pages first),\n` +
     `"pages_to_fix": [{"page": "", "problem": "", "fix": ""}] (the most important 6-10 only),\n` +
-    `"one_site_or_two": "1-2 sentences: should they keep two sites or merge, and why"}\n` +
+    `"one_site_or_two": "1-2 sentences: should they keep two sites or merge, and why",\n` +
+    `"faq": [{"q": "", "a": ""}] (7 questions a customer looking for this kind of business would ask, each answered in 2-3 sentences from the facts only: who they are, where they work, what they do, their registrations, how to contact them, how a project works)}\n` +
     `Use only facts listed above; never invent numbers, awards or registrations. British English.`,
   'website plan');
   if (!site) ctx.warn('website plan did not parse');
@@ -159,7 +160,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   actions.push({ action: 'Publish an FAQ page with the answers below', why: 'Assistants quote short, factual answers; the FAQ gives them correct ones in your words.', how: 'Put the questions and answers below on one FAQ page and add FAQ page data to it.', effort: 'half a day', impact: 'medium' });
   if (noListing.length) actions.push({ action: `Create a Google Maps listing in ${noListing.join(', ')}`, why: `You have an office there but no listing, so neither Maps nor assistants can place you there.`, how: 'Create and verify a Google Business Profile for each branch with its own address and number.', effort: '1 day plus Google verification', impact: 'medium' });
 
-  const faqOut = await askJson(ctx, 
+  // The website-plan call also writes the FAQ (same facts, one call). Only when it gave none is the FAQ asked for on its own.
+  let faqOut: any = Array.isArray(site?.faq) && site.faq.length ? { faq: site.faq } : null;
+  faqOut ??= await askJson(ctx, 
     `Write the FAQ section for the website of ${name} (${id.industry}; HQ ${id.address}). Use ONLY these facts and say nothing they do not support:\n${facts}${regRule}\n` +
     `Write 7 questions a customer looking for this kind of business would ask, with 2–3 sentence answers. Include who they are, where they work, what they do, their registrations, how to contact them, and how a project works.\n` +
     `Return JSON only: {"faq": [{"q": "", "a": ""}]}. British English.`,

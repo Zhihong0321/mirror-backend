@@ -4,7 +4,7 @@
 //
 // Reads every stage-1 lane and S2 from out/. Works out one settled set of numbers in code
 // (editor.ts resolve: the register beats the research where they disagree), then:
-//   1. rewrites every finding title in plain English for the owner (batches of 35),
+//   1. rewrites every finding title in plain English for the owner (one call for all of them; a call that fails is split in half),
 //   2. takes proof screenshots of the worst website problems, with the problem outlined.
 // The verdict, the stories and the rest of the analysis are S4's (sections/S4-analysis.ts).
 // Every step falls back: no LLM answer keeps the lane's own wording, no browser means no shots.
@@ -13,6 +13,8 @@ import { STAGE1_LANES, resolve, type Item } from '../editor.ts';
 import { takeShots, type ShotAsk } from '../shots.ts';
 import { takeWorkerShots } from '../v21/shots.ts';
 
+/** Findings rewritten in one call. A reply that is cut short or refused splits the batch in half, so this is also the retry. */
+const PLAIN_BATCH = Number(process.env.S3_BATCH ?? 200);
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
 
 async function askJson(ctx: Ctx, prompt: string, label: string, attempts = 2): Promise<any> {
@@ -45,7 +47,7 @@ export function shotAsks(R: ReturnType<typeof resolve>, ownSite: string | null):
 }
 
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
-  const L = Object.fromEntries([...STAGE1_LANES, 'S2-consult'].map((l) => [l, readLane(ctx.diveId, l)]));
+  const L = Object.fromEntries([...STAGE1_LANES, 'S1-recheck', 'S2-consult'].map((l) => [l, readLane(ctx.diveId, l)]));
   for (const [l, v] of Object.entries(L)) if (!v) ctx.warn(`${l}-${ctx.diveId}.json missing; the report skips what it covers`);
   const R = resolve(dive, L);
   const now = ctx.now();
@@ -54,7 +56,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   // ---- 1. Plain titles. ----
   const plain: Record<string, { title: string; why: string }> = {};
   const batches: Item[][] = [];
-  for (let i = 0; i < R.items.length; i += 35) batches.push(R.items.slice(i, i + 35));
+  for (let i = 0; i < R.items.length; i += PLAIN_BATCH) batches.push(R.items.slice(i, i + PLAIN_BATCH));
   // Vectide's content filter refuses a whole batch over one review it dislikes, so a refused
   // batch is split in half until only the refused findings keep their own wording.
   const rewrite = async (b: Item[], label: string): Promise<void> => {
@@ -65,7 +67,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       `"why" is at most 25 words: what it means for a customer or for the business. For good news, say why it helps. Never add facts that are not in the finding.\n\n` +
       b.map((x, i) => `${i} | ${x.area} | ${x.severity} | ${clip(x.title, 260)} | ${clip(x.detail, 320)}`).join('\n') +
       `\n\nReturn JSON only: {"items": [{"i": 0, "title": "", "why": ""}]} with one entry per finding, in order.`,
-    label, b.length === 35 ? 2 : 1);
+    label, 1);
     if (!got && b.length > 1) {
       const half = Math.ceil(b.length / 2);
       await Promise.all([rewrite(b.slice(0, half), `${label}a`), rewrite(b.slice(half), `${label}b`)]);

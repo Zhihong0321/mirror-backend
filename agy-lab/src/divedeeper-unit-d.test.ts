@@ -118,7 +118,7 @@ test('writing retries accept partial results and all saved stages can rebuild th
   const resumed = await runtimeFixture(allNames);
   resumed.runtime.runLane = async () => assert.fail('saved stage must not run');
   await executeRun('run', resumed.runtime);
-  assert.equal(resumed.restores.length, 15);
+  assert.equal(resumed.restores.length, 17);
   assert.equal(resumed.row.status, 'done');
   assert.equal(resumed.reports.length, 1);
 });
@@ -348,4 +348,18 @@ test('V2.1 report routing stays behind operator authorization and outside public
   const mount = source.indexOf('await v21DeeperHttp.handle(req, res, url');
   assert.ok(gate >= 0 && mount > gate);
   assert.match(source.slice(gate - 55, gate), /if \(!authorized\(req, url\)\)/);
+});
+
+test('S2 asks for the website plan and the FAQ in ONE call; the FAQ is asked for on its own only when that call gave none', async (t) => {
+  const f = context(t), d = reviewDive();
+  f.ctx.llm = async (prompt: string) => { f.prompts.push(prompt); return prompt.startsWith('You are a Malaysian SME website consultant') ? JSON.stringify({ verdict: 'v', faq: [{ q: 'Who are you?', a: 'Acme.' }] }) : '{}'; };
+  const out = await consult(f.ctx, d);
+  assert.equal(f.prompts.some((p) => p.startsWith('Write the FAQ section')), false, 'no separate FAQ call');
+  assert.ok(f.prompts[0].includes('"faq": [{"q": "", "a": ""}]'));
+  assert.deepEqual((out.notes.ai as any).faq, [{ q: 'Who are you?', a: 'Acme.' }]);
+  const g = context(t);
+  g.ctx.llm = async (prompt: string) => { g.prompts.push(prompt); return prompt.startsWith('Write the FAQ section') ? JSON.stringify({ faq: [{ q: 'Own call', a: 'Yes.' }] }) : '{}'; };
+  const out2 = await consult(g.ctx, d);
+  assert.equal(g.prompts.filter((p) => p.startsWith('Write the FAQ section')).length, 1);
+  assert.deepEqual((out2.notes.ai as any).faq, [{ q: 'Own call', a: 'Yes.' }]);
 });
