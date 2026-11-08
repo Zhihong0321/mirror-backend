@@ -214,8 +214,10 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
     return void res.end();
   }
 
-  // Railway's healthcheck has no token and must never be given one.
-  if (p === '/healthz') return json(res, 200, { ok: true, at: new Date().toISOString() });
+  // Railway's healthcheck has no token and must never be given one. `commit` is the
+  // git commit this build runs (Railway sets RAILWAY_GIT_COMMIT_SHA), so anyone can
+  // see whether the live hub runs the latest main.
+  if (p === '/healthz') return json(res, 200, { ok: true, at: new Date().toISOString(), commit: process.env.RAILWAY_GIT_COMMIT_SHA ?? null });
 
   // The shell is public; every byte of data behind it is not. The page prompts for
   // the token and sends it with each call.
