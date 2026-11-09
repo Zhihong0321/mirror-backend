@@ -21,6 +21,7 @@ import type { ChatMessage } from './cloud.ts';
 import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import type { Step2V2Output } from './step2-v2.ts';
 import { renderTidy, type TidyData } from './tidy.ts';
+import { daysToImpact, localeFor, plural, rankKey, severity, type Urgency } from '../report-rules/index.ts';
 
 export const STEP3_PROMPT = 'step3-v3';
 export const STEP3_REFINE_PROMPT = 'step3-refine-v2';
@@ -400,22 +401,17 @@ async function refineStep3(
 
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
+
 // ---------------------------------------------------------------- what the free page shows, and urgency
 // The preview is a sales page: what is locked is left out of the HTML (a CSS blur would still be in the page source).
 
-/** How many problems, contradictions and action steps the free page shows in full. The rest are placeholders. */
-/** The price of the full report (owner, 2026-11-09). V21_REPORT_PRICE overrides it; an empty value hides it. */
-export const DEFAULT_PRICE = '$59';
+/** How many of each list the free page shows in full, top N by rank. The rest are locked placeholders. One rule for every section. */
+export const FREE_N = { strengths: Infinity, problems: 3, contradictions: 2, notes: 1, suggestions: 2 };
 type GetsN = { shownP: number; totalP: number; hiddenP: number; shownS: number; hiddenS: number };
-export const FREE_PROBLEMS = 3;
-export const FREE_CONTRADICTIONS = 2;
-export const FREE_SUGGESTIONS = 2;
 
-export type Urgency = 'critical' | 'high' | 'medium' | 'low';
-const URG_RANK: Record<Urgency, number> = { critical: 4, high: 3, medium: 2, low: 1 };
 const URG_ORDER: Urgency[] = ['critical', 'high', 'medium', 'low'];
-// Set by code, never by the LLM: the kind of record a finding is about, bumped one level when its wording names a break
-// (expired, spoofable, dummy, unreachable ...), and capped at High unless Step 2 was highly confident of it.
+// The kind of record a finding is about; severity() bumps it one level when the wording names a break (expired, spoofable,
+// dummy, unreachable ...), caps it at High unless Step 2 was highly confident, and raises it by the days left to an expiry.
 const TOPIC_BASE: Record<string, number> = {
   registration: 3, licence: 3, email: 3, contact: 3, identity: 2, website: 2, reviews: 2, reputation: 2, scale: 1, awards: 1, other: 1,
 };
@@ -423,17 +419,19 @@ const BREAK_WORDS = /expire|spoof|dmarc|\bspf\b|blacklist|suspend|revok|lapse|fr
 /** The topics a bank, tender panel or partner checks against the company's own claims. */
 const RECORD_TOPICS = new Set(['registration', 'licence', 'awards']);
 
-export function urgencyOf(topic: string | undefined, text: string, confidence: string | undefined): Urgency {
-  let level = (TOPIC_BASE[String(topic ?? 'other')] ?? 1) + (BREAK_WORDS.test(text) ? 1 : 0);
-  if (confidence !== 'high') level = Math.min(level, 3);
-  return URG_ORDER.find((u) => URG_RANK[u] === Math.max(1, Math.min(4, level))) ?? 'low';
+type Rated = { urg: Urgency; days: number | null; key: number };
+/** Urgency, days to impact and sort key of one item. Days come from `expires_at` when Step 2 gave one, else from dates in its text and quotes. */
+export function rate(x: { topic?: string; confidence?: string; expires_at?: string }, texts: string[], now: Date): Rated {
+  const at = x.expires_at ? Date.parse(x.expires_at) : NaN;
+  const days = Number.isFinite(at) ? Math.ceil((at - now.getTime()) / 86400000) : daysToImpact(texts, now);
+  const urg = severity({ recordLevel: TOPIC_BASE[String(x.topic ?? 'other')] ?? 1, confidence: x.confidence, days, breaks: BREAK_WORDS.test(texts.join(' ')) });
+  return { urg, days, key: rankKey(urg, days) };
 }
 
-/** Most urgent first; items of equal urgency keep Step 2's order. */
-function byUrgency<T>(list: T[], urgency: (x: T) => Urgency): T[] {
-  return list.map((x, i) => ({ x, i, r: URG_RANK[urgency(x)] })).sort((a, b) => b.r - a.r || a.i - b.i).map((e) => e.x);
+/** Highest key first; equal keys keep Step 2's order. */
+function ranked<T>(list: T[], key: (x: T) => number): T[] {
+  return list.map((x, i) => ({ x, i, k: key(x) })).sort((a, b) => b.k - a.k || a.i - b.i).map((e) => e.x);
 }
-
 const P = {
   en: {
     title: (c: string) => `${c}: what the public internet says`,
@@ -444,11 +442,13 @@ const P = {
     seeAll: 'See what we found',
     anyone: 'Built from public sources only. Anyone can look these up, your rivals included.',
     stamp: 'Prepared for you', fileNo: 'Free report',
-    fCountry: 'Country', fIndustry: 'Industry', fSites: 'Websites', fFound: 'This report', fDeeper: 'Deeper dive',
-    found: (n: number) => `${n} items found, each with its source`,
-    deeper: '7 research areas: not run yet',
+    fCountry: 'Country', fIndustry: 'Industry', fSites: 'Websites', fFound: 'This report',
+    found: (n: number) => `${plural(n, 'item', 'items')} found, each with its source`,
     fileFoot: (d: string) => `Built ${d} from public sources`,
-    strip: { strengths: 'strengths the sources confirm', problems: 'problems someone looking you up runs into', contradictions: 'places where sources disagree', notes: 'signals worth checking' },
+    strip: {
+      strengths: (n: number) => `${noun(n, 'strength', 'strengths')} the sources confirm`, problems: (n: number) => `${noun(n, 'problem', 'problems')} someone looking you up runs into`,
+      contradictions: (n: number) => `${noun(n, 'place', 'places')} where sources disagree`, notes: (n: number) => `${noun(n, 'signal', 'signals')} worth checking`,
+    },
     thesisEye: 'Why this matters', thesisH: 'How good you are', thesisG: 'is how clearly the market sees it.',
     thesisP: 'Customers, banks, partners and AI assistants rarely see your work first. They see what is published about you, and decide from that. A strong business the market reads wrongly loses to a weaker one it reads clearly.',
     sec: {
@@ -460,52 +460,47 @@ const P = {
     },
     tag: { strength: 'Strength', problem: 'Problem', contra: 'Sources disagree', note: 'Worth checking' },
     why: 'Why it matters', notCertain: 'Why this is not certain', basedOn: 'Based on', sources: 'Sources', source: 'Source', value: 'What it says',
+    // Short names for ids, so the page never prints f1 / s3 / c2 / n4.
+    lab: { strength: 'Strength', problem: 'Problem', contra: 'Source disagreement', note: 'Signal', step: 'Step' }, hint: 'issue',
     bandEye: 'The full report', bandH: 'Read it before your competitors do.', bandG: 'Fix it before your customers see it.',
     bandP: 'Everything on this page came from public sources. Anyone can find it, your rivals included.',
-    fullEye: 'Your full report', fullH: 'One more pass,', fullG: 'deeper, across 7 research areas.',
-    fullP: 'This free report is one pass over public sources. The full report runs one more time, as a deeper dive across 7 research areas. It may uncover more that is worth knowing.',
-    doneW: 'This free report', doneS: 'One pass over public sources', done: 'Done', doneC: 'items found',
-    notRun: 'Not run yet', notRunC: 'still to look at',
     cta: 'Get my full report', ctaP: 'Reply to the email that brought you this link, and we will run it for you.', keep: 'This free report is yours to keep.',
     colophon: [['Prepared for', (c: string, _d: string) => c], ['Built', (_c: string, d: string) => `${d}, from public sources`], ['Edition', (_c: string, _d: string) => 'Free report · one pass'], ['Method', (_c: string, _d: string) => 'Web pages, maps, directories, reviews, and a technical check of your domains and website.']] as Array<[string, (c: string, d: string) => string]>,
-    foot: 'Every statement on this page traces to an item id (f, c, s, n) and its source. Urgency is set by code from the kind of record and how sure the evidence is.',
     urg: { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' } as Record<Urgency, string>,
     urgLabel: 'Urgency',
     urgHow: 'Urgency is set from the kind of record affected (registration, licence, contact, email ...) and how sure the evidence is. Critical means fix first.',
     topic: { contact: 'Contact details', identity: 'Company identity', website: 'Website', email: 'Email', reviews: 'Reviews', scale: 'Company size', licence: 'Licences', awards: 'Awards', registration: 'Registration', reputation: 'Reputation', other: 'Other' } as Record<string, string>,
     fHighest: 'Highest urgency',
     execH: 'Action required.',
-    exec: (p: number, c: number, hi: number) => `We found ${p} ${p === 1 ? 'problem' : 'problems'} and ${c} ${c === 1 ? 'place' : 'places'} where sources disagree${hi ? `; ${hi} ${hi === 1 ? 'is' : 'are'} rated Critical or High` : ''}.`,
+    exec: (p: number, c: number, hi: number) => `We found ${plural(p, 'problem', 'problems')} and ${plural(c, 'place', 'places')} where sources disagree${hi ? `; ${hi} ${hi === 1 ? 'is' : 'are'} rated Critical or High` : ''}.`,
     execContra: 'Every day these differences stay public, customers, banks and partners see two versions of your business.',
     execPlain: 'Every day these problems stay public, customers, banks and partners run into them.',
     pitchProblems: ['Fix this before your next high-value prospect is misled.', 'These are what a customer, a bank or a partner meets when they look you up today.'],
     pitchContra: ['Your competitors can look up these sources right now.', 'Anyone comparing you with a rival can find these differences. Settle them before your next bid or pitch.'],
     recH: 'Records that banks and tender panels check.',
-    rec: (n: number) => `${n} ${n === 1 ? 'finding concerns' : 'findings concern'} registration, licences or awards. A bank, tender panel or partner can compare these with what your own site says.`,
+    rec: (n: number) => `${plural(n, 'finding', 'findings')} ${n === 1 ? 'concerns' : 'concern'} registration, licences or awards. A bank, tender panel or partner can compare ${n === 1 ? 'it' : 'these'} with what your own site says.`,
     locked: 'In the full report',
-    lockedCard: (n: number) => `${n} more ${n === 1 ? 'problem' : 'problems'} found`,
+    lockedCard: { problems: (n: number) => `${n} more ${noun(n, 'problem', 'problems')} found`, contradictions: (n: number) => `${n} more ${noun(n, 'place', 'places')} where sources disagree`, notes: (n: number) => `${n} more ${noun(n, 'signal', 'signals')} worth checking` },
     lockedCardP: 'Their titles, evidence and sources are in the full report.',
-    maskedSource: 'Source link and quote: in the full report',
     secSugLocked: ['Action plan', 'Start here.', 'The first steps. The rest are in the full report.'],
     lockedSugs: 'The full action plan, written out',
     lockedSugsP: 'Every finding becomes a task for the department that does it (website, social media, IT, other), with the work written for you where the findings call for it: your homepage rewritten, review replies ready to post, pages to add town by town, and the page data for Google.',
     lockedSugsTally: 'Desktop, mobile and A4 PDF',
     unlock: 'Unlock all findings',
-    stickyN: (n: number) => `${n} ${n === 1 ? 'issue' : 'issues'} found`,
+    stickyN: (n: number) => `${plural(n, 'issue', 'issues')} found`,
     stickyP: 'Sources, evidence and every fix are in the full report.',
     // What the paid report holds, from the full-report sample (eternalgy-full-report-with-ai-section-2026-11-09). No counts of tasks or pages.
     insideEye: 'What you get', insideH: 'What the full report', insideG: 'puts in your hands.',
     insideP: 'The free report shows what we found. The full report is the working document for your team: every finding, who fixes it, and the fix written out where we can.',
     gets: [
       { h: 'Your scorecard', p: 'Where you stand in six numbers, then the three problems costing you the most customers. For each: what it costs you and what to do first.' },
-      { h: 'Every finding, with its evidence', p: 'The full checklist, part by part. Each item is marked Urgent or Needs work and links to the page it came from.', note: (n: GetsN) => n.hiddenP ? `This free report prints ${n.shownP} of ${n.totalP} problems.` : '' },
+      { h: 'Every finding, with its evidence', p: 'The full checklist, part by part. Each item is marked Urgent or Needs work and links to the page it came from.', note: (n: GetsN) => n.hiddenP ? `This free report prints ${n.shownP} of ${plural(n.totalP, 'problem', 'problems')}.` : '' },
       { h: 'What ChatGPT and Gemini say about you', p: 'We ask both the questions a customer asks, as a stranger. You see whether they name you, how they score you against your competitors, and whether they would send the customer to you or to a rival, and which rival.' },
       { h: 'What a stranger learns in ten minutes', p: 'Your company as a customer, a bank or a tender officer sees it: registration, Google rating, address, websites, and a list of what does not add up.' },
-      { h: 'An action plan, department by department', p: 'Website, social media, IT and other. Each task says who does it, how long it takes and how much it matters, and points to the part of the report behind it.', note: (n: GetsN) => n.hiddenS ? `This free report prints the first ${n.shownS} steps.` : '' },
+      { h: 'An action plan, department by department', p: 'Website, social media, IT and other. Each task says who does it, how long it takes and how much it matters, and points to the part of the report behind it.', note: (n: GetsN) => n.hiddenS && n.shownS ? `This free report prints ${n.shownS === 1 ? 'the first step' : `the first ${plural(n.shownS, 'step', 'steps')}`}.` : '' },
       { h: 'Done for you: the copy, written', p: 'Your homepage rewritten, review replies ready to post, a WhatsApp message asking customers for a review, an FAQ page for your site, pages to add town by town, and the business details for Google and AI to paste in. Written only from facts we verified, wherever the findings call for it.' },
       { h: 'A plan to get recommended by AI assistants', p: 'The specific steps, such as more reviews, one name, address and phone everywhere, and a page for each service and town, and how to track whether the assistants start naming you.' },
     ],
-    insideAsk: (price: string) => price ? `All of it for ${price}` : 'All of it, in the full report',
     missing: 'This report is not ready yet.', missingP: 'Please come back to this link a little later.',
   },
   ko: {
@@ -517,11 +512,10 @@ const P = {
     seeAll: '찾은 내용 보기',
     anyone: '공개 자료만으로 만들었습니다. 경쟁사를 포함해 누구나 찾아볼 수 있습니다.',
     stamp: '귀사 전용', fileNo: '무료 보고서',
-    fCountry: '국가', fIndustry: '업종', fSites: '웹사이트', fFound: '이 보고서', fDeeper: '심층 조사',
+    fCountry: '국가', fIndustry: '업종', fSites: '웹사이트', fFound: '이 보고서',
     found: (n: number) => `${n}개 항목, 모두 출처 포함`,
-    deeper: '7개 조사 영역: 아직 진행 전',
     fileFoot: (d: string) => `${d} 공개 자료로 작성`,
-    strip: { strengths: '출처가 확인해 주는 강점', problems: '귀사를 찾아보는 사람이 마주칠 문제', contradictions: '출처마다 다른 정보', notes: '확인해 볼 만한 신호' },
+    strip: { strengths: (_n: number) => '출처가 확인해 주는 강점', problems: (_n: number) => '귀사를 찾아보는 사람이 마주칠 문제', contradictions: (_n: number) => '출처마다 다른 정보', notes: (_n: number) => '확인해 볼 만한 신호' },
     thesisEye: '왜 중요한가', thesisH: '얼마나 잘하는지는', thesisG: '시장이 얼마나 분명히 보느냐로 정해집니다.',
     thesisP: '고객, 은행, 파트너, AI 비서는 귀사의 일을 먼저 보지 않습니다. 귀사에 대해 공개된 내용을 보고 판단합니다. 시장이 잘못 읽는 강한 회사는 분명히 읽히는 약한 회사에 밀립니다.',
     sec: {
@@ -533,15 +527,11 @@ const P = {
     },
     tag: { strength: '강점', problem: '문제점', contra: '출처마다 다름', note: '확인해 볼 점' },
     why: '왜 중요한가', notCertain: '확실하지 않은 이유', basedOn: '근거', sources: '출처', source: '출처', value: '내용',
+    lab: { strength: '강점', problem: '문제', contra: '출처 불일치', note: '신호', step: '조치' }, hint: '항목',
     bandEye: '전체 보고서', bandH: '경쟁사보다 먼저 읽으세요.', bandG: '고객이 보기 전에 고치세요.',
     bandP: '이 페이지의 모든 내용은 공개 자료에서 나왔습니다. 경쟁사를 포함해 누구나 찾을 수 있습니다.',
-    fullEye: '전체 보고서', fullH: '한 번 더,', fullG: '7개 조사 영역에 걸쳐 더 깊이.',
-    fullP: '이 무료 보고서는 공개 자료를 한 번 살펴본 결과입니다. 전체 보고서는 7개 조사 영역에 걸쳐 한 번 더 심층 조사를 진행하며, 더 알아 두실 만한 내용이 나올 수 있습니다.',
-    doneW: '이 무료 보고서', doneS: '공개 자료를 한 번 살펴봄', done: '완료', doneC: '개 항목 발견',
-    notRun: '아직 진행 전', notRunC: '아직 살펴보지 않음',
     cta: '전체 보고서 받기', ctaP: '이 링크를 받은 이메일에 회신해 주시면 진행해 드립니다.', keep: '이 무료 보고서는 귀사가 보관하시면 됩니다.',
     colophon: [['받는 곳', (c: string, _d: string) => c], ['작성', (_c: string, d: string) => `${d}, 공개 자료 기준`], ['구분', (_c: string, _d: string) => '무료 보고서 · 1차 조사'], ['방법', (_c: string, _d: string) => '웹 페이지, 지도, 디렉터리, 리뷰, 그리고 도메인과 웹사이트의 기술 점검.']] as Array<[string, (c: string, d: string) => string]>,
-    foot: '이 페이지의 모든 문장은 항목 id(f, c, s, n)와 그 출처로 이어집니다. 긴급도는 기록의 종류와 증거의 확실성을 바탕으로 코드가 정합니다.',
     urg: { critical: '매우 긴급', high: '긴급', medium: '보통', low: '낮음' } as Record<Urgency, string>,
     urgLabel: '긴급도',
     urgHow: '긴급도는 영향을 받는 기록의 종류(등록, 면허, 연락처, 이메일 등)와 증거의 확실성으로 정합니다. 매우 긴급은 가장 먼저 고쳐야 한다는 뜻입니다.',
@@ -556,9 +546,8 @@ const P = {
     recH: '은행과 입찰 심사단이 확인하는 기록.',
     rec: (n: number) => `${n}건이 등록, 면허, 수상과 관련됩니다. 은행, 입찰 심사단, 파트너는 이를 귀사 웹사이트의 내용과 비교할 수 있습니다.`,
     locked: '전체 보고서에서 확인',
-    lockedCard: (n: number) => `문제점 ${n}개 더 발견`,
+    lockedCard: { problems: (n: number) => `문제점 ${n}개 더 발견`, contradictions: (n: number) => `출처마다 다른 정보 ${n}건 더 발견`, notes: (n: number) => `확인해 볼 신호 ${n}개 더 발견` },
     lockedCardP: '제목, 증거, 출처는 전체 보고서에 있습니다.',
-    maskedSource: '출처 링크와 인용문: 전체 보고서에서 확인',
     secSugLocked: ['실행 계획', '여기서 시작하세요.', '처음 몇 가지 조치입니다. 나머지는 전체 보고서에 있습니다.'],
     lockedSugs: '전체 실행 계획, 작업 내용까지',
     lockedSugsP: '모든 발견 사항이 담당 부서(웹사이트, 소셜 미디어, IT, 기타)의 할 일이 되며, 발견 사항에 따라 작업 내용도 작성해 드립니다: 다시 쓴 홈페이지, 바로 게시할 수 있는 리뷰 답글, 지역별 추가 페이지, 구글용 페이지 데이터.',
@@ -577,7 +566,6 @@ const P = {
       { h: '바로 쓸 수 있게 써 드립니다', p: '다시 쓴 홈페이지, 바로 게시할 수 있는 리뷰 답글, 리뷰를 부탁하는 WhatsApp 메시지, 웹사이트용 FAQ 페이지, 지역별 추가 페이지, 구글과 AI용 사업자 정보를 붙여 넣을 수 있게 준비합니다. 발견 사항에 따라 필요한 것만, 확인된 사실로만 작성합니다.' },
       { h: 'AI 비서가 귀사를 추천하게 만드는 계획', p: '리뷰 늘리기, 이름·주소·전화번호 통일, 서비스·지역별 페이지 같은 구체적인 단계와, AI 비서가 귀사를 언급하기 시작하는지 추적하는 방법.' },
     ],
-    insideAsk: (price: string) => price ? `전부 ${price}` : '전부 전체 보고서에 있습니다',
     missing: '이 보고서는 아직 준비되지 않았습니다.', missingP: '잠시 후 이 링크로 다시 와 주세요.',
   },
 };
@@ -641,24 +629,15 @@ section:not(.band) .warn{background:var(--band)}
 .ledger td{padding:14px 16px;border-top:1px solid var(--line);vertical-align:top}.ledger tr:first-child td{border-top:0}
 .ledger .where{color:var(--grey);font-size:14px;width:38%}.ledger .where small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
 .ledger .said{display:grid;gap:4px}.ledger .said b{font-weight:600}.ledger .said q{color:var(--grey);font-size:13.5px;quotes:"“" "”"}
-.runs{display:grid;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
-.run{display:grid;grid-template-columns:40px minmax(0,1fr) 128px 200px;gap:18px;align-items:center;padding:14px 22px;border-top:1px solid var(--line)}
-.run:first-child{border-top:0}.run .rn{font-family:var(--display);font-size:15px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
-.run .rw{display:grid;gap:2px}.run .rw b{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-0.01em;line-height:1.25}.run .rw span{font-size:13.5px;color:var(--grey)}
-.run .rs{justify-self:start;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1.5px dashed #b4bac2;padding:3px 8px;white-space:nowrap}
-.run .rc{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
-.run .rc b{font-family:var(--display);font-size:30px;font-weight:600;letter-spacing:-0.03em;line-height:1;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-.run .rc span{font-size:12.5px;color:var(--grey);line-height:1.3}
-.run.done{background:var(--dark2);color:var(--on-dark);border-top:0}.run.done .rn,.run.done .rw span,.run.done .rc span{color:var(--on-dark-2)}
-.run.done .rs{color:#8ee0b0;border:1.5px solid #8ee0b0}.run.done .rc b{color:#fff}
 .sugs{display:grid;border:1px solid var(--line)}
+.warn.first .ledger{color:var(--ink)}
 .sug{display:grid;grid-template-columns:44px minmax(0,1fr) 220px;gap:18px;padding:20px 22px;border-top:1px solid var(--line);scroll-margin-top:70px}.sug:first-child{border-top:0}
 .sug .rn{font-family:var(--display);font-size:28px;font-weight:500;letter-spacing:-0.04em;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
 .sug .rw{display:grid;gap:6px}.sug .rw b{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.015em;line-height:1.25}.sug .rw p{font-size:15px;color:var(--grey)}
 .sug .on{display:grid;gap:6px;align-content:start;font-size:12.5px;color:var(--muted)}.sug .on .k{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .ids{display:flex;flex-wrap:wrap;gap:6px}.ids a{font-size:12px;font-weight:600;text-decoration:none;color:var(--ink);background:var(--band);padding:3px 8px}.ids a:hover{background:var(--line)}
 .band-cta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;padding-top:72px;padding-bottom:72px}.band-cta h2{font-size:clamp(30px,3.4vw,46px)}
-.ask{margin-top:14px;background:var(--dark2);padding:32px;display:grid;gap:12px;border-top:3px solid #fff}
+.ask{scroll-margin-top:70px;background:var(--dark2);padding:32px;display:grid;gap:12px;border-top:3px solid #fff}
 .ask h3{font-size:clamp(30px,3.4vw,44px);letter-spacing:-0.03em;line-height:1}.ask p{color:var(--on-dark-2);font-size:15px}.ask p.me{color:var(--on-dark);font-size:17px}
 footer{padding:48px var(--gut) 64px;font-size:13px;color:var(--grey);display:grid;gap:12px}
 .colophon{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding-top:20px;border-top:1px solid var(--line)}
@@ -670,9 +649,9 @@ footer{padding:48px var(--gut) 64px;font-size:13px;color:var(--grey);display:gri
 .top span.for{display:none}.lead{font-size:17px}.sug{grid-template-columns:36px minmax(0,1fr)}.sug .on{grid-column:2}}
 @media (max-width:700px){.ledger thead{display:none}.ledger tr{display:grid;gap:6px;padding:12px 14px;border-top:1px solid var(--line)}.ledger tr:first-child{border-top:0}
 .ledger td{display:block;padding:0;border:0;width:auto!important}
-.run{grid-template-columns:28px minmax(0,1fr);gap:6px 12px;padding:14px 16px}.run .rs,.run .rc{grid-column:2}.run .rc b{font-size:24px}.warn{padding:20px}}
+.warn{padding:20px}}
 @media print{.top,.ctas,.band-cta .btn{display:none}section{padding:32px 28px}.file{transform:none;box-shadow:none;border:1px solid var(--line)}
-.warn,.sug,.run,.ledger tr,.colophon{break-inside:avoid}.head,h2,h3{break-after:avoid}details>:not(summary){display:block}details::details-content{display:block;content-visibility:visible}.sticky{display:none}}
+.warn,.sug,.ledger tr,.colophon{break-inside:avoid}.head,h2,h3{break-after:avoid}details>:not(summary){display:block}details::details-content{display:block;content-visibility:visible}.sticky{display:none}}
 /* urgency badges, locked placeholders, the sticky bar (2026-11-08) */
 body{padding-bottom:68px}
 .hl{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}
@@ -706,10 +685,11 @@ body{padding-bottom:68px}
 .get .rn{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--muted);font-variant-numeric:tabular-nums}
 .get h3{font-size:21px;letter-spacing:-0.015em;line-height:1.2}.get p{color:var(--grey);font-size:15px}
 .get p.free{color:var(--ink);font-size:13.5px;font-weight:600;border-left:2px solid var(--ink);padding-left:10px;margin-top:4px}
-.gets .unlock{grid-column:1/-1}.gets .get:nth-last-child(2):nth-child(odd){grid-column:1/-1}
+.gets .unlock,.gets .ask{grid-column:1/-1}.gets .get:nth-last-child(2):nth-child(odd){grid-column:1/-1}
 @media (max-width:900px){.gets{grid-template-columns:1fr}.unlock{grid-template-columns:1fr}.callout{margin-top:32px}}
 @media (max-width:640px){.sticky .p{display:none}.legend{margin-top:-28px}}
 `;
+
 
 function linkText(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '').slice(0, 80);
@@ -724,91 +704,158 @@ function evidenceList(ev: Array<{ quoted_text: string; source_url: string }>, la
   return `<details class="src"><summary>${esc(label)} (${ev.length})</summary><ol>${ev.map((e) => `<li><q>${esc(e.quoted_text)}</q><span class="u">${sourceLink(e.source_url)}</span></li>`).join('')}</ol></details>`;
 }
 
-const cites = (ids: string[]) => ids.map((id) => `<a class="cite" href="#${esc(id)}">${esc(id)}</a>`).join('');
-const idLinks = (ids: string[]) => `<span class="ids">${ids.map((id) => `<a href="#${esc(id)}">${esc(id)}</a>`).join('')}</span>`;
 const two = (n: number) => String(n).padStart(2, '0');
+/** The noun part of a plural() phrase: "problems" for 2, "problem" for 1. */
+const noun = (n: number, one: string, many: string) => plural(n, one, many).slice(String(n).length + 1);
 
 /** The free report page: the Step 3 summary, then every Step 2 item in full, then what the full report adds. */
-export function reportPage(report: Step3Report, s2: Step2V2Output, offer: { price?: string } = {}): string {
-  const price = String(offer.price ?? DEFAULT_PRICE).trim().slice(0, 40);
+export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date } = {}): string {
+  const now = options.now ?? new Date();
   const ko = report.language === 'ko';
   const t = ko ? P.ko : P.en;
   const c = s2.input.company;
-  const date = new Date(report.created_at).toLocaleDateString(ko ? 'ko-KR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const loc = localeFor(s2.input.country, ko ? 'ko' : 'en');
+  const price = loc.price;
+  let date: string;
+  try { date = new Date(report.created_at).toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { date = new Date(report.created_at).toISOString().slice(0, 10); }
   type Finding = Step2V2Output['conclusive_findings'][number];
   type Contra = Step2V2Output['contradictions'][number];
-  const findings = s2.conclusive_findings ?? [];
-  const urgF = (f: Finding) => urgencyOf(f.topic, `${f.title} ${f.statement}`, f.confidence);
-  const urgC = (x: Contra) => urgencyOf(x.topic, `${x.title} ${x.why_it_matters ?? ''}`, x.confidence);
-  const strengths = findings.filter((f) => f.kind === 'strength');
-  const problems = byUrgency(findings.filter((f) => f.kind === 'problem'), urgF);
-  const contradictions = byUrgency(s2.contradictions ?? [], urgC);
-  const notes = s2.take_note ?? [];
-  const suggestions = s2.suggestions ?? [];
-  const found = findings.length + contradictions.length + notes.length;
+  type Note = Step2V2Output['take_note'][number];
+  type Sug = Step2V2Output['suggestions'][number];
+  type Extra = { paid_only?: boolean; identity_signal?: boolean; check_id?: string; expires_at?: string };
 
-  // What is locked is not printed at all. A locked card keeps its id, so cites and "based on" links still land on it.
-  const shownProblems = problems.slice(0, FREE_PROBLEMS);
-  const hiddenProblems = problems.slice(FREE_PROBLEMS);
-  const shownContra = new Set(contradictions.slice(0, FREE_CONTRADICTIONS).map((x) => x.id));
-  const visibleIds = new Set<string>([...strengths, ...shownProblems, ...contradictions, ...notes].map((x) => x.id));
-  // An action step is free only when everything it rests on is on the page, so it cannot give away a locked problem.
-  const freeSugs = suggestions.filter((s) => (s.based_on ?? []).length > 0 && s.based_on.every((id) => visibleIds.has(id))).slice(0, FREE_SUGGESTIONS);
+  // Never print the same id twice, and never print what is for the paid report only (paid_only, identity_signal).
+  const seen = new Set<string>(); const removed = new Set<string>();
+  const usable = <T extends { id: string }>(list: T[] | undefined): T[] => (list ?? []).filter((x) => {
+    const e = x as T & Extra;
+    if (e.paid_only || e.identity_signal) { removed.add(x.id); return false; }
+    if (seen.has(x.id)) return false;
+    seen.add(x.id);
+    return true;
+  });
+  const findings = usable(s2.conclusive_findings);
+  const contraAll = usable(s2.contradictions);
+  const noteAll = usable(s2.take_note);
+  // A step resting on an item held back for the paid report is held back with it.
+  const sugAll = usable(s2.suggestions).filter((x) => !(x.based_on ?? []).some((id) => removed.has(id)));
+
+  const quotes = (ev: Array<{ quoted_text: string }> | undefined) => (ev ?? []).map((e) => e.quoted_text);
+  const ratings = new Map<string, Rated>();
+  for (const f of findings) ratings.set(f.id, rate({ ...f, expires_at: (f as Finding & Extra).expires_at }, [f.title, f.statement, f.why_it_matters, ...quotes(f.evidence)], now));
+  for (const x of contraAll) ratings.set(x.id, rate({ ...x, expires_at: (x as Contra & Extra).expires_at }, [x.title, x.why_it_matters, ...x.versions.flatMap((v) => [v.value, v.quoted_text])], now));
+  for (const x of noteAll) ratings.set(x.id, rate({ topic: x.topic, expires_at: (x as Note & Extra).expires_at }, [x.title, x.note, ...quotes(x.evidence)], now));
+  const keyOf = (id: string) => ratings.get(id)?.key ?? 0;
+
+  const strengths = ranked(findings.filter((f) => f.kind === 'strength'), (f) => keyOf(f.id));
+  const problems = ranked(findings.filter((f) => f.kind === 'problem'), (f) => keyOf(f.id));
+  const contradictions = ranked(contraAll, (x) => keyOf(x.id));
+  const notes = ranked(noteAll, (x) => keyOf(x.id));
+  // A step ranks with the most urgent item it rests on.
+  const suggestions = ranked(sugAll, (s) => Math.max(0, ...(s.based_on ?? []).map(keyOf)));
+
+  // One gate for every section: the top N by rank are shown, the rest are locked.
+  const topN = <T,>(list: T[], n: number) => ({ shown: list.slice(0, n), hidden: list.slice(n) });
+  const gP = topN(problems, FREE_N.problems);
+  const gC = topN(contradictions, FREE_N.contradictions);
+  const gN = topN(notes, FREE_N.notes);
+  const visibleIds = new Set<string>([...strengths, ...gP.shown, ...gC.shown, ...gN.shown].map((x) => x.id));
+  // An action step is free only when everything it rests on is on the page, so it cannot give away a locked item.
+  const freeSugs = suggestions.filter((s) => (s.based_on ?? []).length > 0 && s.based_on.every((id) => visibleIds.has(id))).slice(0, FREE_N.suggestions);
   const freeSugIds = new Set(freeSugs.map((s) => s.id));
   const lockedSugs = suggestions.filter((s) => !freeSugIds.has(s.id));
-  const hiddenIds = new Set<string>([...hiddenProblems, ...lockedSugs].map((x) => x.id));
-  const summary = report.summary.filter((l) => !l.cites.some((id) => hiddenIds.has(id)));
+  // A summary line may cite only what is printed in full.
+  const summary = report.summary.filter((l) => l.cites.every((id) => visibleIds.has(id)));
 
-  const allUrg = [...problems.map(urgF), ...contradictions.map(urgC)];
-  const topUrg = URG_ORDER.find((u) => allUrg.includes(u)) ?? null;
-  const urgentN = allUrg.filter((u) => URG_RANK[u] >= 3).length;
-  const recordsN = [...problems, ...contradictions].filter((x) => RECORD_TOPICS.has(String(x.topic))).length;
-  const issuesN = problems.length + contradictions.length;
+  // Every number on the page reads from this object. "issues" = problems + contradictions; "items" = everything found,
+  // strengths and signals included (the action steps are advice, not findings).
+  const issueUrg = [...problems, ...contradictions].map((x) => ratings.get(x.id)!.urg);
+  const counts = {
+    strengths: strengths.length, problems: problems.length, contradictions: contradictions.length, notes: notes.length, suggestions: suggestions.length,
+    issues: problems.length + contradictions.length,
+    items: strengths.length + problems.length + contradictions.length + notes.length,
+    shown: { strengths: strengths.length, problems: gP.shown.length, contradictions: gC.shown.length, notes: gN.shown.length, suggestions: freeSugs.length },
+    hidden: { problems: gP.hidden.length, contradictions: gC.hidden.length, notes: gN.hidden.length, suggestions: lockedSugs.length },
+    urgent: issueUrg.filter((u) => u === 'critical' || u === 'high').length,
+    // Items of every type whose topic a bank, tender panel or partner checks, each counted once.
+    records: [...strengths, ...problems, ...contradictions, ...notes].filter((x) => RECORD_TOPICS.has(String(x.topic))).length,
+  };
+
+  // The headline is rank #1 of problems and contradictions together: the same ranking the sections use.
+  const topId = ranked<{ id: string }>([...problems, ...contradictions], (x) => keyOf(x.id))[0]?.id;
+  const topUrg = topId ? ratings.get(topId)!.urg : null;
+
+  // Short customer-facing labels for ids; the id itself is only in title= / data-id, or printed in debug mode.
+  const labels = new Map<string, string>();
+  strengths.forEach((x, i) => labels.set(x.id, `${t.lab.strength} ${i + 1}`));
+  problems.forEach((x, i) => labels.set(x.id, `${t.lab.problem} ${i + 1}`));
+  contradictions.forEach((x, i) => labels.set(x.id, `${t.lab.contra} ${i + 1}`));
+  notes.forEach((x, i) => labels.set(x.id, `${t.lab.note} ${i + 1}`));
+  suggestions.forEach((x, i) => labels.set(x.id, `${t.lab.step} ${i + 1}`));
+  const labelOf = (id: string) => (options.debug ? `${labels.get(id) ?? ''} (${id})` : labels.get(id) ?? '');
+  const idAttr = (id: string) => `title="${esc(id)}" data-id="${esc(id)}"`;
+  const cites = (ids: string[]) => ids.filter((id) => labels.has(id)).map((id) => `<a class="cite" href="#${esc(id)}" ${idAttr(id)}>${esc(labelOf(id))}</a>`).join('');
+  const idLinks = (ids: string[]) => `<span class="ids">${ids.filter((id) => labels.has(id)).map((id) => `<a href="#${esc(id)}" ${idAttr(id)}>${esc(labelOf(id))}</a>`).join('')}</span>`;
+
   const badge = (u: Urgency) => `<span class="urg ${u}" aria-label="${esc(t.urgLabel)}: ${esc(t.urg[u])}">${esc(t.urg[u])}</span>`;
   const tally = (us: Urgency[]) => URG_ORDER.map((k) => [k, us.filter((u) => u === k).length] as const).filter(([, n]) => n).map(([k, n]) => `${n} ${t.urg[k]}`).join(' · ');
   const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
   const sites = (s2.baseline?.websites ?? []).map((w) => String(w).replace(/\s*\(.*\)\s*$/, '')).filter(Boolean).slice(0, 3);
-  const firstSection = strengths.length ? 'strengths' : problems.length ? 'problems' : contradictions.length ? 'contradictions' : 'notes';
+  const firstSection = (['strengths', 'problems', 'contradictions', 'notes'] as const).find((k) => counts[k]);
 
   const head = (key: keyof typeof t.sec, n: number, pitch?: readonly [string, string], sec?: readonly [string, string, string]) => {
     const [eye, h, g] = sec ?? t.sec[key];
     return `<div class="head"><p class="eyebrow">${esc(eye)} · ${n}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2>${pitch ? `<p class="pitch">${esc(pitch[0])}<span>${esc(pitch[1])}</span></p>` : ''}</div>`;
   };
-  const cardHead = (cls: string, label: string, id: string, urg?: Urgency) => `<div class="warnhead"><span class="hl"><span class="tag ${cls}">${esc(label)}</span>${urg ? badge(urg) : ''}</span><span class="fileno">${esc(id)}</span></div>`;
+  const cardHead = (cls: string, label: string, id: string, urg?: Urgency) => `<div class="warnhead"><span class="hl"><span class="tag ${cls}">${esc(label)}</span>${urg ? badge(urg) : ''}</span><span class="fileno" ${idAttr(id)}>${esc(labelOf(id))}</span></div>`;
   const bars = (n = 3) => `<div class="bars" aria-hidden="true">${['s', 'm', '', 'm'].slice(0, n).map((w) => `<i${w ? ` class="${w}"` : ''}></i>`).join('')}</div>`;
   const lockLine = (label: string) => `<p class="lk">${lockIcon}${esc(label)}</p>`;
 
-  const finding = (f: Finding, i: number) => {
+  // A locked teaser title: the kind of record plus a short hint (the check, else "issue 2"), unique within its section.
+  const teasers = (list: Array<{ id: string; topic?: string }>): Map<string, string> => {
+    const out = new Map<string, string>(); const used = new Set<string>(); const perTopic = new Map<string, number>();
+    for (const x of list) {
+      const topic = t.topic[String(x.topic)] ?? t.topic.other;
+      const k = (perTopic.get(topic) ?? 0) + 1; perTopic.set(topic, k);
+      const check = String((x as Extra).check_id ?? '').replace(/[_-]+/g, ' ').trim();
+      let title = `${topic}: ${check || `${t.hint} ${k}`}`;
+      if (used.has(title)) title = `${topic}: ${t.hint} ${k}`;
+      for (let n = 2; used.has(title); n++) title = `${topic}: ${t.hint} ${k}.${n}`;
+      used.add(title); out.set(x.id, title);
+    }
+    return out;
+  };
+  const tP = teasers(gP.hidden); const tC = teasers(gC.hidden); const tN = teasers(gN.hidden);
+
+  const finding = (f: Finding) => {
     const cls = f.kind === 'strength' ? 'good' : 'wrong';
-    return `<article class="warn ${cls}${f.kind === 'problem' && i === 0 ? ' first' : ''}" id="${esc(f.id)}">${cardHead(cls, f.kind === 'strength' ? t.tag.strength : t.tag.problem, f.id, f.kind === 'problem' ? urgF(f) : undefined)}
+    return `<article class="warn ${cls}${f.id === topId ? ' first' : ''}" id="${esc(f.id)}">${cardHead(cls, f.kind === 'strength' ? t.tag.strength : t.tag.problem, f.id, f.kind === 'problem' ? ratings.get(f.id)!.urg : undefined)}
 <h3>${esc(f.title)}</h3><p class="d">${esc(f.statement)}</p>${f.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(f.why_it_matters)}</p>` : ''}${evidenceList(f.evidence, t.sources)}</article>`;
   };
-  // A locked problem: its id, urgency and kind of record only. Title, statement, evidence and sources are not in the HTML.
-  const lockedFinding = (f: Finding) => `<article class="warn wrong locked" id="${esc(f.id)}">${cardHead('wrong', t.tag.problem, f.id, urgF(f))}<p class="topic">${esc(t.topic[String(f.topic)] ?? t.topic.other)}</p>${bars()}${lockLine(t.locked)}</article>`;
+  // A locked item: its id, kind and teaser title only. Text, evidence and sources are not in the HTML.
+  const lockedCard = (cls: string, tag: string, id: string, title: string, urg?: Urgency) => `<article class="warn ${cls} locked" id="${esc(id)}">${cardHead(cls, tag, id, urg)}<p class="topic">${esc(title)}</p>${bars()}${lockLine(t.locked)}</article>`;
   const unlockCard = (title: string, text: string, extra = '') => `<div class="unlock"><div><h3>${esc(title)}</h3><p>${esc(text)}</p>${extra ? `<p class="tally">${esc(extra)}</p>` : ''}</div><a class="btn" href="#order">${esc(t.unlock)}&nbsp;→</a></div>`;
 
-  // The first FREE_CONTRADICTIONS in full; the rest keep their title, sources and values but not the link or the quote.
-  const contradiction = (x: Contra) => {
-    const open = shownContra.has(x.id);
-    return `<article class="warn contra" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, urgC(x))}<h3>${esc(x.title)}</h3>
-<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${x.versions.map((v) => open
-    ? `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`
-    : `<tr><td class="where">${esc(v.source)}<small class="lk">${lockIcon}${esc(t.maskedSource)}</small></td><td class="said"><b>${esc(v.value)}</b></td></tr>`).join('')}</tbody></table>
+  // A shown contradiction shows every version with its source link and quote; a locked one shows none of it.
+  const contradiction = (x: Contra) => `<article class="warn contra${x.id === topId ? ' first' : ''}" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, ratings.get(x.id)!.urg)}<h3>${esc(x.title)}</h3>
+<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${x.versions.map((v) => `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table>
 ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matters)}</p>` : ''}</article>`;
-  };
 
-  const note = (x: Step2V2Output['take_note'][number]) => `<article class="warn missing" id="${esc(x.id)}">${cardHead('missing', t.tag.note, x.id)}<h3>${esc(x.title)}</h3><p class="d">${esc(x.note)}</p>
+  const note = (x: Note) => `<article class="warn missing" id="${esc(x.id)}">${cardHead('missing', t.tag.note, x.id)}<h3>${esc(x.title)}</h3><p class="d">${esc(x.note)}</p>
 <p class="risk"><b>${esc(t.notCertain)}:</b> ${esc(x.why_not_conclusive)}</p>${evidenceList(x.evidence, t.sources)}</article>`;
 
-  const suggestion = (x: Step2V2Output['suggestions'][number], i: number) => `<div class="sug" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
-<div class="rw"><b>${esc(x.action)}</b><p>${esc(x.why)}</p></div><div class="on"><span class="k">${esc(t.basedOn)}</span>${idLinks(x.based_on ?? [])}<span class="fileno">${esc(x.id)}</span></div></div>`;
-  const lockedSuggestion = (x: Step2V2Output['suggestions'][number], i: number) => `<div class="sug locked" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
-<div class="rw">${bars(2)}${lockLine(t.locked)}</div><div class="on"><span class="fileno">${esc(x.id)}</span></div></div>`;
+  const suggestion = (x: Sug, i: number) => `<div class="sug" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
+<div class="rw"><b>${esc(x.action)}</b><p>${esc(x.why)}</p></div><div class="on"><span class="k">${esc(t.basedOn)}</span>${idLinks(x.based_on ?? [])}<span class="fileno" ${idAttr(x.id)}>${esc(labelOf(x.id))}</span></div></div>`;
+  const lockedSuggestion = (x: Sug, i: number) => {
+    const topic = (x as Sug & { topic?: string }).topic;
+    return `<div class="sug locked" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
+<div class="rw"><p class="topic">${esc(topic ? `${labels.get(x.id)} · ${t.topic[topic] ?? t.topic.other}` : labels.get(x.id) ?? '')}</p>${bars(2)}${lockLine(t.locked)}</div><div class="on"><span class="fileno" ${idAttr(x.id)}>${esc(options.debug ? x.id : '')}</span></div></div>`;
+  };
 
+  // Strip: a counter exists only for a section that is printed.
   const strip = ([
-    [strengths.length, t.strip.strengths, 'strengths'], [problems.length, t.strip.problems, 'problems'],
-    [contradictions.length, t.strip.contradictions, 'contradictions'], [notes.length, t.strip.notes, 'notes'],
-  ] as const).map(([n, label, href]) => `<a href="#${href}"><b>${n}</b><span>${esc(label)}</span></a>`).join('');
+    [counts.strengths, t.strip.strengths(counts.strengths), 'strengths'], [counts.problems, t.strip.problems(counts.problems), 'problems'],
+    [counts.contradictions, t.strip.contradictions(counts.contradictions), 'contradictions'], [counts.notes, t.strip.notes(counts.notes), 'notes'],
+  ] as const).filter(([n]) => n > 0).map(([n, label, href]) => `<a href="#${href}"><b>${n}</b><span>${esc(label)}</span></a>`).join('');
 
   // Sections alternate white and grey band, as v1's do; a list with no items is left out.
   let shade = false;
@@ -818,51 +865,44 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
     return `<section id="${id}"${shade ? ' class="band"' : ''}>${body}</section>`;
   };
 
-  const hiddenTally = tally(hiddenProblems.map(urgF));
-  const getsN: GetsN = { shownP: shownProblems.length, totalP: problems.length, hiddenP: hiddenProblems.length, shownS: freeSugs.length, hiddenS: lockedSugs.length };
+  const getsN: GetsN = { shownP: counts.shown.problems, totalP: counts.problems, hiddenP: counts.hidden.problems, shownS: counts.shown.suggestions, hiddenS: counts.hidden.suggestions };
   const body = [
-    section('strengths', strengths.length, `${head('strengths', strengths.length)}<div class="warns">${strengths.map(finding).join('')}</div>`),
-    section('problems', problems.length, `${head('problems', problems.length, t.pitchProblems)}<p class="legend">${esc(t.urgHow)}</p><div class="warns">${shownProblems.map(finding).join('')}${hiddenProblems.map(lockedFinding).join('')}${hiddenProblems.length ? unlockCard(t.lockedCard(hiddenProblems.length), t.lockedCardP, hiddenTally) : ''}</div>`),
-    section('contradictions', contradictions.length, `${head('contradictions', contradictions.length, t.pitchContra)}<div class="warns one">${contradictions.map(contradiction).join('')}</div>`),
+    section('strengths', counts.strengths, `${head('strengths', counts.strengths)}<div class="warns">${strengths.map(finding).join('')}</div>`),
+    section('problems', counts.problems, `${head('problems', counts.problems, t.pitchProblems)}<p class="legend">${esc(t.urgHow)}</p><div class="warns">${gP.shown.map(finding).join('')}${gP.hidden.map((f) => lockedCard('wrong', t.tag.problem, f.id, tP.get(f.id)!, ratings.get(f.id)!.urg)).join('')}${counts.hidden.problems ? unlockCard(t.lockedCard.problems(counts.hidden.problems), t.lockedCardP, tally(gP.hidden.map((f) => ratings.get(f.id)!.urg))) : ''}</div>`),
+    section('contradictions', counts.contradictions, `${head('contradictions', counts.contradictions, t.pitchContra)}<div class="warns one">${gC.shown.map(contradiction).join('')}${gC.hidden.map((x) => lockedCard('contra', t.tag.contra, x.id, tC.get(x.id)!, ratings.get(x.id)!.urg)).join('')}${counts.hidden.contradictions ? unlockCard(t.lockedCard.contradictions(counts.hidden.contradictions), t.lockedCardP, tally(gC.hidden.map((x) => ratings.get(x.id)!.urg))) : ''}</div>`),
   ].join('');
   const after = [
-    section('notes', notes.length, `${head('notes', notes.length)}<div class="warns">${notes.map(note).join('')}</div>`),
-    section('suggestions', suggestions.length, `${head('suggestions', suggestions.length, undefined, lockedSugs.length ? t.secSugLocked : undefined)}<div class="sugs">${freeSugs.map(suggestion).join('')}${lockedSugs.map((x, i) => lockedSuggestion(x, freeSugs.length + i)).join('')}${lockedSugs.length ? unlockCard(t.lockedSugs, t.lockedSugsP, t.lockedSugsTally) : ''}</div>`),
-    // What the full report holds, so the buyer knows what the price buys. Shown whenever there is an issue to sell against.
-    section('inside', issuesN, `<div class="head"><p class="eyebrow">${esc(t.insideEye)}</p><h2>${esc(t.insideH)}<br><span class="g">${esc(t.insideG)}</span></h2><p class="lead">${esc(t.insideP)}</p></div>
-<div class="gets">${t.gets.map((g, i) => { const note = g.note?.(getsN) ?? ''; return `<div class="get"><span class="rn">${two(i + 1)}</span><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p>${note ? `<p class="free">${esc(note)}</p>` : ''}</div>`; }).join('')}${unlockCard(t.insideAsk(price), t.ctaP, t.lockedSugsTally)}</div>`),
+    section('notes', counts.notes, `${head('notes', counts.notes)}<div class="warns">${gN.shown.map(note).join('')}${gN.hidden.map((x) => lockedCard('missing', t.tag.note, x.id, tN.get(x.id)!)).join('')}${counts.hidden.notes ? unlockCard(t.lockedCard.notes(counts.hidden.notes), t.lockedCardP) : ''}</div>`),
+    section('suggestions', counts.suggestions, `${head('suggestions', counts.suggestions, undefined, counts.hidden.suggestions ? t.secSugLocked : undefined)}<div class="sugs">${freeSugs.map(suggestion).join('')}${lockedSugs.map((x, i) => lockedSuggestion(x, freeSugs.length + i)).join('')}${counts.hidden.suggestions ? unlockCard(t.lockedSugs, t.lockedSugsP, t.lockedSugsTally) : ''}</div>`),
+    // What the full report holds, so the buyer knows what the price buys. It ends in the one order block every buy button points to.
+    section('inside', 1, `<div class="head"><p class="eyebrow">${esc(t.insideEye)}</p><h2>${esc(t.insideH)}<br><span class="g">${esc(t.insideG)}</span></h2><p class="lead">${esc(t.insideP)}</p></div>
+<div class="gets">${t.gets.map((g, i) => { const n = g.note?.(getsN) ?? ''; return `<div class="get"><span class="rn">${two(i + 1)}</span><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p>${n ? `<p class="free">${esc(n)}</p>` : ''}</div>`; }).join('')}
+<div class="ask" id="order"><h3>${esc(t.cta)}</h3>${price ? `<p class="price">${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></div>`),
   ].join('');
-  const callout = recordsN ? `<div class="callout"><b>${esc(t.recH)}</b><span>${esc(t.rec(recordsN))}</span></div>` : '';
-
-  const areas = AREAS[ko ? 'ko' : 'en'];
-  const runs = `<div class="runs"><div class="run done"><span class="rn">00</span><div class="rw"><b>${esc(t.doneW)}</b><span>${esc(t.doneS)}</span></div><span class="rs">${esc(t.done)}</span><div class="rc"><b>${found}</b><span>${esc(t.doneC)}</span></div></div>
-${areas.map(([a, d], i) => `<div class="run"><span class="rn">${two(i + 1)}</span><div class="rw"><b>${esc(a)}</b><span>${esc(d)}</span></div><span class="rs">${esc(t.notRun)}</span><div class="rc"><b>?</b><span>${esc(t.notRunC)}</span></div></div>`).join('')}</div>`;
+  const callout = counts.records ? `<div class="callout"><b>${esc(t.recH)}</b><span>${esc(t.rec(counts.records))}</span></div>` : '';
 
   return `<!doctype html><html lang="${ko ? 'ko' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>${esc(t.title(c))}</title>${FONTS(ko)}<style>${CSS}</style></head><body>
 <header class="top"><div><b>${esc(t.bar)}</b> <span class="for">${esc(t.barFor(c))}</span></div><a class="btn" href="#order">${esc(t.cta)}</a></header>
 <section class="dark hero"><div><p class="eyebrow">${esc(t.eyebrow(c, date))}</p>
-<h1>${esc(t.h1(c))}<br><span class="g">${esc(t.h1g(contradictions.length))}</span></h1>
+<h1>${esc(t.h1(c))}<br><span class="g">${esc(t.h1g(counts.contradictions))}</span></h1>
 ${summary.length ? `<div class="lead">${summary.map((l) => `<p>${esc(l.text)}${cites(l.cites)}</p>`).join('')}</div>` : ''}
-${issuesN ? `<div class="exec"><b>${esc(t.execH)} ${esc(t.exec(problems.length, contradictions.length, urgentN))}</b><span>${esc(contradictions.length ? t.execContra : t.execPlain)}</span></div>` : ''}
-<div class="ctas"><a class="btn" href="#order">${esc(t.cta)}</a><a class="btn ghost" href="#${firstSection}">${esc(t.seeAll)}&nbsp;↓</a></div>
+${counts.issues ? `<div class="exec"><b>${esc(t.execH)} ${esc(t.exec(counts.problems, counts.contradictions, counts.urgent))}</b><span>${esc(counts.contradictions ? t.execContra : t.execPlain)}</span></div>` : ''}
+<div class="ctas"><a class="btn" href="#order">${esc(t.cta)}</a>${firstSection ? `<a class="btn ghost" href="#${firstSection}">${esc(t.seeAll)}&nbsp;↓</a>` : ''}</div>
 <p class="anyone">${esc(t.anyone)}</p></div>
 <aside class="file"><div class="filehead"><span class="stamp">${esc(t.stamp)}</span><span class="fileno">${esc(t.fileNo)}</span></div><h3>${esc(c)}</h3><dl>
 <div><dt>${esc(t.fCountry)}</dt><dd>${esc(s2.input.country)}</dd></div><div><dt>${esc(t.fIndustry)}</dt><dd>${esc(s2.input.industry)}</dd></div>
 ${sites.length ? `<div><dt>${esc(t.fSites)}</dt><dd>${esc(sites.join(', '))}</dd></div>` : ''}
-<div><dt>${esc(t.fFound)}</dt><dd><b>${esc(t.found(found))}</b></dd></div>${topUrg ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topUrg)}</dd></div>` : ''}<div><dt>${esc(t.fDeeper)}</dt><dd>${esc(t.deeper)}</dd></div>
+<div><dt>${esc(t.fFound)}</dt><dd><b>${esc(t.found(counts.items))}</b></dd></div>${topUrg ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topUrg)}</dd></div>` : ''}
 </dl><p class="foot">${esc(t.fileFoot(date))}</p></aside></section>
-<div class="strip">${strip}</div>
+${strip ? `<div class="strip">${strip}</div>` : ''}
 ${callout}
 <section class="thesis"><p class="eyebrow">${esc(t.thesisEye)}</p><h2>${esc(t.thesisH)}<br><span class="g">${esc(t.thesisG)}</span></h2><p class="lead">${esc(t.thesisP)}</p></section>
 ${body}
 <section class="dark band-cta"><div><p class="eyebrow">${esc(t.bandEye)}</p><h2>${esc(t.bandH)}<br><span class="g">${esc(t.bandG)}</span></h2><p class="lead" style="margin-top:16px">${esc(t.bandP)}</p></div><a class="btn" href="#order">${esc(t.cta)}</a></section>
 ${after}
-<section id="order" class="dark"><div class="head"><p class="eyebrow">${esc(t.fullEye)}</p><h2>${esc(t.fullH)}<br><span class="g">${esc(t.fullG)}</span></h2><p class="lead">${esc(t.fullP)}</p></div>
-${runs}
-<div class="ask"><h3>${esc(t.cta)}</h3>${price ? `<p class="price">${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></section>
-<footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date))}</span></div>`).join('')}</div><p>${esc(t.foot)}</p></footer>
-${issuesN ? `<div class="sticky"><div class="l"><span class="n">${esc(t.stickyN(issuesN))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
+<footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date))}</span></div>`).join('')}</div></footer>
+${counts.issues ? `<div class="sticky"><div class="l"><span class="n">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
 </body></html>`;
 }
 
