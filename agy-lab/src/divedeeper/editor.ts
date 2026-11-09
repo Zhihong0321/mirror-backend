@@ -59,11 +59,15 @@ const token = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim()
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
 const SEV_LEVEL: Record<string, number> = { high: 3, medium: 2, low: 1, info: 1 };
-const factsOf = (text: string, country: string): Set<string> => new Set([
+const factsOf = (text: string, country: string, ownHosts: string[] = []): Set<string> => new Set([
   ...phonesIn(text, country),
   ...(text.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []).map((x) => x.toLowerCase()),
-  ...(text.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []).map((x) => x.toLowerCase().replace(/^www\./, '')),
+  // The company's own domains sit in many unrelated items: they say nothing about which fact it is.
+  ...(text.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []).map((x) => x.toLowerCase().replace(/^www\./, '')).filter((h) => !ownHosts.some((o) => h === o || h.endsWith(`.${o}`))),
 ]);
+// A signal about WHO a reviewer is: shares a name with staff, may be staff, is fake, or is a self-review. "Staff should
+// review unanswered inquiries" talks about reviewing, not about a reviewer's identity.
+const IDENTITY_SIGNAL = /\breviewers?\b.{0,80}\b(?:same names?|shares? (?:a |the )?names?|possibly (?:a |the )?(?:staff|employees?)|(?:may|might|could) be (?:a |the )?(?:staff|employees?)|fake)\b|\b(?:staff|employees?)\b.{0,60}\b(?:wrote|posted|left|gave)\b.{0,40}\b(?:reviews?|ratings?)\b|\bself[- ]?reviews?\b|\bfake reviews?\b/i;
 const isProblem = (x: { severity: string }) => ['critical', 'high', 'medium'].includes(x.severity);
 
 /** Drops one finding and records why, so the drop is visible to us (never to the customer). */
@@ -82,7 +86,7 @@ export function items(L: Record<string, any>, country = ''): Item[] {
     const key = `${lane}#${i}`;
     if (isPrivate(f)) return;
     // PL10: a signal about who a person is (a reviewer who may be staff) is off unless the policy flag is on.
-    if (process.env.REPORT_IDENTITY_SIGNALS !== 'on' && (f.kind === 'identity' || /^identity/.test(String(f.check ?? '')) || /(?:reviewer|review).{0,60}(?:staff|employee|identity)|(?:staff|employee).{0,60}review/i.test(`${f.title ?? ''} ${f.detail ?? ''}`))) return recordDrop(L, lane, key, 'PL10', null);
+    if (process.env.REPORT_IDENTITY_SIGNALS !== 'on' && (f.kind === 'identity' || /^identity/.test(String(f.check ?? '')) || IDENTITY_SIGNAL.test(`${f.title ?? ''} ${f.detail ?? ''}`))) return recordDrop(L, lane, key, 'PL10', null);
     if (rechecked[key]?.verdict === 'false') return;
     // Rollups repeat what the per-question findings say; the AI chart shows them instead.
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
@@ -90,7 +94,7 @@ export function items(L: Record<string, any>, country = ''): Item[] {
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
     // PL4: every number, date, phone, email and URL a finding prints must be in its own quotes. No quote at all cannot support
     // one, unless the lane measured it (a register result, an RDAP/DNS/DMARC/PageSpeed check): the measurement is the evidence.
-    const quotes = [f.quote, ...(Array.isArray(f.quotes) ? f.quotes : []), f.evidence].filter((q): q is string => typeof q === 'string' && !!q.trim());
+    const quotes = [f.quote, ...(Array.isArray(f.quotes) ? f.quotes : []), ...(Array.isArray(f.evidence) ? f.evidence : [f.evidence])].filter((q): q is string => typeof q === 'string' && !!q.trim());
     const printed = `${f.title ?? ''} ${f.detail ?? ''}`;
     const bad = quotes.length ? claimMismatches(printed, quotes) : f.measured === true || !isJudged({ lane, check: f.check }) ? [] : claimMismatches(printed, []);
     if (bad.length) return recordDrop(L, lane, key, 'PL4', bad);
@@ -131,8 +135,9 @@ export function items(L: Record<string, any>, country = ''): Item[] {
 }
 
 /** PL15: conflicts the problems already say are removed; signals a conflict already says are removed. Returns what is left. */
-export function dedupeSections<C extends { issue?: string }>(list: Item[], conflicts: C[], country: string): { items: Item[]; conflicts: C[] } {
-  const covered = (text: string, by: string[]) => { const f = factsOf(text, country); return f.size > 0 && [...f].every((v) => by.some((t) => factsOf(t, country).has(v))); };
+export function dedupeSections<C extends { issue?: string }>(list: Item[], conflicts: C[], country: string, ownDomains: string[] = []): { items: Item[]; conflicts: C[] } {
+  const ownHosts = ownDomains.map((d) => String(d).toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[/?#].*$/, '')).filter(Boolean);
+  const covered = (text: string, by: string[]) => { const f = factsOf(text, country, ownHosts); return f.size > 0 && [...f].every((v) => by.some((t) => factsOf(t, country, ownHosts).has(v))); };
   const problemText = list.filter(isProblem).map((x) => `${x.title} ${x.detail}`);
   const kept = conflicts.filter((c) => !covered(String(c.issue ?? ''), problemText));
   const conflictText = kept.map((c) => String(c.issue ?? ''));

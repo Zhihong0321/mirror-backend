@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { bannedWords } from '../report-rules/index.ts';
+
+// Hosts of governments and registers, as regex sources in a list so a new country is one line (government-hosts.json).
+const GOVERNMENT_HOSTS = (JSON.parse(readFileSync(new URL('./government-hosts.json', import.meta.url), 'utf8')) as string[]).map((p) => new RegExp(p, 'i'));
 // The two rechecks (docs/g-search-lane-design.md has the background; the owner asked for them 2026-11-08).
 //
 //   S1-recheck  runs before the writing stages. One prompt reads the findings that an LLM itself judged (K, N, H-web, R-contacts,
@@ -51,7 +55,7 @@ export function statements(an: Notes | undefined, plan: Notes | undefined): Stat
 export function isIndependentFinding(lane: string, f: any): boolean {
   if (f?.party) return f.party === 'independent';
   const host = (() => { try { return new URL(String(f?.source)).hostname; } catch { return ''; } })();
-  return lane === 'D-registry' || /(^|\.)gov(\.[a-z]{2})?$|\.go\.[a-z]{2}$|\.gouv\.|rdap/i.test(host);
+  return lane === 'D-registry' || GOVERNMENT_HOSTS.some((re) => re.test(host));
 }
 /** PL6: "independent" / "third-party" may stay only when at least one cited source in the run is independent. */
 export const hasIndependentSource = (L: Record<string, any>): boolean => Object.entries(L).some(([lane, v]) => (v?.findings ?? []).some((f: any) => isIndependentFinding(lane, f)));

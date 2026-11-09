@@ -190,3 +190,70 @@ test('PL25 gate: a full small report from made-up data passes the customer-text 
   assert.deepEqual(bannedWords(text.replace(/JSON-LD/g, '').replace(/Technology partner.*?Insights/, '')), []);
   assert.ok(!/undefined|\[object Object\]|NaN/.test(text));
 });
+
+test('R2 7+8: short reviewer and staff names are scrubbed as whole words only', async () => {
+  const { replaceNames, scrub } = await import('./divedeeper/privacy.ts');
+  assert.equal(replaceNames('Ali and Tan went to Tanjung Market; Lim too.', ['Ali', 'Tan', 'Lim', 'Ng'], 'a reviewer'), 'a reviewer and a reviewer went to Tanjung Market; a reviewer too.');
+  assert.equal(replaceNames('Zoë met zoë.', ['Zoë'], 'x'), 'x met x.');
+  assert.equal(replaceNames('Market and Marketing', ['Ali'], 'x'), 'Market and Marketing');
+  assert.equal(scrub('Amy Ng called; Ngee Ann Poly did not.', { staff: ['Amy Ng', 'Ng'] }), 'a staff member called; Ngee Ann Poly did not.');
+  const reviews = [{ stars: 1, date: '2026-09-01', author: 'Tan', listing: 'Maps', text: 'Ali and Tan found Tanjung Market far away, very late.', reply: null }];
+  const lanes: any = { 'E-maps': { ran_at: '2026-11-02T01:00:00Z', notes: { reviews, per_listing: [{ name: 'Maps', pulled: 1, replied: 0 }] }, findings: [] }, 'N-news': { notes: { items: [], counts: { news: 0, negative: 0 }, unjudged: 0 } } };
+  const text = visible(buildReportParts(diveOf(SG), lanes).html);
+  assert.ok(text.includes('Tanjung Market') && !/\bTan\b/.test(text), 'the reviewer is gone, the place name stays');
+});
+
+test('R2 9: the company\'s own domain does not make unrelated items "the same fact"', () => {
+  const list = items({ 'A-assets': { notes: {}, findings: [{ title: 'Mail for kestrelmarine.test is unprotected', detail: '', severity: 'high', check: 'dmarc' }] } } as any, 'Singapore');
+  const conflicts = [{ issue: 'Head office differs between kestrelmarine.test and the register' }];
+  assert.equal(dedupeSections(list, conflicts, 'Singapore').conflicts.length, 0, 'without own domains the old rule still collapses them');
+  assert.equal(dedupeSections(list, conflicts, 'Singapore', ['kestrelmarine.test']).conflicts.length, 1);
+  assert.equal(dedupeSections(list, conflicts, 'Singapore', ['https://www.kestrelmarine.test/about']).conflicts.length, 1);
+});
+
+test('R2 10: government and register hosts count as independent, a look-alike does not, a party tag wins', async () => {
+  const { isIndependentFinding } = await import('./divedeeper/check.ts');
+  for (const host of ['www.canada.gc.ca', 'www.firmenbuch.gv.at', 'www.zefix.admin.ch', 'www.handelsregister.bund.de', 'ec.europa.eu', 'www.legifrance.gouv.fr', 'gouv.fr', 'www.companiesoffice.govt.nz', 'www.gov.uk', 'www.e-gov.go.jp', 'www.acra.gov.sg', 'www.registradores.gob.es', 'rdap.example']) {
+    assert.equal(isIndependentFinding('K-credibility', { source: `https://${host}/x` }), true, host);
+  }
+  for (const host of ['www.govlaw.com', 'gov-style.example.com', 'www.acme.com']) assert.equal(isIndependentFinding('K-credibility', { source: `https://${host}/x` }), false, host);
+  assert.equal(isIndependentFinding('K-credibility', { party: 'first-party', source: 'https://www.gov.uk/x' }), false);
+});
+
+test('R2 11: only a reviewer-identity signal is an identity signal; "staff should review" is ordinary advice', () => {
+  const run = (title: string) => items({ 'R-contacts': { notes: {}, findings: [{ title, detail: '', quote: title, severity: 'high' }] } } as any).length;
+  assert.equal(run('Staff should review unanswered inquiries every week'), 1);
+  assert.equal(run('Reviews are unanswered by staff for months'), 1);
+  assert.equal(run('A reviewer shares a name with listed staff'), 0);
+  assert.equal(run('A 1-star reviewer is possibly staff'), 0);
+  assert.equal(run('Staff member posted a review of their own firm'), 0);
+});
+
+test('R2 12: evidence given as a list of strings supports the finding like a quote', () => {
+  const L: any = { 'B-brand': { notes: {}, findings: [{ title: 'Serves 10 customers', detail: '', evidence: ['Serves 10 customers', 'second quote'], severity: 'high' }] } };
+  assert.equal(items(L).length, 1);
+  const bad: any = { 'B-brand': { notes: {}, findings: [{ title: 'Serves 12 customers', detail: '', evidence: ['Serves 10 customers'], severity: 'high' }] } };
+  assert.equal(items(bad).length, 0);
+});
+
+test('R2 13: a "why" printed in a chapter is printed again in the appendix', () => {
+  const why = 'Customers may get scam emails sent in your name.';
+  const lanes: any = { ...lanesOf({ ...SG }), 'S3-editor': { notes: { plain: { 'A-assets#0': { title: 'Anyone can fake your email', why } } } } };
+  const text = visible(buildReportParts(diveOf(SG), lanes).html);
+  assert.ok(text.split(why).length - 1 >= 2, `printed ${text.split(why).length - 1} time(s)`);
+});
+
+test('R2 14: four stories from the editor never print "undefined problems"', () => {
+  const stories = ['contact', 'understanding', 'credibility', 'assets'].map((theme) => ({ theme, headline: `Headline ${theme}`, body: 'b', cost: 'c', fix: 'f' }));
+  const lanes: any = { ...lanesOf(SG), 'S4-analysis': { notes: { stories, strengths: [] } } };
+  const text = visible(buildReportParts(diveOf(SG), lanes).html);
+  assert.ok(!/undefined/.test(text));
+});
+
+test('R2 5: phones from the lanes (listing, site) are the company\'s own and are kept; a personal one is scrubbed', () => {
+  const lanes: any = { ...lanesOf(SG),
+    'H-maps': { notes: { listings: [{ name: 'Kestrel', phone: '+65 6234 5678' }] }, findings: [{ title: 'Old line +65 6234 5678 on Maps', detail: 'Also call +65 9123 4567', severity: 'medium', quote: 'Old line +65 6234 5678 Also call +65 9123 4567' }] },
+    'C-merged': { notes: { sitePhones: ['+65 6345 6789'] }, findings: [] } };
+  const text = visible(buildReportParts(diveOf(SG), lanes).html);
+  assert.ok(text.includes('6234 5678') && !text.includes('9123 4567'));
+});

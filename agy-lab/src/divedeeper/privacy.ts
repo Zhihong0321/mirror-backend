@@ -106,6 +106,18 @@ const URLISH = /\b(?:https?:\/\/)?[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s)\]"'<>]*)?(?:\
 const PHONE = /(?:\+?6?0)[\s-]?1\d[\s-]?\d{3,4}[\s-]?\d{3,4}\b|\b0\d{1,2}[\s-]\d{3,4}[\s-]?\d{4}\b/g;
 const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+/** Replaces each name where it stands as a whole word (Unicode word edges, any case), so "Tan" does not hit "Tanjung"
+ *  and "Ali" does not hit "Market". One-letter names are skipped: an initial would hit every such word. */
+export function replaceNames(text: string, names: string[], to: string): string {
+  let out = text;
+  for (const raw of names) {
+    const name = String(raw ?? '').trim();
+    if (name.length < 2) continue;
+    out = out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escRe(name).replace(/\s+/g, '\\s+')}(?![\\p{L}\\p{N}])`, 'giu'), to);
+  }
+  return out;
+}
+
 /** Removes private document links from any text; for the preview also phone numbers and the names of staff who are not leadership. */
 export function scrub(text: unknown, opts: { phones?: boolean; staff?: string[] } = {}): string {
   let s = String(text ?? '');
@@ -113,9 +125,7 @@ export function scrub(text: unknown, opts: { phones?: boolean; staff?: string[] 
   if (opts.phones) s = s.replace(PHONE, 'a phone number');
   for (const name of opts.staff ?? []) {
     // Full name first, then the name before any bracket, so "Ahmad Safwan bin Ahmad Nazri (Safwan Nazri)" goes either way.
-    for (const form of [name, name.replace(/\s*\(.*\)\s*$/, ''), name.match(/\(([^)]+)\)/)?.[1]].filter((x): x is string => !!x && x.trim().length >= 4)) {
-      s = s.replace(new RegExp(escRe(form.trim()), 'gi'), 'a staff member');
-    }
+    s = replaceNames(s, [name, name.replace(/\s*\(.*\)\s*$/, ''), name.match(/\(([^)]+)\)/)?.[1]].filter((x): x is string => !!x), 'a staff member');
   }
   return s;
 }

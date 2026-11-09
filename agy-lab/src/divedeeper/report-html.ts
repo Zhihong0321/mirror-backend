@@ -19,7 +19,7 @@ import { cleanText, deadLinks, localeFor, similarPairs, plural } from '../report
 import { applyCheck } from './check.ts';
 import { AREAS, DEPTS, dedupeSections, deptOf, ownershipWording, resolve, type Item } from './editor.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { isLeadershipStrict, isPrivateUrl, publicSources, scrub, scrubPersonalPhones } from './privacy.ts';
+import { isLeadershipStrict, isPrivateUrl, publicSources, replaceNames, scrub, scrubPersonalPhones } from './privacy.ts';
 
 /** Why each area matters, said once for every client. No market statistics we cannot source. */
 export const OPENERS: Record<string, { q: [string, string]; body: (t: { trade: string; town: string }) => string }> = {
@@ -433,17 +433,19 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   const name = R.name;
   const country = String(dive.country ?? '');
   // PL9: phones printed are the company's own contacts; reviewers are never named; staff only when they lead the company.
+  const contactPoints: any[] = R.contact?.points ?? [];
   const companyPhones: string[] = [
-    JSON.stringify(r.identity?.phones ?? []), JSON.stringify(L['H-maps']?.notes?.listings?.map((x: any) => x.phone) ?? []), JSON.stringify(L['C-merged']?.notes?.sitePhones ?? []),
-    ...R.contact.points.filter((p: any) => p.kind !== 'email' && !p.left && !['personal', 'someone_else'].includes(p.status)).map((p: any) => String(p.value)),
-  ];
+    ...(r.identity?.phones ?? []), ...(L['H-maps']?.notes?.listings ?? []).map((x: any) => x?.phone), ...(L['C-merged']?.notes?.sitePhones ?? []),
+  ].filter(Boolean).map(String).concat([
+    ...contactPoints.filter((p: any) => p.kind !== 'email' && !p.left && !['personal', 'someone_else'].includes(p.status)).map((p: any) => String(p.value)),
+  ]);
   const people: any[] = r.people?.people ?? [];
-  const reviewers = [...new Set([...(L['E-maps']?.notes?.reviews ?? []), ...R.reviews.unanswered_low, ...R.reviews.good_quotes].map((x: any) => String(x.author ?? '').trim()).filter((x) => x.length >= 4))];
-  const nonLeaders = people.filter((x) => !isLeadershipStrict(x.role ?? x.relation)).map((x) => String(x.name ?? '')).filter((x) => x.length >= 4);
+  const reviewers = [...new Set([...(L['E-maps']?.notes?.reviews ?? []), ...R.reviews.unanswered_low, ...R.reviews.good_quotes].map((x: any) => String(x.author ?? '').trim()).filter((x) => x.length >= 2))];
+  const nonLeaders = people.filter((x) => !isLeadershipStrict(x.role ?? x.relation)).map((x) => String(x.name ?? '')).filter((x) => x.length >= 2);
   const quiet = (t: string) => {
     if (/^(?:https?:|mailto:|#|data:)/.test(t)) return t;
     let out = scrub(t, { staff: nonLeaders });
-    for (const w of reviewers) out = out.split(w).join('a reviewer');
+    out = replaceNames(out, reviewers, 'a reviewer');
     out = scrubPersonalPhones(out, { country, companyPhones });
     // PL21: internal ids (f1, s3, c2, n4) are for the debug option only.
     return opts.debug ? out : out.replace(/\(\s*(?:[fscn]\d+\s*(?:,|and|&)?\s*)+\)/g, '').replace(/\s*(?<![\w./@#-])[fscn]\d+(?![\w@/-]|\.\w)/g, '').replace(/ {2,}/g, ' ').replace(/ ([,.;:])/g, '$1');
@@ -495,9 +497,10 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     return `${esc(a)}${b ? `<br><span class="g">${esc(b)}</span>` : ''}`;
   };
   /** Finding rows in a banded table: status, finding with what it means, where we saw it. */
-  const previousWhy: { id: string; text: string }[] = [];
   const itemRows = (list: Item[]) => {
     if (!list.length) return '';
+    // Repeats are judged within one listing, not across the chapters and the appendix, so each table starts empty.
+    const previousWhy: { id: string; text: string }[] = [];
     // The editor reuses one consequence line for many findings ("This makes it harder for customers to
     // verify your company status." on twenty rows). Within one table it is said once, on its first row;
     // a line that only repeats the row's own title is dropped too.
@@ -599,7 +602,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   const placeOf = (w: string) => w.replace(/^your website: https?:\/\/(www\.)?/, 'your site: ').replace(/\s*\([^)]*\)$/, '').replace(/\/$/, '');
   /** Every contact point, where it is published and where it really leads. */
   function contactTable(): string {
-    const pts = [...R.contact.points].sort((a: any, b: any) => CONTACT_ORDER.indexOf(a.status) - CONTACT_ORDER.indexOf(b.status)).slice(0, 16);
+    const pts = [...contactPoints].sort((a: any, b: any) => CONTACT_ORDER.indexOf(a.status) - CONTACT_ORDER.indexOf(b.status)).slice(0, 16);
     if (!pts.length) return '';
     return `<table class="band"><thead><tr><th>Contact</th><th>Published on</th><th>Where it leads</th></tr></thead><tbody>${pts.map((p: any) => {
       const [cls, lbl] = p.left ? ['urgent', 'Someone who has left'] : CONTACT_PILL[p.status] ?? CONTACT_PILL.unclear;
@@ -695,7 +698,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
 
   // PL15: the conflicts the problems already say are taken out here; PL19: every number below is read from `counts`.
   const conflictsAll: any[] = an.mismatch?.length ? an.mismatch : (r.contradictions ?? []).slice(0, 5).map((c: string) => ({ issue: typeset(c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()), settled: null }));
-  const dd = dedupeSections(R.items, conflictsAll, country);
+  const dd = dedupeSections(R.items, conflictsAll, country, R.identity.domains);
   R.items = dd.items;
   const mismatch = dd.conflicts;
   const inArea = (id: string) => R.items.filter((x) => x.area === id);
@@ -719,7 +722,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     assets: () => ({ headline: `${plural(counts.assets.issues, 'risk', 'risks')} in the domains and email that carry your name`, body: 'Expiring domains, domains held in someone else’s name, and email anyone can fake.', cost: 'A lapsed domain takes your website and every email address down at once.', fix: 'Turn on auto-renew, move every domain into the company’s name, and add SPF and DMARC to your email domain.' }),
   };
   const themes = [...CHAPTER_ORDER] as string[];
-  const edStories: any[] = (an.stories ?? []).filter((s: any) => themes.includes(s.theme));
+  const edStories: any[] = (an.stories ?? []).filter((s: any) => themes.includes(s.theme)).slice(0, 3); // the heading names at most three
   const stories: any[] = typesetAll((edStories.length ? edStories : themes.filter((t) => areaOf(t)?.ran && areaOf(t)?.status[0] !== 'good').sort((a, b) => Math.max(0, ...inArea(b).map((x) => x.rank)) - Math.max(0, ...inArea(a).map((x) => x.rank))).slice(0, 3).map((t) => ({ theme: t, ...fallback[t]() })))
     .map((s: any) => ({ ...fallback[s.theme](), ...Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v === 'string' && v.trim())) })));
   const storyOf = (t: string) => stories.find((s: any) => s.theme === t);
