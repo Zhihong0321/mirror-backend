@@ -1,8 +1,10 @@
 // V2.1 Step 3 (owner, 2026-11-06): write the free report and the email for one company, from its Step 2 rules-v2
 // result only. Step 3 writes; it never judges.
 //
-// The report page shows all four Step 2 lists in full (owner's choice), rendered by plain code from the Step 2 items
-// themselves, so nothing on it can drift from Step 2. The LLM writes only two things, in one call:
+// The report page is rendered by plain code from the Step 2 items themselves, so nothing on it can drift from Step 2.
+// It was all four lists in full; since 2026-11-08 it is a preview that sells the full report: strengths and signals in
+// full, the top 3 problems, 2 contradictions and 2 action steps in full, the rest as placeholders with no text in the
+// HTML (see FREE_* below), and a code-set urgency badge on each problem. The LLM writes only two things, in one call:
 //   summary   2-3 opening sentences for the report
 //   email     a subject and 2-3 short paragraphs on why this report matters to this company
 // Every sentence it writes cites Step 2 item ids. Plain code then checks each one: the ids exist, every number in it is
@@ -394,6 +396,40 @@ async function refineStep3(
 
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
+// ---------------------------------------------------------------- what the free page shows, and urgency
+// The preview is a sales page: what is locked is left out of the HTML (a CSS blur would still be in the page source).
+
+/** How many problems, contradictions and action steps the free page shows in full. The rest are placeholders. */
+/** The price of the full report (owner, 2026-11-09). V21_REPORT_PRICE overrides it; an empty value hides it. */
+export const DEFAULT_PRICE = '$59';
+type GetsN = { shownP: number; totalP: number; hiddenP: number; shownS: number; hiddenS: number };
+export const FREE_PROBLEMS = 3;
+export const FREE_CONTRADICTIONS = 2;
+export const FREE_SUGGESTIONS = 2;
+
+export type Urgency = 'critical' | 'high' | 'medium' | 'low';
+const URG_RANK: Record<Urgency, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+const URG_ORDER: Urgency[] = ['critical', 'high', 'medium', 'low'];
+// Set by code, never by the LLM: the kind of record a finding is about, bumped one level when its wording names a break
+// (expired, spoofable, dummy, unreachable ...), and capped at High unless Step 2 was highly confident of it.
+const TOPIC_BASE: Record<string, number> = {
+  registration: 3, licence: 3, email: 3, contact: 3, identity: 2, website: 2, reviews: 2, reputation: 2, scale: 1, awards: 1, other: 1,
+};
+const BREAK_WORDS = /expire|spoof|dmarc|\bspf\b|blacklist|suspend|revok|lapse|fraud|dummy|placeholder|disconnect|unreachable|bounce|not working|no longer|invalid|wrong/i;
+/** The topics a bank, tender panel or partner checks against the company's own claims. */
+const RECORD_TOPICS = new Set(['registration', 'licence', 'awards']);
+
+export function urgencyOf(topic: string | undefined, text: string, confidence: string | undefined): Urgency {
+  let level = (TOPIC_BASE[String(topic ?? 'other')] ?? 1) + (BREAK_WORDS.test(text) ? 1 : 0);
+  if (confidence !== 'high') level = Math.min(level, 3);
+  return URG_ORDER.find((u) => URG_RANK[u] === Math.max(1, Math.min(4, level))) ?? 'low';
+}
+
+/** Most urgent first; items of equal urgency keep Step 2's order. */
+function byUrgency<T>(list: T[], urgency: (x: T) => Urgency): T[] {
+  return list.map((x, i) => ({ x, i, r: URG_RANK[urgency(x)] })).sort((a, b) => b.r - a.r || a.i - b.i).map((e) => e.x);
+}
+
 const P = {
   en: {
     title: (c: string) => `${c}: what the public internet says`,
@@ -428,7 +464,44 @@ const P = {
     notRun: 'Not run yet', notRunC: 'still to look at',
     cta: 'Get my full report', ctaP: 'Reply to the email that brought you this link, and we will run it for you.', keep: 'This free report is yours to keep.',
     colophon: [['Prepared for', (c: string, _d: string) => c], ['Built', (_c: string, d: string) => `${d}, from public sources`], ['Edition', (_c: string, _d: string) => 'Free report · one pass'], ['Method', (_c: string, _d: string) => 'Web pages, maps, directories, reviews, and a technical check of your domains and website.']] as Array<[string, (c: string, d: string) => string]>,
-    foot: 'Every statement on this page traces to an item id (f, c, s, n) and its source.',
+    foot: 'Every statement on this page traces to an item id (f, c, s, n) and its source. Urgency is set by code from the kind of record and how sure the evidence is.',
+    urg: { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' } as Record<Urgency, string>,
+    urgLabel: 'Urgency',
+    urgHow: 'Urgency is set from the kind of record affected (registration, licence, contact, email ...) and how sure the evidence is. Critical means fix first.',
+    topic: { contact: 'Contact details', identity: 'Company identity', website: 'Website', email: 'Email', reviews: 'Reviews', scale: 'Company size', licence: 'Licences', awards: 'Awards', registration: 'Registration', reputation: 'Reputation', other: 'Other' } as Record<string, string>,
+    fHighest: 'Highest urgency',
+    execH: 'Action required.',
+    exec: (p: number, c: number, hi: number) => `We found ${p} ${p === 1 ? 'problem' : 'problems'} and ${c} ${c === 1 ? 'place' : 'places'} where sources disagree${hi ? `; ${hi} ${hi === 1 ? 'is' : 'are'} rated Critical or High` : ''}.`,
+    execContra: 'Every day these differences stay public, customers, banks and partners see two versions of your business.',
+    execPlain: 'Every day these problems stay public, customers, banks and partners run into them.',
+    pitchProblems: ['Fix this before your next high-value prospect is misled.', 'These are what a customer, a bank or a partner meets when they look you up today.'],
+    pitchContra: ['Your competitors can look up these sources right now.', 'Anyone comparing you with a rival can find these differences. Settle them before your next bid or pitch.'],
+    recH: 'Records that banks and tender panels check.',
+    rec: (n: number) => `${n} ${n === 1 ? 'finding concerns' : 'findings concern'} registration, licences or awards. A bank, tender panel or partner can compare these with what your own site says.`,
+    locked: 'In the full report',
+    lockedCard: (n: number) => `${n} more ${n === 1 ? 'problem' : 'problems'} found`,
+    lockedCardP: 'Their titles, evidence and sources are in the full report.',
+    maskedSource: 'Source link and quote: in the full report',
+    secSugLocked: ['Action plan', 'Start here.', 'The first steps. The rest are in the full report.'],
+    lockedSugs: 'The full action plan, written out',
+    lockedSugsP: 'Every finding becomes a task for the department that does it (website, social media, IT, other), with the work written for you where the findings call for it: your homepage rewritten, review replies ready to post, pages to add town by town, and the page data for Google.',
+    lockedSugsTally: 'Desktop, mobile and A4 PDF',
+    unlock: 'Unlock all findings',
+    stickyN: (n: number) => `${n} ${n === 1 ? 'issue' : 'issues'} found`,
+    stickyP: 'Sources, evidence and every fix are in the full report.',
+    // What the paid report holds, from the full-report sample (eternalgy-full-report-with-ai-section-2026-11-09). No counts of tasks or pages.
+    insideEye: 'What you get', insideH: 'What the full report', insideG: 'puts in your hands.',
+    insideP: 'The free report shows what we found. The full report is the working document for your team: every finding, who fixes it, and the fix written out where we can.',
+    gets: [
+      { h: 'Your scorecard', p: 'Where you stand in six numbers, then the three problems costing you the most customers. For each: what it costs you and what to do first.' },
+      { h: 'Every finding, with its evidence', p: 'The full checklist, part by part. Each item is marked Urgent or Needs work and links to the page it came from.', note: (n: GetsN) => n.hiddenP ? `This free report prints ${n.shownP} of ${n.totalP} problems.` : '' },
+      { h: 'What ChatGPT and Gemini say about you', p: 'We ask both the questions a customer asks, as a stranger. You see whether they name you, how they score you against your competitors, and whether they would send the customer to you or to a rival, and which rival.' },
+      { h: 'What a stranger learns in ten minutes', p: 'Your company as a customer, a bank or a tender officer sees it: registration, Google rating, address, websites, and a list of what does not add up.' },
+      { h: 'An action plan, department by department', p: 'Website, social media, IT and other. Each task says who does it, how long it takes and how much it matters, and points to the part of the report behind it.', note: (n: GetsN) => n.hiddenS ? `This free report prints the first ${n.shownS} steps.` : '' },
+      { h: 'Done for you: the copy, written', p: 'Your homepage rewritten, review replies ready to post, a WhatsApp message asking customers for a review, an FAQ page for your site, pages to add town by town, and the business details for Google and AI to paste in. Written only from facts we verified, wherever the findings call for it.' },
+      { h: 'A plan to get recommended by AI assistants', p: 'The specific steps, such as more reviews, one name, address and phone everywhere, and a page for each service and town, and how to track whether the assistants start naming you.' },
+    ],
+    insideAsk: (price: string) => price ? `All of it for ${price}` : 'All of it, in the full report',
     missing: 'This report is not ready yet.', missingP: 'Please come back to this link a little later.',
   },
   ko: {
@@ -464,7 +537,43 @@ const P = {
     notRun: '아직 진행 전', notRunC: '아직 살펴보지 않음',
     cta: '전체 보고서 받기', ctaP: '이 링크를 받은 이메일에 회신해 주시면 진행해 드립니다.', keep: '이 무료 보고서는 귀사가 보관하시면 됩니다.',
     colophon: [['받는 곳', (c: string, _d: string) => c], ['작성', (_c: string, d: string) => `${d}, 공개 자료 기준`], ['구분', (_c: string, _d: string) => '무료 보고서 · 1차 조사'], ['방법', (_c: string, _d: string) => '웹 페이지, 지도, 디렉터리, 리뷰, 그리고 도메인과 웹사이트의 기술 점검.']] as Array<[string, (c: string, d: string) => string]>,
-    foot: '이 페이지의 모든 문장은 항목 id(f, c, s, n)와 그 출처로 이어집니다.',
+    foot: '이 페이지의 모든 문장은 항목 id(f, c, s, n)와 그 출처로 이어집니다. 긴급도는 기록의 종류와 증거의 확실성을 바탕으로 코드가 정합니다.',
+    urg: { critical: '매우 긴급', high: '긴급', medium: '보통', low: '낮음' } as Record<Urgency, string>,
+    urgLabel: '긴급도',
+    urgHow: '긴급도는 영향을 받는 기록의 종류(등록, 면허, 연락처, 이메일 등)와 증거의 확실성으로 정합니다. 매우 긴급은 가장 먼저 고쳐야 한다는 뜻입니다.',
+    topic: { contact: '연락처', identity: '회사 정보', website: '웹사이트', email: '이메일', reviews: '리뷰', scale: '회사 규모', licence: '면허', awards: '수상', registration: '등록', reputation: '평판', other: '기타' } as Record<string, string>,
+    fHighest: '최고 긴급도',
+    execH: '조치가 필요합니다.',
+    exec: (p: number, c: number, hi: number) => `문제점 ${p}개와 출처마다 다른 정보 ${c}건을 찾았습니다${hi ? `. 그중 ${hi}건은 긴급 이상입니다` : ''}.`,
+    execContra: '이 차이가 공개된 채로 있는 동안, 고객과 은행, 파트너는 귀사의 서로 다른 두 모습을 보게 됩니다.',
+    execPlain: '이 문제가 공개된 채로 있는 동안, 고객과 은행, 파트너가 그대로 마주칩니다.',
+    pitchProblems: ['중요한 고객이 잘못된 정보를 보기 전에 고치세요.', '오늘 고객, 은행, 파트너가 귀사를 찾아볼 때 마주치는 것입니다.'],
+    pitchContra: ['경쟁사도 지금 이 출처들을 찾아볼 수 있습니다.', '귀사를 경쟁사와 비교하는 사람은 누구나 이 차이를 발견할 수 있습니다. 다음 입찰이나 제안 전에 정리하세요.'],
+    recH: '은행과 입찰 심사단이 확인하는 기록.',
+    rec: (n: number) => `${n}건이 등록, 면허, 수상과 관련됩니다. 은행, 입찰 심사단, 파트너는 이를 귀사 웹사이트의 내용과 비교할 수 있습니다.`,
+    locked: '전체 보고서에서 확인',
+    lockedCard: (n: number) => `문제점 ${n}개 더 발견`,
+    lockedCardP: '제목, 증거, 출처는 전체 보고서에 있습니다.',
+    maskedSource: '출처 링크와 인용문: 전체 보고서에서 확인',
+    secSugLocked: ['실행 계획', '여기서 시작하세요.', '처음 몇 가지 조치입니다. 나머지는 전체 보고서에 있습니다.'],
+    lockedSugs: '전체 실행 계획, 작업 내용까지',
+    lockedSugsP: '모든 발견 사항이 담당 부서(웹사이트, 소셜 미디어, IT, 기타)의 할 일이 되며, 발견 사항에 따라 작업 내용도 작성해 드립니다: 다시 쓴 홈페이지, 바로 게시할 수 있는 리뷰 답글, 지역별 추가 페이지, 구글용 페이지 데이터.',
+    lockedSugsTally: '데스크톱, 모바일, A4 PDF',
+    unlock: '모든 발견 사항 보기',
+    stickyN: (n: number) => `${n}건 발견`,
+    stickyP: '출처, 증거, 모든 해결 방법은 전체 보고서에 있습니다.',
+    insideEye: '받으시는 내용', insideH: '전체 보고서가', insideG: '손에 쥐여 드리는 것.',
+    insideP: '무료 보고서는 발견한 내용을 보여 드립니다. 전체 보고서는 귀사 팀이 바로 쓸 수 있는 실무 문서입니다: 모든 발견 사항, 담당자, 가능한 곳은 해결책까지 써 드립니다.',
+    gets: [
+      { h: '한눈에 보는 성적표', p: '여섯 가지 수치로 보는 현재 위치와, 고객을 가장 많이 놓치게 하는 문제 세 가지. 각각 어떤 손실인지, 가장 먼저 무엇을 할지 알려 드립니다.' },
+      { h: '모든 발견 사항과 증거', p: '부문별 전체 체크리스트. 각 항목에 긴급 또는 개선 필요 표시가 있고 출처 페이지로 연결됩니다.', note: (n: GetsN) => n.hiddenP ? `이 무료 보고서에는 문제 ${n.totalP}개 중 ${n.shownP}개만 있습니다.` : '' },
+      { h: 'ChatGPT와 Gemini가 귀사에 대해 말하는 것', p: '고객이 묻는 질문을 낯선 사람처럼 두 AI에 물어봅니다. 귀사를 언급하는지, 경쟁사와 비교해 몇 점을 주는지, 고객에게 귀사와 경쟁사 중 어디를 권하는지, 권한다면 어느 경쟁사인지 확인하실 수 있습니다.' },
+      { h: '낯선 사람이 10분 안에 알게 되는 것', p: '고객, 은행, 입찰 담당자가 보는 귀사의 모습: 등록 정보, 구글 평점, 주소, 웹사이트, 그리고 서로 맞지 않는 항목 목록.' },
+      { h: '부서별 실행 계획', p: '웹사이트, 소셜 미디어, IT, 기타. 각 과제에 담당자, 소요 시간, 중요도와 근거가 된 보고서 부분이 표시됩니다.', note: (n: GetsN) => n.hiddenS ? `이 무료 보고서에는 첫 ${n.shownS}단계만 있습니다.` : '' },
+      { h: '바로 쓸 수 있게 써 드립니다', p: '다시 쓴 홈페이지, 바로 게시할 수 있는 리뷰 답글, 리뷰를 부탁하는 WhatsApp 메시지, 웹사이트용 FAQ 페이지, 지역별 추가 페이지, 구글과 AI용 사업자 정보를 붙여 넣을 수 있게 준비합니다. 발견 사항에 따라 필요한 것만, 확인된 사실로만 작성합니다.' },
+      { h: 'AI 비서가 귀사를 추천하게 만드는 계획', p: '리뷰 늘리기, 이름·주소·전화번호 통일, 서비스·지역별 페이지 같은 구체적인 단계와, AI 비서가 귀사를 언급하기 시작하는지 추적하는 방법.' },
+    ],
+    insideAsk: (price: string) => price ? `전부 ${price}` : '전부 전체 보고서에 있습니다',
     missing: '이 보고서는 아직 준비되지 않았습니다.', missingP: '잠시 후 이 링크로 다시 와 주세요.',
   },
 };
@@ -492,13 +601,14 @@ h2{font-size:clamp(34px,4.4vw,58px);max-width:16em}.lead{font-size:19px;line-hei
 .top{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px var(--gut);background:rgba(14,16,19,.92);backdrop-filter:blur(10px);color:var(--on-dark);font-size:13px}
 .top b{font-weight:600}.top span{color:var(--on-dark-2)}.top .btn{padding:9px 14px;font-size:13px}
 .hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:56px;align-items:center;padding-top:88px;padding-bottom:88px}
-.hero h1{font-size:clamp(40px,5.6vw,76px);letter-spacing:-0.035em;line-height:1.02;margin-top:18px}
+.hero h1{font-size:clamp(36px,4.6vw,64px);letter-spacing:-0.03em;line-height:1.05;margin-top:18px;overflow-wrap:break-word}
 .hero .lead{margin-top:22px;color:var(--on-dark);opacity:.86;display:grid;gap:10px}.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
 .hero .anyone{margin-top:18px;font-size:13.5px;color:var(--on-dark-2)}
 a.cite{font-size:.62em;font-weight:600;text-decoration:none;vertical-align:super;color:var(--muted);margin-left:3px;letter-spacing:.02em}.dark a.cite{color:var(--on-dark-2)}
-.file{background:var(--paper);color:var(--ink);padding:26px;display:grid;gap:14px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6);transform:rotate(1.2deg)}
+.file{background:var(--paper);color:var(--ink);padding:26px;display:grid;gap:14px;border-top:3px solid var(--ink);box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.hero>div{min-width:0}.hero .lead{max-width:100%}
 .filehead{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.file .stamp{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--wrong);border:2px solid var(--wrong);padding:3px 8px;transform:rotate(-3deg)}
+.file .stamp{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--ink);padding:4px 9px}
 .fileno{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .file h3{font-size:24px;letter-spacing:-0.02em}.file dl{margin:0;display:grid;font-size:13.5px}
 .file dl div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:7px 0;border-top:1px solid var(--line)}.file dt{color:var(--muted)}.file dd{margin:0;overflow-wrap:anywhere}
@@ -558,7 +668,43 @@ footer{padding:48px var(--gut) 64px;font-size:13px;color:var(--grey);display:gri
 .ledger td{display:block;padding:0;border:0;width:auto!important}
 .run{grid-template-columns:28px minmax(0,1fr);gap:6px 12px;padding:14px 16px}.run .rs,.run .rc{grid-column:2}.run .rc b{font-size:24px}.warn{padding:20px}}
 @media print{.top,.ctas,.band-cta .btn{display:none}section{padding:32px 28px}.file{transform:none;box-shadow:none;border:1px solid var(--line)}
-.warn,.sug,.run,.ledger tr,.colophon{break-inside:avoid}.head,h2,h3{break-after:avoid}details>:not(summary){display:block}details::details-content{display:block;content-visibility:visible}}
+.warn,.sug,.run,.ledger tr,.colophon{break-inside:avoid}.head,h2,h3{break-after:avoid}details>:not(summary){display:block}details::details-content{display:block;content-visibility:visible}.sticky{display:none}}
+/* urgency badges, locked placeholders, the sticky bar (2026-11-08) */
+body{padding-bottom:68px}
+.hl{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}
+.urg{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border:1px solid transparent;white-space:nowrap}
+.urg::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.urg.critical{background:var(--wrong);color:#fff}.urg.high{background:var(--wrong-bg);color:var(--wrong);border-color:#f1b8b2}
+.urg.medium{background:var(--contra-bg);color:var(--contra);border-color:#f0d6a4}.urg.low{background:var(--missing-bg);color:var(--missing);border-color:#d0d5dd}
+.hero .urg{vertical-align:middle}
+.pitch{font-family:var(--display);font-size:clamp(20px,2.2vw,26px);font-weight:600;letter-spacing:-0.015em;line-height:1.25;max-width:34em;color:var(--ink)}
+.pitch span{display:block;font-family:var(--body);font-weight:400;font-size:15px;letter-spacing:0;color:var(--grey);margin-top:6px}
+.legend{font-size:13px;color:var(--muted);max-width:52em;margin:-24px 0 28px}
+.exec{margin-top:22px;border-left:3px solid #ff8a7a;background:rgba(255,255,255,.06);padding:14px 18px;font-size:15px;max-width:38em;display:grid;gap:4px}
+.exec span{color:var(--on-dark-2);font-size:14px}
+.callout{margin:48px var(--gut) 0;border-left:4px solid var(--wrong);background:var(--wrong-bg);padding:20px 24px;display:grid;gap:6px;color:var(--ink)}
+.callout b{font-family:var(--display);font-size:20px;letter-spacing:-0.01em}.callout span{font-size:15px;color:var(--grey);max-width:56em}
+.warn.locked{border-top-color:var(--line)}
+.topic{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.01em}
+.bars{display:grid;gap:9px}.bars i{display:block;height:11px;background:#dfe2e6}.bars i.s{width:58%}.bars i.m{width:84%}
+.lk{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grey)}
+.lk svg{flex:none}
+.unlock{background:var(--dark);color:var(--on-dark);padding:28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;border-top:3px solid #fff;-webkit-font-smoothing:antialiased}.warns .unlock{grid-column:1/-1}
+.unlock h3{font-size:clamp(24px,2.6vw,32px)}.unlock p{color:var(--on-dark-2);font-size:15px;margin-top:6px}.unlock .tally{color:var(--on-dark);font-weight:600;font-size:14px;margin-top:10px}
+.sug.locked{background:var(--band)}.sug.locked .rw{gap:9px;align-content:center}
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px var(--gut);background:rgba(14,16,19,.96);backdrop-filter:blur(10px);color:var(--on-dark);font-size:14px}
+.sticky .l{display:flex;align-items:center;gap:12px;min-width:0}.sticky .n{flex:none;background:var(--wrong);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px}
+.sticky .p{color:var(--on-dark-2)}.sticky .btn{padding:10px 16px;font-size:14px;white-space:nowrap}
+.sticky .r{display:flex;align-items:center;gap:14px;flex:none}.sticky .pr{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:-0.01em}
+.ask .price{font-family:var(--display);font-size:44px;font-weight:600;letter-spacing:-0.03em;line-height:1;color:#fff}
+.gets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.get{background:var(--paper);padding:24px;display:grid;gap:8px;align-content:start;border-top:3px solid var(--ink)}section:not(.band) .get{background:var(--band)}
+.get .rn{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--muted);font-variant-numeric:tabular-nums}
+.get h3{font-size:21px;letter-spacing:-0.015em;line-height:1.2}.get p{color:var(--grey);font-size:15px}
+.get p.free{color:var(--ink);font-size:13.5px;font-weight:600;border-left:2px solid var(--ink);padding-left:10px;margin-top:4px}
+.gets .unlock{grid-column:1/-1}.gets .get:nth-last-child(2):nth-child(odd){grid-column:1/-1}
+@media (max-width:900px){.gets{grid-template-columns:1fr}.unlock{grid-template-columns:1fr}.callout{margin-top:32px}}
+@media (max-width:640px){.sticky .p{display:none}.legend{margin-top:-28px}}
 `;
 
 function linkText(url: string): string {
@@ -579,42 +725,81 @@ const idLinks = (ids: string[]) => `<span class="ids">${ids.map((id) => `<a href
 const two = (n: number) => String(n).padStart(2, '0');
 
 /** The free report page: the Step 3 summary, then every Step 2 item in full, then what the full report adds. */
-export function reportPage(report: Step3Report, s2: Step2V2Output): string {
+export function reportPage(report: Step3Report, s2: Step2V2Output, offer: { price?: string } = {}): string {
+  const price = String(offer.price ?? DEFAULT_PRICE).trim().slice(0, 40);
   const ko = report.language === 'ko';
   const t = ko ? P.ko : P.en;
   const c = s2.input.company;
   const date = new Date(report.created_at).toLocaleDateString(ko ? 'ko-KR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  type Finding = Step2V2Output['conclusive_findings'][number];
+  type Contra = Step2V2Output['contradictions'][number];
   const findings = s2.conclusive_findings ?? [];
+  const urgF = (f: Finding) => urgencyOf(f.topic, `${f.title} ${f.statement}`, f.confidence);
+  const urgC = (x: Contra) => urgencyOf(x.topic, `${x.title} ${x.why_it_matters ?? ''}`, x.confidence);
   const strengths = findings.filter((f) => f.kind === 'strength');
-  const problems = findings.filter((f) => f.kind === 'problem');
-  const contradictions = s2.contradictions ?? [];
+  const problems = byUrgency(findings.filter((f) => f.kind === 'problem'), urgF);
+  const contradictions = byUrgency(s2.contradictions ?? [], urgC);
   const notes = s2.take_note ?? [];
   const suggestions = s2.suggestions ?? [];
   const found = findings.length + contradictions.length + notes.length;
+
+  // What is locked is not printed at all. A locked card keeps its id, so cites and "based on" links still land on it.
+  const shownProblems = problems.slice(0, FREE_PROBLEMS);
+  const hiddenProblems = problems.slice(FREE_PROBLEMS);
+  const shownContra = new Set(contradictions.slice(0, FREE_CONTRADICTIONS).map((x) => x.id));
+  const visibleIds = new Set<string>([...strengths, ...shownProblems, ...contradictions, ...notes].map((x) => x.id));
+  // An action step is free only when everything it rests on is on the page, so it cannot give away a locked problem.
+  const freeSugs = suggestions.filter((s) => (s.based_on ?? []).length > 0 && s.based_on.every((id) => visibleIds.has(id))).slice(0, FREE_SUGGESTIONS);
+  const freeSugIds = new Set(freeSugs.map((s) => s.id));
+  const lockedSugs = suggestions.filter((s) => !freeSugIds.has(s.id));
+  const hiddenIds = new Set<string>([...hiddenProblems, ...lockedSugs].map((x) => x.id));
+  const summary = report.summary.filter((l) => !l.cites.some((id) => hiddenIds.has(id)));
+
+  const allUrg = [...problems.map(urgF), ...contradictions.map(urgC)];
+  const topUrg = URG_ORDER.find((u) => allUrg.includes(u)) ?? null;
+  const urgentN = allUrg.filter((u) => URG_RANK[u] >= 3).length;
+  const recordsN = [...problems, ...contradictions].filter((x) => RECORD_TOPICS.has(String(x.topic))).length;
+  const issuesN = problems.length + contradictions.length;
+  const badge = (u: Urgency) => `<span class="urg ${u}" aria-label="${esc(t.urgLabel)}: ${esc(t.urg[u])}">${esc(t.urg[u])}</span>`;
+  const tally = (us: Urgency[]) => URG_ORDER.map((k) => [k, us.filter((u) => u === k).length] as const).filter(([, n]) => n).map(([k, n]) => `${n} ${t.urg[k]}`).join(' · ');
+  const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
   const sites = (s2.baseline?.websites ?? []).map((w) => String(w).replace(/\s*\(.*\)\s*$/, '')).filter(Boolean).slice(0, 3);
   const firstSection = strengths.length ? 'strengths' : problems.length ? 'problems' : contradictions.length ? 'contradictions' : 'notes';
 
-  const head = (key: keyof typeof t.sec, n: number) => {
-    const [eye, h, g] = t.sec[key];
-    return `<div class="head"><p class="eyebrow">${esc(eye)} · ${n}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2></div>`;
+  const head = (key: keyof typeof t.sec, n: number, pitch?: readonly [string, string], sec?: readonly [string, string, string]) => {
+    const [eye, h, g] = sec ?? t.sec[key];
+    return `<div class="head"><p class="eyebrow">${esc(eye)} · ${n}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2>${pitch ? `<p class="pitch">${esc(pitch[0])}<span>${esc(pitch[1])}</span></p>` : ''}</div>`;
   };
-  const cardHead = (cls: string, label: string, id: string) => `<div class="warnhead"><span class="tag ${cls}">${esc(label)}</span><span class="fileno">${esc(id)}</span></div>`;
+  const cardHead = (cls: string, label: string, id: string, urg?: Urgency) => `<div class="warnhead"><span class="hl"><span class="tag ${cls}">${esc(label)}</span>${urg ? badge(urg) : ''}</span><span class="fileno">${esc(id)}</span></div>`;
+  const bars = (n = 3) => `<div class="bars" aria-hidden="true">${['s', 'm', '', 'm'].slice(0, n).map((w) => `<i${w ? ` class="${w}"` : ''}></i>`).join('')}</div>`;
+  const lockLine = (label: string) => `<p class="lk">${lockIcon}${esc(label)}</p>`;
 
-  const finding = (f: Step2V2Output['conclusive_findings'][number], i: number) => {
+  const finding = (f: Finding, i: number) => {
     const cls = f.kind === 'strength' ? 'good' : 'wrong';
-    return `<article class="warn ${cls}${f.kind === 'problem' && i === 0 ? ' first' : ''}" id="${esc(f.id)}">${cardHead(cls, f.kind === 'strength' ? t.tag.strength : t.tag.problem, f.id)}
+    return `<article class="warn ${cls}${f.kind === 'problem' && i === 0 ? ' first' : ''}" id="${esc(f.id)}">${cardHead(cls, f.kind === 'strength' ? t.tag.strength : t.tag.problem, f.id, f.kind === 'problem' ? urgF(f) : undefined)}
 <h3>${esc(f.title)}</h3><p class="d">${esc(f.statement)}</p>${f.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(f.why_it_matters)}</p>` : ''}${evidenceList(f.evidence, t.sources)}</article>`;
   };
+  // A locked problem: its id, urgency and kind of record only. Title, statement, evidence and sources are not in the HTML.
+  const lockedFinding = (f: Finding) => `<article class="warn wrong locked" id="${esc(f.id)}">${cardHead('wrong', t.tag.problem, f.id, urgF(f))}<p class="topic">${esc(t.topic[String(f.topic)] ?? t.topic.other)}</p>${bars()}${lockLine(t.locked)}</article>`;
+  const unlockCard = (title: string, text: string, extra = '') => `<div class="unlock"><div><h3>${esc(title)}</h3><p>${esc(text)}</p>${extra ? `<p class="tally">${esc(extra)}</p>` : ''}</div><a class="btn" href="#order">${esc(t.unlock)}&nbsp;→</a></div>`;
 
-  const contradiction = (x: Step2V2Output['contradictions'][number]) => `<article class="warn contra" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id)}<h3>${esc(x.title)}</h3>
-<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${x.versions.map((v) => `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table>
+  // The first FREE_CONTRADICTIONS in full; the rest keep their title, sources and values but not the link or the quote.
+  const contradiction = (x: Contra) => {
+    const open = shownContra.has(x.id);
+    return `<article class="warn contra" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, urgC(x))}<h3>${esc(x.title)}</h3>
+<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${x.versions.map((v) => open
+    ? `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`
+    : `<tr><td class="where">${esc(v.source)}<small class="lk">${lockIcon}${esc(t.maskedSource)}</small></td><td class="said"><b>${esc(v.value)}</b></td></tr>`).join('')}</tbody></table>
 ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matters)}</p>` : ''}</article>`;
+  };
 
   const note = (x: Step2V2Output['take_note'][number]) => `<article class="warn missing" id="${esc(x.id)}">${cardHead('missing', t.tag.note, x.id)}<h3>${esc(x.title)}</h3><p class="d">${esc(x.note)}</p>
 <p class="risk"><b>${esc(t.notCertain)}:</b> ${esc(x.why_not_conclusive)}</p>${evidenceList(x.evidence, t.sources)}</article>`;
 
   const suggestion = (x: Step2V2Output['suggestions'][number], i: number) => `<div class="sug" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
 <div class="rw"><b>${esc(x.action)}</b><p>${esc(x.why)}</p></div><div class="on"><span class="k">${esc(t.basedOn)}</span>${idLinks(x.based_on ?? [])}<span class="fileno">${esc(x.id)}</span></div></div>`;
+  const lockedSuggestion = (x: Step2V2Output['suggestions'][number], i: number) => `<div class="sug locked" id="${esc(x.id)}"><span class="rn">${two(i + 1)}</span>
+<div class="rw">${bars(2)}${lockLine(t.locked)}</div><div class="on"><span class="fileno">${esc(x.id)}</span></div></div>`;
 
   const strip = ([
     [strengths.length, t.strip.strengths, 'strengths'], [problems.length, t.strip.problems, 'problems'],
@@ -629,15 +814,21 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
     return `<section id="${id}"${shade ? ' class="band"' : ''}>${body}</section>`;
   };
 
+  const hiddenTally = tally(hiddenProblems.map(urgF));
+  const getsN: GetsN = { shownP: shownProblems.length, totalP: problems.length, hiddenP: hiddenProblems.length, shownS: freeSugs.length, hiddenS: lockedSugs.length };
   const body = [
     section('strengths', strengths.length, `${head('strengths', strengths.length)}<div class="warns">${strengths.map(finding).join('')}</div>`),
-    section('problems', problems.length, `${head('problems', problems.length)}<div class="warns">${problems.map(finding).join('')}</div>`),
-    section('contradictions', contradictions.length, `${head('contradictions', contradictions.length)}<div class="warns one">${contradictions.map(contradiction).join('')}</div>`),
+    section('problems', problems.length, `${head('problems', problems.length, t.pitchProblems)}<p class="legend">${esc(t.urgHow)}</p><div class="warns">${shownProblems.map(finding).join('')}${hiddenProblems.map(lockedFinding).join('')}${hiddenProblems.length ? unlockCard(t.lockedCard(hiddenProblems.length), t.lockedCardP, hiddenTally) : ''}</div>`),
+    section('contradictions', contradictions.length, `${head('contradictions', contradictions.length, t.pitchContra)}<div class="warns one">${contradictions.map(contradiction).join('')}</div>`),
   ].join('');
   const after = [
     section('notes', notes.length, `${head('notes', notes.length)}<div class="warns">${notes.map(note).join('')}</div>`),
-    section('suggestions', suggestions.length, `${head('suggestions', suggestions.length)}<div class="sugs">${suggestions.map(suggestion).join('')}</div>`),
+    section('suggestions', suggestions.length, `${head('suggestions', suggestions.length, undefined, lockedSugs.length ? t.secSugLocked : undefined)}<div class="sugs">${freeSugs.map(suggestion).join('')}${lockedSugs.map((x, i) => lockedSuggestion(x, freeSugs.length + i)).join('')}${lockedSugs.length ? unlockCard(t.lockedSugs, t.lockedSugsP, t.lockedSugsTally) : ''}</div>`),
+    // What the full report holds, so the buyer knows what the price buys. Shown whenever there is an issue to sell against.
+    section('inside', issuesN, `<div class="head"><p class="eyebrow">${esc(t.insideEye)}</p><h2>${esc(t.insideH)}<br><span class="g">${esc(t.insideG)}</span></h2><p class="lead">${esc(t.insideP)}</p></div>
+<div class="gets">${t.gets.map((g, i) => { const note = g.note?.(getsN) ?? ''; return `<div class="get"><span class="rn">${two(i + 1)}</span><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p>${note ? `<p class="free">${esc(note)}</p>` : ''}</div>`; }).join('')}${unlockCard(t.insideAsk(price), t.ctaP, t.lockedSugsTally)}</div>`),
   ].join('');
+  const callout = recordsN ? `<div class="callout"><b>${esc(t.recH)}</b><span>${esc(t.rec(recordsN))}</span></div>` : '';
 
   const areas = AREAS[ko ? 'ko' : 'en'];
   const runs = `<div class="runs"><div class="run done"><span class="rn">00</span><div class="rw"><b>${esc(t.doneW)}</b><span>${esc(t.doneS)}</span></div><span class="rs">${esc(t.done)}</span><div class="rc"><b>${found}</b><span>${esc(t.doneC)}</span></div></div>
@@ -648,23 +839,26 @@ ${areas.map(([a, d], i) => `<div class="run"><span class="rn">${two(i + 1)}</spa
 <header class="top"><div><b>${esc(t.bar)}</b> <span class="for">${esc(t.barFor(c))}</span></div><a class="btn" href="#order">${esc(t.cta)}</a></header>
 <section class="dark hero"><div><p class="eyebrow">${esc(t.eyebrow(c, date))}</p>
 <h1>${esc(t.h1(c))}<br><span class="g">${esc(t.h1g(contradictions.length))}</span></h1>
-${report.summary.length ? `<div class="lead">${report.summary.map((l) => `<p>${esc(l.text)}${cites(l.cites)}</p>`).join('')}</div>` : ''}
+${summary.length ? `<div class="lead">${summary.map((l) => `<p>${esc(l.text)}${cites(l.cites)}</p>`).join('')}</div>` : ''}
+${issuesN ? `<div class="exec"><b>${esc(t.execH)} ${esc(t.exec(problems.length, contradictions.length, urgentN))}</b><span>${esc(contradictions.length ? t.execContra : t.execPlain)}</span></div>` : ''}
 <div class="ctas"><a class="btn" href="#order">${esc(t.cta)}</a><a class="btn ghost" href="#${firstSection}">${esc(t.seeAll)}&nbsp;↓</a></div>
 <p class="anyone">${esc(t.anyone)}</p></div>
 <aside class="file"><div class="filehead"><span class="stamp">${esc(t.stamp)}</span><span class="fileno">${esc(t.fileNo)}</span></div><h3>${esc(c)}</h3><dl>
 <div><dt>${esc(t.fCountry)}</dt><dd>${esc(s2.input.country)}</dd></div><div><dt>${esc(t.fIndustry)}</dt><dd>${esc(s2.input.industry)}</dd></div>
 ${sites.length ? `<div><dt>${esc(t.fSites)}</dt><dd>${esc(sites.join(', '))}</dd></div>` : ''}
-<div><dt>${esc(t.fFound)}</dt><dd><b>${esc(t.found(found))}</b></dd></div><div><dt>${esc(t.fDeeper)}</dt><dd>${esc(t.deeper)}</dd></div>
+<div><dt>${esc(t.fFound)}</dt><dd><b>${esc(t.found(found))}</b></dd></div>${topUrg ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topUrg)}</dd></div>` : ''}<div><dt>${esc(t.fDeeper)}</dt><dd>${esc(t.deeper)}</dd></div>
 </dl><p class="foot">${esc(t.fileFoot(date))}</p></aside></section>
 <div class="strip">${strip}</div>
+${callout}
 <section class="thesis"><p class="eyebrow">${esc(t.thesisEye)}</p><h2>${esc(t.thesisH)}<br><span class="g">${esc(t.thesisG)}</span></h2><p class="lead">${esc(t.thesisP)}</p></section>
 ${body}
 <section class="dark band-cta"><div><p class="eyebrow">${esc(t.bandEye)}</p><h2>${esc(t.bandH)}<br><span class="g">${esc(t.bandG)}</span></h2><p class="lead" style="margin-top:16px">${esc(t.bandP)}</p></div><a class="btn" href="#order">${esc(t.cta)}</a></section>
 ${after}
 <section id="order" class="dark"><div class="head"><p class="eyebrow">${esc(t.fullEye)}</p><h2>${esc(t.fullH)}<br><span class="g">${esc(t.fullG)}</span></h2><p class="lead">${esc(t.fullP)}</p></div>
 ${runs}
-<div class="ask"><h3>${esc(t.cta)}</h3><p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></section>
+<div class="ask"><h3>${esc(t.cta)}</h3>${price ? `<p class="price">${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></section>
 <footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date))}</span></div>`).join('')}</div><p>${esc(t.foot)}</p></footer>
+${issuesN ? `<div class="sticky"><div class="l"><span class="n">${esc(t.stickyN(issuesN))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
 </body></html>`;
 }
 
