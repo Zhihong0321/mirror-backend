@@ -1,8 +1,9 @@
 // The free preview, as a landing page that sells the full report. Built from the company-dive
 // alone, plus the preview editor's notes when they exist (preview-editor.ts). Two hooks:
 //   1. it is about this company and nobody else: what public sources already say about them
-//   2. warning signs we found (contradictions, missing, outdated and wrong details), some shown,
-//      the rest and each part's headline number kept locked for the full report
+//   2. warning signs we found (contradictions, missing, outdated and wrong details), ranked once by
+//      report-rules and gated by one rule (GATE, below): the top few are shown with their evidence,
+//      the rest are locked teasers, and an identity signal is never here at all
 // Then what is inside the full report, part by part as the malaysia-deeper-dive report reads
 // (docs/country-deeper-dive-plan.md), with placeholder versions of its visuals: 1 contact and
 // reachability, 2 how the internet understands you (AI and search lead), 3 reviews, discussion
@@ -19,6 +20,7 @@
 import { CHAPTER_EYEBROW, CHAPTER_ORDER, NB, OPENERS, PART_OPENERS, esc, tie, typeset } from './report-html.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
 import { isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
+import { bannedWords, cleanText, daysToImpact, findPII, localeFor, plural as pluralOf, rankKey, severity, similarPairs, type Urgency } from '../report-rules/index.ts';
 import type { PreviewNotes } from './preview-editor.ts';
 
 /** What the seller shows on the order panel; every field optional. */
@@ -28,12 +30,13 @@ export type Offer = { price?: string; contact?: string; order_url?: string };
 export type PreviewNotesV2 = {
   hook?: string;
   known?: { label: string; value: string }[];
-  warnings?: { type: string; title: string; detail?: string; risk?: string; quote?: string }[];
+  warnings?: { type: string; title: string; detail?: string; risk?: string; quote?: string; sources?: number[] }[];
 };
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n).replace(/\s+\S*$/, '') + ' …' : s);
 const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
-const dateOf = (iso: string | undefined | null) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+// PL20: the date format comes from the report's locale, never from this file.
+const dateOf = (iso: string | undefined | null, dateLocale: string) => (iso ? new Date(iso).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 // "July 2023 in [1][3] vs …" reads as "July 2023 vs …": the citation and the word that led into it go.
 const noCites = (s: string) => s.replace(/(?:\s+(?:in|on|from|per|by|at))?\s*(?:\[\d+\])+/g, '').replace(/\s+([.,;:)])/g, '$1').replace(/\s+/g, ' ').trim();
 /** A string for a CSS `content:` value. */
@@ -44,6 +47,39 @@ const CLAIM = /\b(CIDB|SEDA|MyHIJAU|MyHijau|ISO|certif|accredit|licen[cs]|grade|
 const TYPE: Record<string, [string, string]> = {
   contradiction: ['Contradiction', 'contra'], missing: ['Missing', 'missing'], outdated: ['Outdated', 'outdated'], wrong: ['Wrong information', 'wrong'],
 };
+
+/** How bad each kind of warning is before time to impact and confidence are counted (report-rules severity). */
+const RELEVEL: Record<string, number> = { wrong: 3, contradiction: 3, outdated: 2, missing: 1 };
+const SEV: Record<Urgency, string> = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+
+/**
+ * PL16: how many items of each section the free preview shows, and the one rule every section obeys. Anything
+ * past N stays locked and shows nothing of itself. Signals get the lowest N: the free preview never carries an
+ * identity signal at all, whatever the policy flag says (PL10, privacy.ts), so their N is zero.
+ */
+export const GATE: Record<'signs' | 'claims' | 'signals', number> = { signs: 5, claims: 3, signals: 0 };
+
+/** The top `n` of one section, and the rest, in the order the section already ranked them. */
+export function gated<T>(rows: T[], n: number): { shown: T[]; locked: T[] } {
+  const at = Math.max(0, Math.min(n, rows.length));
+  return { shown: rows.slice(0, at), locked: rows.slice(at) };
+}
+
+/** PL18: a locked teaser is its category plus a short hint, and unique inside its section. */
+export function teasers(rows: Array<{ type: string; title: string }>): string[] {
+  const used = new Set<string>();
+  return rows.map((w) => {
+    const cat = TYPE[w.type]?.[0] ?? 'Warning sign';
+    const words = cleanText(String(w.title ?? '')).split(' ').filter(Boolean);
+    let take = Math.min(5, Math.max(1, words.length));
+    const hint = (k: number) => `${cat}: ${words.slice(0, k).join(' ')}`.trim();
+    let title = hint(take);
+    while (used.has(title.toLowerCase()) && take < words.length) title = hint(++take);
+    for (let k = 2; used.has(title.toLowerCase()); k++) title = `${hint(take)} (${k})`;
+    used.add(title.toLowerCase());
+    return title;
+  });
+}
 
 /** Warnings the page shows when the preview editor has not run: the dive's own contradictions and gaps. */
 function fallbackWarnings(r: any): NonNullable<PreviewNotes['warnings']> {
@@ -56,24 +92,30 @@ function fallbackWarnings(r: any): NonNullable<PreviewNotes['warnings']> {
 
 export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes | null = null, notesV2?: PreviewNotesV2 | null): string {
   const v2 = notesV2 != null;
+  // PL20: currency, price and date format come from the locale of the company's own country, never from this file.
+  const loc = localeFor(String(dive?.country ?? ''));
   const r = dive?.result ?? {};
   const id = r.identity ?? {};
   const nameRaw = String(id.legal_name ?? dive?.company ?? 'Your company');
   const facts: any[] = r.facts ?? [];
   const sources: any[] = publicSources(r.sources);
-  const contradictions: string[] = (r.contradictions ?? []).filter(Boolean);
   const gaps: string[] = (r.gaps ?? []).filter(Boolean);
   const everyone = (r.people?.people ?? []).filter((p: any) => p.name);
   // Strict leadership only on the switched page, so "Art Director" is not named there.
   const lead = (role: unknown) => (v2 ? isLeadershipStrict(role) : isLeadership(role));
-  const staff = everyone.filter((p: any) => !lead(p.role)).map((p: any) => String(p.name));
+  // Everyone the dive named who is not publicly named leadership, rejected candidates included. PL9 keeps them off
+  // the page, so the list both scrubs text and is the name list that text is then checked against.
+  const others = [...(Array.isArray(r.people?.rejected) ? r.people.rejected : [])].flatMap((p: any) => (p?.name ? [String(p.name)] : []));
+  const staff = [...everyone.filter((p: any) => !lead(p.role)).map((p: any) => String(p.name)), ...others];
   const domainsRaw: string[] = id.official_domains ?? [];
   const domains = v2 ? domainsRaw.map((d) => scrubPublic(String(d), domainsRaw)).filter(Boolean) : domainsRaw;
   const name = v2 ? scrubPublic(scrub(nameRaw, { phones: true, staff }), domains) : nameRaw;
   const short = shortName(name);
   const people = everyone.filter((p: any) => lead(p.role)).map((p: any) => (v2 ? { ...p, name: scrubPublic(scrub(p.name, { phones: true, staff }), domains), role: p.role ? scrubPublic(scrub(p.role, { phones: true, staff }), domains) : p.role } : p));
-  /** Text written from the research, made fit for a public page. */
-  const P = (t: unknown) => typeset(noCites(v2 ? scrubPublic(scrub(t, { phones: true, staff }), domains) : scrub(t, { phones: true, staff })));
+  /** Text written from the research, made fit for a public page: markdown turned into plain text that keeps its
+   *  meaning (PL1), then citations, phone numbers, links and everyone but leadership taken out (privacy.ts). */
+  const clean = (t: unknown) => cleanText(String(t ?? ''));
+  const P = (t: unknown) => typeset(noCites(v2 ? scrubPublic(scrub(clean(t), { phones: true, staff }), domains) : scrub(clean(t), { phones: true, staff })));
   const ssmRaw = (id.registration_numbers ?? []).find((x: string) => /^\d{12}$/.test(x)) ?? (id.registration_numbers ?? [])[0] ?? null;
   const ssmClean = ssmRaw ? scrubPublic(scrub(String(ssmRaw), { phones: true, staff }), domains) : '';
   const ssm = v2 ? (ssmClean && /\d/.test(ssmClean) ? ssmClean : null) : ssmRaw;
@@ -84,14 +126,16 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   const kindRaw = String(id.industry ?? '').split(/[,(;]/)[0].trim().toLowerCase();
   const kind = v2 ? scrubPublic(scrub(kindRaw, { phones: true, staff }), domains) : kindRaw;
   const trade = !kind ? 'business like yours' : /\b(installer|contractor|company|firm|shop|clinic|agency|supplier|provider|consultant|service)s?$/.test(kind) ? kind : `${kind} company`;
-  const claims = facts.filter((f) => CLAIM.test(String(f.fact ?? '')) && !/private limited/i.test(String(f.fact))).length;
-  const made = dateOf(dive?.finished_at) || dateOf(new Date().toISOString());
+  // The claims this company makes about itself. The full report checks each one in its issuer's register.
+  const claimFacts = facts.filter((f) => CLAIM.test(String(f.fact ?? '')) && !/private limited/i.test(String(f.fact)));
+  const made = dateOf(dive?.finished_at, loc.dateLocale) || dateOf(new Date().toISOString(), loc.dateLocale);
   // finished_at may arrive as a Date, whose String() starts with the weekday.
   const year = String(new Date(dive?.finished_at ?? Date.now()).getFullYear());
   // The dive's number makes each preview a numbered edition, like a file reference.
   const ref = dive?.id != null && /^\d+$/.test(String(dive.id)) ? `No.${NB}${String(dive.id).padStart(4, '0')}` : '';
-  const plural = (n: number, one: string, many = `${one}s`) => `${n}${NB}${n === 1 ? one : many}`;
-  const srcN = plural(sources.length, 'public source');
+  // PL24: every plural comes from the shared helper; its space becomes a non-breaking one, so a number never
+  // ends a line away from its noun.
+  const plural = (n: number, one: string, many = `${one}s`) => pluralOf(n, one, many).replace(' ', NB);
 
   const picked = v2 ? notesV2 : notes;
   const known = picked?.known?.length ? picked.known : [
@@ -102,24 +146,94 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     (id.aliases ?? []).length && { label: 'Also known as', value: id.aliases.join(', ') },
     people[0] && { label: 'Leadership', value: `${people[0].name}${people[0].role ? `, ${people[0].role}` : ''}` },
   ].filter(Boolean) as { label: string; value: string }[];
+  // A name list and the contacts the company publishes itself, so PL9 can tell a staff member from the leadership
+  // and a private mobile from the switchboard on its own record.
+  const ownContacts = [String(id.address ?? ''), ...(Array.isArray(id.phones) ? id.phones.map(String) : [])];
+  const pii = { country: loc.country, companyPhones: ownContacts, personNames: staff };
+  /** PL8 + PL9: text that may not be printed at all. It names someone who is not leadership, carries a phone the
+   *  company does not publish itself, or speaks in the pipeline's own vocabulary. */
+  const unprintable = (t: string) => !t.trim() || bannedWords(t).length > 0 || findPII(t, 'preview', pii).length > 0;
+
   // Switched page: warnings come only from notesV2, and one with no quote is dropped.
   const rawWarnings = v2
     ? (notesV2?.warnings ?? []).filter((w) => typeof w?.quote === 'string' && w.quote.trim())
     : (notes?.warnings?.length ? notes.warnings : fallbackWarnings(r));
-  const warnings = rawWarnings.map((w) => ({ ...w, title: P(w.title), detail: P(w.detail), risk: P(w.risk) }));
-  // Switched page: only the sources a shown warning cites are listed, so another company's page never appears there.
-  const cited = new Set(warnings.flatMap((w: any) => (Array.isArray(w.sources) ? w.sources : []).map(Number)));
+  const now = new Date();
+  // PL10: only the four text types below are printed. An identity signal is never in a free preview, whatever the
+  // policy flag says, so any other type is dropped here instead of being drawn as a contradiction.
+  // PL11 + PL13: one urgency and one sort key for every sign; the sections and the headline both read them.
+  const ranked = rawWarnings
+    .flatMap((w) => {
+      if (!w || !TYPE[w.type]) return [];
+      const days = daysToImpact([String(w.detail ?? ''), String(w.quote ?? '')], now);
+      // A quote the editor found on the cited page is first-hand; a fallback warning has no quote at all.
+      const urgency = severity({ recordLevel: RELEVEL[w.type] ?? 2, confidence: w.quote ? 'high' : 'medium', days, breaks: w.type === 'wrong' });
+      return [{
+        type: w.type, urgency, days, rank: rankKey(urgency, days),
+        raw: `${w.title ?? ''} ${w.detail ?? ''} ${w.risk ?? ''} ${w.quote ?? ''}`,
+        title: P(w.title), detail: P(w.detail), risk: P(w.risk), quote: P(w.quote),
+        sources: (Array.isArray((w as { sources?: unknown }).sources) ? (w as { sources: unknown[] }).sources : []).map(Number),
+      }];
+    })
+    .filter((w) => w.title && !unprintable(w.raw))
+    .sort((a, b) => b.rank - a.rank);
+  // PL7: a "why it matters" sentence that repeats an earlier item's does not earn its place, so it goes.
+  const repeated = new Set(similarPairs(ranked.map((w, i) => ({ id: String(i), text: w.risk })).filter((x) => x.text)).map(([, b]) => b));
+  ranked.forEach((w, i) => { if (repeated.has(String(i))) w.risk = ''; });
+  // PL16: one gating rule. PL17: a shown sign keeps its quote and its source; a locked one keeps neither.
+  const signs = gated(ranked, GATE.signs);
+  const shownSigns = signs.shown;
+  const lockedSigns = signs.locked;
+  const lockedTitles = teasers(lockedSigns);
+  const typesFound = [...new Set(ranked.map((w) => w.type))];
+  /** The host an item's evidence came from: what a reader can go and check for themselves. */
+  const sourceOf = (ids: number[]) => hostOf(String(sources.find((x: any) => ids.includes(Number(x.id)))?.url ?? ''));
+
+  // The claims, gated the same way as the signs.
+  const claimRows = gated(claimFacts.flatMap((f) => {
+    const raw = String(f.fact ?? '');
+    const said = P(raw);
+    return said && !unprintable(raw) ? [{ said, sources: (f.sources ?? []).map(Number) }] : [];
+  }), GATE.claims);
+  const claimsHeld = claimRows.shown.length + claimRows.locked.length;
+  // Only what is shown may be cited: a locked item's source is not listed either (PL17).
+  const cited = new Set([...shownSigns.flatMap((w) => w.sources), ...claimRows.shown.flatMap((r) => r.sources)]);
   const listed = v2 ? sources.filter((s: any) => cited.has(Number(s.id))) : sources;
-  const shown = v2 ? warnings : warnings.slice(0, 5);
-  // Every sign we hold beyond what this page shows stays locked for the full report.
-  const moreSigns = v2
-    ? Math.max(warnings.length - shown.length, 0)
-    : Math.max(warnings.length - shown.length, contradictions.length + gaps.length - shown.length, 0);
-  const typesFound = [...new Set(warnings.map((w) => w.type))];
-  const signCount = v2 ? shown.length : Math.max(warnings.length, contradictions.length + gaps.length);
-  // Switched page: this figure counts shown contradiction warnings, never the raw list.
-  const disagreeN = v2 ? shown.filter((w) => w.type === 'contradiction').length : contradictions.length;
-  const hook = picked?.hook ? P(picked.hook) : `This preview was prepared for ${name} alone, from ${sources.length} public sources. Here is what they say about you, and where they do not agree.`;
+
+  /**
+   * PL19: one object, computed once, that every number printed on the page reads from. The terms are defined
+   * here: a sign is one warning the surface scan found, shown + locked = found, and a claim is one licence or
+   * award the company states about itself.
+   */
+  const counts = {
+    sources: sources.length,
+    facts: facts.length,
+    found: ranked.length,
+    shown: shownSigns.length,
+    locked: lockedSigns.length,
+    disagree: ranked.filter((w) => w.type === 'contradiction').length,
+    gaps: gaps.length,
+    claims: claimsHeld,
+    ledgerLocked: lockedSigns.length + claimRows.locked.length,
+    listed: listed.length,
+  };
+  const srcN = plural(counts.sources, 'public source');
+  // PL19: with nothing read, the sentence says so in words rather than printing a zero.
+  const fromSources = counts.sources ? `from ${srcN}` : 'from the public record';
+  // PL22: a counter with nothing behind it is not printed, and neither is a link to an empty section.
+  const stripCells = [
+    counts.sources ? `<div><b>${esc(String(counts.sources))}</b><span>${esc(plural(counts.sources, 'public source'))} read about ${esc(short)}</span></div>` : '',
+    counts.facts ? `<div><b>${esc(String(counts.facts))}</b><span>${esc(plural(counts.facts, 'fact'))} on public record</span></div>` : '',
+    counts.disagree ? `<div><b>${esc(String(counts.disagree))}</b><span>${esc(plural(counts.disagree, 'place'))} where those sources disagree</span></div>` : '',
+    !v2 && counts.gaps ? `<div><b>${esc(String(counts.gaps))}</b><span>${esc(plural(counts.gaps, 'question'))} they cannot answer</span></div>` : '',
+  ].filter(Boolean).join('\n  ');
+  // PL20: the price and its currency come from the report's locale, and fall back to whatever the offer says.
+  const priceLabel = loc.price ?? (offer.price ? String(offer.price) : '');
+  // PL1 + PL8 + PL9: the editor's own line is printed like every other, or not at all.
+  const wroteHook = picked?.hook ? P(picked.hook) : '';
+  const hook = wroteHook && !unprintable(String(picked?.hook ?? ''))
+    ? wroteHook
+    : `This preview was prepared for ${name} alone, ${fromSources}. Here is what they say about you, and where they do not agree.`;
 
   const ctaHref = offer.order_url && /^https?:\/\//.test(offer.order_url) ? offer.order_url : '#order';
   const ctaAttrs = ctaHref === '#order' ? '' : ' target="_blank" rel="noopener"';
@@ -185,21 +299,21 @@ h2 { font-size:clamp(34px,4.4vw,58px); max-width:16em; } .lead { font-size:19px;
 .warn { background:var(--paper); padding:24px; display:grid; gap:10px; align-content:start; border-top:3px solid var(--ink); }
 .warn.contra { border-top-color:var(--contra); } .warn.missing { border-top-color:var(--missing); } .warn.outdated { border-top-color:var(--outdated); } .warn.wrong { border-top-color:var(--wrong); }
 .warn h3 { font-size:21px; letter-spacing:-0.015em; line-height:1.2; } .warn .d { color:var(--grey); font-size:15px; } .warn .risk { font-size:14px; border-left:2px solid var(--ink); padding-left:10px; }
+/* PL11: the same urgency label on every card, so the ranking is visible and not just claimed. */
+.sev { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:4px 9px; border:1px solid currentColor; margin-left:6px; color:var(--muted); }
+.sev.critical { color:var(--wrong); } .sev.high { color:var(--contra); } .sev.medium { color:var(--muted); } .sev.low { color:var(--muted); }
+/* PL17: the evidence a shown item stands on, quoted with the host it came from. */
+.warn .ev { margin:0; padding:0 0 0 14px; border-left:2px solid var(--line); font-size:14px; color:var(--grey); }
+.warn .ev cite { display:block; font-style:normal; font-size:12px; color:var(--muted); margin-top:4px; }
+.warn.first .ev { border-left-color:var(--on-dark-2); color:var(--on-dark-2); } .warn.first .ev cite { color:var(--on-dark-2); }
+.warn.first .sev { color:var(--on-dark-2); }
 .warn.first { grid-column:1/-1; background:var(--dark); color:var(--on-dark); } .warn.first .d { color:var(--on-dark-2); } .warn.first .risk { border-left-color:#fff; } .warn.first h3 { font-size:clamp(24px,2.6vw,30px); }
-.locked { background:var(--paper); padding:24px; display:grid; gap:12px; align-content:start; position:relative; overflow:hidden; border-top:3px solid var(--line); }
+/* A locked item shows its category and a short hint, and nothing of itself: no quote, no source (PL17, PL18). */
+.locked { background:var(--paper); padding:24px; display:grid; gap:10px; align-content:start; border-top:3px solid var(--line); }
+.locked .tag { justify-self:start; color:var(--muted); background:var(--band); }
+.locked .ttl { font-size:17px; font-weight:600; letter-spacing:-0.01em; line-height:1.25; color:var(--grey); }
 .locked .bar { height:12px; background:var(--band); } .locked .bar.s { width:62%; } .locked .bar.m { width:84%; }
-.locked .lockmsg { position:absolute; inset:0; display:grid; place-content:center; text-align:center; gap:6px; background:linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.96) 55%); padding:20px; }
-.locked .lockmsg b { font-family:var(--display); font-size:44px; font-weight:600; letter-spacing:-0.03em; line-height:1; } .locked .lockmsg span { font-size:14px; color:var(--grey); }
-/* what has run: the surface scan behind this preview, then the deeper dive that has not */
-.runs { display:grid; background:var(--paper); border:1px solid var(--line); margin-bottom:28px; }
-.run { display:grid; grid-template-columns:40px minmax(0,1fr) 128px 200px; gap:18px; align-items:center; padding:14px 22px; border-top:1px solid var(--line); }
-.run:first-child { border-top:0; } .run .rn { font-family:var(--display); font-size:15px; font-weight:600; color:var(--muted); }
-.run .rw { display:grid; gap:2px; } .run .rw b { font-family:var(--display); font-size:17px; font-weight:600; letter-spacing:-0.01em; line-height:1.25; } .run .rw span { font-size:13.5px; color:var(--grey); }
-.run .rs { justify-self:start; font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); border:1.5px dashed #b4bac2; padding:3px 8px; white-space:nowrap; }
-.run .rc { display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:center; } .run .rc b { font-family:var(--display); font-size:30px; font-weight:600; letter-spacing:-0.03em; line-height:1; color:var(--muted); white-space:nowrap; } .run .rc span { font-size:12.5px; color:var(--grey); line-height:1.3; }
-.run.done { background:var(--dark); color:var(--on-dark); border-top:0; } .run.done .rn, .run.done .rw span, .run.done .rc span { color:var(--on-dark-2); }
-.run.done .rs { color:#8ee0b0; border:1.5px solid #8ee0b0; } .run.done .rc b { color:#ffb4ab; }
-.run.step { background:#fafbfc; } .run.total { border-top:2px solid var(--ink); } .run.total .rc b { color:var(--ink); }
+.locked .lk { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 /* band */
 .band-cta { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:32px; align-items:center; padding-top:72px; padding-bottom:72px; }
 .band-cta h2 { font-size:clamp(30px,3.4vw,46px); }
@@ -312,7 +426,7 @@ body { font-kerning:normal; text-rendering:optimizeLegibility; font-feature-sett
 .dark, .order .panel, .parts a, .warn.first, .m-code, .m-board .me { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
 p, li, dd, figcaption, .cap, .known .v { text-wrap:pretty; }
 .lead, .m-ask, .warn .d, .warn .risk, .known .v { hanging-punctuation:first allow-end; }
-.strip b, .run .rc b, .lockmsg b, .price, .m-board, .ledger, .m-score b, .steps div::before, .uses .un, .parts .n, .m-fix, .file dd, .fileno, ol.sources, .colophon { font-variant-numeric:tabular-nums lining-nums; }
+.strip b, .price, .m-board, .ledger, .m-score b, .steps div::before, .uses .un, .parts .n, .m-fix, .file dd, .fileno, ol.sources, .colophon { font-variant-numeric:tabular-nums lining-nums; }
 ::selection { background:var(--ink); color:#fff; } .dark ::selection, .order .panel ::selection { background:#fff; color:var(--ink); }
 a:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
 .filehead { display:flex; justify-content:space-between; align-items:center; gap:12px; } .fileno { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
@@ -331,7 +445,6 @@ footer .muted { color:var(--muted); font-weight:500; }
 @media (max-width:700px) {
   .ledger thead { display:none; } .ledger tr { display:grid; gap:8px; padding:16px 18px; border-top:1px solid var(--line); } .ledger tr:first-child { border-top:0; }
   .ledger td { display:block; padding:0; border:0; width:auto !important; } .ledger .where::before { content:"Checked against: "; font-weight:600; color:var(--ink); }
-  .run { grid-template-columns:28px minmax(0,1fr); gap:6px 12px; padding:14px 16px; } .run .rs, .run .rc { grid-column:2; } .run .rc b { font-size:24px; }
 }
 @media (max-width:560px) { .uses, .tiles, .srcs { grid-template-columns:1fr; } .tile.wide { grid-column:auto; } .m-depts { grid-template-columns:1fr 1fr; } .mock { padding:18px; } .m-fix { grid-template-columns:22px minmax(0,1fr) auto; } .m-fix .eff { display:none; } }
 @page { size:A4; margin:14mm 12mm 16mm;
@@ -342,16 +455,12 @@ footer .muted { color:var(--muted); font-weight:500; }
   html { scroll-behavior:auto; } section { padding:32px 28px; } .hero, .thesis { padding-top:44px; padding-bottom:44px; }
   .file { transform:none; box-shadow:none; border:1px solid var(--line); }
   .head, h2, h3, .sub3, .eyebrow { break-after:avoid; } .head { break-inside:avoid; } p, li { orphans:3; widows:3; }
-  .warn, .locked, .uses div, .feat, .mock, .tile, .parts a, .ledger tr, .known div, .srcs div, .steps div, .runs, .strip, .order .panel, .colophon { break-inside:avoid; }
+  .warn, .locked, .uses div, .feat, .mock, .tile, .parts a, .ledger tr, .known div, .srcs div, .steps div, .strip, .order .panel, .colophon { break-inside:avoid; }
   details > :not(summary) { display:block; } details::details-content { display:block; content-visibility:visible; } details > summary { list-style:none; }
   a.btn[href^="http"]::after { content:" · " attr(href); font-weight:400; }
 }
 ${PARTNERS_CSS}`;
 
-  const warnCard = (w: NonNullable<PreviewNotes['warnings']>[number], first = false) => {
-    const [label, cls] = TYPE[w.type] ?? TYPE.contradiction;
-    return `<article class="warn ${cls}${first ? ' first' : ''}"><span class="tag ${cls}">${esc(label)}</span><h3>${esc(tie(w.title))}</h3>${w.detail ? `<p class="d">${esc(w.detail)}</p>` : ''}${w.risk ? `<p class="risk">${esc(w.risk)}</p>` : ''}</article>`;
-  };
   // ---------- inside the full report ----------
   // Placeholder versions of the full report's visuals: grey bars where this company's numbers go.
   const rd = (w: string) => `<span class="rd" style="width:${w}"></span>`;
@@ -425,7 +534,7 @@ ${PARTNERS_CSS}`;
     ['Government sites', '.gov.my tender awards, vendor lists, grants and penalties naming you'],
     ['Published financials', 'Revenue and other figures third parties publish about you'],
     ['Trademark signals', 'Filings and listings that mention your name, and anyone else using it'],
-    ['Licence and award registers', claims > 1 ? `Each of your ${claims} licence and award claims, in its issuer’s register` : claims === 1 ? 'Your licence or award claim, in its issuer’s register' : 'Each licence and award you claim, in its issuer’s register'],
+    ['Licence and award registers', counts.claims > 1 ? `Each of your ${counts.claims} licence and award claims, in its issuer’s register` : counts.claims === 1 ? 'Your licence or award claim, in its issuer’s register' : 'Each licence and award you claim, in its issuer’s register'],
   ];
 
   // The credibility check: this company's own claims and warning signs, each with where it gets checked.
@@ -445,34 +554,41 @@ ${PARTNERS_CSS}`;
     : /\b(websites?|domains?|pages?|links?|site)\b/i.test(t) ? 'Every page of your websites'
     : '';
   const checkFor = (title: string, detail: string) => checkOne(title) || checkOne(detail) || 'Public registers and records';
-  const claimRows = facts.map((f) => String(f.fact ?? '')).filter((f) => CLAIM.test(f) && !/private limited/i.test(f)).slice(0, 3)
-    .map((f) => ({ src: 'Your claim', said: clip(P(f), 120), where: registerFor(f) }));
-  const signRows = warnings.slice(0, Math.max(6 - claimRows.length, 3))
-    .map((w) => ({ src: TYPE[w.type]?.[0] ?? 'Warning sign', said: w.title, where: checkFor(w.title, String(w.detail ?? '')) }));
-  const ledgerRows = [...claimRows, ...signRows];
-  const hiddenRows = Math.max((v2 ? warnings.length : Math.max(warnings.length, contradictions.length + gaps.length)) - signRows.length, 0) + Math.max(claims - claimRows.length, 0);
+  const claimsRows = claimRows.shown.map((r) => ({ src: 'Your claim', said: clip(r.said, 120), where: registerFor(r.said), evidence: sourceOf(r.sources) }));
+  const signRows = shownSigns.map((w) => ({ src: TYPE[w.type]?.[0] ?? 'Warning sign', said: w.title, where: checkFor(w.title, String(w.detail ?? '')), evidence: sourceOf(w.sources) }));
+  // PL17: a shown row keeps the evidence it stands on; every row past the gate is counted and not shown.
+  const ledgerRows = [...claimsRows, ...signRows];
 
-  /** The deeper dive's six research areas, one line each on what they check. */
-  const SCAN: Record<string, string> = {
-    contact: 'Every published phone, email, WhatsApp link and address, and where each one really leads',
-    understanding: 'Search results, Maps, directories, AI assistants and your homepage, read as a buyer would',
-    voice: 'Google reviews, forums, social posts and news about you and your key people',
-    credibility: 'Regulator alert lists, courts, insolvency notices, registers, licence claims and trademarks',
-    assets: 'Domain ownership and expiry, hosting, email spoofing and email reputation',
-    speed: 'Google PageSpeed Insights, and what real Chrome visitors experienced',
+  // PL23: one card per locked sign, its category and a short hint and nothing else, and no promise of a stage
+  // that has not run. The count of what is locked lives in `counts` like every other number.
+  const lockedCard = (title: string) => `<article class="locked"><span class="tag">Locked</span><h3 class="ttl">${esc(tie(title))}</h3><div class="bar s"></div><div class="bar m"></div><p class="lk">In your full report</p></article>`;
+  const warnCard = (w: (typeof shownSigns)[number], first = false) => {
+    const [label, cls] = TYPE[w.type] ?? TYPE.contradiction;
+    const ev = w.quote ? `<blockquote class="ev">${esc(w.quote)}${sourceOf(w.sources) ? `<cite>${esc(sourceOf(w.sources))}</cite>` : ''}</blockquote>` : '';
+    return `<article class="warn ${cls}${first ? ' first' : ''}"><div><span class="tag ${cls}">${esc(label)}</span><span class="sev ${w.urgency}">${esc(SEV[w.urgency])}</span></div><h3>${esc(tie(w.title))}</h3>${w.detail ? `<p class="d">${esc(w.detail)}</p>` : ''}${ev}${w.risk ? `<p class="risk">${esc(w.risk)}</p>` : ''}</article>`;
   };
-  const areaWord = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][CHAPTER_ORDER.length] ?? String(CHAPTER_ORDER.length);
-  // The preview is only the surface scan. The deeper dive has not run, so its count is unknown, never a number.
-  const runRow = (no: string, name: string, what: string, status: string, count: string, unit: string, cls = '') => `<div class="run${cls ? ` ${cls}` : ''}"><span class="rn">${no}</span><div class="rw"><b>${esc(name)}</b><span>${esc(what)}</span></div>${status ? `<span class="rs">${esc(status)}</span>` : '<span></span>'}<div class="rc"><b>${count}</b><span>${esc(unit)}</span></div></div>`;
-  const runs = `<div class="runs" aria-label="What has run so far, and what has not">
-    ${runRow('00', 'Surface scan', `${srcN} read, for this free preview`, 'Done', esc(signCount), signCount === 1 ? 'warning sign found' : 'warning signs found', 'done')}
-    ${CHAPTER_ORDER.map((c, i) => runRow(String(i + 1).padStart(2, '0'), CHAPTER_EYEBROW[c], SCAN[c] ?? '', 'Not run yet', '?', 'problems to uncover')).join('')}
-    ${runRow(String(CHAPTER_ORDER.length + 1).padStart(2, '0'), 'Full analysis', `All ${areaWord} areas read together, for the causes behind several problems at once`, 'Not run yet', '–', 'runs on what the areas find', 'step')}
-    ${runRow(String(CHAPTER_ORDER.length + 2).padStart(2, '0'), 'Action plan', 'Every problem turned into a task, by department, with the work written for you', 'Not run yet', '–', 'one task for each problem', 'step')}
-    ${runRow('', 'So far', 'Found by the surface scan alone. The rest can only be counted once the deeper dive runs.', '', `${esc(signCount)}&nbsp;+&nbsp;?`, 'problems in all', 'total')}
-  </div>`;
-  const lockedCard = (n: number) => `<article class="locked" aria-label="${n} more surface-scan warning signs, in the full report"><div class="bar s"></div><div class="bar m"></div><div class="bar"></div><div class="bar m"></div><div class="bar s"></div><div class="lockmsg"><b>+${n}</b><span>more from the surface scan,<br>shown in your full report</span></div></article>`;
-  // Same markup as before when the switch is off. On, a link stays only for an official domain.
+
+  // PL16 + PL17 + PL22: the section prints the numbers from `counts`, shows the gated signs with their evidence,
+  // and does not exist at all when there is no sign to show.
+  const warnSection = counts.found ? `<section id="warnings" class="warn-section">
+  <div class="head"><p class="eyebrow">Surface scan · warning signs</p>
+    <h2>The surface scan found ${esc(plural(counts.found, 'warning sign'))}.<br><span class="g">${counts.locked ? 'The worst of them are below.' : 'Each one is below, with the source it came from.'}</span></h2>
+    <p class="lead">This free preview is one surface scan: ${esc(srcN)} read for ${esc(short)}, nothing more.${counts.locked ? ` ${esc(String(counts.shown))} of ${esc(String(counts.found))} are shown here; the rest, with every number and the fixes, are in your full report.` : ' Every sign it found is here, with where it came from.'}</p></div>
+  ${typesFound.length ? `<div class="legend" style="margin-bottom:14px">${typesFound.map((t) => `<span class="tag ${TYPE[t][1]}">${esc(TYPE[t][0])}</span>`).join('')}</div>` : ''}
+  <div class="warns">${shownSigns.map((w, i) => warnCard(w, i === 0)).join('')}${lockedSigns.map((w, i) => lockedCard(lockedTitles[i])).join('')}</div>
+  <p class="note">Ordered by how soon each one bites, how confident we are, and what it breaks. Every card comes from the surface scan; the full report settles each one against the official records.</p>
+</section>` : '';
+
+  // PL22: with nothing to show, the table, its legend and its heading do not appear, so no number is left hanging.
+  const ledgerBlock = ledgerRows.length ? `<h3 class="sub3">Then every claim and warning sign about ${esc(short)}, settled</h3>
+  <div class="cred"><table class="ledger"><thead><tr><th>What is said about ${esc(short)}</th><th>Checked against</th><th>Result</th></tr></thead><tbody>
+    ${ledgerRows.map((r) => `<tr><td class="said"><span class="src">${esc(r.src)}</span><b>${esc(r.said)}</b></td><td class="where">${esc(r.where)}${r.evidence ? `<span class="evh">${esc(r.evidence)}</span>` : ''}</td><td class="res"><span class="vstamp">In full report</span></td></tr>`).join('')}
+    ${counts.ledgerLocked ? `<tr class="hidden"><td class="said"><span class="src">+${esc(String(counts.ledgerLocked))} more from the surface scan</span>${rd('72%')}${rd('48%')}</td><td class="where">${rd('80%')}</td><td class="res"><span class="vstamp">In full report</span></td></tr>` : ''}
+  </tbody></table></div>
+  <div class="outcomes"><span>Each claim ends with one result:</span><span class="pill good">Confirmed</span><span class="pill good">Better than you claim</span><span class="pill bad">Register says otherwise</span><span class="pill amb">Not found</span><span class="pill none">No public register</span></div>` : '';
+
+  // The source link a listed source gets. Same markup as before when the switch is off. On, a link stays only for
+  // an official domain.
   const sourceLink = (s: any): string => {
     if (!v2) return /^https?:\/\//.test(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(clip(String(s.title || hostOf(s.url)), 90))}</a> · ${esc(hostOf(s.url))}` : esc(s.title);
     const url = typeof s.url === 'string' ? s.url : '';
@@ -501,9 +617,9 @@ ${PARTNERS_CSS}`;
 <section class="dark hero">
   <div>
     <p class="eyebrow">Preview · prepared for ${esc(name)} · ${esc(made)}</p>
-    <h1>${sources.length ? `We read ${esc(srcN)} about ${esc(short)}.` : `We searched the public record for ${esc(short)}.`}<br><span class="g">${warnings.length ? 'Not all of them tell the same story.' : 'Here is what they say.'}</span></h1>
+    <h1>${counts.sources ? `We read ${esc(srcN)} about ${esc(short)}.` : `We searched the public record for ${esc(short)}.`}<br><span class="g">${counts.found ? 'Not all of them tell the same story.' : 'Here is what they say.'}</span></h1>
     <p class="lead">${esc(hook)}</p>
-    <div class="ctas">${cta('Get my full report')}<a class="btn ghost" href="#warnings">See the warning signs&nbsp;↓</a></div>
+    <div class="ctas">${cta('Get my full report')}${counts.found ? '<a class="btn ghost" href="#warnings">See the warning signs&nbsp;↓</a>' : ''}</div>
     <p class="anyone">Built from public sources only. Anyone can run this on you.</p>
   </div>
   <aside class="file" aria-label="Your file">
@@ -514,18 +630,15 @@ ${PARTNERS_CSS}`;
       ${addressShown ? `<div><dt>Head office</dt><dd>${esc(addressShown)}</dd></div>` : ''}
       ${domains.length ? `<div><dt>Websites</dt><dd>${esc(domains.join(', '))}</dd></div>` : ''}
       ${people.length ? `<div><dt>Leadership</dt><dd>${esc(people.slice(0, 3).map((p: any) => p.name).join(', '))}</dd></div>` : ''}
-      <div><dt>Surface scan</dt><dd>${signCount ? `<b style="color:var(--wrong)">${esc(plural(signCount, 'warning sign'))}</b> found` : 'No warning signs found'}</dd></div>
-      <div><dt>Deeper dive</dt><dd>${esc(areaWord.replace(/^./, (c) => c.toUpperCase()))} research areas, the analysis and the action plan: <b>not run yet</b></dd></div>
+      <div><dt>Surface scan</dt><dd>${counts.found ? `<b style="color:var(--wrong)">${esc(plural(counts.found, 'warning sign'))}</b> found` : 'No warning signs found'}</dd></div>
     </dl>
-    <p class="foot">Researched ${esc(made)} from ${esc(srcN)}</p>
+    <p class="foot">Researched ${esc(made)} ${esc(fromSources)}</p>
   </aside>
 </section>
 
-<div class="strip">
-  <div><b>${esc(sources.length)}</b><span>public source${sources.length === 1 ? '' : 's'} read about ${esc(short)}</span></div>
-  <div><b>${esc(facts.length)}</b><span>fact${facts.length === 1 ? '' : 's'} on public record</span></div>
-  <div><b>${esc(disagreeN)}</b><span>${disagreeN === 1 ? 'place' : 'places'} where those sources disagree</span></div>
-${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'question' : 'questions'} they cannot answer</span></div>\n`}</div>
+${stripCells ? `<div class="strip">
+  ${stripCells}
+</div>` : ''}
 
 <section id="thesis" class="thesis">
   <p class="eyebrow">Why this matters</p>
@@ -538,21 +651,11 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
     <h2>Not a template.<br><span class="g">Every line here is about ${esc(short)}.</span></h2>
     <p class="lead">Before a customer calls, before a bank lends or a tender panel shortlists, this is what public sources tell them about you.</p></div>
   ${known.length ? `<div class="known">${known.map((k) => `<div><span class="k">${esc(k.label)}</span><span class="v">${esc(P(k.value))}</span></div>`).join('')}</div>
-  <p class="note">As public sources stated them on ${esc(made)}. Where they disagree, the warning signs below say so.</p>` : `<p class="empty">Public sources say very little about ${esc(short)} yet. That is a finding in itself: a buyer who looks you up has almost nothing to go on.</p>`}
+  <p class="note">As public sources stated them on ${esc(made)}.${counts.found ? ' Where they disagree, the warning signs below say so.' : ''}</p>` : `<p class="empty">Public sources say very little about ${esc(short)} yet. That is a finding in itself: a buyer who looks you up has almost nothing to go on.</p>`}
   ${people.length ? `<div class="people">${people.slice(0, 8).map((p: any) => `<span><b>${esc(p.name)}</b>${p.role ? ` · ${esc(clip(String(p.role), 40))}` : ''}</span>`).join('')}</div>` : ''}
 </section>
 
-<section id="warnings" class="warn-section">
-  <div class="head"><p class="eyebrow">Surface scan · warning signs</p>
-    ${signCount ? `<h2>The surface scan found ${esc(plural(signCount, 'warning sign'))}.<br><span class="g">The deeper dive has not run yet.</span></h2>
-    <p class="lead">This free preview is one surface scan: ${esc(srcN)} read for ${esc(short)}, nothing more. The deeper dive runs ${esc(areaWord)} research areas, a full analysis and an action plan, and none of them has started. Nobody can say how many more problems they will uncover until they run, us included.</p>` : `<h2>The surface scan found no warning signs.<br><span class="g">The deeper dive has not run yet.</span></h2>
-    <p class="lead">What public sources say about ${esc(short)} hangs together. The full audit checks what they cannot: your contact details, reviews, Google, AI assistants, the official registers, your domains and email, and Google’s own test of your website.</p>`}
-    </div>
-  ${runs}
-  ${typesFound.length ? `<div class="legend" style="margin-bottom:14px">${typesFound.map((t) => `<span class="tag ${TYPE[t][1]}">${esc(TYPE[t][0])}</span>`).join('')}</div>` : ''}
-  <div class="warns">${shown.map((w, i) => warnCard(w, i === 0)).join('')}${moreSigns ? lockedCard(moreSigns) : ''}</div>
-  <p class="note">Every card here comes from the surface scan. What the deeper dive finds is not on this page, because it has not been looked for yet.</p>
-</section>
+${warnSection}
 
 <section class="dark band-cta">
   <div><p class="eyebrow">The full audit</p><h2>Read it before your competitors do.<br><span class="g">Fix it before your customers see it.</span></h2>
@@ -572,7 +675,7 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
     <a href="#p-voice"><span class="n">03</span><h3>${esc(CHAPTER_EYEBROW.voice)}</h3><p>What customers, forums and the news say about you and the people who run it.</p>
       <ul><li>Every Google review, and every reply</li><li>News, forum and social talk</li><li>What is said about your key people</li></ul><span class="go">See what it shows&nbsp;↓</span></a>
     <a href="#p-credibility"><span class="n">04</span><h3>${esc(CHAPTER_EYEBROW.credibility)}</h3><p>The official sources a bank or tender panel checks, and every claim and warning sign.</p>
-      <ul><li>Regulator alert lists, courts, insolvency notices and trademark signals</li><li>Licences and awards, in their registers</li><li>The ${esc(signCount)} warning signs, settled</li></ul><span class="go">See what it shows&nbsp;↓</span></a>
+      <ul><li>Regulator alert lists, courts, insolvency notices and trademark signals</li><li>Licences and awards, in their registers</li>${counts.found ? `<li>${esc(plural(counts.found, 'warning sign'))}, settled</li>` : ''}</ul><span class="go">See what it shows&nbsp;↓</span></a>
     <a href="#p-assets"><span class="n">05</span><h3>${esc(CHAPTER_EYEBROW.assets)}</h3><p>Your domains, hosting and email, traced from the public internet.</p>
       <ul>${inside.assets.know.slice(0, 3).map((k) => `<li>${esc(k)}</li>`).join('')}</ul><span class="go">See what it shows&nbsp;↓</span></a>
     <a href="#p-speed"><span class="n">06</span><h3>${esc(CHAPTER_EYEBROW.speed)}</h3><p>Google’s own test of your official homepage, on a phone and a computer.</p>
@@ -602,13 +705,7 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
 <section id="p-credibility" class="warn-section">
   ${partHead(4, 'credibility', 'Banks, tender panels and larger clients check before they sign. We run the same checks in the official sources themselves, so you know what they will find before they do.')}
   <div class="srcs">${officialSources.map(([t, d]) => `<div><b>${esc(t)}</b><span>${esc(d)}</span><p class="res">Result in full report</p></div>`).join('')}</div>
-  <h3 class="sub3">Then every claim and warning sign about ${esc(short)}, settled</h3>
-  <div class="cred"><table class="ledger"><thead><tr><th>What is said about ${esc(short)}</th><th>Checked against</th><th>Result</th></tr></thead><tbody>
-    ${ledgerRows.map((r) => `<tr><td class="said"><span class="src">${esc(r.src)}</span><b>${esc(r.said)}</b></td><td class="where">${esc(r.where)}</td><td class="res"><span class="vstamp">In full report</span></td></tr>`).join('')}
-    ${hiddenRows ? `<tr class="hidden"><td class="said"><span class="src">+${esc(hiddenRows)} more from the surface scan</span>${rd('72%')}${rd('48%')}</td><td class="where">${rd('80%')}</td><td class="res"><span class="vstamp">In full report</span></td></tr>` : ''}
-    <tr class="hidden"><td class="said"><span class="src">? more · from the deeper dive</span><b>Whatever the ${esc(areaWord)} research areas uncover</b></td><td class="where">Each in its own official source</td><td class="res"><span class="vstamp">Not run yet</span></td></tr>
-  </tbody></table></div>
-  <div class="outcomes"><span>Each claim ends with one result:</span><span class="pill good">Confirmed</span><span class="pill good">Better than you claim</span><span class="pill bad">Register says otherwise</span><span class="pill amb">Not found</span><span class="pill none">No public register</span></div>
+  ${ledgerBlock}
   <p class="nochk"><b>Said plainly in the report, never guessed:</b> paid or closed registers are not checked automatically. That means SSM e-Info documents, CTOS and CCRIS, the MDI insolvency search, PDRM Semak Mule, the MyIPO trademark register (it needs a login) and the Spamhaus blacklist (it needs a paid licence).</p>
 </section>
 
@@ -665,7 +762,7 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
 <section id="how" style="padding-top:0">
   <div class="head"><p class="eyebrow">How it works</p><h2>From this preview<br><span class="g">to your full report.</span></h2></div>
   <div class="steps">
-    <div><h3>This preview</h3><p>${esc(srcN.replace(/^./, (c) => c.toUpperCase()))}, read for ${esc(short)}.</p><span class="now">Done</span></div>
+    <div><h3>This preview</h3><p>${counts.sources ? `${esc(srcN.replace(/^./, (c) => c.toUpperCase()))}, read for ${esc(short)}.` : `The public record, searched for ${esc(short)}.`}</p><span class="now">Done</span></div>
     <div><h3>You order</h3><p>${offer.contact ? esc(offer.contact) : 'Reply to the message that brought you this preview.'}</p></div>
     <div><h3>We run the full audit</h3><p>Every contact detail, AI assistants, search and Maps, your reviews and the news, the official records, every domain and email address that carries your name, and Google’s own test of your website.</p></div>
     <div><h3>You get your report</h3><p>One link: desktop, mobile, and A4 to print or save as PDF.</p></div>
@@ -674,9 +771,9 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
 
 <section id="protect" style="padding-top:0">
   <div class="head"><p class="eyebrow">One report, four uses</p><h2>Know first.<br><span class="g">Fix first.</span></h2>
-    <p class="lead">The same research we ran on ${esc(short)} works on any Malaysian company you deal with.</p></div>
+    <p class="lead">The same research we ran on ${esc(short)} works on any company you deal with.</p></div>
   <div class="uses">
-    <div><span class="un">01</span><h3>Read it before your competitors do</h3><p>Everything in it is public. Know what a rival, a buyer or a bank can learn about ${esc(short)} before they use it.</p><a class="ul" href="#warnings">This is yours, above&nbsp;↑</a></div>
+    <div><span class="un">01</span><h3>Read it before your competitors do</h3><p>Everything in it is public. Know what a rival, a buyer or a bank can learn about ${esc(short)} before they use it.</p>${counts.found ? '<a class="ul" href="#warnings">This is yours, above&nbsp;↑</a>' : ''}</div>
     <div><span class="un">02</span><h3>Fix it before your customers see it</h3><p>Old numbers, wrong AI answers, unanswered reviews: each one costs a sale quietly. The report puts them in order, with the fix written out.</p><a class="ul" href="#advice">See the fixes&nbsp;↑</a></div>
     <div><span class="un">03</span><h3>Read your competitors. Know what they don’t.</h3><p>How rivals show up to AI assistants, on Google and in reviews, where they are weak, and where you are already stronger.</p>${cta('Order one on a competitor', 'ul')}</div>
     <div><span class="un">04</span><h3>Choosing a supplier? Check them first.</h3><p>Before you sign or pay: their registration, regulator alerts, court records, licences, reviews and warning signs.</p>${cta('Check a supplier', 'ul')}</div>
@@ -688,20 +785,19 @@ ${v2 ? '' : `  <div><b>${esc(gaps.length)}</b><span>${gaps.length === 1 ? 'quest
     <div><p class="eyebrow">Order your full report</p><h2>${esc(short)} deserves<br><span class="g">one story, told right.</span></h2>
       <p class="lead" style="margin-top:18px">You have seen what public sources say. The full audit traces how customers reach you, shows what they see and hear, settles every warning sign against the official records, traces the domains and email that carry your name, runs Google’s own test on your website, then reads it all together and hands each department its task list.</p></div>
     <div class="panel">
-      ${offer.price ? `<p class="price">${esc(offer.price)}</p>` : ''}
+      ${priceLabel ? `<p class="price">${esc(priceLabel)}</p>` : ''}
       <ul><li>Contact and reachability: every phone, email and WhatsApp, traced</li><li>How top AI sees your brand, and how search engines index you</li><li>Reviews, news and forum talk about you and your key people</li><li>Credibility: regulator alerts, courts, insolvency and your licences</li><li>Digital assets: your domains, hosting and email</li><li>Website speed and quality: Google’s own test of your homepage</li><li>A full analysis that reads all six parts together</li><li>An action plan by department: website, social media, IT and other, with the work written for you</li><li>Desktop, mobile and A4 PDF</li></ul>
       ${ctaHref !== '#order' ? cta('Get my full report') : `<p>${esc(offer.contact || 'Reply to the message that brought you this preview, and we will start your full audit.')}</p>`}
-      <p style="font-size:14px;color:var(--on-dark)">Need one on a competitor or a supplier? Same report, any Malaysian company.</p>
       <p style="font-size:13px;color:var(--on-dark-2)">This preview is yours to keep.</p>
     </div>
   </div>
 </section>
 
 <footer>
-  ${listed.length ? `<details><summary>The public sources behind this preview <span class="muted">(${listed.length})</span></summary><ol class="sources">${listed.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${sourceLink(s)}</li>`).join('')}</ol></details>` : ''}
+  ${counts.listed ? `<details><summary>The public sources behind this preview <span class="muted">(${esc(String(counts.listed))})</span></summary><ol class="sources">${listed.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${sourceLink(s)}</li>`).join('')}</ol></details>` : ''}
   <div class="colophon">
     <div><span class="k">Prepared for</span><span>${esc(name)}</span></div>
-    <div><span class="k">Researched</span><span>${esc(made)}, from ${esc(srcN)}</span></div>
+    <div><span class="k">Researched</span><span>${esc(made)}, ${esc(fromSources)}</span></div>
     <div><span class="k">Edition</span><span>Preview${ref ? ` · ${esc(ref)}` : ''} · Online Presence Audit ${esc(year)}</span></div>
     <div><span class="k">Method</span><span>Web pages, directories, news and registers anyone can open. No paid register is used in a preview.</span></div>
   </div>
