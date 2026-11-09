@@ -192,7 +192,7 @@ function previewPrompt(input: PreviewInput): string {
     '',
     `Types: contradiction = two of the facts above give different values for the same thing; outdated = a date, certificate, promotion or figure in the facts that has passed or no longer matches today (${today}); wrong = a fact the other facts show is not so.`,
     'There is no quota and no minimum. Return a warning only when the facts above support it, and return an empty warnings list when they do not.',
-    'Rules: use only the material above; every quote must be copied character for character from one of these passages, and must cite that passage\'s source id; never invent facts or numbers; name no person except the leadership listed above, in a title, detail, risk or the hook, and choose a quote that names no other person; do not accuse the company of dishonesty: say what the sources show; drop citation markers; British English; speak to the owner as "you".',
+    'Rules: use only the material above; every quote must be copied character for character from one of these passages, and must cite that passage\'s source id; never invent facts or numbers; name no person except the leadership listed above, in a title, detail, risk or the hook, and choose a quote that names no other person; do not accuse the company of dishonesty: say what the sources show; drop citation markers; write each risk sentence about this warning alone, never a sentence you could paste under another one; use plain customer words, never our tool or process words; British English; speak to the owner as "you".',
     'This preview is public and unpaid: name no person except the leadership listed above; give no phone numbers, ID numbers, emails or links.',
   ].join('\n');
 }
