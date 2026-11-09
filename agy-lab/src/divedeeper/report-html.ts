@@ -1,3 +1,4 @@
+import { cleanText, localeFor, similarPairs, plural } from '../report-rules/index.ts';
 // The report as one standalone HTML document of A4 pages, from data alone (no network, no files).
 // Styled after the Eternalgy corporate profile: two-tone headlines, dark pages for the numbers,
 // banded tables. On screen the pages stack like sheets; Print / Save as PDF gives clean A4.
@@ -442,12 +443,13 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const where = /google\.[a-z.]+$/.test(h) && /\/maps/.test(u) ? 'Google Maps' : /search\.brave\.com/.test(h) ? 'search results' : h;
     return `<a class="see" href="${esc(u)}" target="_blank" rel="noopener">${esc(where)}&nbsp;↗</a>`;
   };
-  const dateOf = (iso: string | undefined | null) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
-  const monthOf = (ym: string) => new Date(ym + '-01T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-  const sevRank: Record<string, number> = { high: 0, medium: 1, low: 2, info: 3 };
+  const loc = localeFor(String(dive.country ?? ''));
+  const dateOf = (iso: string | undefined | null) => (iso ? new Date(iso).toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+  const monthOf = (ym: string) => new Date(ym + '-01T00:00:00Z').toLocaleDateString(loc.dateLocale, { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const sevRank: Record<string, number> = { critical: -1, high: 0, medium: 1, low: 2, info: 3 };
   // The lanes use "info" for good news and plain notes alike, so it reads as a neutral note.
-  const sevClass = (s: string) => (s === 'high' ? 'urgent' : s === 'medium' ? 'fix' : 'info');
-  const sevWord = (s: string) => (s === 'high' ? 'Urgent' : s === 'medium' ? 'Needs work' : s === 'low' ? 'Minor' : 'Note');
+  const sevClass = (s: string) => (s === 'critical' || s === 'high' ? 'urgent' : s === 'medium' ? 'fix' : 'info');
+  const sevWord = (s: string) => (s === 'critical' ? 'Critical' : s === 'high' ? 'Urgent' : s === 'medium' ? 'Needs work' : s === 'low' ? 'Minor' : 'Note');
   /** The lane's machine labels, stripped, for when the editor did not run. */
   const rawTitle = (t: string) => t.replace(/^(VERIFIED|CONTRADICTED|NOT FOUND|CAN'T CHECK AUTOMATICALLY|PRIVATE):\s*/i, '').replace(/\s*\[\d+ of \d+ asks[^\]]*\]/g, '').replace(/deepseek-v[\d.]+-flash(-\d+)?/gi, 'DeepSeek').replace(/gpt-[\d.]+-?\w*/gi, 'GPT');
   /** Stage-2 text built from raw finding titles keeps their machine bits; strip them for print (and any private link). */
@@ -466,6 +468,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     return `${esc(a)}${b ? `<br><span class="g">${esc(b)}</span>` : ''}`;
   };
   /** Finding rows in a banded table: status, finding with what it means, where we saw it. */
+  const previousWhy: { id: string; text: string }[] = [];
   const itemRows = (list: Item[]) => {
     if (!list.length) return '';
     // The editor reuses one consequence line for many findings ("This makes it harder for customers to
@@ -475,8 +478,9 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const said = new Set<string>();
     const consequence = (x: Item) => {
       const w = why(x), k = norm(w);
-      if (!k || k === norm(T(x)) || said.has(k)) return '';
+      if (!k || k === norm(T(x)) || said.has(k) || similarPairs([...previousWhy, { id: x.key, text: w }]).some(([, b]) => b === x.key)) return '';
       said.add(k);
+      previousWhy.push({ id: x.key, text: w });
       return w;
     };
     return `<table class="band items"><tbody>${list.map((x) => { const w = consequence(x); return `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}</p>${w ? `<p class="w">${esc(w)}</p>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`; }).join('')}</tbody></table>`;
@@ -488,8 +492,8 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
 
   // ---------- visuals ----------
   /** Google-style card for an unanswered bad review. */
-  const reviewCard = (x: any) => `<figure class="gcard"><div class="gtop"><span class="av" aria-hidden="true">${esc(String(x.author ?? '?').trim().charAt(0).toUpperCase())}</span><div><b>${esc(x.author)}</b> <span class="stars">${stars(x.stars)}</span><span class="muted"> · ${esc(dateOf(x.date))} · ${esc(x.listing)}</span></div></div>
-    ${x.text ? `<blockquote>“${esc(typeset(clip(String(x.text), 420)))}”</blockquote>` : '<p class="muted">(a star rating with no text)</p>'}
+  const reviewCard = (x: any) => `<figure class="gcard"><div class="gtop"><span class="av" aria-hidden="true">${'R'}</span><div><b>Reviewer</b> <span class="stars">${stars(x.stars)}</span><span class="muted"> · ${esc(dateOf(x.date))} · ${esc(x.listing)}</span></div></div>
+    ${x.text ? `<blockquote>“${esc(typeset(cleanText(clip(String(x.text), 420))))}”</blockquote>` : '<p class="muted">(a star rating with no text)</p>'}
     <p class="noreply">No reply from the owner${x.days_open != null ? ` for ${esc(x.days_open)} days` : ''}</p></figure>`;
 
   /** Reviews a month, with the spike and the 1★ months marked. */
@@ -593,7 +597,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     if (!list.length) return R.news.counts ? '<p class="note">No news story, forum thread or public post about you or your key people turned up.</p>' : '';
     return `<table class="band"><thead><tr><th>When</th><th>What is said</th><th></th></tr></thead><tbody>${list.map((x: any) => {
       const [c, l] = SENT[x.sentiment] ?? SENT.neutral;
-      return `<tr><td class="small">${esc(x.date || '–')}<br><span class="muted">${esc(x.host)}</span></td><td><p class="t">${x.about === 'person' && x.person ? `<b>${esc(x.person)}:</b> ` : ''}${esc(typeset(clip(String(x.summary ?? x.title), 200)))}</p>${x.quote ? `<p class="w">“${esc(clip(String(x.quote), 180))}”</p>` : ''}</td><td><span class="pill ${c}">${esc(l)}</span>${seeIt(x.url)}</td></tr>`;
+      return `<tr><td class="small">${esc(x.date || '–')}<br><span class="muted">${esc(x.host)}</span></td><td><p class="t">${x.about === 'person' && x.person ? `<b>${esc(x.person)}:</b> ` : ''}${esc(typeset(clip(String(x.summary ?? x.title), 200)))}</p>${x.quote ? `<p class="w">“${esc(cleanText(clip(String(x.quote), 180)))}”</p>` : ''}</td><td><span class="pill ${c}">${esc(l)}</span>${seeIt(x.url)}</td></tr>`;
     }).join('')}</tbody></table>`;
   }
   const CHECK_PILL: Record<string, [string, string]> = { signals: ['good', 'Signals found'], conflict: ['urgent', 'Possible conflict'], none: ['info', 'Nothing found'], clear: ['good', 'Clear'], found: ['urgent', 'Found'], public: ['good', 'Public'], not_public: ['info', 'Not public'], not_checked: ['info', 'Not checked'], could_not_check: ['info', 'Could not check'] };
@@ -722,7 +726,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const a = areaOf(id)!;
     const op = PART_OPENERS[id];
     const s = storyOf(id);
-    const list = byArea(id).filter((x) => x.severity === 'high' || x.severity === 'medium');
+    const list = byArea(id).filter((x) => x.severity === 'critical' || x.severity === 'high' || x.severity === 'medium');
     const rest = byArea(id).length - Math.min(list.length, 6);
     const n = chapterNo(id);
     const subtitle = s?.headline ?? '';
@@ -820,7 +824,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   const READY_AT: Record<string, string> = { homepage: 'd-site', fixes: 'd-site', pages: 'd-pages', replies: 'd-reviews', ask: 'd-reviews', faq: 'd-ai', ai: 'd-ai', jsonld: 'd-jsonld' };
   const itemByKey = new Map(R.items.map((x) => [x.key, x]));
   // Without S5 every urgent and needs-work finding still lands under the department that does it.
-  const plan: any[] = typesetAll(L['S5-plan']?.notes?.depts) ?? DEPTS.map((d) => ({ dept: d.id, tasks: [], also: R.items.filter((x) => (x.severity === 'high' || x.severity === 'medium') && deptOf(x) === d.id).map((x) => ({ key: x.key, theme: x.area })) }));
+  const plan: any[] = typesetAll(L['S5-plan']?.notes?.depts) ?? DEPTS.map((d) => ({ dept: d.id, tasks: [], also: R.items.filter((x) => (x.severity === 'critical' || x.severity === 'high' || x.severity === 'medium') && deptOf(x) === d.id).map((x) => ({ key: x.key, theme: x.area })) }));
   const readyWords: Record<string, string> = L['S5-plan']?.notes?.ready ?? {};
   function actionPlan(): string {
     const n = chapters.length + 2;
@@ -908,7 +912,7 @@ ${analysis()}
     ${R.identity.domains.length ? `<tr><td>Websites</td><td>${esc(R.identity.domains.join(', '))}</td></tr>` : ''}
   </tbody></table>
   ${mismatch.length ? `<h3 class="sub">What does not add up</h3><table class="band"><tbody>${mismatch.map((m: any) => `<tr><td><p class="t">${esc(m.issue)}</p>${m.settled ? `<p class="w">The official register ${esc(m.settled)}</p>` : ''}</td><td class="where">${m.source ? seeIt(m.source) : ''}</td></tr>`).join('')}</tbody></table>` : ''}
-  ${R.reviews.good_quotes.length ? `<h3 class="sub">What your customers say, in their words</h3><div class="quotes">${R.reviews.good_quotes.map((q: any) => `<blockquote>“${esc(typeset(clip(String(q.text), 260)))}”<cite>${esc(q.author)} · ${esc(dateOf(q.date))}</cite></blockquote>`).join('')}</div>${R.reviews.praise.length ? `<p class="note">Praised most for: ${esc(R.reviews.praise.map(([p, n]) => `${p} (${n})`).join(', '))}. None of this appears on your website yet.</p>` : ''}` : ''}
+  ${R.reviews.good_quotes.length ? `<h3 class="sub">What your customers say, in their words</h3><div class="quotes">${R.reviews.good_quotes.map((q: any) => `<blockquote>“${esc(typeset(cleanText(clip(String(q.text), 260))))}”<cite>${esc(q.author)} · ${esc(dateOf(q.date))}</cite></blockquote>`).join('')}</div>${R.reviews.praise.length ? `<p class="note">Praised most for: ${esc(R.reviews.praise.map(([p, n]) => `${p} (${n})`).join(', '))}. None of this appears on your website yet.</p>` : ''}` : ''}
   ${privateItems.length ? `<div class="private"><p class="lbl" style="color:var(--urgent)">Private: for you only</p><ul class="plain">${privateItems.map((x) => `<li>${x}</li>`).join('')}</ul></div>` : ''}
   ${foot(`Part ${chapters.length + 1} · What a stranger sees`)}
 </section>
@@ -926,7 +930,7 @@ ${actionPlan()}
   ${(site.pages_to_fix ?? []).length ? `<h4 class="tbl-h">Pages to fix</h4><table class="band"><thead><tr><th>Page</th><th>Problem</th><th>Fix</th></tr></thead><tbody>${site.pages_to_fix.map((p: any) => `<tr><td>${esc(p.page)}</td><td>${esc(p.problem)}</td><td>${esc(p.fix)}</td></tr>`).join('')}</tbody></table>` : ''}` : '<p class="note">The website plan was not written in this run.</p>'}
   ${(site?.pages_to_add ?? []).length ? `<h3 class="sub" id="d-pages">Pages to add, town by town</h3><div class="grid3">${site.pages_to_add.map((p: any) => `<div class="box"><code>${esc(p.slug)}</code><h4>${esc(p.title)}</h4><p class="muted">${esc(p.why)}</p><ul>${(p.outline ?? []).map((o: string) => `<li>${esc(o)}</li>`).join('')}</ul></div>`).join('')}</div>` : ''}
   <h3 class="sub" id="d-reviews">Review replies, ready to post</h3>
-  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any, n: number) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(t.author ?? '')} · ${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(clip(String(t.text), 260)))}</p>` : '<p class="q">(star rating only)</p>'}</div><div>${copyBtn(`reply-${n}`, 'reply')}<p class="a" id="reply-${n}">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
+  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any, n: number) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(t.author ?? '')} · ${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(cleanText(clip(String(t.text), 260))))}</p>` : '<p class="q">(star rating only)</p>'}</div><div>${copyBtn(`reply-${n}`, 'reply')}<p class="a" id="reply-${n}">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
   <div class="grid2" style="margin-top:6px">${replies.template_5star ? `<div class="box"><h4>Thank-you reply for 5★ reviews</h4>${copyBtn('reply-5star', 'reply')}<p id="reply-5star">${esc(replies.template_5star)}</p></div>` : ''}${replies.ask_message ? `<div class="box"><h4>WhatsApp message asking for a review</h4>${copyBtn('reply-ask', 'message')}<p id="reply-ask">${esc(replies.ask_message)}</p></div>` : ''}</div>` : '<p class="note">No unanswered reviews needed a draft.</p>'}
   <h3 class="sub" id="d-ai">Getting recommended by AI assistants</h3>
   ${ai ? `${(ai.actions ?? []).length ? `<div class="fixes">${ai.actions.map((a: any) => `<div><div><h4>${esc(tidy(a.action))}</h4><p class="w">${esc(tidy(a.why))}</p><p class="small" style="margin-top:3px">${esc(tidy(a.how))}</p></div><div class="tags"><span class="pill info">${esc(a.effort)}</span><span class="pill ${a.impact === 'high' ? 'urgent' : 'fix'}">${esc(a.impact)} impact</span></div></div>`).join('')}</div>` : ''}

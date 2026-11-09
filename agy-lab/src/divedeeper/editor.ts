@@ -5,6 +5,7 @@
 // Where sources conflict, the official register wins over the company-dive's research
 // (a CIDB grade read from CIDB beats one a website or directory printed).
 import { savedReviews } from './v21/reviews.ts';
+import { claimMismatches, daysToImpact, severity as urgency, rankKey } from '../report-rules/index.ts';
 
 // The malaysia-deeper-dive report is read in six research parts, then one full analysis and one action plan. A lane can feed two
 // parts: C-merged's website checks are sorted by what each one is about (see partOfCheck).
@@ -63,23 +64,41 @@ export function items(L: Record<string, any>): Item[] {
   const rechecked: Record<string, { verdict: string }> = L['S1-recheck']?.notes?.verdicts ?? {};
   for (const lane of STAGE1_LANES) (L[lane]?.findings ?? []).forEach((f: any, i: number) => {
     if (isPrivate(f)) return;
+    if (process.env.REPORT_IDENTITY_SIGNALS !== 'on' && /(?:reviewer|review).{0,60}(?:staff|employee|identity)|(?:staff|employee).{0,60}review/i.test(`${f.title ?? ''} ${f.detail ?? ''}`)) return;
     if (rechecked[`${lane}#${i}`]?.verdict === 'false') return;
     // Rollups repeat what the per-question findings say; the AI chart shows them instead.
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
     // Inventory and summary lines feed the part's table and headline number, not the finding list.
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
+    const quotes = [f.quote, ...(Array.isArray(f.quotes) ? f.quotes : []), f.evidence].filter((q): q is string => typeof q === 'string');
+    const mismatch = quotes.length ? claimMismatches(`${f.title ?? ''} ${f.detail ?? ''}`, quotes) : [];
+    if (mismatch.length) {
+      const notes = (L[lane].notes ??= {});
+      const drops = (notes.report_drops ??= []);
+      const key = `${lane}#${i}`;
+      if (!drops.some((d: any) => d.key === key && d.rule === 'PL4')) drops.push({ key, rule: 'PL4', mismatch });
+      return;
+    }
     const area = lane === 'C-merged' ? partOfCheck(f.check) : AREAS.find((a) => a.lanes.includes(lane))!.id;
     // The register showing better than the claim (G7 where the site says G3) is a fix, not an alarm.
     const first = f.direction === 'undersell' ? 'medium' : String(f.severity ?? 'info');
     const severity = rechecked[`${lane}#${i}`]?.verdict === 'weak' && (first === 'high' || first === 'medium') ? 'low' : first;
     out.push({ key: `${lane}#${i}`, lane, area, severity, title: String(f.title ?? ''), detail: String(f.detail ?? ''), source: f.source ?? null, check: f.check, raw: f });
   });
-  return out;
+  const now = new Date();
+  const ranked = out.map((x) => {
+    const days = /expir|renew|deadline/i.test(`${x.title} ${x.detail} ${x.check ?? ''}`)
+      ? daysToImpact([String(x.raw.expires_at ?? ''), x.title, x.detail], now, { includePast: true }) : null;
+    const level = ({ high: 3, medium: 2, low: 1, info: 1 } as Record<string, number>)[x.severity] ?? 1;
+    const u = urgency({ recordLevel: level, confidence: x.raw.confidence ?? 'high', days });
+    return { x: { ...x, severity: u === 'critical' ? 'critical' : x.severity }, rank: rankKey(u, days) };
+  });
+  return ranked.map(({ x }) => x);
 }
 
 /** Act now / needs work / good, from the urgent and needs-work items in an area. */
 export function status(list: Item[]): [string, string] {
-  const hi = list.filter((x) => x.severity === 'high').length;
+  const hi = list.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length;
   const md = list.filter((x) => x.severity === 'medium').length;
   return hi >= 2 ? ['urgent', 'Act now'] : hi || md >= 2 ? ['fix', 'Needs work'] : ['good', 'Good'];
 }
@@ -286,7 +305,7 @@ export function resolve(dive: any, L: Record<string, any>) {
 
   // ---- part 5: digital assets ----
   const assetRows: any[] = L['A-assets']?.notes?.domains ?? [];
-  const assetIssues = all.filter((x) => x.area === 'assets' && (x.severity === 'high' || x.severity === 'medium')).length;
+  const assetIssues = all.filter((x) => x.area === 'assets' && ((x.severity === 'high' || x.severity === 'critical') || x.severity === 'medium')).length;
 
   // ---- part 6: Google PageSpeed Insights on the official homepages ----
   const psi: any[] = (L['W-speed']?.notes?.pages ?? []).filter((p: any) => p.ok);
@@ -309,7 +328,7 @@ export function resolve(dive: any, L: Record<string, any>) {
   const areas = AREAS.map((a) => {
     const ran = a.lanes.some((l) => L[l]);
     const list = all.filter((x) => x.area === a.id);
-    return { id: a.id, title: a.title, ran, status: ran ? status(list) : ['info', 'Not checked'], metric: ran ? metric[a.id] : null, high: list.filter((x) => x.severity === 'high').length, medium: list.filter((x) => x.severity === 'medium').length };
+    return { id: a.id, title: a.title, ran, status: ran ? status(list) : ['info', 'Not checked'], metric: ran ? metric[a.id] : null, high: list.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length, medium: list.filter((x) => x.severity === 'medium').length };
   });
 
   return {
@@ -320,7 +339,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion },
     rec,
     credentials: { cidb_grade: cidbGrade, cidb_detail: cidb?.detail ?? null, list: credentials, undersells },
-    website: { issues: site.filter((x) => x.severity === 'high' || x.severity === 'medium').length, high: site.filter((x) => x.severity === 'high').length, copy_errors: copyErrors, phones },
+    website: { issues: site.filter((x) => (x.severity === 'high' || x.severity === 'critical') || x.severity === 'medium').length, high: site.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length, copy_errors: copyErrors, phones },
     speed: { pages: psi, main_mobile: mainMobile },
     contact, brand_view: brandView, news, records: { checks, risky }, assets: { domains: assetRows, issues: assetIssues, subdomains: L['A-assets']?.notes?.subdomains ?? [], email: L['A-assets']?.notes?.email ?? [], blacklists: L['A-assets']?.notes?.blacklists ?? [], lookalikes: L['A-assets']?.notes?.lookalikes ?? [] },
     items: all,
