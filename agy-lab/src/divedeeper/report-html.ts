@@ -929,10 +929,10 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   ${foot('At a glance')}
 </section>
 
-${stories.length ? `<section class="page" id="stories">
+${stories.length ? `<section class="page" id="stories" data-counts="${esc(JSON.stringify({ items: counts.items }))}">
   <p class="eyebrow">Fix these first</p>
   <h2 class="display">${stories.length === 1 ? 'One problem' : `${['', 'One', 'Two', 'Three'][stories.length]} problems`}<br><span class="g">are costing you the most customers.</span></h2>
-  <p class="lead" style="max-width:40em">Out of ${counts.items} things we checked, these ${stories.length === 1 ? 'is the one' : `are the ${stories.length}`} that turn the most customers away. Each has its own part with the evidence.</p>
+  <p class="lead" style="max-width:40em">Out of <span data-count="items">${counts.items}</span> things we checked, these ${stories.length === 1 ? 'is the one' : `are the ${stories.length}`} that turn the most customers away. Each has its own part with the evidence.</p>
   <div class="three">${stories.map((s: any, i: number) => `<div class="item"><span class="n">${String(i + 1).padStart(2, '0')}</span><div><p class="lbl">${esc(CHAPTER_EYEBROW[s.theme])} · Part ${chapterNo(s.theme)}</p><h3>${esc(tie(s.headline))}</h3>
     <div class="cols"><div><p class="lbl">What it costs you</p><p>${esc(s.cost)}</p></div><div><p class="lbl">Do this first</p><p>${esc(s.fix)}</p></div></div></div></div>`).join('')}</div>
   ${foot('Fix these first')}

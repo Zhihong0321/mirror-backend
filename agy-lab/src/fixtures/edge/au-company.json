@@ -1,0 +1,251 @@
+{
+ "name": "au-company",
+ "v21": {
+  "s2": {
+   "input": {
+    "company": "Southern Cross Plumbing Pty Ltd",
+    "country": "Australia",
+    "industry": "plumbing"
+   },
+   "baseline": {
+    "websites": [
+     "southerncross-plumbing.test",
+     "scplumb.test"
+    ]
+   },
+   "conclusive_findings": [
+    {
+     "id": "f1",
+     "kind": "strength",
+     "topic": "registration",
+     "title": "Registered company",
+     "statement": "Southern Cross Plumbing Pty Ltd is listed in the company register.",
+     "evidence": [
+      {
+       "evidence_id": "E1",
+       "quoted_text": "Southern Cross Plumbing Pty Ltd is registered and active",
+       "source_url": "https://registry.example/rec-1",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "A buyer who checks the register finds the company there.",
+     "identity": "name",
+     "confidence": "high"
+    },
+    {
+     "id": "f2",
+     "kind": "problem",
+     "topic": "email",
+     "title": "No DMARC record on southerncross-plumbing.test",
+     "statement": "The domain southerncross-plumbing.test has no DMARC record.",
+     "evidence": [
+      {
+       "evidence_id": "E2",
+       "quoted_text": "southerncross-plumbing.test has no DMARC record",
+       "source_url": "https://registry.example/rec-2",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "Anyone can send mail that looks like it came from the company.",
+     "identity": "domain",
+     "confidence": "high",
+     "ownership": "owned"
+    },
+    {
+     "id": "f3",
+     "kind": "problem",
+     "topic": "website",
+     "title": "Website has no privacy page",
+     "statement": "The site lists no privacy page.",
+     "evidence": [
+      {
+       "evidence_id": "E3",
+       "quoted_text": "Pages found: home, about, contact",
+       "source_url": "https://registry.example/rec-3",
+       "party": "first"
+      }
+     ],
+     "why_it_matters": "Visitors cannot see how their details are handled.",
+     "identity": "domain",
+     "confidence": "medium"
+    }
+   ],
+   "contradictions": [
+    {
+     "id": "c1",
+     "topic": "contact",
+     "title": "Two different phone numbers are listed",
+     "versions": [
+      {
+       "source": "Company site",
+       "value": "+61 2 5550 0123",
+       "evidence_id": "E4",
+       "quoted_text": "Call us on +61 2 5550 0123",
+       "source_url": "https://registry.example/rec-4",
+       "party": "first"
+      },
+      {
+       "source": "Directory",
+       "value": "+61 2 5550 0124",
+       "evidence_id": "E5",
+       "quoted_text": "Phone: +61 2 5550 0124",
+       "source_url": "https://registry.example/rec-5",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "A customer who dials the wrong line may not try again.",
+     "identity": "name",
+     "confidence": "high"
+    }
+   ],
+   "take_note": [
+    {
+     "id": "n1",
+     "topic": "other",
+     "title": "Social page not found",
+     "note": "No social media page turned up.",
+     "evidence": [
+      {
+       "evidence_id": "E6",
+       "quoted_text": "Search for social pages returned nothing",
+       "source_url": "https://registry.example/rec-6",
+       "party": "independent"
+      }
+     ],
+     "why_not_conclusive": "A page may exist under another name.",
+     "identity_signal": false
+    }
+   ],
+   "suggestions": [
+    {
+     "id": "s1",
+     "topic": "email",
+     "topics": [
+      "email"
+     ],
+     "action": "Add a DMARC record for southerncross-plumbing.test.",
+     "why": "It stops others sending mail in the company name.",
+     "based_on": [
+      "f2"
+     ]
+    }
+   ]
+  },
+  "report": {
+   "language": "en",
+   "created_at": "2026-11-08T00:00:00Z",
+   "summary": [
+    {
+     "text": "Southern Cross Plumbing Pty Ltd is listed in the company register.",
+     "cites": [
+      "f1"
+     ]
+    }
+   ]
+  }
+ },
+ "dive": {
+  "company": "Southern Cross Plumbing Pty Ltd",
+  "country": "Australia",
+  "finished_at": "2026-11-01T10:00:00Z",
+  "dossier": "",
+  "result": {
+   "identity": {
+    "legal_name": "Southern Cross Plumbing Pty Ltd",
+    "official_domains": [
+     "southerncross-plumbing.test",
+     "scplumb.test"
+    ],
+    "phones": [
+     "+61 2 5550 0123"
+    ],
+    "address": "7 Wattle Street, Sydney",
+    "industry": "plumbing"
+   },
+   "contradictions": [],
+   "facts": [],
+   "sources": [
+    {
+     "id": 1,
+     "url": "https://registry.example/x",
+     "title": "Registry"
+    }
+   ],
+   "gaps": [],
+   "people": {
+    "people": [
+     {
+      "name": "Jo Harris",
+      "role": "Owner"
+     }
+    ],
+    "rejected": []
+   }
+  }
+ },
+ "lanes": {
+  "A-assets": {
+   "ran_at": "2026-11-02T01:00:00Z",
+   "findings": [
+    {
+     "title": "Anyone can send email that looks like it came from @southerncross-plumbing.test",
+     "detail": "southerncross-plumbing.test has no DMARC record.",
+     "severity": "high",
+     "source": "https://rdap.example/southerncross-plumbing.test",
+     "check": "dmarc",
+     "domain": "southerncross-plumbing.test"
+    },
+    {
+     "title": "Anyone can send email that looks like it came from @scplumb.test",
+     "detail": "scplumb.test has no DMARC record.",
+     "severity": "high",
+     "source": "https://rdap.example/scplumb.test",
+     "check": "dmarc",
+     "domain": "scplumb.test"
+    }
+   ]
+  },
+  "N-news": {
+   "notes": {
+    "items": [],
+    "counts": {
+     "news": 0,
+     "negative": 0
+    },
+    "unjudged": 0
+   }
+  },
+  "E-maps": {
+   "ran_at": "2026-11-02T01:00:00Z",
+   "notes": {
+    "reviews": [],
+    "per_listing": [
+     {
+      "name": "Maps",
+      "pulled": 0,
+      "replied": 0
+     }
+    ]
+   },
+   "findings": []
+  }
+ },
+ "preview": {
+  "warnings": [
+   {
+    "type": "contradiction",
+    "title": "Two phone numbers are listed",
+    "detail": "The site and a directory give different phone numbers.",
+    "risk": "A customer who dials the wrong line may not call again.",
+    "quote": "Call us on +61 2 5550 0123; Phone: +61 2 5550 0124"
+   },
+   {
+    "type": "missing",
+    "title": "No DMARC record on southerncross-plumbing.test",
+    "detail": "The domain has no DMARC record.",
+    "risk": "Anyone can send mail that looks like it came from the company.",
+    "quote": "southerncross-plumbing.test has no DMARC record"
+   }
+  ]
+ }
+}

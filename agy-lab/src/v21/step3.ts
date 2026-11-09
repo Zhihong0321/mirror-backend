@@ -461,7 +461,7 @@ const P = {
     tag: { strength: 'Strength', problem: 'Problem', contra: 'Sources disagree', note: 'Worth checking' },
     why: 'Why it matters', notCertain: 'Why this is not certain', basedOn: 'Based on', sources: 'Sources', source: 'Source', value: 'What it says',
     // Short names for ids, so the page never prints f1 / s3 / c2 / n4.
-    lab: { strength: 'Strength', problem: 'Problem', contra: 'Source disagreement', note: 'Signal', step: 'Step' }, hint: 'issue',
+    lab: { strength: 'Strength', problem: 'Problem', contra: 'Source disagreement', note: 'Signal', step: 'Action' }, hint: 'issue',
     bandEye: 'The full report', bandH: 'Read it before your competitors do.', bandG: 'Fix it before your customers see it.',
     bandP: 'Everything on this page came from public sources. Anyone can find it, your rivals included.',
     cta: 'Get my full report', ctaP: 'Reply to the email that brought you this link, and we will run it for you.', keep: 'This free report is yours to keep.',
@@ -780,6 +780,9 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
     records: [...strengths, ...problems, ...contradictions, ...notes].filter((x) => RECORD_TOPICS.has(String(x.topic))).length,
   };
 
+  // The same numbers, flat, for the pre-send gate (data-count="key" elements are checked against it).
+  const flatCounts: Record<string, number> = { ...Object.fromEntries(Object.entries(counts).filter(([, v]) => typeof v === 'number')), ...Object.fromEntries(Object.entries(counts.shown).map(([k, v]) => [`shown.${k}`, v])), ...Object.fromEntries(Object.entries(counts.hidden).map(([k, v]) => [`hidden.${k}`, v])) } as Record<string, number>;
+
   // The headline is rank #1 of problems and contradictions together: the same ranking the sections use.
   const topId = ranked<{ id: string }>([...problems, ...contradictions], (x) => keyOf(x.id))[0]?.id;
   const topUrg = topId ? ratings.get(topId)!.urg : null;
@@ -804,7 +807,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
 
   const head = (key: keyof typeof t.sec, n: number, pitch?: readonly [string, string], sec?: readonly [string, string, string]) => {
     const [eye, h, g] = sec ?? t.sec[key];
-    return `<div class="head"><p class="eyebrow">${esc(eye)} · ${n}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2>${pitch ? `<p class="pitch">${esc(pitch[0])}<span>${esc(pitch[1])}</span></p>` : ''}</div>`;
+    return `<div class="head"><p class="eyebrow" data-count="${key}">${esc(eye)} · ${n}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2>${pitch ? `<p class="pitch">${esc(pitch[0])}<span>${esc(pitch[1])}</span></p>` : ''}</div>`;
   };
   const cardHead = (cls: string, label: string, id: string, urg?: Urgency) => `<div class="warnhead"><span class="hl"><span class="tag ${cls}">${esc(label)}</span>${urg ? badge(urg) : ''}</span><span class="fileno" ${idAttr(id)}>${esc(labelOf(id))}</span></div>`;
   const bars = (n = 3) => `<div class="bars" aria-hidden="true">${['s', 'm', '', 'm'].slice(0, n).map((w) => `<i${w ? ` class="${w}"` : ''}></i>`).join('')}</div>`;
@@ -833,7 +836,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   };
   // A locked item: its id, kind and teaser title only. Text, evidence and sources are not in the HTML.
   const lockedCard = (cls: string, tag: string, id: string, title: string, urg?: Urgency) => `<article class="warn ${cls} locked" id="${esc(id)}">${cardHead(cls, tag, id, urg)}<p class="topic">${esc(title)}</p>${bars()}${lockLine(t.locked)}</article>`;
-  const unlockCard = (title: string, text: string, extra = '') => `<div class="unlock"><div><h3>${esc(title)}</h3><p>${esc(text)}</p>${extra ? `<p class="tally">${esc(extra)}</p>` : ''}</div><a class="btn" href="#order">${esc(t.unlock)}&nbsp;→</a></div>`;
+  const unlockCard = (title: string, text: string, extra = '', key = '') => `<div class="unlock"><div><h3${key ? ` data-count="${key}"` : ''}>${esc(title)}</h3><p>${esc(text)}</p>${extra ? `<p class="tally">${esc(extra)}</p>` : ''}</div><a class="btn" href="#order">${esc(t.unlock)}&nbsp;→</a></div>`;
 
   // A shown contradiction shows every version with its source link and quote; a locked one shows none of it.
   const contradiction = (x: Contra) => `<article class="warn contra${x.id === topId ? ' first' : ''}" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, ratings.get(x.id)!.urg)}<h3>${esc(x.title)}</h3>
@@ -855,7 +858,7 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
   const strip = ([
     [counts.strengths, t.strip.strengths(counts.strengths), 'strengths'], [counts.problems, t.strip.problems(counts.problems), 'problems'],
     [counts.contradictions, t.strip.contradictions(counts.contradictions), 'contradictions'], [counts.notes, t.strip.notes(counts.notes), 'notes'],
-  ] as const).filter(([n]) => n > 0).map(([n, label, href]) => `<a href="#${href}"><b>${n}</b><span>${esc(label)}</span></a>`).join('');
+  ] as const).filter(([n]) => n > 0).map(([n, label, href]) => `<a href="#${href}"><b data-count="${href}">${n}</b><span>${esc(label)}</span></a>`).join('');
 
   // Sections alternate white and grey band, as v1's do; a list with no items is left out.
   let shade = false;
@@ -868,11 +871,11 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
   const getsN: GetsN = { shownP: counts.shown.problems, totalP: counts.problems, hiddenP: counts.hidden.problems, shownS: counts.shown.suggestions, hiddenS: counts.hidden.suggestions };
   const body = [
     section('strengths', counts.strengths, `${head('strengths', counts.strengths)}<div class="warns">${strengths.map(finding).join('')}</div>`),
-    section('problems', counts.problems, `${head('problems', counts.problems, t.pitchProblems)}<p class="legend">${esc(t.urgHow)}</p><div class="warns">${gP.shown.map(finding).join('')}${gP.hidden.map((f) => lockedCard('wrong', t.tag.problem, f.id, tP.get(f.id)!, ratings.get(f.id)!.urg)).join('')}${counts.hidden.problems ? unlockCard(t.lockedCard.problems(counts.hidden.problems), t.lockedCardP, tally(gP.hidden.map((f) => ratings.get(f.id)!.urg))) : ''}</div>`),
-    section('contradictions', counts.contradictions, `${head('contradictions', counts.contradictions, t.pitchContra)}<div class="warns one">${gC.shown.map(contradiction).join('')}${gC.hidden.map((x) => lockedCard('contra', t.tag.contra, x.id, tC.get(x.id)!, ratings.get(x.id)!.urg)).join('')}${counts.hidden.contradictions ? unlockCard(t.lockedCard.contradictions(counts.hidden.contradictions), t.lockedCardP, tally(gC.hidden.map((x) => ratings.get(x.id)!.urg))) : ''}</div>`),
+    section('problems', counts.problems, `${head('problems', counts.problems, t.pitchProblems)}<p class="legend">${esc(t.urgHow)}</p><div class="warns">${gP.shown.map(finding).join('')}${gP.hidden.map((f) => lockedCard('wrong', t.tag.problem, f.id, tP.get(f.id)!, ratings.get(f.id)!.urg)).join('')}${counts.hidden.problems ? unlockCard(t.lockedCard.problems(counts.hidden.problems), t.lockedCardP, tally(gP.hidden.map((f) => ratings.get(f.id)!.urg)), 'hidden.problems') : ''}</div>`),
+    section('contradictions', counts.contradictions, `${head('contradictions', counts.contradictions, t.pitchContra)}<div class="warns one">${gC.shown.map(contradiction).join('')}${gC.hidden.map((x) => lockedCard('contra', t.tag.contra, x.id, tC.get(x.id)!, ratings.get(x.id)!.urg)).join('')}${counts.hidden.contradictions ? unlockCard(t.lockedCard.contradictions(counts.hidden.contradictions), t.lockedCardP, tally(gC.hidden.map((x) => ratings.get(x.id)!.urg)), 'hidden.contradictions') : ''}</div>`),
   ].join('');
   const after = [
-    section('notes', counts.notes, `${head('notes', counts.notes)}<div class="warns">${gN.shown.map(note).join('')}${gN.hidden.map((x) => lockedCard('missing', t.tag.note, x.id, tN.get(x.id)!)).join('')}${counts.hidden.notes ? unlockCard(t.lockedCard.notes(counts.hidden.notes), t.lockedCardP) : ''}</div>`),
+    section('notes', counts.notes, `${head('notes', counts.notes)}<div class="warns">${gN.shown.map(note).join('')}${gN.hidden.map((x) => lockedCard('missing', t.tag.note, x.id, tN.get(x.id)!)).join('')}${counts.hidden.notes ? unlockCard(t.lockedCard.notes(counts.hidden.notes), t.lockedCardP, '', 'hidden.notes') : ''}</div>`),
     section('suggestions', counts.suggestions, `${head('suggestions', counts.suggestions, undefined, counts.hidden.suggestions ? t.secSugLocked : undefined)}<div class="sugs">${freeSugs.map(suggestion).join('')}${lockedSugs.map((x, i) => lockedSuggestion(x, freeSugs.length + i)).join('')}${counts.hidden.suggestions ? unlockCard(t.lockedSugs, t.lockedSugsP, t.lockedSugsTally) : ''}</div>`),
     // What the full report holds, so the buyer knows what the price buys. It ends in the one order block every buy button points to.
     section('inside', 1, `<div class="head"><p class="eyebrow">${esc(t.insideEye)}</p><h2>${esc(t.insideH)}<br><span class="g">${esc(t.insideG)}</span></h2><p class="lead">${esc(t.insideP)}</p></div>
@@ -882,7 +885,7 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
   const callout = counts.records ? `<div class="callout"><b>${esc(t.recH)}</b><span>${esc(t.rec(counts.records))}</span></div>` : '';
 
   return `<!doctype html><html lang="${ko ? 'ko' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>${esc(t.title(c))}</title>${FONTS(ko)}<style>${CSS}</style></head><body>
+<meta name="robots" content="noindex,nofollow"><title>${esc(t.title(c))}</title>${FONTS(ko)}<style>${CSS}</style></head><body data-counts="${esc(JSON.stringify(flatCounts))}">
 <header class="top"><div><b>${esc(t.bar)}</b> <span class="for">${esc(t.barFor(c))}</span></div><a class="btn" href="#order">${esc(t.cta)}</a></header>
 <section class="dark hero"><div><p class="eyebrow">${esc(t.eyebrow(c, date))}</p>
 <h1>${esc(t.h1(c))}<br><span class="g">${esc(t.h1g(counts.contradictions))}</span></h1>
@@ -893,7 +896,7 @@ ${counts.issues ? `<div class="exec"><b>${esc(t.execH)} ${esc(t.exec(counts.prob
 <aside class="file"><div class="filehead"><span class="stamp">${esc(t.stamp)}</span><span class="fileno">${esc(t.fileNo)}</span></div><h3>${esc(c)}</h3><dl>
 <div><dt>${esc(t.fCountry)}</dt><dd>${esc(s2.input.country)}</dd></div><div><dt>${esc(t.fIndustry)}</dt><dd>${esc(s2.input.industry)}</dd></div>
 ${sites.length ? `<div><dt>${esc(t.fSites)}</dt><dd>${esc(sites.join(', '))}</dd></div>` : ''}
-<div><dt>${esc(t.fFound)}</dt><dd><b>${esc(t.found(counts.items))}</b></dd></div>${topUrg ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topUrg)}</dd></div>` : ''}
+<div><dt>${esc(t.fFound)}</dt><dd><b data-count="items">${esc(t.found(counts.items))}</b></dd></div>${topUrg ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topUrg)}</dd></div>` : ''}
 </dl><p class="foot">${esc(t.fileFoot(date))}</p></aside></section>
 ${strip ? `<div class="strip">${strip}</div>` : ''}
 ${callout}
@@ -902,7 +905,7 @@ ${body}
 <section class="dark band-cta"><div><p class="eyebrow">${esc(t.bandEye)}</p><h2>${esc(t.bandH)}<br><span class="g">${esc(t.bandG)}</span></h2><p class="lead" style="margin-top:16px">${esc(t.bandP)}</p></div><a class="btn" href="#order">${esc(t.cta)}</a></section>
 ${after}
 <footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date))}</span></div>`).join('')}</div></footer>
-${counts.issues ? `<div class="sticky"><div class="l"><span class="n">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
+${counts.issues ? `<div class="sticky"><div class="l"><span class="n" data-count="issues">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
 </body></html>`;
 }
 

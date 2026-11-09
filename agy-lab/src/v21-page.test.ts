@@ -119,7 +119,7 @@ test('every number on the page reads from one counts object', () => {
   assert.match(t, /Problems · 4/); assert.match(t, /Where sources disagree · 3/); assert.match(t, /Strengths · 2/); assert.match(t, /Worth looking into · 2/);
   assert.match(t, /1 more problem found/); assert.match(t, /1 more place where sources disagree/); assert.match(t, /1 more signal worth checking/);
   const strip = html.match(/<div class="strip">[\s\S]*?<\/div>/)![0];
-  assert.deepEqual([...strip.matchAll(/<b>(\d+)<\/b>/g)].map((m) => +m[1]), [2, 4, 3, 2]);
+  assert.deepEqual([...strip.matchAll(/<b[^>]*>(\d+)<\/b>/g)].map((m) => +m[1]), [2, 4, 3, 2]);
   // "issues" is problems + contradictions and "items" includes strengths, defined in one place.
   assert.ok(!/\b(32|18) (items|issues)/.test(t));
 });

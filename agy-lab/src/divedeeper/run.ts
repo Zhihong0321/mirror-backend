@@ -4,6 +4,7 @@ import { runWithReport, step } from '../evidence/context.ts';
 import { settle, watchRun } from '../evidence/store.ts';
 import { restoreLane, runLane, stageDive, type LaneResult } from './runner.ts';
 import { buildReport } from './report-html.ts';
+import { failureLine, gateDeeperFull } from './gate.ts';
 import { enabled, STAGE1_FIRST, STAGE1_AFTER_H, STAGE1_LAST, STAGE2, STAGE3, STAGE4, STAGE5 } from './stages.ts';
 import { ensureTable, update, diveRow, type Row } from './store.ts';
 
@@ -146,7 +147,14 @@ async function executeBody(id: number, row: Row, evidenceOn: boolean): Promise<v
 
     // 3. The report: every lane ran.
     const html = buildReport(dive, lanes);
+    // PL25: a report that fails the pre-send gate is saved as 'blocked' with its failure list and is not served to the client link.
+    const gate = gateDeeperFull(dive, html);
     if (evidenceOn) await settle(row.public_id, 10_000);
+    if (gate.failures.length) {
+      const msg = `Pre-send gate ${gate.status === 'blocked' ? 'blocked this report' : 'warns'}: ${failureLine(gate)}`;
+      if (gate.status === 'blocked') { await say('blocked', msg, { status: 'blocked', error: msg, lanes, report_html: html, retry_at: null, finished_at: new Date().toISOString() }); return; }
+      await say('gate', msg);
+    }
     await say('done', 'Report ready: every lane ran', {
       status: 'done', error: null, lanes, report_html: html, retry_at: null, finished_at: new Date().toISOString(),
     });

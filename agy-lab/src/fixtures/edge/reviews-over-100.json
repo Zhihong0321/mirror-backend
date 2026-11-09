@@ -1,0 +1,1302 @@
+{
+ "name": "reviews-over-100",
+ "v21": {
+  "s2": {
+   "input": {
+    "company": "Bayview Dental Pty Ltd",
+    "country": "Australia",
+    "industry": "dentistry"
+   },
+   "baseline": {
+    "websites": [
+     "bayviewdental.test",
+     "bayview-dental.test"
+    ]
+   },
+   "conclusive_findings": [
+    {
+     "id": "f1",
+     "kind": "strength",
+     "topic": "registration",
+     "title": "Registered company",
+     "statement": "Bayview Dental Pty Ltd is listed in the company register.",
+     "evidence": [
+      {
+       "evidence_id": "E1",
+       "quoted_text": "Bayview Dental Pty Ltd is registered and active",
+       "source_url": "https://registry.example/rec-1",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "A buyer who checks the register finds the company there.",
+     "identity": "name",
+     "confidence": "high"
+    },
+    {
+     "id": "f2",
+     "kind": "problem",
+     "topic": "email",
+     "title": "No DMARC record on bayviewdental.test",
+     "statement": "The domain bayviewdental.test has no DMARC record.",
+     "evidence": [
+      {
+       "evidence_id": "E2",
+       "quoted_text": "bayviewdental.test has no DMARC record",
+       "source_url": "https://registry.example/rec-2",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "Anyone can send mail that looks like it came from the company.",
+     "identity": "domain",
+     "confidence": "high",
+     "ownership": "owned"
+    },
+    {
+     "id": "f3",
+     "kind": "problem",
+     "topic": "website",
+     "title": "Website has no privacy page",
+     "statement": "The site lists no privacy page.",
+     "evidence": [
+      {
+       "evidence_id": "E3",
+       "quoted_text": "Pages found: home, about, contact",
+       "source_url": "https://registry.example/rec-3",
+       "party": "first"
+      }
+     ],
+     "why_it_matters": "Visitors cannot see how their details are handled.",
+     "identity": "domain",
+     "confidence": "medium"
+    }
+   ],
+   "contradictions": [
+    {
+     "id": "c1",
+     "topic": "contact",
+     "title": "Two different phone numbers are listed",
+     "versions": [
+      {
+       "source": "Company site",
+       "value": "+61 3 5550 0199",
+       "evidence_id": "E4",
+       "quoted_text": "Call us on +61 3 5550 0199",
+       "source_url": "https://registry.example/rec-4",
+       "party": "first"
+      },
+      {
+       "source": "Directory",
+       "value": "+61 3 5550 0198",
+       "evidence_id": "E5",
+       "quoted_text": "Phone: +61 3 5550 0198",
+       "source_url": "https://registry.example/rec-5",
+       "party": "independent"
+      }
+     ],
+     "why_it_matters": "A customer who dials the wrong line may not try again.",
+     "identity": "name",
+     "confidence": "high"
+    }
+   ],
+   "take_note": [
+    {
+     "id": "n1",
+     "topic": "other",
+     "title": "Social page not found",
+     "note": "No social media page turned up.",
+     "evidence": [
+      {
+       "evidence_id": "E6",
+       "quoted_text": "Search for social pages returned nothing",
+       "source_url": "https://registry.example/rec-6",
+       "party": "independent"
+      }
+     ],
+     "why_not_conclusive": "A page may exist under another name.",
+     "identity_signal": false
+    }
+   ],
+   "suggestions": [
+    {
+     "id": "s1",
+     "topic": "email",
+     "topics": [
+      "email"
+     ],
+     "action": "Add a DMARC record for bayviewdental.test.",
+     "why": "It stops others sending mail in the company name.",
+     "based_on": [
+      "f2"
+     ]
+    }
+   ]
+  },
+  "report": {
+   "language": "en",
+   "created_at": "2026-11-08T00:00:00Z",
+   "summary": [
+    {
+     "text": "Bayview Dental Pty Ltd is listed in the company register.",
+     "cites": [
+      "f1"
+     ]
+    }
+   ]
+  }
+ },
+ "dive": {
+  "company": "Bayview Dental Pty Ltd",
+  "country": "Australia",
+  "finished_at": "2026-11-01T10:00:00Z",
+  "dossier": "",
+  "result": {
+   "identity": {
+    "legal_name": "Bayview Dental Pty Ltd",
+    "official_domains": [
+     "bayviewdental.test",
+     "bayview-dental.test"
+    ],
+    "phones": [
+     "+61 3 5550 0199"
+    ],
+    "address": "2 Shore Road, Melbourne",
+    "industry": "dentistry"
+   },
+   "contradictions": [],
+   "facts": [],
+   "sources": [
+    {
+     "id": 1,
+     "url": "https://registry.example/x",
+     "title": "Registry"
+    }
+   ],
+   "gaps": [],
+   "people": {
+    "people": [
+     {
+      "name": "Priya Nair",
+      "role": "Owner"
+     }
+    ],
+    "rejected": [
+     {
+      "name": "ReviewerA Person0"
+     },
+     {
+      "name": "ReviewerB Person1"
+     },
+     {
+      "name": "ReviewerC Person2"
+     }
+    ]
+   }
+  }
+ },
+ "lanes": {
+  "A-assets": {
+   "ran_at": "2026-11-02T01:00:00Z",
+   "findings": [
+    {
+     "title": "Anyone can send email that looks like it came from @bayviewdental.test",
+     "detail": "bayviewdental.test has no DMARC record.",
+     "severity": "high",
+     "source": "https://rdap.example/bayviewdental.test",
+     "check": "dmarc",
+     "domain": "bayviewdental.test"
+    },
+    {
+     "title": "Anyone can send email that looks like it came from @bayview-dental.test",
+     "detail": "bayview-dental.test has no DMARC record.",
+     "severity": "high",
+     "source": "https://rdap.example/bayview-dental.test",
+     "check": "dmarc",
+     "domain": "bayview-dental.test"
+    }
+   ]
+  },
+  "N-news": {
+   "notes": {
+    "items": [],
+    "counts": {
+     "news": 0,
+     "negative": 0
+    },
+    "unjudged": 0
+   }
+  },
+  "E-maps": {
+   "ran_at": "2026-11-02T01:00:00Z",
+   "notes": {
+    "reviews": [
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerA Person0",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerB Person1",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerC Person2",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerD Person3",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerE Person4",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerF Person5",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerG Person6",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerH Person7",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerI Person8",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerJ Person9",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerK Person10",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerL Person11",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerM Person12",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerN Person13",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerO Person14",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerP Person15",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerQ Person16",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerR Person17",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerS Person18",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerT Person19",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerU Person20",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerV Person21",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerW Person22",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerX Person23",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerY Person24",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerZ Person25",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerA Person26",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerB Person27",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerC Person28",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerD Person29",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerE Person30",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerF Person31",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerG Person32",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerH Person33",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerI Person34",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerJ Person35",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerK Person36",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerL Person37",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerM Person38",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerN Person39",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerO Person40",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerP Person41",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerQ Person42",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerR Person43",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerS Person44",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerT Person45",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerU Person46",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerV Person47",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerW Person48",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerX Person49",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerY Person50",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerZ Person51",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerA Person52",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerB Person53",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerC Person54",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerD Person55",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerE Person56",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerF Person57",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerG Person58",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerH Person59",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerI Person60",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerJ Person61",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerK Person62",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerL Person63",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerM Person64",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerN Person65",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerO Person66",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerP Person67",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerQ Person68",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerR Person69",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerS Person70",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerT Person71",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerU Person72",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerV Person73",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerW Person74",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerX Person75",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerY Person76",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerZ Person77",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerA Person78",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerB Person79",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerC Person80",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerD Person81",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerE Person82",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerF Person83",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerG Person84",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerH Person85",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerI Person86",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerJ Person87",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerK Person88",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerL Person89",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerM Person90",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerN Person91",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerO Person92",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerP Person93",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerQ Person94",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerR Person95",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerS Person96",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerT Person97",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerU Person98",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerV Person99",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerW Person100",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerX Person101",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerY Person102",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerZ Person103",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerA Person104",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerB Person105",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerC Person106",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerD Person107",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerE Person108",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerF Person109",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerG Person110",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerH Person111",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerI Person112",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerJ Person113",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerK Person114",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerL Person115",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerM Person116",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerN Person117",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerO Person118",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerP Person119",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerQ Person120",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerR Person121",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerS Person122",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerT Person123",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerU Person124",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerV Person125",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 1,
+      "date": "2026-09-01",
+      "author": "ReviewerW Person126",
+      "listing": "Maps",
+      "text": "Late and rude.",
+      "reply": null
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerX Person127",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerY Person128",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     },
+     {
+      "stars": 5,
+      "date": "2026-09-01",
+      "author": "ReviewerZ Person129",
+      "listing": "Maps",
+      "text": "Good work, tidy and on time.",
+      "reply": "Thank you"
+     }
+    ],
+    "per_listing": [
+     {
+      "name": "Maps",
+      "pulled": 130,
+      "replied": 111
+     }
+    ]
+   },
+   "findings": []
+  }
+ },
+ "preview": {
+  "warnings": [
+   {
+    "type": "contradiction",
+    "title": "Two phone numbers are listed",
+    "detail": "The site and a directory give different phone numbers.",
+    "risk": "A customer who dials the wrong line may not call again.",
+    "quote": "Call us on +61 3 5550 0199; Phone: +61 3 5550 0198"
+   },
+   {
+    "type": "missing",
+    "title": "No DMARC record on bayviewdental.test",
+    "detail": "The domain has no DMARC record.",
+    "risk": "Anyone can send mail that looks like it came from the company.",
+    "quote": "bayviewdental.test has no DMARC record"
+   }
+  ]
+ }
+}

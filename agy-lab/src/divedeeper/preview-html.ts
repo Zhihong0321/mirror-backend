@@ -222,10 +222,10 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   const fromSources = counts.sources ? `from ${srcN}` : 'from the public record';
   // PL22: a counter with nothing behind it is not printed, and neither is a link to an empty section.
   const stripCells = [
-    counts.sources ? `<div><b>${esc(String(counts.sources))}</b><span>${esc(plural(counts.sources, 'public source'))} read about ${esc(short)}</span></div>` : '',
-    counts.facts ? `<div><b>${esc(String(counts.facts))}</b><span>${esc(plural(counts.facts, 'fact'))} on public record</span></div>` : '',
-    counts.disagree ? `<div><b>${esc(String(counts.disagree))}</b><span>${esc(plural(counts.disagree, 'place'))} where those sources disagree</span></div>` : '',
-    !v2 && counts.gaps ? `<div><b>${esc(String(counts.gaps))}</b><span>${esc(plural(counts.gaps, 'question'))} they cannot answer</span></div>` : '',
+    counts.sources ? `<div><b data-count="sources">${esc(String(counts.sources))}</b><span>${esc(plural(counts.sources, 'public source'))} read about ${esc(short)}</span></div>` : '',
+    counts.facts ? `<div><b data-count="facts">${esc(String(counts.facts))}</b><span>${esc(plural(counts.facts, 'fact'))} on public record</span></div>` : '',
+    counts.disagree ? `<div><b data-count="disagree">${esc(String(counts.disagree))}</b><span>${esc(plural(counts.disagree, 'place'))} where those sources disagree</span></div>` : '',
+    !v2 && counts.gaps ? `<div><b data-count="gaps">${esc(String(counts.gaps))}</b><span>${esc(plural(counts.gaps, 'question'))} they cannot answer</span></div>` : '',
   ].filter(Boolean).join('\n  ');
   // PL20: the price and its currency come from the report's locale, and fall back to whatever the offer says.
   const priceLabel = loc.price ?? (offer.price ? String(offer.price) : '');
@@ -572,7 +572,7 @@ ${PARTNERS_CSS}`;
   // and does not exist at all when there is no sign to show.
   const warnSection = counts.found ? `<section id="warnings" class="warn-section">
   <div class="head"><p class="eyebrow">Surface scan · warning signs</p>
-    <h2>The surface scan found ${esc(plural(counts.found, 'warning sign'))}.<br><span class="g">${counts.locked ? 'The worst of them are below.' : 'Each one is below, with the source it came from.'}</span></h2>
+    <h2>The surface scan found <span data-count="found">${esc(plural(counts.found, 'warning sign'))}</span>.<br><span class="g">${counts.locked ? 'The worst of them are below.' : 'Each one is below, with the source it came from.'}</span></h2>
     <p class="lead">This free preview is one surface scan: ${esc(srcN)} read for ${esc(short)}, nothing more.${counts.locked ? ` ${esc(String(counts.shown))} of ${esc(String(counts.found))} are shown here; the rest, with every number and the fixes, are in your full report.` : ' Every sign it found is here, with where it came from.'}</p></div>
   ${typesFound.length ? `<div class="legend" style="margin-bottom:14px">${typesFound.map((t) => `<span class="tag ${TYPE[t][1]}">${esc(TYPE[t][0])}</span>`).join('')}</div>` : ''}
   <div class="warns">${shownSigns.map((w, i) => warnCard(w, i === 0)).join('')}${lockedSigns.map((w, i) => lockedCard(lockedTitles[i])).join('')}</div>
@@ -610,7 +610,7 @@ ${PARTNERS_CSS}`;
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600;700&display=swap">
 <style>${css}</style>
 </head>
-<body>
+<body data-counts="${esc(JSON.stringify(counts))}">
 
 <header class="top"><div><b>Online Presence Audit ${esc(year)}</b> <span class="for">· Prepared for ${esc(name)}</span></div>${cta('Get the full report')}</header>
 
@@ -630,7 +630,7 @@ ${PARTNERS_CSS}`;
       ${addressShown ? `<div><dt>Head office</dt><dd>${esc(addressShown)}</dd></div>` : ''}
       ${domains.length ? `<div><dt>Websites</dt><dd>${esc(domains.join(', '))}</dd></div>` : ''}
       ${people.length ? `<div><dt>Leadership</dt><dd>${esc(people.slice(0, 3).map((p: any) => p.name).join(', '))}</dd></div>` : ''}
-      <div><dt>Surface scan</dt><dd>${counts.found ? `<b style="color:var(--wrong)">${esc(plural(counts.found, 'warning sign'))}</b> found` : 'No warning signs found'}</dd></div>
+      <div><dt>Surface scan</dt><dd>${counts.found ? `<b style="color:var(--wrong)" data-count="found">${esc(plural(counts.found, 'warning sign'))}</b> found` : 'No warning signs found'}</dd></div>
     </dl>
     <p class="foot">Researched ${esc(made)} ${esc(fromSources)}</p>
   </aside>
