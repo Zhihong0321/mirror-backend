@@ -16,7 +16,7 @@ export const PARTNERS: Array<{ name: string; mark: string }> = [
 
 export const PARTNERS_CSS = `
 .partners { display:grid; gap:10px; border-top:1px solid var(--line); padding-top:12px; margin-top:12px; break-inside:avoid; }
-.partners .k { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.partners .pk { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 .partners ul { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; }
 .partners li { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:500; color:var(--grey); white-space:nowrap; }
 .partners svg { width:18px; height:18px; flex:none; color:var(--ink); }
@@ -25,4 +25,4 @@ export const PARTNERS_CSS = `
 
 /** The strip itself: a label and one mark and name per partner. */
 export const partnersHtml = (): string =>
-  `<div class="partners"><p class="k">Technology partner</p><ul>${PARTNERS.map((p) => `<li>${p.mark}<span>${p.name}</span></li>`).join('')}</ul></div>`;
+  `<div class="partners"><p class="pk">Technology partner</p><ul>${PARTNERS.map((p) => `<li>${p.mark}<span>${p.name}</span></li>`).join('')}</ul></div>`;
