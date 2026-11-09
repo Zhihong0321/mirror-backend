@@ -203,7 +203,7 @@ async function cidb(ctx: Ctx, dive: any): Promise<Rec> {
 function sweepFindings(ctx: Ctx, dive: any, s: Sweep, selfGrades: SelfGrade[], claimedGrades: Set<string>): Finding[] {
   const R = REGISTERS.CIDB;
   const f: Finding[] = [];
-  const base = { source: R.url, checked_at: ctx.now(), register: R.name, issuer: 'CIDB', sweep: true };
+  const base = { source: R.url, checked_at: ctx.now(), register: R.name, issuer: 'CIDB', sweep: true, party: 'independent' };
   if (s.cannot) return [{ title: "CAN'T CHECK AUTOMATICALLY: CIDB registration", detail: s.cannot, severity: 'low', evidence: s.cannot, verdict: "can't check automatically", ...base }];
   const shown = [...selfGrades];
   if (s.mydigital) shown.push({ grade: s.mydigital.grade, where: s.mydigital.url, text: `MyDigital Kontraktor portfolio, "© ${s.mydigital.owner}"` });
@@ -472,6 +472,9 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
 
   const findings: Finding[] = [];
   const pii = new Set<string>();
+  // PL2: a register is independent; a page on the company's own domain is first-party.
+  const officialHosts = (id.official_domains ?? []).map((d: string) => host(/^https?:/.test(d) ? d : `https://${d}`));
+  const partyOf = (url: string) => (officialHosts.includes(host(url)) ? 'first' : 'independent');
   claims.forEach((c, i) => {
     const r = recs[i];
     (r.pii ?? []).forEach((x) => pii.add(x));
@@ -497,6 +500,7 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
       detail: `${why}${r.notes?.length ? ' Also: ' + r.notes.join('; ') + '.' : ''}${verdicts[c.id]?.disagreements?.length ? ' Register details that differ: ' + verdicts[c.id].disagreements!.join('; ') + '.' : ''}`,
       severity: sev,
       source: r.url || null,
+      party: partyOf(r.url),
       checked_at: ctx.now(),
       evidence: r.record || r.cannot,
       claim_id: c.id, claim: c.claim, issuer: c.issuer, value: c.value, claimed_on: c.where, verdict, register: r.register, direction,
@@ -504,7 +508,7 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
   });
   const claimedGrades = new Set(claims.filter((c) => c.issuer === 'CIDB').map((c) => c.value.match(/\bG[1-7]\b/i)?.[0]?.toUpperCase()).filter(Boolean) as string[]);
   if (!ctx.v21) findings.unshift(...sweepFindings(ctx, dive, sweep, selfGrades, claimedGrades));
-  if (pii.size) findings.push({ title: 'PRIVATE: a public register exposes your staff MyKad numbers', detail: [...pii].join('. ') + '. The numbers sit in the page data (not shown on screen) and can be read by anyone. Ask the register to remove them. (Report privately, never as bait.)', severity: 'high', source: null, checked_at: ctx.now(), verdict: 'risk', private: true });
+  if (pii.size) findings.push({ title: 'PRIVATE: a public register exposes your staff MyKad numbers', detail: [...pii].join('. ') + '. The numbers sit in the page data (not shown on screen) and can be read by anyone. Ask the register to remove them. (Report privately, never as bait.)', severity: 'high', source: null, party: 'independent', checked_at: ctx.now(), verdict: 'risk', private: true });
 
   return { findings, notes: { claims, claims_cached: !!cached, pages_read: pages, self_grades: selfGrades, cidb_sweep: ctx.v21 ? null : sweep, registers: ctx.v21 ? Object.fromEntries(recs.map((r) => [r.handler || r.register, { name: r.register, url: r.url, auto: r.cannot ? 'no' : 'yes', how: 'myworker site handler' }])) : REGISTERS, records: recs.map((r, i) => ({ id: claims[i].id, ...r })) } };
 }
