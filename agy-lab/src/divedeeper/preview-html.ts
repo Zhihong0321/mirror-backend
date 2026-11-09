@@ -19,7 +19,7 @@
 // no research write-up (privacy.ts). Sources are the ones the company-dive judged to be about them.
 import { CHAPTER_EYEBROW, CHAPTER_ORDER, NB, OPENERS, PART_OPENERS, esc, tie, typeset } from './report-html.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
+import { companyContacts, isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
 import { bannedWords, cleanText, daysToImpact, findPII, localeFor, plural as pluralOf, rankKey, severity, similarPairs, type Urgency } from '../report-rules/index.ts';
 import type { PreviewNotes } from './preview-editor.ts';
 
@@ -148,7 +148,7 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   ].filter(Boolean) as { label: string; value: string }[];
   // A name list and the contacts the company publishes itself, so PL9 can tell a staff member from the leadership
   // and a private mobile from the switchboard on its own record.
-  const ownContacts = [String(id.address ?? ''), ...(Array.isArray(id.phones) ? id.phones.map(String) : [])];
+  const ownContacts = companyContacts(dive);
   const pii = { country: loc.country, companyPhones: ownContacts, personNames: staff };
   /** PL8 + PL9: text that may not be printed at all. It names someone who is not leadership, carries a phone the
    *  company does not publish itself, or speaks in the pipeline's own vocabulary. */

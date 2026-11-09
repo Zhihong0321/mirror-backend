@@ -85,3 +85,17 @@ test('the price is the one USD value passed in, for every country', () => {
   }
   assert.ok(!buildPreview(dive('MY', 'Acme Sdn Bhd'), {}).includes('class="price"'));
 });
+
+test('R2: a warning about an old phone on the company\'s own listing is kept; a personal number is still dropped', () => {
+  const listing = '+1 202 456 1111', personal = '+1 303 497 3000';
+  const d = dive('US', 'Prairie Tools LLC', { facts: [
+    { topic: 'footprint', fact: `The Maps listing shows phone ${listing}.`, sources: [1], confidence: 'high' },
+    { topic: 'ownership_people', fact: `The owner's mobile is ${personal}.`, sources: [1], confidence: 'medium' },
+  ] });
+  const html = text(buildPreview(d, {}, null, { warnings: [
+    mkWarn(1, { title: 'Old phone on a listing', detail: `The listing still shows ${listing}.`, quote: `Phone ${listing}` }),
+    mkWarn(2, { title: 'Mobile on a directory', detail: `A directory shows ${personal}.`, quote: `Mobile ${personal}` }),
+  ] }));
+  assert.ok(html.includes('Old phone on a listing'));
+  assert.ok(!html.includes('Mobile on a directory') && !html.includes('303 497 3000'));
+});

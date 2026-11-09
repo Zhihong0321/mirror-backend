@@ -1,6 +1,6 @@
 // PL25 for the deeper reports: what the gate needs from a company-dive, and the holding pages a blocked report gets.
 import { gateReport, gateResult, type GateInput, type GateItem, type GateResult } from '../report-rules/gate.ts';
-import { isLeadership } from './privacy.ts';
+import { companyContacts, isLeadership } from './privacy.ts';
 
 /** The company's own published contacts, and the people who may not be named (everyone not publicly named leadership). */
 export function diveGateContext(dive: any): Pick<GateInput, 'country' | 'companyPhones' | 'personNames'> {
@@ -10,7 +10,7 @@ export function diveGateContext(dive: any): Pick<GateInput, 'country' | 'company
   const people: any[] = r.people?.people ?? [];
   return {
     country: String(dive?.country ?? ''),
-    companyPhones: [String(id.address ?? ''), ...(Array.isArray(id.phones) ? id.phones.map(String) : [])].filter(Boolean),
+    companyPhones: companyContacts(dive),
     personNames: [...people.filter((p) => p?.name && !isLeadership(p.role)), ...rejected.filter((p: any) => p?.name)].map((p) => String(p.name)),
   };
 }

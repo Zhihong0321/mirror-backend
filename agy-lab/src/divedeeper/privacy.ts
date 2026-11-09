@@ -2,7 +2,19 @@
 // shows only the company itself and its publicly named leadership. The full report goes to the
 // client, so it may name their staff, but never prints a private document link (a proposal,
 // invoice or portal meant for one customer) or an ID number.
-import { findPII } from '../report-rules/index.ts';
+import { findPII, phonesIn } from '../report-rules/index.ts';
+
+// Fact topics about the company's own places and listings (Maps, directories, its sites). A number there is a company
+// contact; ownership_people and the rest are not, so a person's mobile stays personal.
+const LISTING_TOPICS = new Set(['identity', 'footprint', 'digital_presence']);
+/** The company's own contacts: its address, the phones it published, and the phones on its own listings. */
+export function companyContacts(dive: any): string[] {
+  const r = dive?.result ?? {};
+  const id = r.identity ?? {};
+  const country = String(dive?.country ?? '');
+  const fromListings = (Array.isArray(r.facts) ? r.facts : []).filter((f: any) => LISTING_TOPICS.has(String(f?.topic))).flatMap((f: any) => phonesIn(String(f?.fact ?? ''), country));
+  return [String(id.address ?? ''), ...(Array.isArray(id.phones) ? id.phones.map(String) : []), ...fromListings].filter(Boolean);
+}
 
 /** A link to a document or portal meant for one customer or for staff, never for the public. */
 const PRIVATE_URL = /proposal|invoice|quotation|receipt|[?&](uid|token|key)=|\/inv[-/]|\/(admin|agent|portal|dashboard)(\/|$|\?)/i;
