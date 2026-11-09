@@ -2,7 +2,7 @@
 // data. Companies and countries here are made up and mixed on purpose; no rule may depend on one of them.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkV2, claimMismatches } from './v21/step2-v2.ts';
+import { checkV2, claimMismatches, citableV2 } from './v21/step2-v2.ts';
 import { cleanText, ownershipOf, renderTidy, stripMarkdown, tidyCheckpoint, type TidyData } from './v21/tidy.ts';
 
 const tidy: TidyData = {
@@ -278,4 +278,61 @@ test('PL15: the same value in a different field is not a repeat', () => {
   const note = { id: 'n1', topic: 'website', title: 'Site mentions nordlys.example', note: 'nordlys.example appears', evidence: [{ evidence_id: 'E7', quoted_text: 'Domain nordlys.example expires' }] };
   const out = checkV2({ conclusive_findings: [problem], take_note: [note] }, tidy);
   assert.equal(out.take_note.length, 1);
+});
+
+// ---------------------------------------------------------------- R1 review fixes
+
+test('R1: citableV2 gives check_id and domain to audit items and never throws on the others', () => {
+  const items = citableV2(tidy);
+  assert.equal(items.get('E1')?.check_id, 'email-spoofing');
+  assert.equal(items.get('E1')?.domain, 'nordlys.example');
+  assert.equal(items.get('E4')?.check_id, undefined);
+});
+
+test("R1: the company's own domain in two unrelated items does not make them one fact (PL15)", () => {
+  const finding = { id: 'f1', kind: 'problem', topic: 'website', title: 'Slow on phones', statement: 'Mobile speed on nordlys.example is low', evidence: [{ evidence_id: 'E7', quoted_text: 'Domain nordlys.example expires in 26 days' }] };
+  const note = { id: 'n1', topic: 'website', title: 'Outdated plugin', note: 'A plugin on nordlys.example looks old', evidence: [{ evidence_id: 'E7', quoted_text: 'Domain nordlys.example expires' }] };
+  const out = checkV2({ conclusive_findings: [finding], take_note: [note] }, tidy);
+  assert.equal(out.conclusive_findings.length, 1, JSON.stringify(out.rejected));
+  assert.equal(out.take_note.length, 1, JSON.stringify(out.rejected));
+});
+
+test('R1: a quote of the review count line is found (title line leads the text)', () => {
+  const cp: any = { input: tidy.input, official_site: { domain: 'nordlys.example', pages: [] }, third_party_discoveries: [], probes: [] };
+  const assets: any = { domains: [], findings: [], pagespeed: { status: 'none' }, google_reviews: { status: 'done', profile: { name: 'Nordlys', place_id: 'p1' }, data: { name: 'Nordlys', review_count: 40, rating: 4.2, reviews: [{ date: '2026-10-01T00:00:00Z', rating: 5, author: 'A', author_reviews: 1, text: 'Good', owner_reply: null }] } } };
+  const t = tidyCheckpoint(cp, assets);
+  const id = t.evidence.find((e) => e.source_name === 'Google Maps reviews')!.id;
+  const f = { kind: 'problem', topic: 'reviews', title: 'Reviews', statement: 'Of the 1 newest reviews shown, none got a reply', evidence: [{ evidence_id: id, quoted_text: '1 newest reviews of 40' }] };
+  const out = checkV2({ conclusive_findings: [f] }, t);
+  assert.equal(out.rejected.length, 0, JSON.stringify(out.rejected));
+});
+
+test('R1: merged findings name the other domains in the statement, and claimCheck stays valid', () => {
+  const three = [
+    spoof('f1', 'E1'),
+    { ...spoof('f2', 'E2'), evidence: [{ evidence_id: 'E2', quoted_text: 'nordlys-agency.example is vulnerable' }] },
+    { ...spoof('f3', 'E3'), evidence: [{ evidence_id: 'E3', quoted_text: 'nordlys-old.example is vulnerable' }] },
+  ];
+  const out = checkV2({ conclusive_findings: three }, tidy);
+  assert.equal(out.conclusive_findings.length, 1);
+  assert.match(out.conclusive_findings[0].statement, /The same applies to nordlys-agency\.example and nordlys-old\.example\.$/);
+  assert.deepEqual(claimMismatches(out.conclusive_findings[0].statement, out.conclusive_findings[0].evidence.map((e) => e.quoted_text)), []);
+  // one domain only: nothing is added
+  assert.equal(checkV2({ conclusive_findings: [spoof('f1', 'E1')] }, tidy).conclusive_findings[0].statement, 'DMARC is not enforced');
+});
+
+test('R1: a short name matches a whole word of the registrant, not a part of one', () => {
+  assert.equal(ownershipOf('HP Inc.', 'HP'), 'owned');
+  assert.equal(ownershipOf('3M Company', '3M'), 'owned');
+  assert.equal(ownershipOf('SAP SE', 'SAP SE'), 'owned');
+  assert.equal(ownershipOf('LG Electronics Inc.', 'LG Electronics'), 'owned');
+  assert.equal(ownershipOf('비바리퍼블리카(토스)', '토스'), 'owned');
+  assert.equal(ownershipOf('Chiptech Ltd', 'HP'), 'used_by');
+  assert.equal(ownershipOf('Hpe Holdings', 'HP'), 'used_by');
+});
+
+test('R1: stripMarkdown keeps the spacing of bold after a digit unless the bold starts with a currency', () => {
+  assert.equal(stripMarkdown('Over 10**years** of experience'), 'Over 10 years of experience');
+  assert.equal(stripMarkdown('35**RM million+** in projects'), '35RM million+ in projects');
+  assert.equal(stripMarkdown('turnover 5**$ million+** a year'), 'turnover 5$ million+ a year');
 });

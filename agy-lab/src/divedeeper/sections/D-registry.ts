@@ -429,6 +429,13 @@ async function workerRecords(ctx: Ctx, dive: any, claims: Claim[]): Promise<Rec[
   return recs;
 }
 
+/** PL2: first-party only when the record's URL is on one of the company's own domains; no URL (or no domain) is independent. */
+export function partyForUrl(url: string | null | undefined, officialDomains: unknown): 'first' | 'independent' {
+  const h = host(url);
+  const own = (Array.isArray(officialDomains) ? officialDomains : []).map((d) => host(/^https?:/.test(String(d)) ? String(d) : `https://${d}`)).filter(Boolean);
+  return h && own.includes(h) ? 'first' : 'independent';
+}
+
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
   const id = dive.result?.identity ?? {};
   const { claims, pages, selfGrades = [], cached } = await extractClaims(ctx, dive);
@@ -473,8 +480,7 @@ Return JSON only: {"results":[{"id":"C01","verdict":"verified|contradicted|not_s
   const findings: Finding[] = [];
   const pii = new Set<string>();
   // PL2: a register is independent; a page on the company's own domain is first-party.
-  const officialHosts = (id.official_domains ?? []).map((d: string) => host(/^https?:/.test(d) ? d : `https://${d}`));
-  const partyOf = (url: string) => (officialHosts.includes(host(url)) ? 'first' : 'independent');
+  const partyOf = (url: string | null | undefined) => partyForUrl(url, id.official_domains);
   claims.forEach((c, i) => {
     const r = recs[i];
     (r.pii ?? []).forEach((x) => pii.add(x));

@@ -197,7 +197,7 @@ type Cited = { url: string; text: string; check_id?: string; domain?: string };
 export function citableV2(t: TidyData): Map<string, Cited> {
   const items = new Map<string, Cited>();
   for (const [id, it] of citableItems(t)) items.set(id, { url: it.url, text: it.text });
-  for (const e of t.evidence) if (e.check_id || e.domain) Object.assign(items.get(e.id)!, { check_id: e.check_id, domain: e.domain });
+  for (const e of t.evidence) { const it = e.check_id || e.domain ? items.get(e.id) : undefined; if (it) Object.assign(it, { check_id: e.check_id, domain: e.domain }); }
   t.official.pages.forEach((p, i) => items.set(officialId(i), { url: p.url, text: p.text }));
   if (t.official.site_wide) items.set('O0', { url: t.official.pages[0]?.url ?? '', text: t.official.site_wide });
   return items;
@@ -274,11 +274,12 @@ function techFacts(evidence: Evidence[], items: Map<string, Cited>, tidy: TidyDa
 // ---- one fact, one list (PL15)
 
 /** The facts an item states, as keys: emails, domains, long digit runs (phones, registration numbers, dates). */
-function factKeys(texts: string[]): string[] {
+function factKeys(texts: string[], officialHosts: string[] = []): string[] {
   const keys = new Set<string>();
   for (const t of texts) {
     for (const e of t.match(EMAIL_RE) ?? []) keys.add(e.toLowerCase());
-    for (const u of t.replace(EMAIL_RE, ' ').match(URL_RE) ?? []) keys.add(bareUrl(u));
+    // The company's own domains and site URLs sit in many unrelated items: they say nothing about which fact it is.
+    for (const u of t.replace(EMAIL_RE, ' ').match(URL_RE) ?? []) if (!officialHosts.some((h) => onDomain(u, h))) keys.add(bareUrl(u));
     for (const run of t.match(/\+?\d[\d\s().-]{5,}\d/g) ?? []) {
       const d = run.replace(/\D/g, '');
       if (d.length >= 6) keys.add(d.length >= 8 ? d.slice(-8) : d);
@@ -388,15 +389,27 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
   // ---- The same failed check on several assets is one finding with all the evidence rows (PL14).
   const alias = new Map<string, string>(); // provisional id -> the item that now holds it
   const byCheck = new Map<string, ConclusiveFinding>();
+  const ownDomains = new Map<ConclusiveFinding, Set<string>>(); // the domains each merged finding's own wording is about
   for (const f of [...conclusive_findings]) {
     if (!f.check_id) continue;
     const key = `${f.check_id}|${f.kind}`;
     const first = byCheck.get(key);
-    if (!first) { byCheck.set(key, f); continue; }
+    if (!first) { byCheck.set(key, f); ownDomains.set(f, new Set(f.evidence.map((e) => items.get(e.evidence_id)?.domain).filter((d): d is string => Boolean(d)))); continue; }
     for (const e of f.evidence) if (!first.evidence.some((x) => x.evidence_id === e.evidence_id)) first.evidence.push(e);
     Object.assign(first, techFacts(first.evidence, items, tidy));
     alias.set(f.id, first.id);
     conclusive_findings.splice(conclusive_findings.indexOf(f), 1);
+  }
+
+  // The other domains must not vanish from the merged wording: one plain sentence naming them, only those a quote shows (PL4).
+  for (const first of new Set(byCheck.values())) {
+    const own = ownDomains.get(first)!;
+    const quotes = first.evidence.map((e) => e.quoted_text).join(' ').toLowerCase();
+    const others = [...new Set(first.evidence.map((e) => items.get(e.evidence_id)?.domain).filter((d): d is string => Boolean(d)))].filter((d) => !own.has(d) && quotes.includes(d.toLowerCase()));
+    if (!others.length) continue;
+    const ko = /korea/i.test(tidy.input.country);
+    const list = others.length > 1 ? `${others.slice(0, -1).join(', ')} ${ko ? '및' : 'and'} ${others.at(-1)}` : others[0];
+    first.statement = `${first.statement} ${ko ? `${list}에도 동일하게 적용됩니다.` : `The same applies to ${list}.`}`.trim();
   }
 
   // ---- One fact (same field, same value) lives in one list: problem > contradiction > note (PL15). Conflicting tools
@@ -404,9 +417,9 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
   type Entry = { list: string; item: ConclusiveFinding | Contradiction | Note; rank: number; keys: string[] };
   const fieldOf = (i: { topic: Topic; check_id?: string }) => i.check_id ?? i.topic;
   const entries: Entry[] = [
-    ...conclusive_findings.map((item) => ({ list: 'conclusive_findings', item, rank: 0, keys: factKeys([item.title, item.statement]) })),
-    ...contradictions.map((item) => ({ list: 'contradictions', item, rank: 1, keys: factKeys([item.title, ...item.versions.map((v) => v.value)]) })),
-    ...take_note.map((item) => ({ list: 'take_note', item, rank: 2, keys: factKeys([item.title, item.note]) })),
+    ...conclusive_findings.map((item) => ({ list: 'conclusive_findings', item, rank: 0, keys: factKeys([item.title, item.statement], officialHosts) })),
+    ...contradictions.map((item) => ({ list: 'contradictions', item, rank: 1, keys: factKeys([item.title, ...item.versions.map((v) => v.value)], officialHosts) })),
+    ...take_note.map((item) => ({ list: 'take_note', item, rank: 2, keys: factKeys([item.title, item.note], officialHosts) })),
   ].map((e) => ({ ...e, keys: e.keys.map((k) => `${fieldOf(e.item as any)}|${k}`) }));
   const standing: Entry[] = entries.filter((e) => e.rank === 0);
   for (const rank of [1, 2]) {

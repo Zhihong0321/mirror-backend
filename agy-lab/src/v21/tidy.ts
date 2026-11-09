@@ -4,6 +4,7 @@
 // and gets an id (E1, E2, R1...) that Step 2 cites.
 import type { RawResearchCheckpoint } from './research.ts';
 import type { Step1_5_AssetsOutput } from './assets.ts';
+import { startsWithCurrency } from '../report-rules/index.ts';
 
 export type TidyEvidence = {
   id: string;
@@ -136,9 +137,9 @@ const MASK = '\u0002';
  */
 export function stripMarkdown(s: string): string {
   const spaced = (before: string, inner: string, after: string) => {
-    // "35**RM million+**" is one phrase: a bold that follows a digit and ends at a word boundary stays attached
-    // (TODO: call cleanText from ../report-rules to put the currency first, "RM35 million+")
-    const glued = /\d/.test(before) && !WORD_CHAR.test(after);
+    // "35**RM million+**" is one phrase: a bold that follows a digit, starts with a currency marker and ends at a word
+    // boundary stays attached ("10**years**" is not: it gets its space)
+    const glued = /\d/.test(before) && startsWithCurrency(inner) && !WORD_CHAR.test(after);
     const l = !glued && WORD_CHAR.test(before) && WORD_CHAR.test(inner[0] ?? '') ? ' ' : '';
     const end = inner.at(-1) ?? '';
     const r = WORD_CHAR.test(after) && (WORD_CHAR.test(end) || /\s/.test(end)) ? ' ' : '';
@@ -220,8 +221,10 @@ export function registrantMatches(org: string, company: string): boolean {
   const o = coreOf(org);
   if (!o) return false;
   const terms = nameTerms(company);
-  const whole = coreOf(terms[0] ?? '');
+  const whole = coreOf(terms[0] ?? cleanText(company)); // a 1-2 character name has no search terms
   if (whole.length >= 4 && (o.includes(whole) || (o.length >= 4 && whole.includes(o)))) return true;
+  // A short name ("HP", "3M", "토스") matches only as a whole word of the registrant, or as the whole registrant.
+  if (whole && whole.length < 4 && (o === whole || org.toLowerCase().split(/[^\p{L}\p{N}]+/u).includes(whole))) return true;
   const words = terms.slice(1).map(coreOf).filter(Boolean);
   return words.length > 0 && words.every((w) => o.includes(w));
 }
