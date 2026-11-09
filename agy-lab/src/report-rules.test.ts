@@ -93,3 +93,18 @@ test('R1: a trailing marker moves only when it is a currency symbol or a code th
   assert.equal(startsWithCurrency('years'), false);
   assert.equal(startsWithCurrency('K years'), false);
 });
+
+
+test('R4: email domains and timestamp dates support claims', () => {
+  const claim = 'The registration for atap.solar, the domain of the address eternalgy@atap.solar published on your own site, runs out on 2026-12-04 ...';
+  const quotes = ['Domain registration expires on 2026-12-04T12:12:03.014Z (under 30 days remaining).', 'Email: eternalgy@atap.solar'];
+  assert.deepEqual(claimMismatches(claim, quotes), []);
+  assert.deepEqual(claimMismatches('Expires 2026-12-05', [quotes[0]]), ['2026-12-05']);
+  assert.deepEqual(claimMismatches('example.org and www.example.org', ['Email: info@example.org']), []);
+  assert.deepEqual(claimMismatches('other.org', ['Email: info@example.org']), ['other.org']);
+  for (const timestamp of ['2026-12-04T12:12:03.014Z', '2026-12-04T12:12', '2026-12-04 12:12']) {
+    assert.deepEqual(claimMismatches('Expires 2026-12-04', [timestamp]), []);
+    assert.equal(daysToImpact([timestamp], new Date('2026-11-09T00:00:00Z')), 25);
+  }
+  assert.deepEqual(claimMismatches('Value 123', ['VALUE   123.']), []);
+});

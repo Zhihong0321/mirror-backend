@@ -61,7 +61,7 @@ export function findPII(text: string, where: string, ctx: { country: string; com
   }
   return hits;
 }
-const datePattern = /\b(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})\b/gi;
+const datePattern = /\b(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{4}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})(?:\b|(?=T\d{2}:\d{2}))/gi;
 // Countries that write 05/06/2024 as month first; everyone else (and no country) reads it day first.
 const monthFirstCountries = new Set<string>(JSON.parse(readFileSync(new URL('./month-first-countries.json', import.meta.url), 'utf8')));
 function dateValue(s: string, country?: string): number | null {
@@ -80,7 +80,7 @@ function claims(s: string, country?: string): Array<[string, string]> {
   // Consume structured claims first so their components are not treated as separate numbers.
   const take = (re: RegExp, norm: (v: string) => string | null) => { s = s.replace(re, v => { const n = norm(v); if (n !== null) out.push([v, n]); return ' '; }); };
   take(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, v => `email:${v.toLowerCase()}`);
-  take(/\b(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<]*)?/gi, v => `url:${v.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '')}`);
+  take(/\b(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s<]*)?/gi, v => `url:${v.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')}`);
   take(datePattern, v => { const d = dateValue(v, country); return d === null ? null : `date:${d}`; });
   const phones = findPhoneNumbersInText(s);
   for (const p of phones.reverse()) { out.push([p.raw, `phone:${p.number.number.replace(/\D/g, '')}`]); s = s.slice(0, p.startsAt) + ' ' + s.slice(p.endsAt); }
@@ -92,8 +92,11 @@ function claims(s: string, country?: string): Array<[string, string]> {
 }
 export function claimMismatches(text: string, quotes: string[], country?: string): string[] {
   const supported = new Set(quotes.flatMap(q => claims(q, country).map(([, n]) => n)));
+  for (const q of quotes) for (const m of q.matchAll(/[\w.+-]+@([\w.-]+\.[a-z]{2,})/gi)) supported.add(`url:${m[1].toLowerCase().replace(/^www\./, '')}`);
+  const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim().replace(/[\p{P}]+$/gu, '');
+  const normalizedQuotes = quotes.map(normalize);
   const quoteDigits = quotes.flatMap(q => [...q.matchAll(/\+?\d[\d ().-]{6,}\d/g)].map(m => m[0].replace(/\D/g, '')));
-  return [...new Set(claims(text, country).filter(([, n]) => !supported.has(n) && !(n.startsWith('phone:') && quoteDigits.includes(n.slice(6)))).map(([v]) => v))];
+  return [...new Set(claims(text, country).filter(([v, n]) => !supported.has(n) && !(v && normalizedQuotes.some(q => q.includes(normalize(v)))) && !(n.startsWith('phone:') && quoteDigits.includes(n.slice(6)))).map(([v]) => v))];
 }
 export const BANNED_WORDS: string[] = JSON.parse(readFileSync(new URL('./banned-words.json', import.meta.url), 'utf8').replace(/^\uFEFF/, ''));
 export function bannedWords(text: string): string[] {
