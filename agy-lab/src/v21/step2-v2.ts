@@ -11,7 +11,7 @@
 import type { ChatMessage } from './cloud.ts';
 import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import { citableItems, quoteIsIn } from './check-findings.ts';
-import { officialId, renderTidy, type TidyData } from './tidy.ts';
+import { domainOf, officialId, onDomain, renderTidy, type DomainOwnership, type TidyData } from './tidy.ts';
 import type { DroppedNamesake } from './analyse.ts';
 
 export const RULES_V2_PROMPT = 'rules-v2.1';
@@ -25,7 +25,10 @@ export const TOPICS = [
 ] as const;
 export type Topic = (typeof TOPICS)[number];
 
-export type Evidence = { evidence_id: string; quoted_text: string; source_url: string };
+/** first: the company wrote or submitted it (its own sites, LinkedIn, listings, award entries, press releases).
+ *  independent: a register, bureau, regulator, news outlet or other party that did not get its words from the company. */
+export type Party = 'first' | 'independent';
+export type Evidence = { evidence_id: string; quoted_text: string; source_url: string; party: Party };
 
 export type ConclusiveFinding = {
   id: string;
@@ -37,6 +40,10 @@ export type ConclusiveFinding = {
   why_it_matters: string;
   identity: string;
   confidence: 'high' | 'medium';
+  /** Technical-check findings: the check that made them ('email-spoofing', 'domain-expiry'...). Same check + same kind merge. */
+  check_id?: string;
+  /** Domain findings: whether the company is shown to own the domain. Wording ("your domain", "Renew") follows it. */
+  ownership?: DomainOwnership;
 };
 
 export type Contradiction = {
@@ -49,9 +56,20 @@ export type Contradiction = {
   confidence: 'high' | 'medium';
 };
 
-export type Suggestion = { id: string; action: string; why: string; based_on: string[] };
+export type Suggestion = { id: string; topic: Topic; topics: Topic[]; action: string; why: string; based_on: string[] };
 
-export type Note = { id: string; topic: Topic; title: string; note: string; evidence: Evidence[]; why_not_conclusive: string };
+export type Note = {
+  id: string; topic: Topic; title: string; note: string; evidence: Evidence[]; why_not_conclusive: string;
+  /** A signal built on matching a person (a reviewer who shares a staff member's name). Dropped unless REPORT_IDENTITY_SIGNALS is on. */
+  identity_signal: boolean;
+  /** Set when REPORT_IDENTITY_SIGNALS is on and this is an identity signal: it may appear in the paid report only. */
+  paid_only?: boolean;
+  check_id?: string;
+  ownership?: DomainOwnership;
+};
+
+/** Policy flag (PL10): identity signals are off unless the owner turns them on, and then only for the paid report. */
+export const identitySignalsOn = (): boolean => /^(on|1|true|yes)$/i.test((process.env.REPORT_IDENTITY_SIGNALS ?? '').trim());
 
 export type Rejected = { list: string; item: Record<string, unknown>; reasons: string[] };
 
@@ -121,11 +139,16 @@ RULES
 5. Not found is not a finding. Absence from a search, directory or list proves nothing (on a sanctions or disciplinary list it means a clean record). The one exception: the official site claims a specific licence, membership or award, a register check (section D) is the authoritative list for exactly that claim, and the name is not on it: a conclusive_finding of kind "problem".
 6. Numbers. A number the company states (staff, sites, projects, capacity, revenue, offices, years) that another source gives differently is a contradiction. Name each version's source plainly (for example "LinkedIn counts only staff who list the company"). A data-broker estimate with nothing the company states to compare it with is not an item.
 7. The technical audit was measured by code: use its results as given and add nothing to them. A domain's expiry date, email set-up and PageSpeed scores are conclusive. In the SEO / GEO benchmark, the SEO and GEO scores and a check marked "exact" are conclusive; a check marked "rule of thumb" or "hint" is an estimate: take_note at most, never a conclusive_finding. A check that only says the site is missing from a list (Wikidata, Wikipedia, Common Crawl) is rule 5.
-8. Reviews: count only what the review item shows (ratings, dates, authors, text, replies), and say "of the N newest reviews shown". Possible staff reviews or a burst of reviews on one day go in take_note, never in conclusive_findings.
+8. Reviews: count only what the review item shows (ratings, dates, authors, text, replies), and say "of the N newest reviews shown" (quote the review item's title line that gives N). Possible staff reviews or a burst of reviews on one day go in take_note, never in conclusive_findings.
 9. Evidence. Every item cites "evidence": a list of {"evidence_id", "quoted_text"}; ids are O0, O1..., E#, R# or LINKEDIN. "quoted_text" is the shortest passage that proves the point, copied character for character from that item: no "..." joins, no added words. A contradiction cites each version's own evidence_id and quoted_text.
 10. Confidence: "high" when every outside item cited carries an official domain, phone, address or the registration number; otherwise "medium".
 11. Each fact once. One contradiction per fact, with every version in it; do not split it, and do not repeat it as a finding.
-12. Language: ${isKorean ? 'this is a South Korean company. Write title, statement, value, why_it_matters, action, why, note and reasons in Korean. Quotes stay exactly as in the input.' : 'write in English. Quotes stay exactly as in the input.'}
+12. Whose words. Each cited passage is "first" (the company wrote or submitted it: its own sites and LinkedIn, a listing, an award entry or press release it supplied) or "independent" (a register, bureau, regulator, news outlet or another party that did not take its words from the company). Set "party" on every evidence entry. Call something independent, third-party or verified only when an independent passage backs it.
+13. Ownership. A domain item in section C says "ownership: owned | used_by | unknown". Say "your domain" and give fixes like "Renew" or "Set DMARC" only when it is owned. For used_by or unknown, word it neutrally ("the domain X") and give the fix as "if you control it, ...".
+14. Wording. Each why_it_matters is written for its own item, from its own facts; never reuse a stock sentence across items. No internal words in any text: worker, input, pipeline, benchmark, "the data", "review item", or the names of tools used as nouns. Write as to the owner reading a report, not as an analyst reading a file.
+15. People. Never write a private person's name (a reviewer, an employee, a consultant) or a personal phone number in any field. Say "a reviewer". A signal that rests on matching a person's name to a reviewer or staff list is a take_note with "identity_signal": true; every other note has "identity_signal": false.
+16. Every item has a "topic". Every place name, person name and figure in an item must appear in its cited quotes.
+17. Language: ${isKorean ? 'this is a South Korean company. Write title, statement, value, why_it_matters, action, why, note and reasons in Korean. Quotes stay exactly as in the input.' : 'write in English. Quotes stay exactly as in the input.'}
 
 OUTPUT: one JSON object only, this shape:
 {
@@ -134,14 +157,14 @@ OUTPUT: one JSON object only, this shape:
   },
   "conclusive_findings": [
     { "id": "f1", "kind": "problem | strength", "topic": "${TOPICS.join(' | ')}", "title": "one line", "statement": "what is true, plainly",
-      "evidence": [ { "evidence_id": "E3", "quoted_text": "exact copy" } ], "why_it_matters": "who meets it and what it costs", "identity": "which identifier ties the outside items to this company", "confidence": "high | medium" }
+      "evidence": [ { "evidence_id": "E3", "quoted_text": "exact copy", "party": "first | independent" } ], "why_it_matters": "who meets it and what it costs", "identity": "which identifier ties the outside items to this company", "confidence": "high | medium" }
   ],
   "contradictions": [
-    { "id": "c1", "topic": "...", "title": "one line", "versions": [ { "source": "eternalgy.me home page", "value": "the value this source gives", "evidence_id": "O1", "quoted_text": "exact copy" } ],
+    { "id": "c1", "topic": "...", "title": "one line", "versions": [ { "source": "eternalgy.me home page", "value": "the value this source gives", "evidence_id": "O1", "quoted_text": "exact copy", "party": "first | independent" } ],
       "why_it_matters": "...", "identity": "...", "confidence": "high | medium" }
   ],
   "suggestions": [ { "id": "s1", "action": "what to do", "why": "one line", "based_on": ["f1", "c2"] } ],
-  "take_note": [ { "id": "n1", "topic": "...", "title": "one line", "note": "what was seen", "evidence": [ { "evidence_id": "E5", "quoted_text": "exact copy" } ], "why_not_conclusive": "..." } ],
+  "take_note": [ { "id": "n1", "topic": "...", "title": "one line", "note": "what was seen", "evidence": [ { "evidence_id": "E5", "quoted_text": "exact copy", "party": "first | independent" } ], "why_not_conclusive": "...", "identity_signal": false } ],
   "dropped_namesakes": [ { "evidence_id": "E7", "name": "...", "url": "...", "snippet": "short exact copy", "reason_dropped": "..." } ]
 }`;
 }
@@ -153,7 +176,7 @@ function recheckInstructions(isKorean: boolean): string {
 You are not the analyst. An analyst already applied the rules above to the input and wrote the answer in section G. Check it like a strict reviewer whose name goes on it. For EVERY item in section G (ids f#, c#, s#, n#), re-read the cited items yourself and answer:
 1. Identity: is each cited outside item really this company (rule 1), not a namesake or related company (rule 2), not a branch compared with the head office (rule 3)?
 2. Proof: do the quotes prove the item itself, not only that the company exists? For a contradiction: do the versions really give different values for the same fact (rule 4: formatting is not a difference)?
-3. Facts: is every name, number, date and place in the text exactly what the input says?
+3. Facts: is every name, number, date and place in the text exactly what the input says? Every place name, person name and figure in an item must appear in its cited quotes. Is a private person's name or personal phone anywhere (it must not be)? Does it say independent or third-party without an independent passage (rule 12), or say "your domain" / "Renew" for a domain that is not owned (rule 13)?
 4. Rules and list: is it in the right list (proven -> conclusive_findings; disagreement -> contradictions; not proven -> take_note)? Is the confidence right (rule 10)? Is a suggestion based on items that stand?
 Verdicts: "keep" (all pass), "fix" (real, but a field is wrong: give the whole corrected item, same fields, same id), "remove" (fails identity, proof or the rules). List the problems for every verdict other than "keep". An item that belongs in another list: "remove" it and add it to that list in "missed".
 Then look through the input for items the analyst missed that pass every rule, and add them in "missed", with new ids mf1, mc1, ms1, mn1... (a missed suggestion may name a missed item's id in based_on). Nothing doubtful: empty lists are fine.
@@ -168,10 +191,13 @@ OUTPUT: one JSON object only:
 
 // ---------------------------------------------------------------- plain-code check
 
+type Cited = { url: string; text: string; check_id?: string; domain?: string };
+
 /** Every item the analyst may cite, by id: the v1 items (E#, R#, LINKEDIN) plus the official pages (O0, O1...). */
-export function citableV2(t: TidyData): Map<string, { url: string; text: string }> {
-  const items = new Map<string, { url: string; text: string }>();
+export function citableV2(t: TidyData): Map<string, Cited> {
+  const items = new Map<string, Cited>();
   for (const [id, it] of citableItems(t)) items.set(id, { url: it.url, text: it.text });
+  for (const e of t.evidence) if (e.check_id || e.domain) Object.assign(items.get(e.id)!, { check_id: e.check_id, domain: e.domain });
   t.official.pages.forEach((p, i) => items.set(officialId(i), { url: p.url, text: p.text }));
   if (t.official.site_wide) items.set('O0', { url: t.official.pages[0]?.url ?? '', text: t.official.site_wide });
   return items;
@@ -182,20 +208,83 @@ const core = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 const topicOf = (v: unknown): Topic => (TOPICS.includes(str(v) as Topic) ? (str(v) as Topic) : 'other');
 const confidenceOf = (v: unknown): 'high' | 'medium' => (v === 'high' ? 'high' : 'medium');
 
+// ---- claim vs quote (PL4). TODO: swap for claimMismatches from ../report-rules once that module is merged.
+
+const EMAIL_RE = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g;
+const URL_RE = /https?:\/\/[^\s)]+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b(?:\/[^\s)]*)?/gi;
+const bareUrl = (u: string) => u.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[/.,;:]+$/, '');
+const numberTokens = (text: string) =>
+  (text.match(/\d+(?:[.,]\d+)*/g) ?? []).map((n) => (/,\d{3}(?!\d)/.test(n) ? n.replace(/,/g, '') : n.replace(/,/g, '.')).replace(/^0+(?=\d)/, ''));
+
+/** Emails, URLs / domains and numbers (dates and phone numbers are numbers) in `text` that appear in none of the quotes. */
+export function claimMismatches(text: string, quotes: string[]): string[] {
+  const hay = quotes.join('\n').toLowerCase();
+  const hayBare = hay.replace(/https?:\/\//g, '').replace(/www\./g, '');
+  const body = text.replace(/\b(?:[EOR]|[fcsn])\d+\b/g, ' '); // item ids like "E3" or "f1" are not claims
+  const out: string[] = [];
+  for (const e of body.match(EMAIL_RE) ?? []) if (!hay.includes(e.toLowerCase())) out.push(e);
+  const rest = body.replace(EMAIL_RE, ' ');
+  for (const u of rest.match(URL_RE) ?? []) if (!hayBare.includes(bareUrl(u))) out.push(u);
+  const have = new Set(numberTokens(hay));
+  for (const n of numberTokens(rest.replace(URL_RE, ' '))) if (!have.has(n)) out.push(n);
+  return [...new Set(out)];
+}
+
+const INDEPENDENT_WORDS = /\b(independent(?:ly)?|third[- ]party|verified by)\b|독립|제3자/i;
+
+// ---- who wrote it (PL2), who owns the domain (PL3)
+
+/** First-party: the company's own pages, LinkedIn, any page on an official domain, or what the analyst marked as written
+ *  or submitted by the company. Otherwise independent. Code decides the first three whatever the analyst said. */
+function partyOf(id: string, item: Cited, claimed: unknown, officialHosts: string[]): Party {
+  if (id.startsWith('O') || id === 'LINKEDIN') return 'first';
+  if (officialHosts.some((h) => onDomain(item.url, h))) return 'first';
+  return str(claimed).toLowerCase() === 'first' ? 'first' : 'independent';
+}
+
 /** Check one cited passage: the id exists, it is not a dropped namesake, the quote is in it. */
-function checkEvidence(e: any, items: Map<string, { url: string; text: string }>, dropped: Set<string>, where: string, reasons: string[]): Evidence | null {
+function checkEvidence(e: any, items: Map<string, Cited>, dropped: Set<string>, where: string, reasons: string[], officialHosts: string[]): Evidence | null {
   const id = str(e?.evidence_id);
   const item = items.get(id);
   if (!item) return reasons.push(`${where}: evidence_id "${id}" is not an item in the input`), null;
   if (dropped.has(id)) return reasons.push(`${where}: ${id} is in this same answer's dropped_namesakes`), null;
   if (!quoteIsIn(e?.quoted_text, item.text)) return reasons.push(`${where}: quoted_text is not in ${id}`), null;
-  return { evidence_id: id, quoted_text: str(e.quoted_text), source_url: item.url };
+  return { evidence_id: id, quoted_text: str(e.quoted_text), source_url: item.url, party: partyOf(id, item, e?.party, officialHosts) };
 }
 
-export function checkEvidenceList(list: unknown, items: Map<string, { url: string; text: string }>, dropped: Set<string>, reasons: string[]): Evidence[] {
+export function checkEvidenceList(list: unknown, items: Map<string, Cited>, dropped: Set<string>, reasons: string[], officialHosts: string[] = []): Evidence[] {
   const arr = Array.isArray(list) ? list : [];
   if (!arr.length) reasons.push('no evidence cited');
-  return arr.map((e, i) => checkEvidence(e, items, dropped, `evidence ${i + 1}`, reasons)).filter((e): e is Evidence => e !== null);
+  return arr.map((e, i) => checkEvidence(e, items, dropped, `evidence ${i + 1}`, reasons, officialHosts)).filter((e): e is Evidence => e !== null);
+}
+
+/** What the cited technical items say about the item (PL3, PL14): one check_id when all its evidence is from the same
+ *  check; an ownership value when any evidence is about a domain (mixed or no registrant data -> unknown). */
+function techFacts(evidence: Evidence[], items: Map<string, Cited>, tidy: TidyData): { check_id?: string; ownership?: DomainOwnership } {
+  const cited = evidence.map((e) => items.get(e.evidence_id));
+  const checks = new Set(cited.map((c) => c?.check_id ?? ''));
+  const domains = [...new Set(cited.map((c) => c?.domain).filter((d): d is string => Boolean(d)))];
+  const owns = new Set(domains.map((d) => tidy.domains?.find((x) => x.domain === d)?.ownership ?? 'unknown'));
+  return {
+    ...(checks.size === 1 && [...checks][0] ? { check_id: [...checks][0] } : {}),
+    ...(domains.length ? { ownership: owns.size === 1 ? [...owns][0] : ('unknown' as const) } : {}),
+  };
+}
+
+// ---- one fact, one list (PL15)
+
+/** The facts an item states, as keys: emails, domains, long digit runs (phones, registration numbers, dates). */
+function factKeys(texts: string[]): string[] {
+  const keys = new Set<string>();
+  for (const t of texts) {
+    for (const e of t.match(EMAIL_RE) ?? []) keys.add(e.toLowerCase());
+    for (const u of t.replace(EMAIL_RE, ' ').match(URL_RE) ?? []) keys.add(bareUrl(u));
+    for (const run of t.match(/\+?\d[\d\s().-]{5,}\d/g) ?? []) {
+      const d = run.replace(/\D/g, '');
+      if (d.length >= 6) keys.add(d.length >= 8 ? d.slice(-8) : d);
+    }
+  }
+  return [...keys];
 }
 
 /** The analyst's (or the checker's) answer, checked against the input. Pure. Ids are renumbered f1.., c1.., s1.., n1..
@@ -203,6 +292,12 @@ export function checkEvidenceList(list: unknown, items: Map<string, { url: strin
 export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: DroppedNamesake[]; rejected: Rejected[] } {
   const items = citableV2(tidy);
   const rejected: Rejected[] = [];
+  const officialHosts = [
+    tidy.official.domain,
+    ...(tidy.domains ?? []).filter((d) => /official/i.test(d.role)).map((d) => d.domain),
+    ...(Array.isArray(llm?.baseline_summary?.websites) ? llm.baseline_summary.websites.map((w: unknown) => domainOf(str(w))) : []),
+  ].filter(Boolean);
+  const ev = (list: unknown, dropped: Set<string>, reasons: string[]) => checkEvidenceList(list, items, dropped, reasons, officialHosts);
 
   const dropped_namesakes: DroppedNamesake[] = [];
   const droppedIds = new Set<string>();
@@ -220,6 +315,11 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     if (str(raw?.id)) renumber.set(str(raw.id), newId);
     return newId;
   };
+  /** A number, date, email, phone or URL in the item's text that none of its quotes has: the item is blocked (PL4). */
+  const claimCheck = (text: string, quotes: string[], reasons: string[]) => {
+    const bad = claimMismatches(text, quotes);
+    if (bad.length) reasons.push(`not in any cited quote: ${bad.join(', ')}`);
+  };
 
   const conclusive_findings: ConclusiveFinding[] = [];
   for (const f of Array.isArray(llm?.conclusive_findings) ? llm.conclusive_findings : []) {
@@ -227,13 +327,19 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     const reasons: string[] = [];
     if (!str(f.title)) reasons.push('no title');
     if (!['problem', 'strength'].includes(str(f.kind))) reasons.push(`kind "${str(f.kind)}" is not problem or strength`);
-    const evidence = checkEvidenceList(f.evidence, items, droppedIds, reasons);
+    const evidence = ev(f.evidence, droppedIds, reasons);
     if (f.kind === 'strength' && evidence.length && evidence.every((e) => e.evidence_id.startsWith('O'))) reasons.push('a strength must rest on an outside item, not only the official site');
+    // "independent" / "third-party" / "verified by" needs an independent passage behind it (PL6)
+    if (f.kind === 'strength' && evidence.length && !evidence.some((e) => e.party === 'independent') && INDEPENDENT_WORDS.test(`${str(f.title)} ${str(f.statement)} ${str(f.why_it_matters)}`)) {
+      reasons.push('says independent / third-party / verified, but every cited passage is first-party');
+    }
+    claimCheck(`${str(f.title)} ${str(f.statement)}`, evidence.map((e) => e.quoted_text), reasons);
     if (reasons.length) { rejected.push({ list: 'conclusive_findings', item: f, reasons }); continue; }
     conclusive_findings.push({
       id: keep('f', f, conclusive_findings.length + 1),
       kind: f.kind, topic: topicOf(f.topic), title: str(f.title), statement: str(f.statement), evidence,
       why_it_matters: str(f.why_it_matters), identity: str(f.identity), confidence: confidenceOf(f.confidence),
+      ...techFacts(evidence, items, tidy),
     });
   }
 
@@ -245,13 +351,14 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     const raw = Array.isArray(c.versions) ? c.versions : [];
     const versions = raw
       .map((v: any, i: number) => {
-        const ev = checkEvidence(v, items, droppedIds, `version ${i + 1}`, reasons);
-        if (ev && !str(v?.value)) reasons.push(`version ${i + 1}: no value`);
-        return ev ? { source: str(v.source), value: str(v.value), ...ev } : null;
+        const e = checkEvidence(v, items, droppedIds, `version ${i + 1}`, reasons, officialHosts);
+        if (e && !str(v?.value)) reasons.push(`version ${i + 1}: no value`);
+        return e ? { source: str(v.source), value: str(v.value), ...e } : null;
       })
       .filter((v: unknown): v is Contradiction['versions'][number] => v !== null);
     if (raw.length < 2) reasons.push('a contradiction needs at least two versions');
     else if (new Set(versions.map((v: { value: string }) => core(v.value))).size < 2) reasons.push('the versions do not give different values');
+    claimCheck(`${str(c.title)} ${versions.map((v: { value: string }) => v.value).join(' ')}`, versions.map((v: { quoted_text: string }) => v.quoted_text), reasons);
     if (reasons.length) { rejected.push({ list: 'contradictions', item: c, reasons }); continue; }
     contradictions.push({
       id: keep('c', c, contradictions.length + 1),
@@ -265,25 +372,76 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     if (!n || typeof n !== 'object') continue;
     const reasons: string[] = [];
     if (!str(n.title)) reasons.push('no title');
-    const evidence = checkEvidenceList(n.evidence, items, droppedIds, reasons);
+    const evidence = ev(n.evidence, droppedIds, reasons);
+    claimCheck(`${str(n.title)} ${str(n.note)}`, evidence.map((e) => e.quoted_text), reasons);
+    // A signal built on matching a person's name: off unless the policy flag is on, then paid-only (PL10)
+    const identity_signal = n.identity_signal === true;
+    if (identity_signal && !identitySignalsOn()) reasons.push('identity signal dropped: REPORT_IDENTITY_SIGNALS is off');
     if (reasons.length) { rejected.push({ list: 'take_note', item: n, reasons }); continue; }
     take_note.push({
       id: keep('n', n, take_note.length + 1),
       topic: topicOf(n.topic), title: str(n.title), note: str(n.note), evidence, why_not_conclusive: str(n.why_not_conclusive),
+      identity_signal, ...(identity_signal ? { paid_only: true } : {}), ...techFacts(evidence, items, tidy),
     });
   }
 
-  // Suggestions last: they point at the items above, by their new ids.
+  // ---- The same failed check on several assets is one finding with all the evidence rows (PL14).
+  const alias = new Map<string, string>(); // provisional id -> the item that now holds it
+  const byCheck = new Map<string, ConclusiveFinding>();
+  for (const f of [...conclusive_findings]) {
+    if (!f.check_id) continue;
+    const key = `${f.check_id}|${f.kind}`;
+    const first = byCheck.get(key);
+    if (!first) { byCheck.set(key, f); continue; }
+    for (const e of f.evidence) if (!first.evidence.some((x) => x.evidence_id === e.evidence_id)) first.evidence.push(e);
+    Object.assign(first, techFacts(first.evidence, items, tidy));
+    alias.set(f.id, first.id);
+    conclusive_findings.splice(conclusive_findings.indexOf(f), 1);
+  }
+
+  // ---- One fact (same field, same value) lives in one list: problem > contradiction > note (PL15). Conflicting tools
+  // still send an item to the notes (that is the analyst's call, rule 7); this only removes a repeat.
+  type Entry = { list: string; item: ConclusiveFinding | Contradiction | Note; rank: number; keys: string[] };
+  const fieldOf = (i: { topic: Topic; check_id?: string }) => i.check_id ?? i.topic;
+  const entries: Entry[] = [
+    ...conclusive_findings.map((item) => ({ list: 'conclusive_findings', item, rank: 0, keys: factKeys([item.title, item.statement]) })),
+    ...contradictions.map((item) => ({ list: 'contradictions', item, rank: 1, keys: factKeys([item.title, ...item.versions.map((v) => v.value)]) })),
+    ...take_note.map((item) => ({ list: 'take_note', item, rank: 2, keys: factKeys([item.title, item.note]) })),
+  ].map((e) => ({ ...e, keys: e.keys.map((k) => `${fieldOf(e.item as any)}|${k}`) }));
+  const standing: Entry[] = entries.filter((e) => e.rank === 0);
+  for (const rank of [1, 2]) {
+    for (const e of entries.filter((x) => x.rank === rank)) {
+      const cover = e.keys.length ? standing.find((s) => s.keys.some((k) => e.keys.includes(k))) : undefined;
+      const covered = cover && e.keys.every((k) => standing.some((s) => s.keys.includes(k)));
+      if (!cover || !covered) { standing.push(e); continue; }
+      rejected.push({ list: e.list, item: e.item as unknown as Record<string, unknown>, reasons: [`same fact is already in ${cover.item.id} (${cover.list}); one fact lives in one list`] });
+      alias.set(e.item.id, cover.item.id);
+      const arr = (e.list === 'contradictions' ? contradictions : take_note) as Array<{ id: string }>;
+      arr.splice(arr.findIndex((x) => x.id === e.item.id), 1);
+    }
+  }
+
+  // ---- Final ids, in order.
+  const finalId = new Map<string, string>();
+  for (const [list, prefix] of [[conclusive_findings, 'f'], [contradictions, 'c'], [take_note, 'n']] as const) {
+    (list as Array<{ id: string }>).forEach((x, i) => finalId.set(x.id, `${prefix}${i + 1}`));
+  }
+  for (const x of [...conclusive_findings, ...contradictions, ...take_note]) x.id = finalId.get(x.id)!;
+  const finalOf = (prov: string | undefined) => (prov ? finalId.get(alias.get(prov) ?? prov) : undefined);
+
+  // Suggestions last: they point at the items above, by their new ids, and take their topics.
   const suggestions: Suggestion[] = [];
-  const keptIds = new Set([...conclusive_findings, ...contradictions].map((x) => x.id));
+  const topicByFinal = new Map([...conclusive_findings, ...contradictions].map((x) => [x.id, x.topic] as const));
   for (const s of Array.isArray(llm?.suggestions) ? llm.suggestions : []) {
     if (!s || typeof s !== 'object') continue;
     const reasons: string[] = [];
     if (!str(s.action)) reasons.push('no action');
-    const based = (Array.isArray(s.based_on) ? s.based_on : []).map((id: unknown) => renumber.get(str(id))).filter((id: string | undefined): id is string => Boolean(id && keptIds.has(id)));
+    const based = (Array.isArray(s.based_on) ? s.based_on : []).map((id: unknown) => finalOf(renumber.get(str(id)))).filter((id: string | undefined): id is string => Boolean(id && topicByFinal.has(id)));
     if (!based.length) reasons.push('based_on names no kept finding or contradiction');
     if (reasons.length) { rejected.push({ list: 'suggestions', item: s, reasons }); continue; }
-    suggestions.push({ id: `s${suggestions.length + 1}`, action: str(s.action), why: str(s.why), based_on: [...new Set<string>(based)] });
+    const ids = [...new Set<string>(based)];
+    const topics = [...new Set(ids.map((id) => topicByFinal.get(id)!))];
+    suggestions.push({ id: `s${suggestions.length + 1}`, topic: topics[0], topics, action: str(s.action), why: str(s.why), based_on: ids });
   }
 
   return { conclusive_findings, contradictions, suggestions, take_note, dropped_namesakes, rejected };

@@ -151,10 +151,10 @@ export function checkLine(raw: any, items: Map<string, Item>, reasons: string[])
 // ---------------------------------------------------------------- the prompt
 
 function itemsForPrompt(s2: Step2V2Output): string {
-  const f = (s2.conclusive_findings ?? []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, statement: x.statement, why_it_matters: x.why_it_matters }));
+  const f = (s2.conclusive_findings ?? []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, statement: x.statement, why_it_matters: x.why_it_matters, ...(x.ownership ? { domain_ownership: x.ownership } : {}), sources: [...new Set((x.evidence ?? []).map((e) => e.party))] }));
   const c = (s2.contradictions ?? []).map((x) => ({ id: x.id, title: x.title, versions: x.versions.map((v) => `${v.source}: ${v.value}`), why_it_matters: x.why_it_matters }));
   const s = (s2.suggestions ?? []).map((x) => ({ id: x.id, action: x.action, why: x.why, based_on: x.based_on }));
-  const n = (s2.take_note ?? []).map((x) => ({ id: x.id, title: x.title, note: x.note, why_not_conclusive: x.why_not_conclusive }));
+  const n = (s2.take_note ?? []).filter((x) => !x.paid_only).map((x) => ({ id: x.id, title: x.title, note: x.note, why_not_conclusive: x.why_not_conclusive }));
   return JSON.stringify({ conclusive_findings: f, contradictions: c, suggestions: s, take_note: n }, null, 1);
 }
 
@@ -197,7 +197,11 @@ RULES (selling never bends them)
 5. Persuasive, never false: urgency only from a real date or fact in the cited items (an expiry date, for example); no invented deadlines, no "hackers are attacking you", no threats, no fear beyond what the item says, no flattery beyond the strengths.
 6. Never mention the full report, the paid report, a deeper dive or research areas: code writes that part.
 7. Plain words, addressed to the owner ("your"). The subject is under 90 characters.
-8. Language: ${ko ? 'this is a South Korean company: write in Korean. Names, domains and numbers stay exactly as in the items.' : 'English.'}`;
+8. Ownership. Say "your domain" and tell the owner to renew or fix a domain only when its domain_ownership is "owned". For "used_by" or "unknown", name the domain neutrally and say "if you control it".
+9. Say "independent" or "third-party" only for an item whose sources include "independent". An item with only "first" sources is the company's own word.
+10. No stock sentences: write each line from its own item's facts, never a sentence you could paste under any other item. Plain words for the owner; never say worker, input, pipeline, benchmark, review item or "the data".
+11. Never write a private person's name or a personal phone number. A reviewer is "a reviewer".
+12. Language: ${ko ? 'this is a South Korean company: write in Korean. Names, domains and numbers stay exactly as in the items.' : 'English.'}`;
 }
 
 /** The second pass: read the raw input, the Step 2 items and the checked draft; return the refined parts. */

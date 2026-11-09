@@ -88,7 +88,7 @@ test('rules v2 recheck: a removed item takes its suggestion with it; a missed it
     judge,
     {
       reviews: [{ id: 'c1', verdict: 'remove', problems: ['branch, not HQ'] }],
-      missed: { take_note: [{ id: 'mn1', title: 'Headcount', note: '62 vs 13', evidence: [{ evidence_id: 'LINKEDIN', quoted_text: 'company_size: 13 employees' }] }] },
+      missed: { take_note: [{ id: 'mn1', title: 'Headcount', note: 'LinkedIn counts 13', evidence: [{ evidence_id: 'LINKEDIN', quoted_text: 'company_size: 13 employees' }] }] },
     },
     tidy,
   );
@@ -139,7 +139,7 @@ test('Step 1.5: a transfer lock counts in WHOIS and RDAP spelling; no lock statu
 test('stripMarkdown: formatting marks go, the same characters used as text stay', () => {
   // bold, including bold glued to words or numbers (a space goes in only where two words would join) and bold-italic
   assert.equal(stripMarkdown('services in **accounting**, **auditing** and more'), 'services in accounting, auditing and more');
-  assert.equal(stripMarkdown('35**RM million+** in projects'), '35 RM million+ in projects');
+  assert.equal(stripMarkdown('35**RM million+** in projects'), '35RM million+ in projects');
   assert.equal(stripMarkdown('1,100**+** sites'), '1,100+ sites');
   assert.equal(stripMarkdown('Residential**Jendela Residences, KLGCC**Renovation'), 'Residential Jendela Residences, KLGCC Renovation');
   assert.equal(stripMarkdown('1. 01**Consult**Free consult'), '1. 01 Consult Free consult');
