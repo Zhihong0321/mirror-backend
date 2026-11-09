@@ -78,11 +78,10 @@ test('PL11/13/20: urgent items lead, and the price follows the report country', 
   assert.match(firstCard, /Critical/);
 });
 
-test('PL20: the price shown follows the report country, not a fixed currency', () => {
-  process.env.REPORT_PRICES = JSON.stringify({ MYR: 'RM249', EUR: '€59' });
-  try {
-    assert.ok(text(buildPreview(dive('MY', 'Acme Sdn Bhd'), { price: '$59' })).includes('RM249'));
-    const de = text(buildPreview(dive('DE', 'Nord Werkzeug GmbH'), { price: '$59' }));
-    assert.ok(de.includes('€59') && !de.includes('RM249'));
-  } finally { delete process.env.REPORT_PRICES; }
+test('the price is the one USD value passed in, for every country', () => {
+  for (const [cc, name] of [['MY', 'Acme Sdn Bhd'], ['DE', 'Nord Werkzeug GmbH'], ['KR', 'Hanbit Co']]) {
+    const html = buildPreview(dive(cc, name), { price: '$59' });
+    assert.match(html, /<p class="price" data-price>\$59<\/p>/, cc);
+  }
+  assert.ok(!buildPreview(dive('MY', 'Acme Sdn Bhd'), {}).includes('class="price"'));
 });

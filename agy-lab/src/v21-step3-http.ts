@@ -18,6 +18,7 @@ import crypto from 'node:crypto';
 import type { Lane } from './v21/judge.ts';
 import { missingPage, refineOn, reportPage, writeStep3 } from './v21/step3.ts';
 import * as store from './v21-store.ts';
+import { fullReportPrice } from './reportdb.ts';
 import { phonesIn } from './report-rules/index.ts';
 import { gateReport, gateResult, type GateItem, type GateResult } from './report-rules/gate.ts';
 
@@ -66,7 +67,7 @@ const INDEPENDENT_WORDS = /\b(independent(?:ly)?|third[- ]party|verified by)\b|ë
 
 /** PL25: the free page as it would be served, run through the pre-send gate. The company's own published phones are the ones
  *  found in passages the company wrote itself (party 'first'); any other phone on the page is a hit. */
-export function gateStep3(report: any, s2: any): GateResult {
+export function gateStep3(report: any, s2: any, price: string | null = null): GateResult {
   const country = String(s2?.input?.country ?? '');
   const ev = (e: any[] | undefined) => (e ?? []) as Array<{ quoted_text?: string; party?: string }>;
   const quotes = (e: any[] | undefined) => ev(e).map((x) => String(x.quoted_text ?? ''));
@@ -84,7 +85,7 @@ export function gateStep3(report: any, s2: any): GateResult {
   const byId = new Map(items.map((i) => [i.id, i]));
   // A summary line is checked against the quotes of the items it cites.
   (report.summary ?? []).forEach((l: any, i: number) => items.push({ id: `summary ${i + 1}`, text: String(l.text ?? ''), quotes: (l.cites ?? []).flatMap((id: string) => byId.get(id)?.quotes ?? []) }));
-  const html = reportPage(report, s2);
+  const html = reportPage(report, s2, { price });
   return gateResult(gateReport({
     html, kind: 'v21-free', country, companyPhones: own.flatMap((q) => phonesIn(q, country)), personNames: [], items,
   }));
@@ -104,7 +105,7 @@ async function runStep3(reportId: string, s2row: { id: number; run_id: string; p
     const raw = refineOn() ? ((await store.latestRaw(reportId, 'tidy', s2row.run_id))?.payload ?? null) : null;
     const { report, email } = await writeStep3(s2row.payload, { row_id: s2row.id, run_id: s2row.run_id }, reportUrl, { lanes, test, raw });
     // PL25: a report that fails the gate is stored as 'blocked': the public link serves the holding page and nothing exports the email row.
-    const gate = !test && report.status === 'ok' ? gateStep3(report, s2row.payload) : null;
+    const gate = !test && report.status === 'ok' ? gateStep3(report, s2row.payload, await fullReportPrice()) : null;
     const blocked = gate?.status === 'blocked';
     await store.addRaw(reportId, 3, 'report', runId, gate ? { ...report, gate } : report, test ? 'test' : blocked ? 'blocked' : report.status);
     await store.addRaw(reportId, 3, 'email', runId, gate ? { ...email, gate } : email, test ? 'test' : blocked ? 'blocked' : email.status);
@@ -146,7 +147,7 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
     if (row && held && held.id > row.id) return send(404, missingPage()), true;
     const s2 = row ? await store.rawById(m[1]!, Number(row.payload.step2_row_id)) : null;
     if (!row || !s2) return send(404, missingPage()), true;
-    return send(200, reportPage(row.payload, s2.payload)), true;
+    return send(200, reportPage(row.payload, s2.payload, { price: await fullReportPrice() })), true;
   } catch (err: any) {
     console.error(`[v21 step3] page ${m[1]}: ${err?.message ?? err}`);
     return send(503, missingPage()), true;

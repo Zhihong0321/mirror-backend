@@ -5,7 +5,6 @@ import assert from 'node:assert/strict';
 import { bareIds, deadLinks } from './report-rules/index.ts';
 import { FREE_N, rate, reportPage } from './v21/step3.ts';
 
-process.env.REPORT_PRICES = '{"MYR":"RM249","USD":"$59","EUR":"€55"}';
 const NOW = new Date('2026-11-09T00:00:00Z');
 const inDays = (n: number) => new Date(NOW.getTime() + n * 86400000).toISOString().slice(0, 10);
 
@@ -146,25 +145,24 @@ test('no bare ids in customer text; ids live only in title / data-id; debug mode
 test('one buy target and one upsell block; the old "one more pass" block and "not run yet" are gone, in en and ko', () => {
   const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website')] });
   for (const lang of ['en', 'ko']) {
-    const html = reportPage(report([], lang), s2, { now: NOW });
+    const html = reportPage(report([], lang), s2, { now: NOW, price: "$59" });
     assert.equal((html.match(/id="order"/g) ?? []).length, 1);
     const buy = [...html.matchAll(/<a [^>]*href="#order"/g)].length;
     assert.ok(buy >= 4, `buy buttons ${buy}`);
     assert.deepEqual(deadLinks(html), []);
     assert.ok(!/class="runs?"/.test(html) && !/Not run yet|not run yet|아직 진행 전|One more pass|7 research areas|7개 조사 영역|Deeper dive|심층 조사|\?<\/b>/.test(html), lang);
     // The order block sits inside the "what you get" section and holds the price.
-    assert.match(html, /<section id="inside"[\s\S]*<div class="ask" id="order">[\s\S]*RM249[\s\S]*<\/section>/);
+    assert.match(html, /<section id="inside"[\s\S]*<div class="ask" id="order">[\s\S]*\$59[\s\S]*<\/section>/);
   }
 });
 
-test('price and dates follow the report country; no price when the currency has none', () => {
-  const my = reportPage(report(), make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW });
-  assert.match(my, /<p class="price">RM249<\/p>/);
-  const de = reportPage(report(), make('Germany', { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW });
-  assert.match(de, /<p class="price">€55<\/p>/);
-  assert.ok(!de.includes('RM249') && !de.includes('$59'));
-  const th = reportPage(report(), make('Thailand', { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW });
-  assert.ok(!th.includes('class="price"') && !th.includes('class="pr"') && !/\$\d|RM\d|€\d/.test(text(th)));
+test('price is one USD value for every country, and dates follow the report country', () => {
+  const page = (country: string, price?: string) => reportPage(report(), make(country, { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW, price });
+  for (const c of ['Malaysia', 'Germany', 'Thailand']) assert.match(page(c, '$59'), /<p class="price" data-price>\$59<\/p>/, c);
+  const de = page('Germany', '$59');
+  assert.ok(!de.includes('RM249'));
+  const none = page('Thailand');
+  assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d|RM\d/.test(text(none)));
   // en-DE and en-MY print the 8 Nov 2026 date in their own order / month names.
   assert.match(text(de), /8 (Nov|Nov\.|November) 2026/);
 });

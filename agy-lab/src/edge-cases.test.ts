@@ -12,7 +12,6 @@ import { failureLine } from './divedeeper/gate.ts';
 
 const dir = new URL('./fixtures/edge/', import.meta.url);
 const fixtures = readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(readFileSync(new URL(f, dir), 'utf8')));
-process.env.REPORT_PRICES = '{"MYR":"RM249","USD":"$59","SGD":"S$79","GBP":"£49","AUD":"A$89","NZD":"NZ$99","KRW":"₩79,000"}';
 delete process.env.REPORT_GATE;
 
 test('the edge set covers each shape the owner listed', () => {

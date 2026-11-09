@@ -227,8 +227,8 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     counts.disagree ? `<div><b data-count="disagree">${esc(String(counts.disagree))}</b><span>${esc(plural(counts.disagree, 'place'))} where those sources disagree</span></div>` : '',
     !v2 && counts.gaps ? `<div><b data-count="gaps">${esc(String(counts.gaps))}</b><span>${esc(plural(counts.gaps, 'question'))} they cannot answer</span></div>` : '',
   ].filter(Boolean).join('\n  ');
-  // PL20: the price and its currency come from the report's locale, and fall back to whatever the offer says.
-  const priceLabel = loc.price ?? (offer.price ? String(offer.price) : '');
+  // One price in USD for every country; the caller reads it from the hub DB (fullReportPrice) and passes it in.
+  const priceLabel = offer.price ? String(offer.price) : '';
   // PL1 + PL8 + PL9: the editor's own line is printed like every other, or not at all.
   const wroteHook = picked?.hook ? P(picked.hook) : '';
   const hook = wroteHook && !unprintable(String(picked?.hook ?? ''))
@@ -785,7 +785,7 @@ ${warnSection}
     <div><p class="eyebrow">Order your full report</p><h2>${esc(short)} deserves<br><span class="g">one story, told right.</span></h2>
       <p class="lead" style="margin-top:18px">You have seen what public sources say. The full audit traces how customers reach you, shows what they see and hear, settles every warning sign against the official records, traces the domains and email that carry your name, runs Google’s own test on your website, then reads it all together and hands each department its task list.</p></div>
     <div class="panel">
-      ${priceLabel ? `<p class="price">${esc(priceLabel)}</p>` : ''}
+      ${priceLabel ? `<p class="price" data-price>${esc(priceLabel)}</p>` : ''}
       <ul><li>Contact and reachability: every phone, email and WhatsApp, traced</li><li>How top AI sees your brand, and how search engines index you</li><li>Reviews, news and forum talk about you and your key people</li><li>Credibility: regulator alerts, courts, insolvency and your licences</li><li>Digital assets: your domains, hosting and email</li><li>Website speed and quality: Google’s own test of your homepage</li><li>A full analysis that reads all six parts together</li><li>An action plan by department: website, social media, IT and other, with the work written for you</li><li>Desktop, mobile and A4 PDF</li></ul>
       ${ctaHref !== '#order' ? cta('Get my full report') : `<p>${esc(offer.contact || 'Reply to the message that brought you this preview, and we will start your full audit.')}</p>`}
       <p style="font-size:13px;color:var(--on-dark-2)">This preview is yours to keep.</p>

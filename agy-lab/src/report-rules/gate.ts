@@ -94,7 +94,7 @@ export function gateReport(input: GateInput): GateFailure[] {
   for (const m of new Set(leftoverMarkdown(text).map((x) => x.trim()))) fail('markdown', 'page', `leftover markdown "${m}"`);
   for (const id of new Set(bareIds(text))) fail('bare-id', 'page', `internal id "${id}" is visible`);
   for (const d of deadLinks(input.html)) fail('dead-link', 'page', `${d} points to no section`);
-  for (const c of foreignCurrency(visibleText(input.html.replace(/<(q|blockquote)\b[\s\S]*?<\/\1\s*>/gi, ' ')), input.country)) {
+  for (const c of foreignCurrency(visibleText(input.html.replace(/<(q|blockquote)\b[\s\S]*?<\/\1\s*>/gi, ' ').replace(/<(\w+)\b[^>]*\bdata-price\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')), input.country)) { // the full report price is USD by design
     fail('currency', 'page', `"${c}" is not the currency of ${localeFor(input.country).country} (${localeFor(input.country).currency})`);
   }
 

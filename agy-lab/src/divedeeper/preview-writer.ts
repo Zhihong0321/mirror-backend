@@ -62,7 +62,7 @@ export function startPreviewWorker(): void {
 }
 
 /** What the preview's order page shows; set on the hub, all optional. */
-export const offer = (): Offer => ({ price: process.env.DD_PREVIEW_PRICE, contact: process.env.DD_PREVIEW_CONTACT, order_url: process.env.DD_PREVIEW_ORDER_URL });
+export const offer = async (): Promise<Offer> => ({ price: (await reportdb.fullReportPrice()) ?? undefined, contact: process.env.DD_PREVIEW_CONTACT, order_url: process.env.DD_PREVIEW_ORDER_URL });
 
 /** Company-dives whose preview notes are being written in this process right now. */
 export const editing = new Set<number>();

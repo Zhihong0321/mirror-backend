@@ -1,7 +1,7 @@
 ﻿import { readFileSync } from 'node:fs';
 import { findPhoneNumbersInText, parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
 
-export type Locale = { country: string; currency: string; price: string | null; dateLocale: string };
+export type Locale = { country: string; currency: string; dateLocale: string };
 const currencies: Record<string, string> = JSON.parse(readFileSync(new URL('./country-currencies.json', import.meta.url), 'utf8'));
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 const regions = new Map<string, string>();
@@ -15,9 +15,7 @@ function resolveCountry(country: string): string | undefined { return regions.ge
 export function localeFor(country: string, language: 'en' | 'ko' = 'en'): Locale {
   const code = resolveCountry(country);
   const currency = (code && currencies[code]) || 'USD';
-  let prices: Record<string, string> = {};
-  try { prices = JSON.parse(process.env.REPORT_PRICES ?? '{}'); } catch { /* Missing or invalid configuration. */ }
-  return { country: code || country, currency, price: typeof prices?.[currency] === 'string' ? prices[currency] : null, dateLocale: language === 'ko' ? 'ko-KR' : `en-${code || 'US'}` };
+  return { country: code || country, currency, dateLocale: language === 'ko' ? 'ko-KR' : `en-${code || 'US'}` };
 }
 export function formatMoney(amount: number, loc: Locale): string {
   return new Intl.NumberFormat(loc.dateLocale, { style: 'currency', currency: loc.currency, maximumFractionDigits: 2 }).format(amount);

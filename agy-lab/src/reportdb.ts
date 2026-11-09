@@ -777,12 +777,46 @@ export function migrate(): Promise<void> {
       alter table lead_activity_log add column if not exists lead_type text not null default 'gmap';
       create index if not exists lead_activity_log_reg_idx on lead_activity_log (registration_id);
     `);
+    // Owner settings that reports read (see fullReportPrice). Seeded only when absent, never overwriting the owner's value.
+    await sql(`
+      create table if not exists hub_setting (
+        key text primary key,
+        value text,
+        updated_at timestamptz not null default now()
+      );
+      insert into hub_setting (key, value) values ('full_report_price', '59') on conflict (key) do nothing;
+    `);
   })().catch((err) => {
     migrated = null;
     throw err;
   });
   return migrated;
 }
+
+const settingCache = new Map<string, { at: number; value: string | null }>();
+const SETTING_TTL_MS = 60_000;
+/** One owner setting from hub_setting, cached for 60 s. Null when the row is missing or the database cannot be read. */
+export async function getSetting(key: string): Promise<string | null> {
+  const hit = settingCache.get(key);
+  if (hit && Date.now() - hit.at < SETTING_TTL_MS) return hit.value;
+  try {
+    await migrate();
+    const value = (await sql<{ value: string | null }>(`select value from hub_setting where key = $1`, [key])).rows[0]?.value ?? null;
+    settingCache.set(key, { at: Date.now(), value });
+    return value;
+  } catch { return hit?.value ?? null; }
+}
+/** For tests: forget the cached settings. */
+export function clearSettingCache(): void { settingCache.clear(); }
+
+/** "59" -> "$59", "59.5" -> "$59.50". USD for every country. Null when blank or not a positive number. */
+export function formatUsdPrice(raw: string | null | undefined): string | null {
+  const n = Number(String(raw ?? '').replace(/^\s*\$/, '').trim());
+  if (!String(raw ?? '').trim() || !Number.isFinite(n) || n <= 0) return null;
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
+}
+/** The full report price shown on every free page and preview, e.g. "$59"; null when not set. */
+export async function fullReportPrice(): Promise<string | null> { return formatUsdPrice(await getSetting('full_report_price')); }
 
 export type ReportType = 'business_search' | 'company_research' | 'person_research' | 'ads_research' | 'ads_market' | 'contact_research';
 export type ReportStatus = 'queued' | 'running' | 'completed' | 'partial' | 'failed';

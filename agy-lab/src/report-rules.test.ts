@@ -31,13 +31,11 @@ test('PL11 and PL13 severity and ranking', () => {
   assert.ok(rankKey('critical', 29) > rankKey('critical', 31));
   assert.ok(rankKey('critical', null) > rankKey('high', 0));
 });
-test('PL20 locale and configured prices', () => {
-  const previous = process.env.REPORT_PRICES; process.env.REPORT_PRICES = JSON.stringify({MYR:'RM249',USD:'$59'});
-  try {
-    assert.equal(localeFor('Malaysia').price, 'RM249'); assert.match(formatMoney(35, localeFor('Malaysia')), /RM\s?35/);
-    assert.equal(localeFor('South Korea').currency, 'KRW'); assert.match(formatMoney(35, localeFor('South Korea')), /₩/);
-    assert.equal(localeFor('Singapore').price, null); assert.equal(localeFor('unknown').currency, 'USD');
-  } finally { if (previous === undefined) delete process.env.REPORT_PRICES; else process.env.REPORT_PRICES = previous; }
+test('PL20 locale: currency and date format only, no price', () => {
+  assert.match(formatMoney(35, localeFor('Malaysia')), /RM\s?35/);
+  assert.equal(localeFor('South Korea').currency, 'KRW'); assert.match(formatMoney(35, localeFor('South Korea')), /₩/);
+  assert.equal(localeFor('unknown').currency, 'USD');
+  assert.ok(!('price' in localeFor('Malaysia')));
 });
 test('PL21, PL22 and PL24 lint and plurals', () => {
   assert.deepEqual(bareIds('f1 s3 c2 n4 safe f12x'), ['f1','s3','c2','n4']);

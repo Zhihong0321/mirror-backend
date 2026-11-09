@@ -709,13 +709,13 @@ const two = (n: number) => String(n).padStart(2, '0');
 const noun = (n: number, one: string, many: string) => plural(n, one, many).slice(String(n).length + 1);
 
 /** The free report page: the Step 3 summary, then every Step 2 item in full, then what the full report adds. */
-export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date } = {}): string {
+export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null } = {}): string {
   const now = options.now ?? new Date();
   const ko = report.language === 'ko';
   const t = ko ? P.ko : P.en;
   const c = s2.input.company;
   const loc = localeFor(s2.input.country, ko ? 'ko' : 'en');
-  const price = loc.price;
+  const price = options.price || null; // one USD price for every country, read from the hub DB by the caller
   let date: string;
   try { date = new Date(report.created_at).toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { date = new Date(report.created_at).toISOString().slice(0, 10); }
   type Finding = Step2V2Output['conclusive_findings'][number];
@@ -880,7 +880,7 @@ ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matte
     // What the full report holds, so the buyer knows what the price buys. It ends in the one order block every buy button points to.
     section('inside', 1, `<div class="head"><p class="eyebrow">${esc(t.insideEye)}</p><h2>${esc(t.insideH)}<br><span class="g">${esc(t.insideG)}</span></h2><p class="lead">${esc(t.insideP)}</p></div>
 <div class="gets">${t.gets.map((g, i) => { const n = g.note?.(getsN) ?? ''; return `<div class="get"><span class="rn">${two(i + 1)}</span><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p>${n ? `<p class="free">${esc(n)}</p>` : ''}</div>`; }).join('')}
-<div class="ask" id="order"><h3>${esc(t.cta)}</h3>${price ? `<p class="price">${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></div>`),
+<div class="ask" id="order"><h3>${esc(t.cta)}</h3>${price ? `<p class="price" data-price>${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p>${esc(t.keep)}</p></div></div>`),
   ].join('');
   const callout = counts.records ? `<div class="callout"><b>${esc(t.recH)}</b><span>${esc(t.rec(counts.records))}</span></div>` : '';
 
@@ -905,7 +905,7 @@ ${body}
 <section class="dark band-cta"><div><p class="eyebrow">${esc(t.bandEye)}</p><h2>${esc(t.bandH)}<br><span class="g">${esc(t.bandG)}</span></h2><p class="lead" style="margin-top:16px">${esc(t.bandP)}</p></div><a class="btn" href="#order">${esc(t.cta)}</a></section>
 ${after}
 <footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date))}</span></div>`).join('')}</div></footer>
-${counts.issues ? `<div class="sticky"><div class="l"><span class="n" data-count="issues">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr">${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
+${counts.issues ? `<div class="sticky"><div class="l"><span class="n" data-count="issues">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr" data-price>${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
 </body></html>`;
 }
 

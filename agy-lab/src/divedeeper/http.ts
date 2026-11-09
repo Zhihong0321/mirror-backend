@@ -47,13 +47,13 @@ async function handlePreview(res: http.ServerResponse, publicId: string): Promis
     if (switchOn(dive.options, 'preview2')) {
       await reportdb.sql(`alter table dive_preview add column if not exists notes_v2 jsonb`);
       const saved = (await reportdb.sql(`select notes_v2 from dive_preview where dive_id = $1`, [dive.id])).rows[0] as any;
-      if (saved?.notes_v2 != null) { sendPreview(res, headers, dive, buildPreview(dive, offer(), null, saved.notes_v2), saved.notes_v2.warnings); return; }
+      if (saved?.notes_v2 != null) { sendPreview(res, headers, dive, buildPreview(dive, await offer(), null, saved.notes_v2), saved.notes_v2.warnings); return; }
       if (!editing.has(Number(dive.id))) void writePreviewV2(dive, sourceText(dive));
     } else {
       // The on-demand write has never seen options, so evidence stays off on this path.
       delete dive.options;
       const saved = (await reportdb.sql(`select notes from dive_preview where dive_id = $1`, [dive.id])).rows[0] as any;
-      if (saved) { const picked = saved.notes?.warnings ? saved.notes : null; sendPreview(res, headers, dive, buildPreview(dive, offer(), picked), picked?.warnings); return; }
+      if (saved) { const picked = saved.notes?.warnings ? saved.notes : null; sendPreview(res, headers, dive, buildPreview(dive, await offer(), picked), picked?.warnings); return; }
       if (!editing.has(Number(dive.id))) void writePreviewNotes(dive);
     }
   }

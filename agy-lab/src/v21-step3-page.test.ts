@@ -4,8 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FREE_N, rate, reportPage } from './v21/step3.ts';
 
-// The price comes from the locale config (REPORT_PRICES), never from a hard-coded value.
-process.env.REPORT_PRICES = '{"MYR":"RM249","USD":"$59"}';
+// The price is one USD value read from the hub DB by the caller and passed in as options.price.
 const NOW = new Date('2026-11-09T00:00:00Z');
 const urgencyOf = (topic: string, text: string, confidence: string) => rate({ topic, confidence }, [text], NOW).urg;
 
@@ -77,7 +76,7 @@ test('free page: contradictions beyond the first two are locked whole: no title,
 });
 
 test('free page: an action step is free only when everything it rests on is on the page', () => {
-  const html = reportPage(report, s2);
+  const html = reportPage(report, s2, { price: '$59' });
   assert.equal(FREE_N.suggestions, 2);
   assert.ok(html.includes('FREE-STEP-1') && html.includes('FREE-STEP-2'));
   assert.ok(!html.includes('LOCKED-STEP-3') && !html.includes('LEAK-STEP-4'));
@@ -86,18 +85,18 @@ test('free page: an action step is free only when everything it rests on is on t
   // No invented figures: no task count or page count; the only money on the page is the price.
   const text = html.replace(/<style[\s\S]*?<\/style>/, '');
   assert.ok(!/\b25\b|\b21 tasks|14-page|13-page/.test(text));
-  assert.deepEqual([...new Set(text.match(/RM\d+|\$\d+/g))], ['RM249']);
+  assert.deepEqual([...new Set(text.match(/RM\d+|\$\d+/g))], ['$59']);
 });
 
-test('the price comes from the locale of the report country; none configured means none shown', () => {
-  const html = reportPage(report, s2, { now: NOW });
-  assert.match(html, /<p class="price">RM249<\/p>/);
-  assert.match(html, /<span class="pr">RM249<\/span>/);
-  const us: any = { ...s2, input: { ...s2.input, country: 'United States' } };
-  assert.match(reportPage(report, us, { now: NOW }), /<p class="price">\$59<\/p>/);
-  // A currency with no configured price shows no price at all, not a dollar fallback.
-  const jp: any = { ...s2, input: { ...s2.input, country: 'Japan' } };
-  const none = reportPage(report, jp, { now: NOW });
+test('one USD price for every country; no price passed means none shown', () => {
+  for (const country of ['Malaysia', 'South Korea', 'United States']) {
+    const c: any = { ...s2, input: { ...s2.input, country } };
+    const html = reportPage(report, c, { now: NOW, price: '$59' });
+    assert.match(html, /<p class="price" data-price>\$59<\/p>/, country);
+    assert.match(html, /<span class="pr" data-price>\$59<\/span>/, country);
+    assert.ok(!html.includes('RM249') && !html.includes('₩'), country);
+  }
+  const none = reportPage(report, s2, { now: NOW });
   assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d|RM\d/.test(none.replace(/<style[\s\S]*?<\/style>/, '')));
 });
 
