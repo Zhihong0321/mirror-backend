@@ -201,6 +201,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `Report:\n- "spelling": misspelled English words.\n- "grammar": grammatical errors.\n- "wording": unclear, awkward or unprofessional wording a customer would notice (not mere style preferences).\n- "outdated": content that looks stale as of today (old years, expired offers, past events written as upcoming, old copyright).\n- "inconsistency": statements that contradict each other on this page or contradict the known facts.\n` +
     `Do NOT report: Malay or Chinese words, brand and product names, model codes, units (kWp, MWp), British vs American spelling, ALL-CAPS headings, or missing punctuation in menus and button labels.\n` +
     `"quote" must be copied character-for-character from the page text (3 to 25 words), so it can be found with a text search.\n` +
+    `Whenever you mention a domain, write "the domain X" and give any fix as "if you control it, ..."; say "your domain" only when the facts above say the company owns it.
+` +
     `Also list "claims": short factual claims on the page that carry a number or date (projects done, capacity, staff, offices, years, warranty, phone numbers, addresses).\n` +
     `Return JSON only: {"issues":[{"type":"spelling|grammar|wording|outdated|inconsistency","quote":"...","fix":"suggested correction","why":"one short sentence","severity":"high|medium|low"}],"claims":["..."]}\n\n` +
     `PAGE TEXT:\n${text}`;
@@ -237,7 +239,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
         title: `${String(it.type ?? 'issue')}: "${quote.slice(0, 90)}"`,
         detail: `${it.why ?? ''}${it.fix ? ` Suggested: "${it.fix}".` : ''}`.trim(),
         severity: ['high', 'medium', 'low'].includes(it.severity) ? it.severity : 'low',
-        source: j.page.finalUrl, checked_at: ctx.now(), evidence: quote, type: it.type, fix: it.fix ?? null, quote_on_page: onPage,
+        source: j.page.finalUrl, checked_at: ctx.now(), party: 'first', evidence: quote, type: it.type, fix: it.fix ?? null, quote_on_page: onPage,
       };
       if (onPage) findings.push(f); else dropped.push(f);
     }
@@ -249,7 +251,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const answer = await ctx.llm(
       `Company: ${dive.company}. Today is ${today}. Known facts:\n${facts}\n\nThese are the factual claims found on each page of its website(s). ` +
       `Find claims that CONTRADICT each other across pages or domains (different project counts, capacities, staff numbers, office counts, warranty terms, phone numbers, addresses, founding dates), or contradict the known facts. ` +
-      `Only real conflicts, not the same thing worded differently. Return JSON only: {"issues":[{"quote_a":"claim text as listed","url_a":"...","quote_b":"claim text as listed","url_b":"...","why":"one sentence","severity":"high|medium|low"}]}\n\n${list}`,
+      `Only real conflicts, not the same thing worded differently. Whenever you mention a domain, write "the domain X" and give any fix as "if you control it, ..."; say "your domain" only when the facts above say the company owns it. Return JSON only: {"issues":[{"quote_a":"claim text as listed","url_a":"...","quote_b":"claim text as listed","url_b":"...","why":"one sentence","severity":"high|medium|low"}]}\n\n${list}`,
       { system },
     );
     const parsed = ctx.parseJson<any>(answer);
@@ -258,7 +260,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       findings.push({
         title: `inconsistency across pages: "${String(it.quote_a).slice(0, 70)}" vs "${String(it.quote_b).slice(0, 70)}"`,
         detail: `${it.why ?? ''} (${it.url_a} vs ${it.url_b})`, severity: ['high', 'medium', 'low'].includes(it.severity) ? it.severity : 'medium',
-        source: it.url_a ?? null, checked_at: ctx.now(), evidence: `${it.quote_a} | ${it.quote_b}`, type: 'inconsistency-cross', quote_on_page: null,
+        source: it.url_a ?? null, checked_at: ctx.now(), party: 'first', evidence: `${it.quote_a} | ${it.quote_b}`, type: 'inconsistency-cross', quote_on_page: null,
       });
     }
   }

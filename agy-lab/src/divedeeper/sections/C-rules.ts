@@ -252,7 +252,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const todayMs = Date.now();
   const year = new Date().getFullYear();
   const findings: Finding[] = [];
-  const add = (check: string, f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, check, checked_at: ctx.now() } as Finding);
+  // PL3: these checks are about the official domains. Neither lane reads the registrant, so a domain is 'used_by' (the company uses it), never 'owned'.
+  // PL2: everything here is read from the company's own site, so the source is first-party.
+  const DOMAIN_CHECKS = new Set(['defacement', 'redirect-domain', 'ssl', 'https-redirect']);
+  const add = (check: string, f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, check, checked_at: ctx.now(), party: 'first', ...(DOMAIN_CHECKS.has(check) ? { ownership: 'used_by' } : {}), ...(check === 'ssl' && f.evidence && /^\d{4}-/.test(f.evidence) ? { expires_at: f.evidence } : {}) } as Finding);
   ctx.meter.other.languagetool = 0;
   ctx.meter.other.languagetool_bytes = 0;
   ctx.meter.other.tls = 0;

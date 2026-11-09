@@ -321,7 +321,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const year = new Date().getFullYear();
   const audited = ctx.v21 && dive.v21?.assets?.site_audit?.status === 'done';
   const findings: Finding[] = [];
-  const add = (check: string, f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, check, checked_at: ctx.now() } as Finding);
+  // PL3: these checks are about the official domains. Neither lane reads the registrant, so a domain is 'used_by' (the company uses it), never 'owned'.
+  // PL2: everything here is read from the company's own site, so the source is first-party.
+  const DOMAIN_CHECKS = new Set(['defacement', 'redirect-domain', 'ssl', 'https-redirect']);
+  const add = (check: string, f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, check, checked_at: ctx.now(), party: 'first', ...(DOMAIN_CHECKS.has(check) ? { ownership: 'used_by' } : {}), ...(check === 'ssl' && f.evidence && /^\d{4}-/.test(f.evidence) ? { expires_at: f.evidence } : {}) } as Finding);
   ctx.meter.other.tls = 0;
   ctx.meter.other.dns = 0;
   ctx.meter.other.retest = 0;
@@ -333,8 +336,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   // Defaced sites: one alert each, then they are left out of everything else.
   for (const s of allSites.filter((x) => x.defaced)) {
     add('defacement', {
-      title: `${s.domain} is not showing your website: it serves someone else's content (possible hijack)`,
-      detail: `The homepage of ${s.domain}, listed as one of your official domains, now shows: ${s.defaced!.signals.join('; ')}. Customers and Google who reach this domain see this instead of ${dive.company}. Check the domain registration, DNS and hosting, or stop listing the domain.`,
+      title: `${s.domain} is not showing the company's website: it serves someone else's content (possible hijack)`,
+      detail: `The homepage of ${s.domain}, listed as one of your official domains, now shows: ${s.defaced!.signals.join('; ')}. Customers and Google who reach this domain see this instead of ${dive.company}. If you control the domain, check its registration, DNS and hosting; otherwise stop listing it as official.`,
       severity: 'high', source: s.home, evidence: s.defaced!.title,
     });
   }

@@ -221,6 +221,66 @@ async function emailReputation(domain: string, mx: string[]) {
 
 const SOCIAL = /^(?:[a-z]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twitter|xiaohongshu|threads)\.com$/i;
 
+// ---------------------------------------------------------------- ownership, wording, merging (PL3, PL5, PL14, PL2)
+
+/** owned: the registrant is the company. used_by: the company uses the domain but the registrant is someone else or hidden. unknown: no tie shown. */
+export type Ownership = 'owned' | 'used_by' | 'unknown';
+const LEGAL_WORDS = new Set(['sdn', 'bhd', 'berhad', 'ltd', 'limited', 'llc', 'inc', 'incorporated', 'corp', 'corporation', 'plc', 'plt', 'pte', 'pty', 'gmbh', 'ag', 'sa', 'srl', 'bv', 'oy', 'ab', 'co', 'company', 'the', 'and', 'for', 'kk', 'pvt', 'private', 'public']);
+const nameTokens = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, ' ').split(' ').filter((t) => t.length >= 3 && !LEGAL_WORDS.has(t));
+/** Decided from data the lane already has: the registrant organisation against the company's names, and whether the company presents the domain as its own. */
+export function ownershipOf(registrant: string | null | undefined, companyNames: string[], linked: boolean): Ownership {
+  const reg = new Set(nameTokens(registrant ?? ''));
+  if (reg.size) {
+    const same = companyNames.map(nameTokens).some((c) => c.length && (c.every((t) => reg.has(t)) || [...reg].every((t) => c.includes(t))));
+    if (same) return 'owned';
+  }
+  return linked ? 'used_by' : 'unknown';
+}
+/** The weakest ownership of a group: a sentence about several domains may say "yours" only if all are. */
+export function weakest(list: Ownership[]): Ownership {
+  return list.length && list.every((o) => o === 'owned') ? 'owned' : list.includes('used_by') ? 'used_by' : 'unknown';
+}
+/** Fixes are written as orders for the owner; anyone else gets them as "if you control it". */
+export function fixFor(own: Ownership, fix: string, many = false): string {
+  return own === 'owned' ? fix : `If you control ${many ? 'them' : 'it'}, ${fix[0].toLowerCase()}${fix.slice(1)}`;
+}
+/** PL2: who wrote the source. Registers, RDAP/WHOIS and blacklists are independent; the company's own DNS and site are first-party. */
+const PARTY: Record<string, 'first' | 'independent'> = {
+  unregistered: 'independent', expiry: 'independent', registrant: 'independent', lookalike: 'independent', 'email-blacklist': 'independent', inventory: 'independent',
+};
+
+type Row = { domain: string; ownership: Ownership; text: string; source: string | null; evidence?: string; expires_at?: string };
+const SEV = { info: 0, low: 1, medium: 2, high: 3 } as const;
+/** PL14: the same failed check on several domains becomes one finding with one evidence row per domain. */
+export function mergeByCheck(list: Finding[]): Finding[] {
+  const keyOf = (f: Finding) => `${f.check}|${f.sub ?? ''}`;
+  const groups = new Map<string, Finding[]>();
+  for (const f of list) if (f.label && f.domain) (groups.get(keyOf(f)) ?? groups.set(keyOf(f), []).get(keyOf(f))!).push(f);
+  const row = (f: Finding): Row => ({ domain: String(f.domain), ownership: f.ownership as Ownership, text: f.title, source: f.source, ...(f.evidence ? { evidence: f.evidence } : {}), ...(f.expires_at ? { expires_at: String(f.expires_at) } : {}) });
+  const out: Finding[] = [];
+  const done = new Set<string>();
+  for (const f of list) {
+    const g = f.label && f.domain ? groups.get(keyOf(f))! : null;
+    if (!g || new Set(g.map((x) => x.domain)).size < 2) {
+      if (g) { const { label, what, fix, sub, ...rest } = f; out.push({ ...rest, evidence_rows: [row(f)] } as Finding); } else out.push(f);
+      continue;
+    }
+    if (done.has(keyOf(f))) continue;
+    done.add(keyOf(f));
+    const domains = [...new Set(g.map((x) => String(x.domain)))];
+    const own = weakest(g.map((x) => x.ownership as Ownership));
+    const dates = g.map((x) => x.expires_at).filter(Boolean).map(String).sort();
+    out.push({
+      title: `${f.label} on ${domains.length} domains: ${domains.join(', ')}`,
+      detail: `${f.what}${f.fix ? ' ' + fixFor(own, String(f.fix), true) : ''}`,
+      severity: g.reduce((m, x) => (SEV[x.severity] > SEV[m] ? x.severity : m), 'info' as Finding['severity']),
+      source: f.source, checked_at: f.checked_at, check: f.check, domain: domains[0], domains, ownership: own,
+      ...(dates.length ? { expires_at: dates[0] } : {}), evidence_rows: g.map(row),
+    } as Finding);
+  }
+  return out;
+}
+
 export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; notes: Record<string, unknown> }> {
   const r = dive.result ?? {};
   const N = nameOf(dive);
@@ -228,6 +288,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, checked_at: ctx.now() } as Finding);
   const brand = N.brand.length >= 4 ? N.brand : '';
+  const companyNames = [N.legal, N.bare, N.short, ...(r.identity?.aliases ?? [])].map(String).filter(Boolean);
 
   // ---- 1. Which domains are the company's. ----
   const why = new Map<string, Set<string>>();
@@ -269,43 +330,51 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     }
     const cert = prior ? (prior.tls ? { ok: prior.tls.valid, issuer: prior.tls.issuer ?? null, validTo: prior.tls.expires_at ?? null, daysLeft: prior.tls.days_remaining ?? null, error: prior.tls.error } : null)
       : dns.a.length ? await certOf(d) : null;
-    return { domain: d, why: [...why.get(d)!], reg, dns, host, site, cert, prior };
+    const own = ownershipOf(reg.org, companyNames, [...why.get(d)!].some((w) => w !== 'named in public sources'));
+    return { domain: d, why: [...why.get(d)!], reg, dns, host, site, cert, prior, own };
   }));
 
   // ---- 3. Findings, domain by domain. ----
   const now = Date.now();
+  const ownOf = new Map(assets.map((a) => [a.domain, a.own] as const));
+  type MkOpts = { label: string; title: string; what: string; fix?: string; severity: Finding['severity']; source: string | null; evidence?: string; expires_at?: string; sub?: string };
+  // One place builds a domain finding: `what` is the shared problem, `fix` the owner's order (reworded unless the domain is proven theirs).
+  const mkd = (domain: string, own: Ownership, check: string, o: MkOpts) =>
+    add({ title: o.title, detail: `${o.what}${o.fix ? ' ' + fixFor(own, o.fix) : ''}`, severity: o.severity, source: o.source, check, domain, ownership: own, label: o.label, what: o.what, fix: o.fix, sub: o.sub, evidence: o.evidence, expires_at: o.expires_at });
   for (const a of assets) {
     const d = a.domain;
     const used = a.why.join(', ');
     const src = a.reg.source === 'MYNIC whois' ? `https://whois.mynic.my/` : `https://lookup.icann.org/en/lookup?name=${d}`;
+    const mk = (check: string, o: MkOpts) => mkd(d, a.own, check, o);
     // Step 1.5 already reported these domain checks. Keep its answers in the table.
     if (!a.prior) {
       if (a.reg.error === 'not registered') {
-        add({ title: `${d} is not registered to anyone`, detail: `It is ${used}, yet nobody holds the domain. Anyone can register it today and receive your customers' emails or show them their own page.`, severity: 'high', source: src, check: 'unregistered', domain: d });
+        mk('unregistered', { label: 'Domain not registered to anyone', title: `${d} is not registered to anyone`, what: `It is ${used}, yet nobody holds the domain. Anyone can register it today and receive emails sent to it or show visitors their own page.`, severity: 'high', source: src });
         continue;
       }
       const left = a.reg.expires ? Math.floor((Date.parse(a.reg.expires) - now) / day) : null;
-      if (left !== null && left < 0) add({ title: `${d} expired on ${a.reg.expires!.slice(0, 10)}`, detail: `The registration has run out. Renew it before the registrar releases it to someone else.`, severity: 'high', source: src, check: 'expiry', domain: d });
-      else if (left !== null && left <= 90) add({ title: `${d} expires in ${left} days (${a.reg.expires!.slice(0, 10)})`, detail: `If the renewal fails (an old card, an ex-staff mailbox getting the reminder), the site and every email address on it stop working. Turn on auto-renew and check who receives the reminders.`, severity: left <= 30 ? 'high' : 'medium', source: src, check: 'expiry', domain: d });
-      if (a.reg.org && brand && !a.reg.org.toLowerCase().includes(brand)) add({ title: `${d} is registered to "${a.reg.org}", not to your company`, detail: `Whoever is the registrant controls the domain. If that is a web designer, an agency or a former staff member, you need their cooperation to move or renew it. Transfer it to the company's own name.`, severity: 'medium', source: src, check: 'registrant', domain: d });
-      if (!a.dns.a.length && !a.dns.mx.length) add({ title: `${d} does not point anywhere`, detail: `It is ${used}, but it has no website and no email server. A customer typing it or emailing it reaches nothing.`, severity: a.why.includes('official site') || a.why.includes('used for email') ? 'high' : 'medium', source: src, check: 'dns', domain: d });
+      const iso = a.reg.expires && !Number.isNaN(Date.parse(a.reg.expires)) ? new Date(a.reg.expires).toISOString() : undefined;
+      if (left !== null && left < 0) mk('expiry', { label: 'Registration expired', title: `${d} expired on ${a.reg.expires!.slice(0, 10)}`, what: 'The registration has run out and the registrar may release it to someone else.', fix: 'Renew it before the registrar releases it.', severity: 'high', source: src, expires_at: iso });
+      else if (left !== null && left <= 90) mk('expiry', { label: 'Registration expires soon', title: `${d} expires in ${left} days (${a.reg.expires!.slice(0, 10)})`, what: 'If the renewal fails (an old card, an ex-staff mailbox getting the reminder), the site and every email address on it stop working.', fix: 'Turn on auto-renew and check who receives the reminders.', severity: left <= 30 ? 'high' : 'medium', source: src, expires_at: iso });
+      if (a.reg.org && a.own !== 'owned') mk('registrant', { label: 'Registered to another party', title: `${d} is registered to "${a.reg.org}", not to your company`, what: 'Whoever is the registrant controls the domain. If that is a web designer, an agency or a former staff member, moving or renewing it needs their cooperation.', fix: "Transfer it to the company's own name.", severity: 'medium', source: src });
+      if (!a.dns.a.length && !a.dns.mx.length) mk('dns', { label: 'Domain does not point anywhere', title: `${d} does not point anywhere`, what: `It is ${used}, but it has no website and no email server. A customer typing it or emailing it reaches nothing.`, severity: a.why.includes('official site') || a.why.includes('used for email') ? 'high' : 'medium', source: src });
       if (a.why.includes('used for email')) {
-        if (!a.dns.mx.length) add({ title: `Email to @${d} cannot be delivered`, detail: `${d} has no mail server (MX) record, so messages customers send to your published address bounce.`, severity: 'high', source: src, check: 'mx', domain: d });
-        if (!a.dns.spf) add({ title: `No SPF record on ${d}`, detail: `Mail servers cannot tell which servers may send email as @${d}, so your real emails land in spam more often and fakes get through.`, severity: 'medium', source: src, check: 'spf', domain: d });
-        if (!a.dns.dmarc) add({ title: `Anyone can send email that looks like it came from @${d}`, detail: `${d} has no DMARC record. Scammers can send fake invoices or payment requests from your address and nothing tells the receiving bank or customer to reject them.`, severity: 'medium', source: src, check: 'dmarc', domain: d });
-        else if (/p=none/i.test(a.dns.dmarc)) add({ title: `Your DMARC on ${d} only watches, it does not block fakes`, detail: `The record says p=none, so fake emails from @${d} are still delivered. Move to p=quarantine once your own senders pass.`, severity: 'low', source: src, check: 'dmarc', domain: d, evidence: a.dns.dmarc });
+        if (!a.dns.mx.length) mk('mx', { label: 'Email cannot be delivered', title: `Email to @${d} cannot be delivered`, what: 'The domain has no mail server (MX) record, so messages customers send to its published address bounce.', severity: 'high', source: src });
+        if (!a.dns.spf) mk('spf', { label: 'No SPF record', title: `No SPF record on ${d}`, what: 'Mail servers cannot tell which servers may send email from this domain, so real emails land in spam more often and fakes get through.', fix: 'Publish an SPF record that lists the servers you send from.', severity: 'medium', source: src });
+        if (!a.dns.dmarc) mk('dmarc', { label: 'No DMARC record', title: `Anyone can send email that looks like it came from @${d}`, what: 'There is no DMARC record. Scammers can send fake invoices or payment requests from that address and nothing tells the receiving bank or customer to reject them.', fix: 'Set a DMARC record (start with p=none, then move to quarantine).', severity: 'medium', source: src });
+        else if (/p=none/i.test(a.dns.dmarc)) mk('dmarc', { label: 'DMARC only watches', title: `The DMARC on ${d} only watches, it does not block fakes`, what: 'The record says p=none, so fake emails from the domain are still delivered.', fix: 'Move to p=quarantine once your own senders pass.', severity: 'low', source: src, evidence: a.dns.dmarc });
       }
     }
     if (a.site) {
-      if (a.site.parked) add({ title: `${d} shows a parked or for-sale page`, detail: `Visitors see "${a.site.title || 'a placeholder'}" instead of your business.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/`, check: 'parked', domain: d });
+      if (a.site.parked) mk('parked', { label: 'Parked or for-sale page', title: `${d} shows a parked or for-sale page`, what: `Visitors see "${a.site.title || 'a placeholder'}" instead of the business.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/` });
       else if (ctx.v21 && (a.site.status === 0 || a.site.error)) ctx.warn(`${d}: worker could not read the site (${a.site.error ?? 'no answer'})`);
-      else if (a.site.status >= 400 || a.site.status === 0) add({ title: `${d} does not open`, detail: `It is ${used}, and a customer who types it ${a.site.status ? `gets an error page (${a.site.status})` : 'waits for a server that never answers'}.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/`, check: 'site-down', domain: d });
-      if (!a.prior && !a.site.https && a.site.status) add({ title: `${d} only opens without https`, detail: `Browsers mark the site "Not secure", which makes customers hesitate to fill in a form.`, severity: 'medium', source: `http://${d}/`, check: 'https', domain: d });
-      if (a.site.cms === 'WordPress' && a.site.version && Number(a.site.version.split('.')[0]) < 6) add({ title: `${d} runs WordPress ${a.site.version}, several years out of date`, detail: `Old WordPress versions have known security holes; hacked small-business sites are often turned into gambling or spam pages. Update WordPress and its plugins, or ask who maintains the site.`, severity: 'medium', source: `https://${d}/`, check: 'cms', domain: d });
+      else if (a.site.status >= 400 || a.site.status === 0) mk('site-down', { label: 'Site does not open', title: `${d} does not open`, what: `It is ${used}, and a customer who types it ${a.site.status ? `gets an error page (${a.site.status})` : 'waits for a server that never answers'}.`, severity: a.why.includes('official site') ? 'high' : 'medium', source: `https://${d}/` });
+      if (!a.prior && !a.site.https && a.site.status) mk('https', { label: 'Only opens without https', title: `${d} only opens without https`, what: 'Browsers mark the site "Not secure", which makes customers hesitate to fill in a form.', severity: 'medium', source: `http://${d}/` });
+      if (a.site.cms === 'WordPress' && a.site.version && Number(a.site.version.split('.')[0]) < 6) mk('cms', { label: 'Out-of-date WordPress', title: `${d} runs WordPress ${a.site.version}, several years out of date`, what: 'Old WordPress versions have known security holes; hacked small-business sites are often turned into gambling or spam pages.', fix: 'Update WordPress and its plugins, or ask who maintains the site.', severity: 'medium', source: `https://${d}/` });
     }
     if (!a.prior && a.cert && a.site?.https && a.site.status) {
-      if (!a.cert.ok) add({ title: `The security certificate on ${d} is not valid`, detail: `Browsers show a warning page (${a.cert.error}). Most customers turn back at that warning.`, severity: 'high', source: `https://${d}/`, check: 'cert', domain: d });
-      else if (a.cert.daysLeft !== null && a.cert.daysLeft <= 14) add({ title: `The security certificate on ${d} runs out in ${a.cert.daysLeft} days`, detail: `Issued by ${a.cert.issuer ?? 'unknown'}. If it does not renew by itself, visitors get a warning page.`, severity: 'medium', source: `https://${d}/`, check: 'cert', domain: d });
+      if (!a.cert.ok) mk('cert', { label: 'Invalid security certificate', title: `The security certificate on ${d} is not valid`, what: `Browsers show a warning page (${a.cert.error}). Most customers turn back at that warning.`, severity: 'high', source: `https://${d}/` });
+      else if (a.cert.daysLeft !== null && a.cert.daysLeft <= 14) mk('cert', { label: 'Security certificate about to run out', title: `The security certificate on ${d} runs out in ${a.cert.daysLeft} days`, what: `Issued by ${a.cert.issuer ?? 'unknown'}. If it does not renew by itself, visitors get a warning page.`, severity: 'medium', source: `https://${d}/`, expires_at: a.cert.validTo ?? undefined });
     }
   }
 
@@ -321,15 +390,16 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     for (const bl of BLACKLISTS) {
       const l = e.lists[bl.id];
       if (!working.has(bl.id)) { l.checked = 0; continue; }
-      if (l.listed.length) add({ title: `Your mail server for @${e.domain} is on the ${bl.name} spam blacklist`, detail: `${l.listed.join(', ')} (${e.mx.join(', ')}) is listed. Mail systems that use ${bl.name} reject or junk email from that server, so your quotes and invoices may never arrive. If the server is your web host's shared mail server, another customer of the host may have caused it; the fix sits with whoever runs the server.`, severity: 'high', source: bl.id === 'barracuda' ? `https://www.barracudacentral.org/lookups/lookup-reputation` : `https://www.spamcop.net/bl.shtml?${l.listed[0]}`, check: 'email-blacklist', domain: e.domain });
+      if (l.listed.length) mkd(e.domain, ownOf.get(e.domain) ?? 'unknown', 'email-blacklist', { sub: bl.id, label: `Mail server on the ${bl.name} spam blacklist`, title: `The mail server for @${e.domain} is on the ${bl.name} spam blacklist`, what: `${l.listed.join(', ')} (${e.mx.join(', ')}) is listed. Mail systems that use ${bl.name} reject or junk email from that server, so quotes and invoices sent from it may never arrive. If it is a web host's shared mail server, another customer of the host may have caused it.`, fix: 'Ask whoever runs the server to get it delisted.', severity: 'high', source: bl.id === 'barracuda' ? `https://www.barracudacentral.org/lookups/lookup-reputation` : `https://www.spamcop.net/bl.shtml?${l.listed[0]}` });
     }
-    if (e.spf.records > 1) add({ title: `@${e.domain} has ${e.spf.records} SPF records, so its SPF check always fails`, detail: 'A domain may have only one SPF record. With two, receiving mail systems treat the check as broken, and your mail looks unverified.', severity: 'high', source: null, check: 'email-spf', domain: e.domain });
-    if (e.spf.all === '+all') add({ title: `The SPF record for @${e.domain} lets any server in the world send as you`, detail: `It ends in "+all". Replace it with "~all" or "-all" after listing the servers you really use.`, severity: 'high', source: null, check: 'email-spf', domain: e.domain, evidence: e.spf.record });
-    if (e.spf.lookups > 10) add({ title: `The SPF record for @${e.domain} is over the limit receivers accept`, detail: `Checking it takes ${e.spf.lookups} DNS lookups; the limit is 10, after which receivers count the check as failed. Remove services you no longer send from.`, severity: 'medium', source: null, check: 'email-spf', domain: e.domain, evidence: e.spf.record });
-    if (!e.dkim.length) add({ title: `No DKIM signing key found for @${e.domain} on the usual names`, detail: 'DKIM proves an email really came from you. Gmail and Yahoo have required it for bulk senders since 2024, and mail without it goes to spam more often. We looked where Google, Microsoft and the common hosts put the key; a key under an unusual name would not show here.', severity: 'low', source: null, check: 'email-dkim', domain: e.domain });
+    const own = ownOf.get(e.domain) ?? 'unknown';
+    if (e.spf.records > 1) mkd(e.domain, own, 'email-spf', { label: 'More than one SPF record', title: `@${e.domain} has ${e.spf.records} SPF records, so its SPF check always fails`, what: 'A domain may have only one SPF record. With two, receiving mail systems treat the check as broken, and mail from it looks unverified.', fix: 'Merge them into one record.', severity: 'high', source: null });
+    if (e.spf.all === '+all') mkd(e.domain, own, 'email-spf', { label: 'SPF lets any server send', title: `The SPF record for @${e.domain} lets any server in the world send as that domain`, what: 'It ends in "+all".', fix: 'Replace it with "~all" or "-all" after listing the servers you really use.', severity: 'high', source: null, evidence: e.spf.record ?? undefined });
+    if (e.spf.lookups > 10) mkd(e.domain, own, 'email-spf', { label: 'SPF over the lookup limit', title: `The SPF record for @${e.domain} is over the limit receivers accept`, what: `Checking it takes ${e.spf.lookups} DNS lookups; the limit is 10, after which receivers count the check as failed.`, fix: 'Remove services you no longer send from.', severity: 'medium', source: null, evidence: e.spf.record ?? undefined });
+    if (!e.dkim.length) mkd(e.domain, own, 'email-dkim', { label: 'No DKIM signing key found', title: `No DKIM signing key found for @${e.domain} on the usual names`, what: 'DKIM proves an email really came from the sender. Gmail and Yahoo have required it for bulk senders since 2024, and mail without it goes to spam more often. We looked where Google, Microsoft and the common hosts put the key; a key under an unusual name would not show here.', severity: 'low', source: null });
   }
   const cleanLists = email.every((e) => BLACKLISTS.every((bl) => !e.lists[bl.id].listed.length));
-  if (email.length) add({ title: `${email.length} email domain${email.length === 1 ? '' : 's'} checked: ${cleanLists ? 'no mail server on the spam blacklists we can check' : 'a mail server is blacklisted'}`, detail: `${email.map((e) => `@${e.domain}: ${e.ips.length} mail server address${e.ips.length === 1 ? '' : 'es'}, SPF ${e.spf.record ? (e.spf.records > 1 ? 'duplicated' : 'set') : 'missing'}, DKIM ${e.dkim.length ? 'found' : 'not found'}, DMARC ${e.dmarc ?? 'missing'}`).join('; ')}. Checked against ${BLACKLISTS.filter((b) => working.has(b.id)).map((b) => b.name).join(' and ') || 'no list (none answered)'}; Spamhaus, the list most mail systems use, needs a paid licence and was not checked.`, severity: 'info', source: null, check: 'inventory' });
+  if (email.length) add({ title: `${email.length} email domain${email.length === 1 ? '' : 's'} checked: ${cleanLists ? 'no mail server on the spam blacklists we can check' : 'a mail server is blacklisted'}`, detail: `${email.map((e) => `@${e.domain}: ${e.ips.length} mail server address${e.ips.length === 1 ? '' : 'es'}, SPF ${e.spf.record ? (e.spf.records > 1 ? 'duplicated' : 'set') : 'missing'}, DKIM ${e.dkim.length ? 'found' : 'not found'}, DMARC ${e.dmarc ?? 'missing'}`).join('; ')}. Checked against ${BLACKLISTS.filter((b) => working.has(b.id)).map((b) => b.name).join(' and ') || 'no list (none answered)'}; Spamhaus, the list most mail systems use, needs a paid licence and was not checked.`, severity: 'info', source: null, check: 'inventory', ownership: weakest(email.map((e) => ownOf.get(e.domain) ?? 'unknown')) });
 
   // ---- 4. Subdomains from the public certificate logs. ----
   const subs: any[] = [];
@@ -357,18 +427,18 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       }));
       for (const s of live.filter((x) => x.a.length).slice(0, 10)) {
         const p = await ctx.page(`https://${s.name}/`, { headers: { accept: 'text/html' } });
-        subs.push({ name: s.name, status: p.status, title: p.html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '', error: p.error });
+        subs.push({ parent: d, name: s.name, status: p.status, title: p.html.match(/<title[^>]*>([^<]*)/i)?.[1]?.trim() ?? '', error: p.error });
       }
-      for (const s of live.filter((x) => !x.a.length)) subs.push({ name: s.name, status: null, title: '', resolves: false });
+      for (const s of live.filter((x) => !x.a.length)) subs.push({ parent: d, name: s.name, status: null, title: '', resolves: false });
     } catch (e) {
       c.done({ ok: false, note: (e as Error).message.slice(0, 200) });
       ctx.warn(`crt.sh ${d} failed: ${(e as Error).message}`);
     }
   }
   const forgotten = subs.filter((s) => s.status && /^(dev|test|staging|stage|old|beta|demo|uat|new|temp|backup)[.-]/.test(s.name));
-  for (const s of forgotten) add({ title: `A test or old copy of your site is open to the public: ${s.name}`, detail: `It answers ${s.status}${s.title ? ` with "${s.title}"` : ''}. Forgotten copies are rarely updated and are how small-business sites get hacked; they can also show old prices and details. Take it down or put it behind a password.`, severity: 'medium', source: `https://${s.name}/`, check: 'subdomain' });
+  for (const s of forgotten) add({ title: `A test or old copy of a site is open to the public: ${s.name}`, detail: `It answers ${s.status}${s.title ? ` with "${s.title}"` : ''}. Forgotten copies are rarely updated and are how small-business sites get hacked; they can also show old prices and details. ${fixFor(ownOf.get(s.parent) ?? 'unknown', 'Take it down or put it behind a password.')}`, severity: 'medium', source: `https://${s.name}/`, check: 'subdomain', ownership: ownOf.get(s.parent) ?? 'unknown' });
   const broken = subs.filter((s) => s.status && s.status >= 500);
-  if (broken.length) add({ title: `${broken.length} of your subdomains answer with a server error`, detail: broken.map((s) => s.name).join(', ') + '.', severity: 'low', source: `https://crt.sh/?q=%25.${N.domains[0]}`, check: 'subdomain' });
+  if (broken.length) add({ title: `${broken.length} subdomain${broken.length === 1 ? '' : 's'} of the official domain${N.domains.length === 1 ? '' : 's'} answer${broken.length === 1 ? 's' : ''} with a server error`, detail: broken.map((s) => s.name).join(', ') + '.', severity: 'low', source: `https://crt.sh/?q=%25.${N.domains[0]}`, check: 'subdomain', ownership: weakest(broken.map((s) => ownOf.get(s.parent) ?? 'unknown')) });
 
   // ---- 5. Lookalike domains: the brand word on the usual endings. ----
   const lookalikes: any[] = [];
@@ -382,9 +452,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       lookalikes.push({ domain: d, registered: reg.error !== 'not registered', registrar: reg.registrar, created: reg.created, org: reg.org, live: a.length > 0, title });
     }
     const theirs = lookalikes.filter((x) => x.registered && x.live);
-    for (const x of theirs) add({ title: `${x.domain} belongs to someone else${x.title ? `: "${x.title}"` : ''}`, detail: `A customer who guesses your address as ${x.domain} lands on another site. Check it is not passing itself off as you; if it is unrelated, make your own address easy to find on Maps and social pages.`, severity: N.mentions(x.title) ? 'high' : 'low', source: `https://${x.domain}/`, check: 'lookalike' });
+    for (const x of theirs) add({ title: `${x.domain} belongs to someone else${x.title ? `: "${x.title}"` : ''}`, detail: `A customer who guesses your address as ${x.domain} lands on another site. Check it is not passing itself off as you; if it is unrelated, make your own address easy to find on Maps and social pages.`, severity: N.mentions(x.title) ? 'high' : 'low', source: `https://${x.domain}/`, check: 'lookalike', ownership: 'unknown' as Ownership });
     const free = lookalikes.filter((x) => !x.registered);
-    if (free.length) add({ title: `${free.map((x) => x.domain).join(' and ')} ${free.length === 1 ? 'is' : 'are'} free to register`, detail: `Registering ${free.length === 1 ? 'it' : 'them'} (a few ringgit a year each) and pointing ${free.length === 1 ? 'it' : 'them'} at your site stops anyone else using your name there.`, severity: 'low', source: null, check: 'lookalike' });
+    if (free.length) add({ title: `${free.map((x) => x.domain).join(' and ')} ${free.length === 1 ? 'is' : 'are'} free to register`, detail: `Registering ${free.length === 1 ? 'it' : 'them'} (a small yearly fee each) and pointing ${free.length === 1 ? 'it' : 'them'} at your site stops anyone else using your name there.`, severity: 'low', source: null, check: 'lookalike', ownership: 'unknown' as Ownership });
   }
 
   // ---- 6. One summary line per domain, for the report's asset table. ----
@@ -401,8 +471,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     cert: a.cert ? { ok: a.cert.ok, issuer: a.cert.issuer, valid_to: a.cert.validTo?.slice(0, 10) ?? null } : null,
   }));
   const social = [...new Set(assets.flatMap((a) => a.site?.social ?? []))];
-  add({ title: `${assets.length} domain${assets.length === 1 ? '' : 's'} traced to you`, detail: table.map((t) => `${t.domain} (${t.why.join(', ')}): ${t.registrar ? `registered with ${t.registrar}` : 'registrar unknown'}${t.expires ? `, renews by ${t.expires}` : ''}${t.host ? `, hosted at ${t.host}` : ''}${t.mail ? `, email by ${t.mail}` : ''}`).join('; ') + '.', severity: 'info', source: null, check: 'inventory' });
-  return { findings, notes: {
+  add({ title: `${assets.length} domain${assets.length === 1 ? '' : 's'} linked to the company`, detail: table.map((t) => `${t.domain} (${t.why.join(', ')}): ${t.registrar ? `registered with ${t.registrar}` : 'registrar unknown'}${t.expires ? `, renews by ${t.expires}` : ''}${t.host ? `, hosted at ${t.host}` : ''}${t.mail ? `, email by ${t.mail}` : ''}`).join('; ') + '.', severity: 'info', source: null, check: 'inventory', ownership: weakest(assets.map((a) => a.own)) });
+  const merged = mergeByCheck(findings).map((f) => ({ ...f, party: f.party ?? PARTY[String(f.check)] ?? 'first' }));
+  return { findings: merged, notes: {
     ...(ctx.v21 ? { email_reputation_skipped: assets.filter((a) => a.prior).map((a) => a.domain),
       email_reputation_note: 'Saved domains are not probed again for email reputation because those checks make fresh DNS queries.' } : {}),
     domains: table, subdomains: subs, lookalikes, social, email, blacklists: BLACKLISTS.map((b) => ({ ...b, working: working.has(b.id) })),
