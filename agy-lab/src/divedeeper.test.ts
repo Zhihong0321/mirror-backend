@@ -49,12 +49,12 @@ test('the report builds the parts, the full analysis and the action plan from da
     result: { identity: { legal_name: 'Acme Sdn Bhd', official_domains: ['acme.my'], registration_numbers: ['202301000001'] }, facts: [], sources: [{ id: 1, url: 'https://acme.my/', title: 'Acme' }], contradictions: [], gaps: [], people: { people: [] } },
   };
   const lanes = {
-    'N-news': { ran_at: '2026-10-26T01:00:00Z', findings: [{ title: '1★ review with no reply', detail: 'x', severity: 'high', source: 'https://maps.example/' }] },
+    'N-news': { ran_at: '2026-10-26T01:00:00Z', findings: [{ title: '1★ review with no reply', detail: 'x', quote: '1★ review with no reply', severity: 'high', source: 'https://maps.example/' }] },
     'S4-analysis': { notes: { verdict: 'Short summary.', parts: [{ theme: 'voice', assessment: 'Nobody answers the reviews.' }], threads: [{ title: 'Nobody owns the listing', body: 'b', themes: ['voice'] }], strengths: ['A 4.7 rating'] } },
     'S5-plan': { notes: { depts: [{ dept: 'social', tasks: [{ dept: 'social', task: 'Reply to reviews', why: 'none answered', how: 'h', when: 'week', effort: '1 hour', impact: 'high', theme: 'voice', ready: 'replies', items: ['N-news#0'] }], also: [] }], ready: { replies: 'the review replies, ready to post' } } },
   };
   const html = buildReport(dive, lanes).replace(/\u00a0|&nbsp;/g, ' ');
-  for (const part of ['id="stories"', 'Short summary.', 'Nobody answers the reviews.', 'Nobody owns the listing', 'What you can build on', 'Your action plan', 'Social media', 'This week', 'Done for you: the review replies', 'Nothing for this department right now.', 'What a stranger sees', 'The full checklist', 'Background research', '1★ review with no reply', 'Reply to reviews', 'id="src-1"']) assert.ok(html.includes(part), part);
+  for (const part of ['id="stories"', 'Short summary.', 'Nobody answers the reviews.', 'Nobody owns the listing', 'What you can build on', 'Your action plan', 'Social media', 'This week', 'Done for you: the review replies', 'What a stranger sees', 'The full checklist', 'Background research', '1★ review with no reply', 'Reply to reviews', 'id="src-1"']) assert.ok(html.includes(part), part);
   assert.ok(!/undefined|\[object Object\]|NaN/.test(html.replace(/<style[\s\S]*?<\/style>/, '')));
 });
 
@@ -109,7 +109,7 @@ test('the report is a working tool: real tick boxes, copy buttons, no repeated f
   const same = 'This makes it harder for customers to verify your company status.';
   const lanes = {
     'R-contacts': { ran_at: at, findings: [], notes: { judged: true, inventory: [{ kind: 'phone', value: '012-345 6789', where: ['Google Maps: Acme'], status: 'personal', left: true, owner: 'Ali' }, { kind: 'email', value: 'info@acme.my', where: ['your website'], status: 'current' }] } },
-    'N-news': { ran_at: at, findings: [0, 1, 2].map((i) => ({ title: `Problem number ${i}`, detail: 'd', severity: 'high', source: null })) },
+    'N-news': { ran_at: at, findings: [0, 1, 2].map((i) => ({ title: `Problem number ${i}`, detail: 'd', quote: `Problem number ${i}`, severity: 'high', source: null })) },
     'S3-editor': { notes: { plain: Object.fromEntries([0, 1, 2].map((i) => [`N-news#${i}`, { title: `Problem number ${i}`, why: same }])) } },
     'S5-plan': { notes: { depts: [{ dept: 'website', tasks: [{ dept: 'website', task: 'Fix the contact page', why: 'w', how: 'h', when: 'week', effort: '1 hour', theme: 'contact' }], also: [] }] } },
     'S2-consult': { notes: {
@@ -139,7 +139,7 @@ test('the report is a working tool: real tick boxes, copy buttons, no repeated f
   // The 30-day card names no price or address of its own; the leak strip counts, it does not estimate.
   assert.ok(html.includes('Verify your fixes in 30 days') && html.includes('reply to the email that sent you this report'));
   assert.ok(/id="plan"[\s\S]*class="followup"[\s\S]*id="ready"/.test(html), 'card closes the plan');
-  assert.ok(html.includes('Where customers can slip away') && html.includes('lead the wrong way'));
+  assert.ok(html.includes('Where customers can slip away') && /leads? the wrong way/.test(html));
   const leak = html.match(/<div class="leak">[\s\S]*?<\/div>/)?.[0] ?? '';
   assert.ok(leak && !/%|per ?cent/i.test(leak), 'no invented rate');
   // Every inline script is plain ASCII, so a wrong-charset reader cannot break it.

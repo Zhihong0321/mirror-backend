@@ -47,6 +47,15 @@ export function statements(an: Notes | undefined, plan: Notes | undefined): Stat
   return out.filter((s) => s.text.trim());
 }
 
+/** A finding backed by a source that is not the company itself: tagged independent, or a register / government / RDAP result. */
+export function isIndependentFinding(lane: string, f: any): boolean {
+  if (f?.party) return f.party === 'independent';
+  const host = (() => { try { return new URL(String(f?.source)).hostname; } catch { return ''; } })();
+  return lane === 'D-registry' || /(^|\.)gov(\.[a-z]{2})?$|\.go\.[a-z]{2}$|\.gouv\.|rdap/i.test(host);
+}
+/** PL6: "independent" / "third-party" may stay only when at least one cited source in the run is independent. */
+export const hasIndependentSource = (L: Record<string, any>): boolean => Object.entries(L).some(([lane, v]) => (v?.findings ?? []).some((f: any) => isIndependentFinding(lane, f)));
+
 /**
  * The lanes with the statements S6-check found unsupported taken out. The input is not changed. A task that is withdrawn puts the
  * findings it covered back under its department's "more findings" list, so nothing urgent drops out of the plan.
@@ -55,9 +64,10 @@ export function applyCheck<T extends Record<string, any>>(L: T): T {
   const unsupported: string[] = (L['S6-check']?.notes?.unsupported ?? []).map((u: any) => String(u?.id)).filter(Boolean);
   const drop = new Set(L['S6-check']?.notes?.ignored ? [] : unsupported);
   const drops: { id: string; rule: string }[] = [];
+  const independent = hasIndependentSource(L);
   for (const statement of statements(L['S4-analysis']?.notes, L['S5-plan']?.notes)) {
     if (bannedWords(statement.text).length) { drop.add(statement.id); drops.push({ id: statement.id, rule: 'PL8' }); }
-    if (statement.kind === 'strength' && /\b(?:independent|third[ -]party|verified by)\b/i.test(statement.text)) {
+    if (statement.kind === 'strength' && !independent && /\b(?:independent(?:ly)?|third[ -]party|verified by)\b/i.test(statement.text)) {
       drop.add(statement.id); drops.push({ id: statement.id, rule: 'PL6' });
     }
   }

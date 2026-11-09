@@ -1,4 +1,4 @@
-import { cleanText, localeFor, similarPairs, plural } from '../report-rules/index.ts';
+import { cleanText, deadLinks, localeFor, similarPairs, plural } from '../report-rules/index.ts';
 // The report as one standalone HTML document of A4 pages, from data alone (no network, no files).
 // Styled after the Eternalgy corporate profile: two-tone headlines, dark pages for the numbers,
 // banded tables. On screen the pages stack like sheets; Print / Save as PDF gives clean A4.
@@ -17,9 +17,9 @@ import { cleanText, localeFor, similarPairs, plural } from '../report-rules/inde
 // the action plan from S5, each when it ran, else built in here. Used by the hub (divedeeper.ts) and by scripts/dive-deeper/report.ts.
 // A missing lane only drops its block; the report still builds.
 import { applyCheck } from './check.ts';
-import { AREAS, DEPTS, deptOf, resolve, type Item } from './editor.ts';
+import { AREAS, DEPTS, dedupeSections, deptOf, ownershipWording, resolve, type Item } from './editor.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { isPrivateUrl, publicSources, scrub } from './privacy.ts';
+import { isLeadershipStrict, isPrivateUrl, publicSources, scrub, scrubPersonalPhones } from './privacy.ts';
 
 /** Why each area matters, said once for every client. No market statistics we cannot source. */
 export const OPENERS: Record<string, { q: [string, string]; body: (t: { trade: string; town: string }) => string }> = {
@@ -73,7 +73,8 @@ export const PART_OPENERS: Record<string, { q: [string, string]; body: (t: { tra
 };
 /** The follow-up offer closing the action plan: a 30-day re-audit and the same audit on a competitor.
  *  With no booking email the card tells the reader to reply to the email that sent the report. */
-export const FOLLOW_UP = { email: '', reauditPrice: '$39', competitorPrice: '$59' };
+// Prices per currency; a buyer whose currency has none sees no price (nothing is converted or invented).
+export const FOLLOW_UP = { email: '', reauditPrices: { USD: '$39' } as Record<string, string>, competitorPrices: { USD: '$59' } as Record<string, string> };
 export const CHAPTER_ORDER = ['contact', 'understanding', 'voice', 'credibility', 'assets', 'speed'] as const;
 export const CHAPTER_EYEBROW: Record<string, string> = {
   contact: 'Contact and reachability', understanding: 'How the internet understands you', voice: 'Reviews, discussion and news', credibility: 'Credibility and official records', assets: 'Digital assets', speed: 'Website speed and quality',
@@ -92,7 +93,7 @@ export const typeset = (s: string) => s
   .replace(/(\w)'(\w)/g, '$1’$2')
   .replace(/(^|[\s(\[—–])'/g, '$1‘').replace(/'/g, '’')
   .replace(/(^|[\s(\[—–])"/g, '$1“').replace(/"/g, '”')
-  .replace(/\b(RM|USD|SGD|SSM|No\.)\s+(?=\d)/g, `$1${NB}`)
+  .replace(/\b([A-Z]{2,3}|No\.)\s+(?=\d)/g, `$1${NB}`)
   .replace(/(\d)\s+(?=%|(?:MWp|kWp|kW|MW|GWh|MWh|kWh|km|sq\.? ?ft|mil|million|billion|days?|weeks?|months?|years?|hours?|reviews?|projects?|plants?|staff)\b)/g, `$1${NB}`);
 /** Ties the last two words of a short line together, so a title never ends on one word alone. */
 export const tie = (s: string) => s.replace(/\s+(\S{1,14})$/, `${NB}$1`);
@@ -104,6 +105,8 @@ export const typesetAll = (v: any, key = ''): any => (typeof v === 'string'
   : v);
 
 export const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const escBase = esc;
 
 /** Markdown of the company-dive dossier to HTML: headings, tables, lists, bold, [n] citations. */
 export function md(src: string): string {
@@ -417,12 +420,35 @@ ${body}
 }
 
 /** lanes: { "H-maps": laneResult, …, "S2-consult": …, "S3-editor": … } as runLane returns them. */
-export function buildReport(dive: any, lanes: Record<string, any>): string {
+export function buildReport(dive: any, lanes: Record<string, any>, opts: { debug?: boolean } = {}): string {
+  return buildReportParts(dive, lanes, opts).html;
+}
+
+/** The page and the one counts object every number on it was read from (PL19). */
+export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { debug?: boolean } = {}) {
   // S6-check's unsupported statements are taken out of the analysis and the plan here (check.ts); S1-recheck's verdicts act in editor.ts items().
   const L = applyCheck(lanes);
   const r = dive.result ?? {};
   const R = resolve(dive, L);
   const name = R.name;
+  const country = String(dive.country ?? '');
+  // PL9: phones printed are the company's own contacts; reviewers are never named; staff only when they lead the company.
+  const companyPhones: string[] = [
+    JSON.stringify(r.identity?.phones ?? []), JSON.stringify(L['H-maps']?.notes?.listings?.map((x: any) => x.phone) ?? []), JSON.stringify(L['C-merged']?.notes?.sitePhones ?? []),
+    ...R.contact.points.filter((p: any) => p.kind !== 'email' && !p.left && !['personal', 'someone_else'].includes(p.status)).map((p: any) => String(p.value)),
+  ];
+  const people: any[] = r.people?.people ?? [];
+  const reviewers = [...new Set([...(L['E-maps']?.notes?.reviews ?? []), ...R.reviews.unanswered_low, ...R.reviews.good_quotes].map((x: any) => String(x.author ?? '').trim()).filter((x) => x.length >= 4))];
+  const nonLeaders = people.filter((x) => !isLeadershipStrict(x.role ?? x.relation)).map((x) => String(x.name ?? '')).filter((x) => x.length >= 4);
+  const quiet = (t: string) => {
+    if (/^(?:https?:|mailto:|#|data:)/.test(t)) return t;
+    let out = scrub(t, { staff: nonLeaders });
+    for (const w of reviewers) out = out.split(w).join('a reviewer');
+    out = scrubPersonalPhones(out, { country, companyPhones });
+    // PL21: internal ids (f1, s3, c2, n4) are for the debug option only.
+    return opts.debug ? out : out.replace(/\(\s*(?:[fscn]\d+\s*(?:,|and|&)?\s*)+\)/g, '').replace(/\s*(?<![\w./@#-])[fscn]\d+(?![\w@/-]|\.\w)/g, '').replace(/ {2,}/g, ' ').replace(/ ([,.;:])/g, '$1');
+  };
+  const esc = (v: unknown) => escBase(quiet(String(v ?? '')));
   const s2 = L['S2-consult']?.notes ?? {};
   const ed = L['S3-editor']?.notes ?? {};
   // Runs before S4 kept the verdict, the stories and the mismatches in the editor's notes.
@@ -443,10 +469,11 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const where = /google\.[a-z.]+$/.test(h) && /\/maps/.test(u) ? 'Google Maps' : /search\.brave\.com/.test(h) ? 'search results' : h;
     return `<a class="see" href="${esc(u)}" target="_blank" rel="noopener">${esc(where)}&nbsp;↗</a>`;
   };
-  const loc = localeFor(String(dive.country ?? ''));
+  const loc = localeFor(country);
+  const num = (v: number) => v.toLocaleString(loc.dateLocale);
+  const pl = (v: number, one: string, many: string) => plural(v, one, many).replace(String(v), num(v));
   const dateOf = (iso: string | undefined | null) => (iso ? new Date(iso).toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
   const monthOf = (ym: string) => new Date(ym + '-01T00:00:00Z').toLocaleDateString(loc.dateLocale, { month: 'short', year: 'numeric', timeZone: 'UTC' });
-  const sevRank: Record<string, number> = { critical: -1, high: 0, medium: 1, low: 2, info: 3 };
   // The lanes use "info" for good news and plain notes alike, so it reads as a neutral note.
   const sevClass = (s: string) => (s === 'critical' || s === 'high' ? 'urgent' : s === 'medium' ? 'fix' : 'info');
   const sevWord = (s: string) => (s === 'critical' ? 'Critical' : s === 'high' ? 'Urgent' : s === 'medium' ? 'Needs work' : s === 'low' ? 'Minor' : 'Note');
@@ -454,11 +481,11 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   const rawTitle = (t: string) => t.replace(/^(VERIFIED|CONTRADICTED|NOT FOUND|CAN'T CHECK AUTOMATICALLY|PRIVATE):\s*/i, '').replace(/\s*\[\d+ of \d+ asks[^\]]*\]/g, '').replace(/deepseek-v[\d.]+-flash(-\d+)?/gi, 'DeepSeek').replace(/gpt-[\d.]+-?\w*/gi, 'GPT');
   /** Stage-2 text built from raw finding titles keeps their machine bits; strip them for print (and any private link). */
   const tidy = (t: unknown) => scrub(rawTitle(String(t ?? ''))).replace(/\s*\((?:DNS )?ENOTFOUND\)/g, '').replace(/doesnt_know/g, "don't know").replace(/\s*;?\s*others: [a-z_]+/g, '').replace(/\s{2,}/g, ' ');
-  const T = (x: Item) => typeset(scrub(plain[x.key]?.title || rawTitle(x.title)));
-  const why = (x: Item) => typeset(scrub(plain[x.key]?.why || ''));
+  const T = (x: Item) => typeset(scrub(ownershipWording(x, plain[x.key]?.title || rawTitle(x.title), R.identity.domains)));
+  const why = (x: Item) => typeset(scrub(ownershipWording(x, plain[x.key]?.why || '', R.identity.domains)));
   const stars = (n: number) => '★★★★★'.slice(0, Math.max(0, Math.min(5, n))) + '☆☆☆☆☆'.slice(0, 5 - Math.max(0, Math.min(5, n)));
   const areaOf = (id: string) => R.areas.find((a) => a.id === id);
-  const byArea = (id: string) => R.items.filter((x) => x.area === id).sort((a, b) => (sevRank[a.severity] ?? 9) - (sevRank[b.severity] ?? 9));
+  const byArea = (id: string) => R.items.filter((x) => x.area === id);
   /** A headline in the profile's two tones: the first clause in ink, the rest in grey. */
   const twoTone = (a: string, b?: string) => {
     if (b === undefined) {
@@ -483,7 +510,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
       previousWhy.push({ id: x.key, text: w });
       return w;
     };
-    return `<table class="band items"><tbody>${list.map((x) => { const w = consequence(x); return `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}</p>${w ? `<p class="w">${esc(w)}</p>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`; }).join('')}</tbody></table>`;
+    return `<table class="band items"><tbody>${list.map((x) => { const w = consequence(x); return `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}${opts.debug ? ` <span class="muted">[${esc(x.key)}]</span>` : ''}</p>${w ? `<p class="w">${esc(w)}</p>` : ''}${x.evidence && x.evidence.length > 1 ? `<ul class="plain small">${x.evidence.map((e) => `<li>${esc(typeset(scrub(e)))}</li>`).join('')}</ul>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`; }).join('')}</tbody></table>`;
   };
   /** A "Copy" button for the element with the given id (the page script does the copying). Screen only. */
   const copyBtn = (id: string, what: string) => `<button type="button" class="copy" data-copy="${esc(id)}" aria-label="Copy ${esc(what)}">Copy ${esc(what)}</button>`;
@@ -506,7 +533,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const y = (n: number) => H - pad - (n / max) * (H - pad * 2);
     const bars = m.map((x, i) => {
       const h = Math.max(x.n ? 3 : 0, H - pad - y(x.n));
-      return `<g><title>${esc(monthOf(x.month))}: ${x.n} review${x.n === 1 ? '' : 's'}${x.low ? `, ${x.low} of them 1–2★` : ''}</title>
+      return `<g><title>${esc(monthOf(x.month))}: ${plural(x.n, 'review', 'reviews')}${x.low ? `, ${x.low} of them 1–2★` : ''}</title>
         <rect class="${burstMonths.has(x.month) ? 'b-spike' : 'b-norm'}" x="${(pad + i * bw + 1).toFixed(1)}" y="${(H - pad - h).toFixed(1)}" width="${Math.max(2, bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"/>
         ${x.low ? `<circle class="b-low" cx="${(pad + i * bw + bw / 2).toFixed(1)}" cy="${(H - pad - h - 8).toFixed(1)}" r="4"/>` : ''}</g>`;
     }).join('');
@@ -585,8 +612,8 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const b = R.brand_view;
     if (b.score == null && !b.offer.length) return '';
     const pill = (v: string) => { const [c, l] = PILL3[String(v)] ?? ['info', String(v || '–')]; return `<span class="pill ${c}">${esc(l)}</span>`; };
-    return `<div class="pair"><div class="panel dark"><p class="lbl">Why choose you, as a stranger reads it</p><p class="quote">${b.why ? `“${esc(typeset(clip(String(b.why), 220)))}”` : 'Nothing online answers it.'}</p></div>
-      <div class="panel light"><p class="lbl">The five-second test of your homepage</p><p><b>${b.five?.pass === false ? 'Fails.' : b.five?.pass ? 'Passes.' : '–'}</b> ${esc(typeset(clip(String(b.five?.understood ?? ''), 160)))}${b.five?.problem ? ` ${esc(clip(String(b.five.problem), 160))}` : ''}</p></div></div>
+    return `<div class="pair"><div class="panel dark"><p class="lbl">Why choose you, as a stranger reads it</p><p class="quote">${b.why ? `“${esc(typeset(cleanText(clip(String(b.why), 220))))}”` : 'Nothing online answers it.'}</p></div>
+      <div class="panel light"><p class="lbl">The five-second test of your homepage</p><p><b>${b.five?.pass === false ? 'Fails.' : b.five?.pass ? 'Passes.' : '–'}</b> ${esc(typeset(cleanText(clip(String(b.five?.understood ?? ''), 160))))}${b.five?.problem ? ` ${esc(clip(String(b.five.problem), 160))}` : ''}</p></div></div>
       ${b.offer.length ? `<table class="band"><thead><tr><th>What you sell</th><th>Outside your site</th><th>AI assistants</th></tr></thead><tbody>${b.offer.slice(0, 8).map((o: any) => `<tr><td>${esc(clip(String(o.item), 90))}</td><td>${pill(o.outside)}</td><td>${pill(o.ai)}</td></tr>`).join('')}</tbody></table>` : ''}
       ${b.missing.length ? `<p class="note"><b>Questions buyers ask that nothing online answers:</b> ${esc(typeset(b.missing.slice(0, 6).join('; ')))}.</p>` : ''}`;
   }
@@ -597,7 +624,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     if (!list.length) return R.news.counts ? '<p class="note">No news story, forum thread or public post about you or your key people turned up.</p>' : '';
     return `<table class="band"><thead><tr><th>When</th><th>What is said</th><th></th></tr></thead><tbody>${list.map((x: any) => {
       const [c, l] = SENT[x.sentiment] ?? SENT.neutral;
-      return `<tr><td class="small">${esc(x.date || '–')}<br><span class="muted">${esc(x.host)}</span></td><td><p class="t">${x.about === 'person' && x.person ? `<b>${esc(x.person)}:</b> ` : ''}${esc(typeset(clip(String(x.summary ?? x.title), 200)))}</p>${x.quote ? `<p class="w">“${esc(cleanText(clip(String(x.quote), 180)))}”</p>` : ''}</td><td><span class="pill ${c}">${esc(l)}</span>${seeIt(x.url)}</td></tr>`;
+      return `<tr><td class="small">${esc(x.date || '–')}<br><span class="muted">${esc(x.host)}</span></td><td><p class="t">${x.about === 'person' && x.person && R.news.people.some((pp: any) => pp.name === x.person && isLeadershipStrict(pp.role)) ? `<b>${esc(x.person)}:</b> ` : ''}${esc(typeset(cleanText(clip(String(x.summary ?? x.title), 200))))}</p>${x.quote ? `<p class="w">“${esc(cleanText(clip(String(x.quote), 180)))}”</p>` : ''}</td><td><span class="pill ${c}">${esc(l)}</span>${seeIt(x.url)}</td></tr>`;
     }).join('')}</tbody></table>`;
   }
   const CHECK_PILL: Record<string, [string, string]> = { signals: ['good', 'Signals found'], conflict: ['urgent', 'Possible conflict'], none: ['info', 'Nothing found'], clear: ['good', 'Clear'], found: ['urgent', 'Found'], public: ['good', 'Public'], not_public: ['info', 'Not public'], not_checked: ['info', 'Not checked'], could_not_check: ['info', 'Could not check'] };
@@ -607,7 +634,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     if (!cs.length) return '';
     return `<table class="band"><thead><tr><th>Record</th><th>What it shows</th><th>Result</th></tr></thead><tbody>${cs.map((c: any) => {
       const [cls, lbl] = c.id === 'gov' && c.result === 'found' ? ['good', 'On record'] : CHECK_PILL[c.result] ?? CHECK_PILL.not_checked;
-      return `<tr><td><b>${esc(c.label)}</b>${c.where ? `<br><span class="muted small">${esc(c.where)}</span>` : ''}</td><td class="small">${esc(typeset(clip(String(c.detail ?? ''), 220)))}</td><td><span class="pill ${cls}">${esc(lbl)}</span>${seeIt(c.source)}</td></tr>`;
+      return `<tr><td><b>${esc(c.label)}</b>${c.where ? `<br><span class="muted small">${esc(c.where)}</span>` : ''}</td><td class="small">${esc(typeset(cleanText(clip(String(c.detail ?? ''), 220))))}</td><td><span class="pill ${cls}">${esc(lbl)}</span>${seeIt(c.source)}</td></tr>`;
     }).join('')}</tbody></table>`;
   }
   /** How the world's mail systems see each email domain: blacklists, then the records that prove mail is really yours. */
@@ -641,7 +668,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
       return `<tr><td><b>${esc(d.domain)}</b><br><span class="muted small">${esc(d.why.join(', '))}</span></td><td class="small">${reg}</td><td class="small">${web}</td><td class="small">${mail}</td></tr>`;
     }).join('')}</tbody></table>
       ${emailTable()}
-      ${live.length ? `<p class="note">The public certificate logs also show ${esc(live.length)} live subdomain${live.length === 1 ? '' : 's'}: ${esc(live.slice(0, 6).map((x: any) => x.name).join(', '))}.</p>` : ''}`;
+      ${live.length ? `<p class="note">The public certificate logs also show ${plural(live.length, 'live subdomain', 'live subdomains')}: ${esc(live.slice(0, 6).map((x: any) => x.name).join(', '))}.</p>` : ''}`;
   }
   /** Google's four scores for each official homepage, on mobile and desktop, and what real visitors saw. */
   function speedTable(): string {
@@ -660,24 +687,40 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     if (theme === 'contact') return contactTable();
     if (theme === 'understanding') return `${brandPanel()}${topic('findability', mapsBoard())}${topic('ai', aiVoice() + aiSaid())}${topic('website', proofShots.length ? `<div class="shots">${proofShots.slice(0, 3).map(shotFig).join('')}</div>` : '')}`;
     if (theme === 'voice') { const n = newsTable(); return `${topic('reputation', `${R.reviews.unanswered_low.slice(-2).reverse().map(reviewCard).join('')}${timeline()}`)}${n ? `<h4 class="tbl-h">In the news, on forums and on social media</h4>${n}` : ''}`; }
-    if (theme === 'credibility') return `${checksTable()}${creds.length || credUnchecked.length ? `<h4 class="tbl-h">${esc(OPENERS.credentials.q[0])} ${esc(OPENERS.credentials.q[1])}</h4>${credTable(creds)}${credUnchecked.length ? `<p class="note">No public register exists for ${credUnchecked.length} other claim${credUnchecked.length === 1 ? '' : 's'} (${esc(credUnchecked.slice(0, 4).map((c: any) => clip(c.claim, 40)).join('; '))}${credUnchecked.length > 4 ? '; …' : ''}), so a stranger has to take your word for them.</p>` : ''}` : ''}`;
+    if (theme === 'credibility') return `${checksTable()}${creds.length || credUnchecked.length ? `<h4 class="tbl-h">${esc(OPENERS.credentials.q[0])} ${esc(OPENERS.credentials.q[1])}</h4>${credTable(creds)}${credUnchecked.length ? `<p class="note">No public register exists for ${plural(credUnchecked.length, 'other claim', 'other claims')} (${esc(credUnchecked.slice(0, 4).map((c: any) => clip(c.claim, 40)).join('; '))}${credUnchecked.length > 4 ? '; …' : ''}), so a stranger has to take your word for them.</p>` : ''}` : ''}`;
     if (theme === 'assets') return assetTable();
     if (theme === 'speed') return speedTable();
     return '';
   }
 
+  // PL15: the conflicts the problems already say are taken out here; PL19: every number below is read from `counts`.
+  const conflictsAll: any[] = an.mismatch?.length ? an.mismatch : (r.contradictions ?? []).slice(0, 5).map((c: string) => ({ issue: typeset(c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()), settled: null }));
+  const dd = dedupeSections(R.items, conflictsAll, country);
+  R.items = dd.items;
+  const mismatch = dd.conflicts;
+  const inArea = (id: string) => R.items.filter((x) => x.area === id);
+  const byAreaCounts = Object.fromEntries(AREAS.map((a) => [a.id, { all: inArea(a.id).length, urgent: inArea(a.id).filter((x) => x.severity === 'critical' || x.severity === 'high').length, needs: inArea(a.id).filter((x) => x.severity === 'medium').length }]));
+  const problems = R.items.filter((x) => ['critical', 'high', 'medium'].includes(x.severity)).length;
+  const counts = {
+    problems, signals: R.items.length - problems, conflicts: mismatch.length, strengths: (an.strengths ?? []).length,
+    issues: problems + mismatch.length, items: R.items.length + mismatch.length + (an.strengths ?? []).length,
+    byArea: byAreaCounts, contact: { ok: R.contact.ok, bad: R.contact.bad, total: R.contact.total },
+    reviews: { total: R.reviews.total, replied: R.reviews.replied, unanswered: R.reviews.unanswered_low.length },
+    assets: { issues: byAreaCounts.assets.urgent + byAreaCounts.assets.needs, domains: R.assets.domains.length },
+  };
+
   // ---------- stories: the editor's, or built here from the numbers ----------
   const fallback: Record<string, () => any> = {
-    contact: () => ({ headline: `${R.contact.bad} of the ${R.contact.total} contact details published about you lead the wrong way`, body: R.contact.summary ?? 'Old numbers, personal lines and mailboxes are still published where customers find them.', cost: 'A customer who reaches a dead line or the wrong person does not try a second time.', fix: 'Correct or remove every contact marked in this part, starting with Google Maps and the directories.' }),
-    understanding: () => ({ headline: R.brand_view.score != null ? `The internet understands your business ${R.brand_view.score} out of 100` : `AI assistants recommended you in ${R.ai.named_us} of ${R.ai.trade_answers} answers`, body: R.brand_view.summary ?? `When a customer asks an AI assistant who to hire, it names ${R.ai.share.slice(0, 3).map((s) => s.name).join(', ')} instead.`, cost: 'A buyer who cannot tell what you sell, or why you are better, moves on to a business that says it plainly.', fix: R.brand_view.why ? 'Put your reason to be chosen, with proof, at the top of your homepage and in every listing.' : 'Write one sentence on why customers choose you, with proof, and use it everywhere.' }),
-    voice: () => ({ headline: R.reviews.total ? `${R.reviews.replied} of your ${R.reviews.total} Google reviews have a reply from you` : `${R.news.counts?.news ?? 0} news articles name you`, body: R.reviews.unanswered_low.length ? `${R.reviews.unanswered_low.length} review${R.reviews.unanswered_low.length === 1 ? '' : 's'} of 1–2★ sit on your listing with no answer, the oldest for ${R.reviews.unanswered_low[0].days_open} days.` : 'What strangers say about you is the part of your reputation you do not write yourself.', cost: 'A complaint with no answer is the first thing a careful customer reads, and it reads as if nobody is listening.', fix: 'Reply publicly to every 1–2★ review this week, then to the rest.' }),
-    credibility: () => ({ headline: `${R.records.risky.filter((c: any) => c.result === 'clear').length} of ${R.records.risky.length} public risk checks come back clear`, body: 'Alert lists, court judgments and insolvency notices are what a bank or tender panel checks first.', cost: 'One unexplained record can end a tender or a credit application before anyone asks you about it.', fix: 'Have a short explanation ready for anything found here, and show the records that work in your favour.' }),
+    contact: () => ({ headline: `${counts.contact.bad} of the ${plural(counts.contact.total, 'contact detail', 'contact details')} published about you ${counts.contact.bad === 1 ? 'leads' : 'lead'} the wrong way`, body: R.contact.summary ?? 'Old numbers, personal lines and mailboxes are still published where customers find them.', cost: 'A customer who reaches a dead line or the wrong person does not try a second time.', fix: 'Correct or remove every contact marked in this part, starting with Google Maps and the directories.' }),
+    understanding: () => ({ headline: R.brand_view.score != null ? `The internet understands your business ${R.brand_view.score} out of 100` : `AI assistants recommended you in ${R.ai.named_us} of ${plural(R.ai.trade_answers, 'answer', 'answers')}`, body: R.brand_view.summary ?? `When a customer asks an AI assistant who to hire, it names ${R.ai.share.slice(0, 3).map((s) => s.name).join(', ')} instead.`, cost: 'A buyer who cannot tell what you sell, or why you are better, moves on to a business that says it plainly.', fix: R.brand_view.why ? 'Put your reason to be chosen, with proof, at the top of your homepage and in every listing.' : 'Write one sentence on why customers choose you, with proof, and use it everywhere.' }),
+    voice: () => ({ headline: R.reviews.total ? `${counts.reviews.replied} of your ${plural(counts.reviews.total, 'Google review', 'Google reviews')} ${counts.reviews.replied === 1 ? 'has' : 'have'} a reply from you` : `${plural(R.news.counts?.news ?? 0, 'news article', 'news articles')} ${(R.news.counts?.news ?? 0) === 1 ? 'names' : 'name'} you`, body: counts.reviews.unanswered ? `${plural(counts.reviews.unanswered, 'review', 'reviews')} of 1–2★ sit on your listing with no answer, the oldest for ${R.reviews.unanswered_low[0].days_open} days.` : 'What strangers say about you is the part of your reputation you do not write yourself.', cost: 'A complaint with no answer is the first thing a careful customer reads, and it reads as if nobody is listening.', fix: 'Reply publicly to every 1–2★ review this week, then to the rest.' }),
+    credibility: () => ({ headline: `${R.records.risky.filter((c: any) => c.result === 'clear').length} of ${plural(R.records.risky.length, 'public risk check', 'public risk checks')} ${R.records.risky.length === 1 ? 'comes' : 'come'} back clear`, body: 'Alert lists, court judgments and insolvency notices are what a bank or tender panel checks first.', cost: 'One unexplained record can end a tender or a credit application before anyone asks you about it.', fix: 'Have a short explanation ready for anything found here, and show the records that work in your favour.' }),
     speed: () => ({ headline: R.speed.main_mobile ? `Google scores your homepage ${R.speed.main_mobile.scores.performance} out of 100 for speed on a phone` : 'Google could not score your homepage', body: 'Most customers open your site on a phone first. Google measures how long the page takes to show and to respond, and uses it when it ranks you.', cost: 'Visitors who wait for a slow page leave before they see what you offer.', fix: 'Hand Google’s top fixes in this part to your web developer, starting with the biggest saving.' }),
-    assets: () => ({ headline: `${R.assets.issues} risks in the domains and email that carry your name`, body: 'Expiring domains, domains held in someone else’s name, and email anyone can fake.', cost: 'A lapsed domain takes your website and every email address down at once.', fix: 'Turn on auto-renew, move every domain into the company’s name, and add SPF and DMARC to your email domain.' }),
+    assets: () => ({ headline: `${plural(counts.assets.issues, 'risk', 'risks')} in the domains and email that carry your name`, body: 'Expiring domains, domains held in someone else’s name, and email anyone can fake.', cost: 'A lapsed domain takes your website and every email address down at once.', fix: 'Turn on auto-renew, move every domain into the company’s name, and add SPF and DMARC to your email domain.' }),
   };
   const themes = [...CHAPTER_ORDER] as string[];
   const edStories: any[] = (an.stories ?? []).filter((s: any) => themes.includes(s.theme));
-  const stories: any[] = typesetAll((edStories.length ? edStories : themes.filter((t) => areaOf(t)?.ran && areaOf(t)?.status[0] !== 'good').slice(0, 3).map((t) => ({ theme: t, ...fallback[t]() })))
+  const stories: any[] = typesetAll((edStories.length ? edStories : themes.filter((t) => areaOf(t)?.ran && areaOf(t)?.status[0] !== 'good').sort((a, b) => Math.max(0, ...inArea(b).map((x) => x.rank)) - Math.max(0, ...inArea(a).map((x) => x.rank))).slice(0, 3).map((t) => ({ theme: t, ...fallback[t]() })))
     .map((s: any) => ({ ...fallback[s.theme](), ...Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v === 'string' && v.trim())) })));
   const storyOf = (t: string) => stories.find((s: any) => s.theme === t);
   // The speed part shows only when Google scored a homepage; without its key the run has nothing to say there.
@@ -700,21 +743,20 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     areaOf('understanding')?.ran && R.brand_view.score != null ? ['understanding', `${R.brand_view.score}`, 'out of 100: how well the internet understands you'] : areaOf('understanding')?.ran && R.ai.trade_answers ? ['understanding', `${R.ai.named_us}/${R.ai.trade_answers}`, 'AI answers that recommend you'] : null,
     areaOf('voice')?.ran && R.reviews.total ? ['voice', `${R.reviews.replied}/${R.reviews.total}`, 'Google reviews with a reply from you'] : null,
     areaOf('credibility')?.ran && R.records.risky.length ? ['credibility', `${R.records.risky.filter((c: any) => c.result === 'clear').length}/${R.records.risky.length}`, 'public risk checks clear'] : areaOf('credibility')?.ran && checkable ? ['credibility', `${okClaims}/${checkable}`, 'claims the official registers confirm'] : null,
-    areaOf('assets')?.ran && R.assets.domains.length ? ['assets', String(R.assets.issues), `risks across your ${R.assets.domains.length} domains`] : null,
+    areaOf('assets')?.ran && R.assets.domains.length ? ['assets', String(counts.assets.issues), `${counts.assets.issues === 1 ? 'risk' : 'risks'} across your ${plural(counts.assets.domains, 'domain', 'domains')}`] : null,
     areaOf('speed')?.ran && R.speed.main_mobile ? ['speed', String(R.speed.main_mobile.scores.performance), `out of 100: Google’s speed score for your homepage on a phone`] : null,
   ].filter(Boolean) as [string, string, string][]);
 
   // Private alerts: register data exposing personal IDs, plus private documents a search engine indexed.
   const privateItems: string[] = [];
-  for (const f of L['D-registry']?.findings ?? []) if (/^PRIVATE/i.test(f.title)) privateItems.push(`<b>${esc(f.title.replace(/^PRIVATE:\s*/i, ''))}.</b> ${esc(typeset(clip(String(f.detail ?? ''), 300)))}`);
+  for (const f of L['D-registry']?.findings ?? []) if (/^PRIVATE/i.test(f.title)) privateItems.push(`<b>${esc(f.title.replace(/^PRIVATE:\s*/i, ''))}.</b> ${esc(typeset(cleanText(clip(String(f.detail ?? ''), 300))))}`);
   const searched = [
     ...Object.values(L['G-search']?.notes?.search_results ?? {}).flatMap((v: any) => (Array.isArray(v) ? v : v?.rows ?? []).map((x: any) => x.url ?? x)),
     ...(L['H-web']?.notes?.nameRows ?? []).map((x: any) => x.url),
   ].filter((u: any) => typeof u === 'string');
   const docs = [...new Set(searched.filter((u: string) => /proposal|invoice|\/inv[-/]|[?&]uid=|quotation/i.test(u)))];
-  if (docs.length) privateItems.push(`<b>Search engines have indexed ${docs.length} private document link${docs.length === 1 ? '' : 's'}</b> (proposals or invoices meant for one customer). Put these behind a login or mark them no-index.`);
+  if (docs.length) privateItems.push(`<b>Search engines have indexed ${plural(docs.length, 'private document link', 'private document links')}</b> (proposals or invoices meant for one customer). Put these behind a login or mark them no-index.`);
 
-  const mismatch: any[] = an.mismatch?.length ? an.mismatch : (r.contradictions ?? []).slice(0, 5).map((c: string) => ({ issue: typeset(c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()), settled: null }));
   const checkedOn = dateOf(R.checked_on);
   const refNo = dive?.id != null && /^\d+$/.test(String(dive.id)) ? `No.${NB}${String(dive.id).padStart(4, '0')}` : '';
   // The assistant section G asked (Gemini with a web search on the cloud Antigravity hub), named for the method note.
@@ -727,7 +769,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const op = PART_OPENERS[id];
     const s = storyOf(id);
     const list = byArea(id).filter((x) => x.severity === 'critical' || x.severity === 'high' || x.severity === 'medium');
-    const rest = byArea(id).length - Math.min(list.length, 6);
+    const rest = counts.byArea[id].all - Math.min(list.length, 6);
     const n = chapterNo(id);
     const subtitle = s?.headline ?? '';
     return `<section class="page" id="ch-${id}">
@@ -740,8 +782,8 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   ${s?.body ? `<p class="body">${esc(s.body)}</p>` : ''}
   ${visual(id)}
   ${s ? `<div class="pair"><div class="panel dark"><p class="lbl">What it costs you</p><p>${esc(s.cost)}</p></div><div class="panel light"><p class="lbl">Do this first</p><p>${esc(s.fix)}</p></div></div>` : ''}
-  ${list.length ? `<h4 class="tbl-h">The items that matter most</h4>${itemRows(list.slice(0, 6))}` : `<p class="empty"><b>Nothing in this part is urgent or needs work.</b>${byArea(id).length ? ` Every check we ran here is in the <a href="#appx-${id}">full checklist</a>.` : ' Nothing turned up for the checklist either.'}</p>`}
-  ${rest > 0 ? `<p class="note">${rest} more finding${rest === 1 ? '' : 's'} in this part ${rest === 1 ? 'is' : 'are'} in the <a href="#appx-${id}">full checklist</a>.</p>` : ''}
+  ${list.length ? `<h4 class="tbl-h">The items that matter most</h4>${itemRows(list.slice(0, 6))}` : `<p class="empty"><b>Nothing in this part is urgent or needs work.</b>${counts.byArea[id].all ? ` Every check we ran here is in the <a href="#appx-${id}">full checklist</a>.` : ' Nothing turned up for the checklist either.'}</p>`}
+  ${rest > 0 ? `<p class="note">${plural(rest, 'more finding', 'more findings')} in this part ${rest === 1 ? 'is' : 'are'} in the <a href="#appx-${id}">full checklist</a>.</p>` : ''}
   ${foot(`Part ${n} · ${CHAPTER_EYEBROW[id]}`)}
 </section>`;
   }
@@ -770,14 +812,14 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
     const rating = anyRate ? `<table class="board"><thead><tr><th>Company</th>${who.map((w) => `<th class="num">${esc(w)}</th>`).join('')}</tr></thead><tbody>
       <tr class="me"><td>You</td>${who.map((w) => `<td class="num">${score(rec.rating.you[w])}</td>`).join('')}</tr>
       ${rec.rating.rivals.map((r: any) => `<tr><td>${esc(r.name)}</td>${who.map((w) => `<td class="num">${score(r.by[w])}</td>`).join('')}</tr>`).join('')}</tbody></table>
-      <p class="note">A customer asks: “${esc(typeset(rateQ))}” The assistant chose the competitors itself. Scores are the average of ${rec.repeat ?? 1} answer${rec.repeat === 1 ? '' : 's'} from each assistant.</p>
-      ${rec.rating.why.slice(0, 2).map((x: any) => `<p class="small"><b>${esc(x.assistant)}:</b> ${esc(typeset(x.summary))}</p>`).join('')}` : '<p class="note">Neither assistant gave you a score out of 10 when asked.</p>';
+      <p class="note">A customer asks: “${esc(typeset(rateQ))}” The assistant chose the competitors itself. Scores are the average of ${plural(rec.repeat ?? 1, 'answer', 'answers')} from each assistant.</p>
+      ${rec.rating.why.slice(0, 2).map((x: any) => `<p class="small"><b>${esc(x.assistant)}:</b> ${esc(typeset(cleanText(String(x.summary))))}</p>`).join('')}` : '<p class="note">Neither assistant gave you a score out of 10 when asked.</p>';
     const pickQ = (rec.asks.find((q: any) => q.kind === 'pick')?.text ?? '').replace(/ Please check the web for current information\.$/, '');
     const verdict = (p: any) => (!p.of ? 'Not asked' : p.yes === p.of ? 'Recommends you' : p.yes ? `Recommends you in ${p.yes} of ${p.of}` : 'Picks another company');
-    const picks = rec.pick.some((p: any) => p.of) ? `<p class="lead" style="font-size:14px">A customer asks: “${esc(typeset(pickQ))}”</p><div class="pair">${rec.pick.map((p: any, i: number) => `<div class="panel ${i === 0 ? 'dark' : 'light'}"><p class="lbl">${esc(p.assistant)}</p><p class="big" style="font-family:var(--display);font-weight:600;font-size:20px">${esc(verdict(p))}</p>${p.others.length ? `<p class="small"><b>Would pick instead:</b> ${esc(p.others.join(', '))}</p>` : ''}${p.summary ? `<p class="small">${esc(typeset(p.summary))}</p>` : ''}</div>`).join('')}</div>` : '';
+    const picks = rec.pick.some((p: any) => p.of) ? `<p class="lead" style="font-size:14px">A customer asks: “${esc(typeset(pickQ))}”</p><div class="pair">${rec.pick.map((p: any, i: number) => `<div class="panel ${i === 0 ? 'dark' : 'light'}"><p class="lbl">${esc(p.assistant)}</p><p class="big" style="font-family:var(--display);font-weight:600;font-size:20px">${esc(verdict(p))}</p>${p.others.length ? `<p class="small"><b>Would pick instead:</b> ${esc(p.others.join(', '))}</p>` : ''}${p.summary ? `<p class="small">${esc(typeset(cleanText(String(p.summary))))}</p>` : ''}</div>`).join('')}</div>` : '';
     const raw = rec.answers.length ? `<details><summary>Every answer, word for word <span class="muted">(${rec.answers.length})</span></summary>${rec.asks.map((q: any) => {
       const xs = rec.answers.filter((a: any) => a.id === q.id);
-      return xs.length ? `<h4 class="tbl-h">“${esc(typeset(q.text.replace(/ Please check the web for current information\.$/, '')))}”</h4>${xs.map((a: any) => `<p class="small" style="margin:6px 0 2px"><b>${esc(a.assistant)}, answer ${a.sample + 1}</b>${q.kind === 'find' ? ` · ${a.named ? `names you${a.position ? `, place ${a.position}` : ''}` : 'does not name you'}` : ''}</p><p class="small" style="white-space:pre-line">${esc(typeset(clip(String(a.text), 2400)))}</p>`).join('')}` : '';
+      return xs.length ? `<h4 class="tbl-h">“${esc(typeset(q.text.replace(/ Please check the web for current information\.$/, '')))}”</h4>${xs.map((a: any) => `<p class="small" style="margin:6px 0 2px"><b>${esc(a.assistant)}, answer ${a.sample + 1}</b>${q.kind === 'find' ? ` · ${a.named ? `names you${a.position ? `, place ${a.position}` : ''}` : 'does not name you'}` : ''}</p><p class="small" style="white-space:pre-line">${esc(typeset(cleanText(clip(String(a.text), 2400))))}</p>`).join('')}` : '';
     }).join('')}</details>` : '';
     return `<section class="page" id="ai-recommend">
   <p class="eyebrow">AI assistants · ${esc(who.join(' and '))}</p>
@@ -826,20 +868,22 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   // Without S5 every urgent and needs-work finding still lands under the department that does it.
   const plan: any[] = typesetAll(L['S5-plan']?.notes?.depts) ?? DEPTS.map((d) => ({ dept: d.id, tasks: [], also: R.items.filter((x) => (x.severity === 'critical' || x.severity === 'high' || x.severity === 'medium') && deptOf(x) === d.id).map((x) => ({ key: x.key, theme: x.area })) }));
   const readyWords: Record<string, string> = L['S5-plan']?.notes?.ready ?? {};
+  const worded = (t: any, text: string) => { const first = (t.items ?? []).map((k: string) => itemByKey.get(k)).find(Boolean); return first ? ownershipWording(first, text, R.identity.domains) : text; };
   function actionPlan(): string {
     const n = chapters.length + 2;
     const tasks = plan.reduce((t, d) => t + d.tasks.length, 0);
-    const rows = (d: any) => d.tasks.map((t: any, i: number) => `<tr><td class="cb"><input type="checkbox" data-tick="${esc(d.dept)}-${i}" aria-label="Done: ${esc(t.task)}"></td><td><p class="t">${esc(t.task)}</p>${t.why ? `<p class="w">${esc(t.why)}</p>` : ''}${t.how ? `<p class="small">${esc(t.how)}</p>` : ''}${t.ready && READY_AT[t.ready] ? `<p class="small"><a class="see" href="#${READY_AT[t.ready]}">Done for you: ${esc(readyWords[t.ready] ?? 'a draft')}&nbsp;↓</a></p>` : ''}</td><td class="tg"><div><span class="pill ${(WHEN[t.when] ?? WHEN.month)[0]}">${esc((WHEN[t.when] ?? WHEN.month)[1])}</span>${t.effort ? `<span class="pill info">${esc(t.effort)}</span>` : ''}${t.theme && chapters.includes(t.theme) ? partsOf([t.theme]) : ''}</div></td></tr>`).join('');
+    const rows = (d: any) => d.tasks.map((t: any, i: number) => `<tr><td class="cb"><input type="checkbox" data-tick="${esc(d.dept)}-${i}" aria-label="Done: ${esc(t.task)}"></td><td><p class="t">${esc(worded(t, t.task))}</p>${t.why ? `<p class="w">${esc(worded(t, t.why))}</p>` : ''}${t.how ? `<p class="small">${esc(worded(t, t.how))}</p>` : ''}${t.ready && READY_AT[t.ready] ? `<p class="small"><a class="see" href="#${READY_AT[t.ready]}">Done for you: ${esc(readyWords[t.ready] ?? 'a draft')}&nbsp;↓</a></p>` : ''}</td><td class="tg"><div><span class="pill ${(WHEN[t.when] ?? WHEN.month)[0]}">${esc((WHEN[t.when] ?? WHEN.month)[1])}</span>${t.effort ? `<span class="pill info">${esc(t.effort)}</span>` : ''}${t.theme && chapters.includes(t.theme) ? partsOf([t.theme]) : ''}</div></td></tr>`).join('');
     const also = (d: any) => d.also.map((a: any) => itemByKey.get(a.key)).filter(Boolean) as Item[];
+    const live = (d: { id: string }) => { const p = plan.find((x) => x.dept === d.id); return !!p && (p.tasks.length > 0 || also(p).length > 0); };
     return `<section class="page" id="plan">
   <p class="eyebrow">Part ${n} · Action plan</p>
   <h2 class="display">Your action plan,<br><span class="g">department by department.</span></h2>
-  <p class="lead" style="max-width:40em">${tasks ? `${tasks} task${tasks === 1 ? '' : 's'}, compiled from all ${count(chapters.length)} parts and the analysis.` : 'Every urgent and needs-work finding, sorted by who does the work.'} Hand each list to the people who do the work, and tick each task off as it is done.</p>
-  <div class="depts">${DEPTS.map((d) => { const p = plan.find((x) => x.dept === d.id) ?? { tasks: [], also: [] }; const week = p.tasks.filter((t: any) => t.when === 'week').length; return `<a href="#plan-${d.id}"><b>${p.tasks.length || p.also.length}</b><span>${esc(d.title)}</span><span class="muted">${p.tasks.length ? (week ? `${week} this week` : 'none this week') : `${p.also.length ? 'findings' : 'nothing'} to fix`}</span></a>`; }).join('')}</div>
-  ${DEPTS.map((d) => { const p = plan.find((x) => x.dept === d.id) ?? { tasks: [], also: [] }; const more = also(p); return `<div class="dept" id="plan-${d.id}"><h3 class="sub">${esc(d.title)} <span class="muted deptc">${esc(d.covers)}</span></h3><p class="note"><b>Who does it:</b> ${esc(d.who)}</p>
+  <p class="lead" style="max-width:40em">${tasks ? `${plural(tasks, 'task', 'tasks')}, compiled from all ${count(chapters.length)} parts and the analysis.` : 'Every urgent and needs-work finding, sorted by who does the work.'} Hand each list to the people who do the work, and tick each task off as it is done.</p>
+  <div class="depts">${DEPTS.filter(live).map((d) => { const p = plan.find((x) => x.dept === d.id) ?? { tasks: [], also: [] }; const week = p.tasks.filter((t: any) => t.when === 'week').length; return `<a href="#plan-${d.id}"><b>${p.tasks.length || p.also.length}</b><span>${esc(d.title)}</span><span class="muted">${p.tasks.length ? (week ? `${week} this week` : 'none this week') : `${p.also.length ? 'findings' : 'nothing'} to fix`}</span></a>`; }).join('')}</div>
+  ${DEPTS.filter(live).length ? '' : '<p class="empty"><b>Nothing to hand to a department right now.</b> No finding in this report needs action.</p>'}
+  ${DEPTS.filter(live).map((d) => { const p = plan.find((x) => x.dept === d.id) ?? { tasks: [], also: [] }; const more = also(p); return `<div class="dept" id="plan-${d.id}"><h3 class="sub">${esc(d.title)} <span class="muted deptc">${esc(d.covers)}</span></h3><p class="note"><b>Who does it:</b> ${esc(d.who)}</p>
   ${p.tasks.length ? `<table class="band tasks"><tbody>${rows(p)}</tbody></table>` : ''}
-  ${more.length ? `<p class="lbl">${p.tasks.length ? 'Also on this list' : 'To fix'}</p><ul class="plain small">${more.map((x) => `<li>${esc(T(x))} ${partsOf([x.area])}</li>`).join('')}</ul>` : ''}
-  ${!p.tasks.length && !more.length ? '<p class="empty"><b>Nothing for this department right now.</b> No finding in this report needs its work.</p>' : ''}</div>`; }).join('')}
+  ${more.length ? `<p class="lbl">${p.tasks.length ? 'Also on this list' : 'To fix'}</p><ul class="plain small">${more.map((x) => `<li>${esc(T(x))} ${partsOf([x.area])}</li>`).join('')}</ul>` : ''}</div>`; }).join('')}
   ${followUp()}
   ${foot(`Part ${n} · Action plan`)}
 </section>`;
@@ -847,37 +891,37 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
   /** After the plan: check in 30 days that the fixes took, and the same audit for a competitor. No price or address is invented; see FOLLOW_UP. */
   function followUp(): string {
     const f = FOLLOW_UP;
-    const price = (p: string) => (p ? ` (${esc(p)})` : '');
+    const price = (p: string | undefined) => (p ? ` (${esc(p)})` : '');
     const book = f.email ? `<a href="mailto:${esc(f.email)}?subject=${encodeURIComponent(`Re-audit: ${name}`)}">Book the 30-day re-audit →</a>` : 'To book it, reply to the email that sent you this report.';
     return `<div class="followup"><p class="lbl">Next step · Check that the fixes worked</p><h3>Verify your fixes in 30 days</h3>
-    <p>Directories, search engines and AI assistants pick up changes at different speeds, so a fix made today does not show up everywhere on the same day. When your team has finished the tasks above, order a <b>30-day re-audit${price(f.reauditPrice)}</b>: we run the same checks again and show which problems are gone and which are still live.</p>
-    <p>${book} Want to see where a competitor stands? We can run this audit on them${price(f.competitorPrice)}.</p></div>`;
+    <p>Directories, search engines and AI assistants pick up changes at different speeds, so a fix made today does not show up everywhere on the same day. When your team has finished the tasks above, order a <b>30-day re-audit${price(f.reauditPrices[loc.currency])}</b>: we run the same checks again and show which problems are gone and which are still live.</p>
+    <p>${book} Want to see where a competitor stands? We can run this audit on them${price(f.competitorPrices[loc.currency])}.</p></div>`;
   }
 
   // Where a customer can slip away: counts taken from this run's own checks, never an estimated rate of lost sales.
   const leaks: string[] = [];
-  if (areaOf('contact')?.ran && R.contact.judged && R.contact.bad > 0) leaks.push(`${R.contact.bad} of the ${R.contact.total} contact details published about you lead the wrong way`);
-  if (areaOf('voice')?.ran && R.reviews.unanswered_low.length > 0) leaks.push(`${R.reviews.unanswered_low.length} bad Google review${R.reviews.unanswered_low.length === 1 ? '' : 's'} still ${R.reviews.unanswered_low.length === 1 ? 'has' : 'have'} no reply from you`);
-  if (areaOf('understanding')?.ran && R.ai.trade_answers > 0 && R.ai.named_us < R.ai.trade_answers) leaks.push(`${R.ai.trade_answers - R.ai.named_us} of ${R.ai.trade_answers} AI answers about your trade do not recommend you`);
+  if (areaOf('contact')?.ran && R.contact.judged && R.contact.bad > 0) leaks.push(`${counts.contact.bad} of the ${plural(counts.contact.total, 'contact detail', 'contact details')} published about you ${counts.contact.bad === 1 ? 'leads' : 'lead'} the wrong way`);
+  if (areaOf('voice')?.ran && counts.reviews.unanswered > 0) leaks.push(`${plural(counts.reviews.unanswered, 'bad Google review', 'bad Google reviews')} still ${counts.reviews.unanswered === 1 ? 'has' : 'have'} no reply from you`);
+  if (areaOf('understanding')?.ran && R.ai.trade_answers > 0 && R.ai.named_us < R.ai.trade_answers) leaks.push(`${R.ai.trade_answers - R.ai.named_us} of ${plural(R.ai.trade_answers, 'AI answer', 'AI answers')} about your trade ${R.ai.trade_answers - R.ai.named_us === 1 ? 'does' : 'do'} not recommend you`);
   if (areaOf('speed')?.ran && R.speed.main_mobile && R.speed.main_mobile.scores.performance < 90) leaks.push(`your homepage scores ${R.speed.main_mobile.scores.performance} out of 100 for speed on a phone`);
-  if (mismatch.length > 0) leaks.push(`${mismatch.length} detail${mismatch.length === 1 ? '' : 's'} about your company ${mismatch.length === 1 ? 'is' : 'are'} not the same in every public source`);
-  if (areaOf('assets')?.ran && R.assets.issues > 0) leaks.push(`${R.assets.issues} risk${R.assets.issues === 1 ? '' : 's'} in the domains and email that carry your name`);
+  if (counts.conflicts > 0) leaks.push(`${plural(counts.conflicts, 'detail', 'details')} about your company ${counts.conflicts === 1 ? 'is' : 'are'} not the same in every public source`);
+  if (areaOf('assets')?.ran && counts.assets.issues > 0) leaks.push(`${plural(counts.assets.issues, 'risk', 'risks')} in the domains and email that carry your name`);
   const leakHtml = leaks.length ? `<div class="leak"><p class="lbl">Where customers can slip away</p><ul>${leaks.slice(0, 5).map((x) => `<li>${esc(typeset(x.charAt(0).toUpperCase() + x.slice(1)))}</li>`).join('')}</ul><p class="note">Counted from the checks in this report. We do not guess how many sales each one costs.</p></div>` : '';
 
-  return shell(`${name}: Online Presence Audit`, `<section class="page dark cover">
+  const page = shell(`${name}: Online Presence Audit`, `<section class="page dark cover">
   <div class="cover-top"><b>${esc(name)}</b><span>Online Presence Audit ${esc(R.checked_on.slice(0, 4))}${refNo ? ` · ${esc(refNo)}` : ''}</span></div>
   <div class="cover-mid">
     <h1>How customers, Google and AI<br><span class="g">see, reach and check your business.</span></h1>
     ${coverShot ? `<div><div class="phone"><img src="data:image/jpeg;base64,${coverShot.img}" alt="${esc(name)} homepage on a phone"></div><p class="phone-cap">${esc(hostOf(coverShot.url))} on a phone</p></div>` : ''}
   </div>
-  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(R.reviews.total)} reviews read · ` : ''}${R.ai.answers ? `${esc(R.ai.answers)} AI answers read · ` : ''}every page of your sites tested</div></div>
+  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(pl(R.reviews.total, 'review', 'reviews'))} read · ` : ''}${R.ai.answers ? `${esc(pl(R.ai.answers, 'AI answer', 'AI answers'))} read · ` : ''}every page of your sites tested</div></div>
 </section>
 
 <nav class="chapnav" aria-label="Sections"><a href="#glance">At a glance</a>${stories.length ? '<a href="#stories">Fix first</a>' : ''}${chapters.map((id) => `<a href="#ch-${id}">${esc(CHAPTER_EYEBROW[id])}</a>`).join('')}${hasRec ? '<a href="#ai-recommend">AI recommends you?</a>' : ''}<a href="#analysis">Full analysis</a><a href="#stranger">Trust</a><a href="#plan">Action plan</a><a href="#ready">Ready to use</a><a href="#appendix">Checklist</a></nav>
 
 <section class="page dark" id="glance">
   <p class="eyebrow">At a glance</p>
-  <h2 class="display">Where you stand,<br><span class="g">in ${['no', 'one', 'two', 'three', 'four', 'five', 'six'][big.length] ?? big.length} numbers.</span></h2>
+  <h2 class="display">${big.length ? `Where you stand,<br><span class="g">in ${count(big.length)} numbers.</span>` : 'Where you stand.'}</h2>
   ${big.length ? `<div class="stats">${big.map(([id, v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>` : ''}
   ${verdict ? `<p class="verdict" style="margin-top:14px">${esc(verdict)}</p>` : ''}
   ${leakHtml}
@@ -888,7 +932,7 @@ export function buildReport(dive: any, lanes: Record<string, any>): string {
 ${stories.length ? `<section class="page" id="stories">
   <p class="eyebrow">Fix these first</p>
   <h2 class="display">${stories.length === 1 ? 'One problem' : `${['', 'One', 'Two', 'Three'][stories.length]} problems`}<br><span class="g">are costing you the most customers.</span></h2>
-  <p class="lead" style="max-width:40em">Out of ${R.items.length} things we checked, these ${stories.length === 1 ? 'is the one' : `are the ${stories.length}`} that turn the most customers away. Each has its own part with the evidence.</p>
+  <p class="lead" style="max-width:40em">Out of ${counts.items} things we checked, these ${stories.length === 1 ? 'is the one' : `are the ${stories.length}`} that turn the most customers away. Each has its own part with the evidence.</p>
   <div class="three">${stories.map((s: any, i: number) => `<div class="item"><span class="n">${String(i + 1).padStart(2, '0')}</span><div><p class="lbl">${esc(CHAPTER_EYEBROW[s.theme])} · Part ${chapterNo(s.theme)}</p><h3>${esc(tie(s.headline))}</h3>
     <div class="cols"><div><p class="lbl">What it costs you</p><p>${esc(s.cost)}</p></div><div><p class="lbl">Do this first</p><p>${esc(s.fix)}</p></div></div></div></div>`).join('')}</div>
   ${foot('Fix these first')}
@@ -911,8 +955,8 @@ ${analysis()}
     ${R.identity.address ? `<tr><td>Address</td><td>${esc(R.identity.address)}</td></tr>` : ''}
     ${R.identity.domains.length ? `<tr><td>Websites</td><td>${esc(R.identity.domains.join(', '))}</td></tr>` : ''}
   </tbody></table>
-  ${mismatch.length ? `<h3 class="sub">What does not add up</h3><table class="band"><tbody>${mismatch.map((m: any) => `<tr><td><p class="t">${esc(m.issue)}</p>${m.settled ? `<p class="w">The official register ${esc(m.settled)}</p>` : ''}</td><td class="where">${m.source ? seeIt(m.source) : ''}</td></tr>`).join('')}</tbody></table>` : ''}
-  ${R.reviews.good_quotes.length ? `<h3 class="sub">What your customers say, in their words</h3><div class="quotes">${R.reviews.good_quotes.map((q: any) => `<blockquote>“${esc(typeset(cleanText(clip(String(q.text), 260))))}”<cite>${esc(q.author)} · ${esc(dateOf(q.date))}</cite></blockquote>`).join('')}</div>${R.reviews.praise.length ? `<p class="note">Praised most for: ${esc(R.reviews.praise.map(([p, n]) => `${p} (${n})`).join(', '))}. None of this appears on your website yet.</p>` : ''}` : ''}
+  ${counts.conflicts ? `<h3 class="sub">What does not add up</h3><table class="band"><tbody>${mismatch.map((m: any) => `<tr><td><p class="t">${esc(m.issue)}</p>${m.settled ? `<p class="w">The official register ${esc(m.settled)}</p>` : ''}</td><td class="where">${m.source ? seeIt(m.source) : ''}</td></tr>`).join('')}</tbody></table>` : ''}
+  ${R.reviews.good_quotes.length ? `<h3 class="sub">What your customers say, in their words</h3><div class="quotes">${R.reviews.good_quotes.map((q: any) => `<blockquote>“${esc(typeset(cleanText(clip(String(q.text), 260))))}”<cite>${esc(dateOf(q.date))}</cite></blockquote>`).join('')}</div>${R.reviews.praise.length ? `<p class="note">Praised most for: ${esc(R.reviews.praise.map(([p, n]) => `${p} (${n})`).join(', '))}. None of this appears on your website yet.</p>` : ''}` : ''}
   ${privateItems.length ? `<div class="private"><p class="lbl" style="color:var(--urgent)">Private: for you only</p><ul class="plain">${privateItems.map((x) => `<li>${x}</li>`).join('')}</ul></div>` : ''}
   ${foot(`Part ${chapters.length + 1} · What a stranger sees`)}
 </section>
@@ -930,7 +974,7 @@ ${actionPlan()}
   ${(site.pages_to_fix ?? []).length ? `<h4 class="tbl-h">Pages to fix</h4><table class="band"><thead><tr><th>Page</th><th>Problem</th><th>Fix</th></tr></thead><tbody>${site.pages_to_fix.map((p: any) => `<tr><td>${esc(p.page)}</td><td>${esc(p.problem)}</td><td>${esc(p.fix)}</td></tr>`).join('')}</tbody></table>` : ''}` : '<p class="note">The website plan was not written in this run.</p>'}
   ${(site?.pages_to_add ?? []).length ? `<h3 class="sub" id="d-pages">Pages to add, town by town</h3><div class="grid3">${site.pages_to_add.map((p: any) => `<div class="box"><code>${esc(p.slug)}</code><h4>${esc(p.title)}</h4><p class="muted">${esc(p.why)}</p><ul>${(p.outline ?? []).map((o: string) => `<li>${esc(o)}</li>`).join('')}</ul></div>`).join('')}</div>` : ''}
   <h3 class="sub" id="d-reviews">Review replies, ready to post</h3>
-  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any, n: number) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(t.author ?? '')} · ${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(cleanText(clip(String(t.text), 260))))}</p>` : '<p class="q">(star rating only)</p>'}</div><div>${copyBtn(`reply-${n}`, 'reply')}<p class="a" id="reply-${n}">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
+  ${(replies?.replies ?? []).length ? `${replies.replies.map((x: any, n: number) => { const t = targets[x.i] ?? {}; return `<div class="reply"><div><p class="small"><span class="stars">${stars(Number(t.stars) || 0)}</span> <span class="muted">${esc(dateOf(t.date))}</span></p>${t.text ? `<p class="q">${esc(typeset(cleanText(clip(String(t.text), 260))))}</p>` : '<p class="q">(star rating only)</p>'}</div><div>${copyBtn(`reply-${n}`, 'reply')}<p class="a" id="reply-${n}">${esc(x.reply)}</p>${x.reply_en ? `<p class="a muted">${esc(x.reply_en)}</p>` : ''}${x.note ? `<p class="small muted" style="margin-top:4px"><b>Before posting:</b> ${esc(x.note)}</p>` : ''}</div></div>`; }).join('')}
   <div class="grid2" style="margin-top:6px">${replies.template_5star ? `<div class="box"><h4>Thank-you reply for 5★ reviews</h4>${copyBtn('reply-5star', 'reply')}<p id="reply-5star">${esc(replies.template_5star)}</p></div>` : ''}${replies.ask_message ? `<div class="box"><h4>WhatsApp message asking for a review</h4>${copyBtn('reply-ask', 'message')}<p id="reply-ask">${esc(replies.ask_message)}</p></div>` : ''}</div>` : '<p class="note">No unanswered reviews needed a draft.</p>'}
   <h3 class="sub" id="d-ai">Getting recommended by AI assistants</h3>
   ${ai ? `${(ai.actions ?? []).length ? `<div class="fixes">${ai.actions.map((a: any) => `<div><div><h4>${esc(tidy(a.action))}</h4><p class="w">${esc(tidy(a.why))}</p><p class="small" style="margin-top:3px">${esc(tidy(a.how))}</p></div><div class="tags"><span class="pill info">${esc(a.effort)}</span><span class="pill ${a.impact === 'high' ? 'urgent' : 'fix'}">${esc(a.impact)} impact</span></div></div>`).join('')}</div>` : ''}
@@ -943,13 +987,13 @@ ${actionPlan()}
 <section class="page" id="appendix">
   <p class="eyebrow">Appendix</p>
   <h2 class="display">The full checklist.<br><span class="g">Every finding, part by part.</span></h2>
-  ${AREAS.filter((a) => byArea(a.id).length).map((a) => { const list = byArea(a.id); return `<div id="appx-${a.id}"><h3 class="sub" style="font-size:17px">${esc(a.title)} <span class="muted" style="font-family:var(--body);font-size:11px;font-weight:400;letter-spacing:0">${list.filter((x) => x.severity === 'high').length} urgent · ${list.filter((x) => x.severity === 'medium').length} need work · ${list.length} in all</span></h3>${itemRows(list)}</div>`; }).join('')}
+  ${AREAS.filter((a) => byArea(a.id).length).map((a) => { const list = byArea(a.id); return `<div id="appx-${a.id}"><h3 class="sub" style="font-size:17px">${esc(a.title)} <span class="muted" style="font-family:var(--body);font-size:11px;font-weight:400;letter-spacing:0">${[counts.byArea[a.id].urgent ? `${counts.byArea[a.id].urgent} urgent` : '', counts.byArea[a.id].needs ? `${counts.byArea[a.id].needs} need work` : '', `${counts.byArea[a.id].all} in all`].filter(Boolean).join(' · ')}</span></h3>${itemRows(list)}</div>`; }).join('')}
   ${dive.v21 && !dive.dossier ? '<p class="note">V2.1 has no company-dive background dossier; that appendix is omitted.</p>' : `<details><summary>Background research on the company</summary><p class="note" style="margin:4px 0 10px">Written from public sources on ${esc(dateOf(dive.finished_at))}, before the checks in this report. Where they differ, the checks are newer and win.</p><div class="dossier">${md(scrub(dive.dossier))}</div></details>`}
   ${sources.length ? `<details><summary>Sources <span class="muted">(${sources.length})</span></summary><ol class="sources">${sources.map((s: any) => `<li id="src-${esc(s.id)}" value="${esc(s.id)}">${/^https?:\/\//.test(s.url) ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(typeset(clip(String(s.title || hostOf(s.url)), 90)))}</a> · ${esc(hostOf(s.url))}` : esc(typeset(String(s.title ?? '')))}</li>`).join('')}</ol></details>` : ''}
   <div class="colophon">
     <div><p class="lbl">Prepared for</p><p>${esc(name)}</p></div>
     <div><p class="lbl">Checked</p><p>${esc(checkedOn)}</p></div>
-    <div><p class="lbl">Background research</p><p>${esc(dateOf(dive.finished_at))}${sources.length ? `, from ${esc(sources.length)}${NB}public source${sources.length === 1 ? '' : 's'}` : ''}</p></div>
+    <div><p class="lbl">Background research</p><p>${esc(dateOf(dive.finished_at))}${sources.length ? `, from ${plural(sources.length, 'public source', 'public sources')}` : ''}</p></div>
     <div><p class="lbl">Report</p><p>Online Presence Audit ${esc(R.checked_on.slice(0, 4))}${refNo ? ` · ${esc(refNo)}` : ''}</p></div>
   </div>
   <div class="note method" style="margin-top:8px"><p class="lbl">How we checked</p><p>Every phone number, email and WhatsApp link published about you was searched on the web and traced to where it leads. Your homepage and service pages were compared with what search results, independent pages and AI assistants say about you. News, forums and social media were searched for your company and its key people. Bank Negara and Securities Commission alert lists, published court judgments, insolvency notices, Bursa Malaysia, government websites and trademark listings were searched for your name; the MyIPO trademark register needs a login and was not searched; paid registers (SSM documents, CTOS, CCRIS) were not bought. Each domain was looked up in its registry (MYNIC or RDAP), its DNS, its hosting network and the public certificate logs; each mail server was checked against the Barracuda and SpamCop spam blacklists, and each email domain’s SPF, DKIM and DMARC records were read. ${dive.v21 ? 'The website speed scores and Google review sample were reused from V2.1 Step 1.5; no new PageSpeed or review request was made. Review reply counts cover the saved sample, which may be smaller than the listing total.' : 'Each official homepage was tested with Google PageSpeed Insights on mobile and desktop. Every Google review on your Maps listings was read.'} Maps ranks come from Google Maps searches without a phone’s location, so a customer nearby may see a slightly different order; web ranks come from Brave Search set to Malaysia. Each licence and award was looked up in its issuer’s own register. Every page of your websites was read and its links and numbers tested. AI answers come from ${esc(aiModels)}, asked each question several times with a web search. The ready-to-use drafts were written with AI from these findings. Checked ${esc(checkedOn)}; background research from ${esc(dateOf(dive.finished_at))}.</p></div>
@@ -958,4 +1002,8 @@ ${actionPlan()}
 </section>
 
 `);
+  // PL22: an anchor that points nowhere is shown as plain text.
+  const dead = new Set(deadLinks(page).map((x) => x.slice(1)));
+  const html = dead.size ? page.replace(/<a[^>]*href="#([^"]+)"[^>]*>([\s\S]*?)<\/a>/g, (m, id, inner) => (dead.has(id) ? inner : m)) : page;
+  return { html, counts };
 }
