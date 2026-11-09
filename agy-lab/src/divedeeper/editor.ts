@@ -5,6 +5,8 @@
 // Where sources conflict, the official register wins over the company-dive's research
 // (a CIDB grade read from CIDB beats one a website or directory printed).
 import { savedReviews } from './v21/reviews.ts';
+import { claimMismatches, daysToImpact, severity as urgency, rankKey, phonesIn, plural, similarPairs } from '../report-rules/index.ts';
+import { isJudged } from './check.ts';
 
 // The malaysia-deeper-dive report is read in six research parts, then one full analysis and one action plan. A lane can feed two
 // parts: C-merged's website checks are sorted by what each one is about (see partOfCheck).
@@ -30,7 +32,7 @@ export function partOfCheck(check: string | undefined): Area {
   return 'understanding';
 }
 
-export type Item = { key: string; lane: string; area: Area; severity: string; title: string; detail: string; source: string | null; check?: string; raw: any };
+export type Item = { key: string; lane: string; area: Area; severity: string; title: string; detail: string; source: string | null; check?: string; raw: any; days: number | null; rank: number; ownership?: string; evidence?: string[] };
 
 // The action plan (sections/S5-plan.ts) hands every task to the department that does it.
 export type Dept = 'website' | 'social' | 'it' | 'other';
@@ -56,30 +58,99 @@ const short = (n: string) => n.replace(/\s*[-–|].*$/, '').replace(/\s+(Sdn\.?\
 const token = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim().split(/\s+/)[0] ?? '';
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
-/** Every finding in the report, with a stable key (lane#index) the editor's plain titles hang on. */
-export function items(L: Record<string, any>): Item[] {
+const SEV_LEVEL: Record<string, number> = { high: 3, medium: 2, low: 1, info: 1 };
+const factsOf = (text: string, country: string): Set<string> => new Set([
+  ...phonesIn(text, country),
+  ...(text.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []).map((x) => x.toLowerCase()),
+  ...(text.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []).map((x) => x.toLowerCase().replace(/^www\./, '')),
+]);
+const isProblem = (x: { severity: string }) => ['critical', 'high', 'medium'].includes(x.severity);
+
+/** Drops one finding and records why, so the drop is visible to us (never to the customer). */
+function recordDrop(L: Record<string, any>, lane: string, key: string, rule: string, detail: unknown) {
+  const drops = ((L[lane].notes ??= {}).report_drops ??= []) as any[];
+  if (!drops.some((d) => d.key === key && d.rule === rule)) drops.push({ key, rule, detail });
+}
+
+/** Every finding in the report, with a stable key (lane#index) the editor's plain titles hang on, best first (PL11, PL13). */
+export function items(L: Record<string, any>, country = ''): Item[] {
   const out: Item[] = [];
   // S1-recheck's verdicts (check.ts): a finding it found false is left out, one it found weak is lowered. Absent when it did not run.
   const rechecked: Record<string, { verdict: string }> = L['S1-recheck']?.notes?.verdicts ?? {};
+  const now = new Date();
   for (const lane of STAGE1_LANES) (L[lane]?.findings ?? []).forEach((f: any, i: number) => {
+    const key = `${lane}#${i}`;
     if (isPrivate(f)) return;
-    if (rechecked[`${lane}#${i}`]?.verdict === 'false') return;
+    // PL10: a signal about who a person is (a reviewer who may be staff) is off unless the policy flag is on.
+    if (process.env.REPORT_IDENTITY_SIGNALS !== 'on' && (f.kind === 'identity' || /^identity/.test(String(f.check ?? '')) || /(?:reviewer|review).{0,60}(?:staff|employee|identity)|(?:staff|employee).{0,60}review/i.test(`${f.title ?? ''} ${f.detail ?? ''}`))) return recordDrop(L, lane, key, 'PL10', null);
+    if (rechecked[key]?.verdict === 'false') return;
     // Rollups repeat what the per-question findings say; the AI chart shows them instead.
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
     // Inventory and summary lines feed the part's table and headline number, not the finding list.
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
+    // PL4: every number, date, phone, email and URL a finding prints must be in its own quotes. No quote at all cannot support
+    // one, unless the lane measured it (a register result, an RDAP/DNS/DMARC/PageSpeed check): the measurement is the evidence.
+    const quotes = [f.quote, ...(Array.isArray(f.quotes) ? f.quotes : []), f.evidence].filter((q): q is string => typeof q === 'string' && !!q.trim());
+    const printed = `${f.title ?? ''} ${f.detail ?? ''}`;
+    const bad = quotes.length ? claimMismatches(printed, quotes) : f.measured === true || !isJudged({ lane, check: f.check }) ? [] : claimMismatches(printed, []);
+    if (bad.length) return recordDrop(L, lane, key, 'PL4', bad);
     const area = lane === 'C-merged' ? partOfCheck(f.check) : AREAS.find((a) => a.lanes.includes(lane))!.id;
     // The register showing better than the claim (G7 where the site says G3) is a fix, not an alarm.
     const first = f.direction === 'undersell' ? 'medium' : String(f.severity ?? 'info');
-    const severity = rechecked[`${lane}#${i}`]?.verdict === 'weak' && (first === 'high' || first === 'medium') ? 'low' : first;
-    out.push({ key: `${lane}#${i}`, lane, area, severity, title: String(f.title ?? ''), detail: String(f.detail ?? ''), source: f.source ?? null, check: f.check, raw: f });
+    const base = rechecked[key]?.verdict === 'weak' && (first === 'high' || first === 'medium') ? 'low' : first;
+    // PL11: time to impact. The dated expiry (or the nearest date in the text of an expiry finding) moves the severity.
+    const dated = f.expires_at ? daysToImpact([String(f.expires_at)], now, { includePast: true }) : null;
+    const days = dated !== null ? dated : /expir|renew|deadline/i.test(`${printed} ${f.check ?? ''}`) ? daysToImpact([String(f.title ?? ''), String(f.detail ?? '')], now, { includePast: true }) : null;
+    const u = urgency({ recordLevel: SEV_LEVEL[base] ?? 1, confidence: f.confidence ?? 'high', days });
+    const severity = base === 'info' && u === 'low' ? 'info' : u;
+    out.push({ key, lane, area, severity, title: String(f.title ?? ''), detail: String(f.detail ?? ''), source: f.source ?? null, check: f.check, raw: f, days, rank: rankKey(u, days), ownership: f.ownership });
   });
-  return out;
+  out.sort((a, b) => b.rank - a.rank);
+  // PL14: the same check failing on several assets is one finding with one evidence row per asset.
+  const merged: Item[] = [];
+  const groups = new Map<string, Item>();
+  for (const x of out) {
+    const g = x.check && x.raw.domain ? `${x.lane}|${x.check}` : '';
+    const head = g ? groups.get(g) : undefined;
+    if (!head) { if (g) groups.set(g, x); merged.push(x); continue; }
+    (head.evidence ??= [head.title]).push(x.title);
+  }
+  // PL15: one fact lives in one section, problem > conflict > signal. A signal that repeats a problem's check and facts goes.
+  const problems = merged.filter(isProblem);
+  return merged.filter((x) => {
+    if (isProblem(x)) return true;
+    const mine = factsOf(`${x.title} ${x.detail}`, country);
+    const same = problems.find((p) => {
+      if (!p.check || p.check !== x.check) return false;
+      const theirs = factsOf(`${p.title} ${p.detail}`, country);
+      return mine.size ? [...mine].some((v) => theirs.has(v)) : !theirs.size && similarPairs([{ id: 'a', text: p.title }, { id: 'b', text: x.title }]).length > 0;
+    });
+    if (same) recordDrop(L, x.lane, x.key, 'PL15', same.key);
+    return !same;
+  });
+}
+
+/** PL15: conflicts the problems already say are removed; signals a conflict already says are removed. Returns what is left. */
+export function dedupeSections<C extends { issue?: string }>(list: Item[], conflicts: C[], country: string): { items: Item[]; conflicts: C[] } {
+  const covered = (text: string, by: string[]) => { const f = factsOf(text, country); return f.size > 0 && [...f].every((v) => by.some((t) => factsOf(t, country).has(v))); };
+  const problemText = list.filter(isProblem).map((x) => `${x.title} ${x.detail}`);
+  const kept = conflicts.filter((c) => !covered(String(c.issue ?? ''), problemText));
+  const conflictText = kept.map((c) => String(c.issue ?? ''));
+  return { conflicts: kept, items: list.filter((x) => isProblem(x) || !covered(`${x.title} ${x.detail}`, conflictText)) };
+}
+
+/** PL5: only a domain we know the company owns gets "your domain" and "Renew / Set DMARC" wording; any other gets a neutral one. */
+export function ownershipWording(x: Item, text: string, officialDomains: string[]): string {
+  const domain = String(x.raw?.domain ?? '').toLowerCase().replace(/^www\./, '');
+  if (!domain && !x.ownership) return text;
+  const official = officialDomains.some((d) => String(d).toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') === domain);
+  if (x.ownership === 'owned' || (!x.ownership && official)) return text;
+  return text.replace(/\byour (domain|website address)\b/gi, 'the $1').replace(/(^|[.!?]\s+)(Renew|Set(?: up)? (?:a |the )?(?:DMARC|SPF|DKIM)\b)/g, (_, pre, verb) => `${pre}If you control the domain, ${verb.charAt(0).toLowerCase()}${verb.slice(1)}`);
 }
 
 /** Act now / needs work / good, from the urgent and needs-work items in an area. */
 export function status(list: Item[]): [string, string] {
-  const hi = list.filter((x) => x.severity === 'high').length;
+  const hi = list.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length;
   const md = list.filter((x) => x.severity === 'medium').length;
   return hi >= 2 ? ['urgent', 'Act now'] : hi || md >= 2 ? ['fix', 'Needs work'] : ['good', 'Good'];
 }
@@ -90,7 +161,7 @@ export function resolve(dive: any, L: Record<string, any>) {
   const name = String(id.legal_name ?? dive?.company ?? '');
   const brand = token(name);
   const now = (L['E-maps']?.ran_at ?? L['H-maps']?.ran_at ?? new Date().toISOString()).slice(0, 10);
-  const all = items(L);
+  const all = items(L, String(dive?.country ?? ''));
 
   // ---- reviews ----
   const en = dive?.v21 && !L['E-maps']?.notes?.reviews?.length ? savedReviews(dive) : L['E-maps']?.notes ?? {};
@@ -286,7 +357,7 @@ export function resolve(dive: any, L: Record<string, any>) {
 
   // ---- part 5: digital assets ----
   const assetRows: any[] = L['A-assets']?.notes?.domains ?? [];
-  const assetIssues = all.filter((x) => x.area === 'assets' && (x.severity === 'high' || x.severity === 'medium')).length;
+  const assetIssues = all.filter((x) => x.area === 'assets' && ((x.severity === 'high' || x.severity === 'critical') || x.severity === 'medium')).length;
 
   // ---- part 6: Google PageSpeed Insights on the official homepages ----
   const psi: any[] = (L['W-speed']?.notes?.pages ?? []).filter((p: any) => p.ok);
@@ -299,17 +370,17 @@ export function resolve(dive: any, L: Record<string, any>) {
   const regCheckable = credentials.filter((c: any) => !/can't check/.test(c.verdict)).length;
   const metric: Record<Area, string | null> = {
     // Until the judge has spoken, every point is "unclear": count what was traced, not "0 reach you".
-    contact: contact.total ? (contact.judged ? `${contact.ok} of ${contact.total} contact points reach you` : `${contact.total} contact points traced`) : null,
-    understanding: brandView.score != null ? `Understood ${brandView.score} out of 100` : tradeAnswers ? `Recommended in ${namedUs} of ${tradeAnswers} AI answers` : null,
-    voice: totalReviews ? `${replied} of ${totalReviews} reviews answered${news.counts ? ` · ${news.counts.news} news article${news.counts.news === 1 ? '' : 's'}` : ''}` : news.counts ? `${news.counts.news} news articles, ${news.counts.negative} negative mentions` : null,
-    credibility: risky.length ? `${risky.filter((c) => c.result === 'clear').length} of ${risky.length} risk checks clear${regCheckable ? ` · ${regOk} of ${regCheckable} claims confirmed` : ''}` : regCheckable ? `${regOk} of ${regCheckable} checkable claims confirmed` : null,
-    assets: assetRows.length ? `${assetRows.length} domains · ${assetIssues} at risk` : null,
+    contact: contact.total ? (contact.judged ? `${contact.ok} of ${plural(contact.total, 'contact point', 'contact points')} ${contact.total === 1 ? 'reaches' : 'reach'} you` : `${plural(contact.total, 'contact point', 'contact points')} traced`) : null,
+    understanding: brandView.score != null ? `Understood ${brandView.score} out of 100` : tradeAnswers ? `Recommended in ${namedUs} of ${plural(tradeAnswers, 'AI answer', 'AI answers')}` : null,
+    voice: totalReviews ? `${replied} of ${plural(totalReviews, 'review', 'reviews')} answered${news.counts ? ` · ${plural(news.counts.news, 'news article', 'news articles')}` : ''}` : news.counts ? `${plural(news.counts.news, 'news article', 'news articles')}, ${plural(news.counts.negative, 'negative mention', 'negative mentions')}` : null,
+    credibility: risky.length ? `${risky.filter((c) => c.result === 'clear').length} of ${plural(risky.length, 'risk check', 'risk checks')} clear${regCheckable ? ` · ${regOk} of ${plural(regCheckable, 'claim', 'claims')} confirmed` : ''}` : regCheckable ? `${regOk} of ${plural(regCheckable, 'checkable claim', 'checkable claims')} confirmed` : null,
+    assets: assetRows.length ? `${plural(assetRows.length, 'domain', 'domains')} · ${assetIssues} at risk` : null,
     speed: mainMobile ? `${mainMobile.scores.performance} out of 100 on mobile, ${mainMobile.site}` : null,
   };
   const areas = AREAS.map((a) => {
     const ran = a.lanes.some((l) => L[l]);
     const list = all.filter((x) => x.area === a.id);
-    return { id: a.id, title: a.title, ran, status: ran ? status(list) : ['info', 'Not checked'], metric: ran ? metric[a.id] : null, high: list.filter((x) => x.severity === 'high').length, medium: list.filter((x) => x.severity === 'medium').length };
+    return { id: a.id, title: a.title, ran, status: ran ? status(list) : ['info', 'Not checked'], metric: ran ? metric[a.id] : null, high: list.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length, medium: list.filter((x) => x.severity === 'medium').length };
   });
 
   return {
@@ -320,7 +391,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion },
     rec,
     credentials: { cidb_grade: cidbGrade, cidb_detail: cidb?.detail ?? null, list: credentials, undersells },
-    website: { issues: site.filter((x) => x.severity === 'high' || x.severity === 'medium').length, high: site.filter((x) => x.severity === 'high').length, copy_errors: copyErrors, phones },
+    website: { issues: site.filter((x) => (x.severity === 'high' || x.severity === 'critical') || x.severity === 'medium').length, high: site.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length, copy_errors: copyErrors, phones },
     speed: { pages: psi, main_mobile: mainMobile },
     contact, brand_view: brandView, news, records: { checks, risky }, assets: { domains: assetRows, issues: assetIssues, subdomains: L['A-assets']?.notes?.subdomains ?? [], email: L['A-assets']?.notes?.email ?? [], blacklists: L['A-assets']?.notes?.blacklists ?? [], lookalikes: L['A-assets']?.notes?.lookalikes ?? [] },
     items: all,

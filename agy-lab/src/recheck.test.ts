@@ -33,7 +33,7 @@ test('a finding the recheck found false is left out, a weak one is lowered, the 
   assert.equal(items(L).length, 4);
   const withVerdicts = { ...L, 'S1-recheck': { notes: { verdicts: { 'K-credibility#2': { verdict: 'false', why: 'a namesake' }, 'K-credibility#1': { verdict: 'weak', why: 'minor' } } } } };
   const got = items(withVerdicts);
-  assert.deepEqual(got.map((x) => [x.title, x.severity]), [['court case A', 'high'], ['court case B', 'low'], ['fine D', 'high']]);
+  assert.deepEqual(got.map((x) => [x.title, x.severity]), [['court case A', 'high'], ['fine D', 'high'], ['court case B', 'low']]);
 });
 
 test('S1 sends only the judged lanes\' urgent and needs-work findings; mechanical lanes and low findings never go', async () => {
@@ -56,7 +56,7 @@ test('S1 sends only the judged lanes\' urgent and needs-work findings; mechanica
 });
 
 test('S1 verdicts are read by id; "false" without a reason counts as real; unknown ids and verdicts are ignored', async () => {
-  const d = await lanesOnDisk({ 'K-credibility': { findings: Array.from({ length: 12 }, (_, i) => f(`finding ${i}`)) } });
+  const d = await lanesOnDisk({ 'K-credibility': { findings: Array.from({ length: 12 }, (_, i) => f(`finding ${String.fromCharCode(65 + i)}`)) } });
   try {
     const { ctx } = ctxFor(d.id, 'S1', 'recheck', () => JSON.stringify({ verdicts: [
       { id: 'F1', verdict: 'false', why: 'a namesake company' },
@@ -78,7 +78,7 @@ test('S1 verdicts are read by id; "false" without a reason counts as real; unkno
 });
 
 test('S1 does not believe a recheck that condemns more than 40% of what it was asked', async () => {
-  const d = await lanesOnDisk({ 'K-credibility': { findings: Array.from({ length: 6 }, (_, i) => f(`finding ${i}`)) } });
+  const d = await lanesOnDisk({ 'K-credibility': { findings: Array.from({ length: 6 }, (_, i) => f(`finding ${String.fromCharCode(65 + i)}`)) } });
   try {
     const { ctx } = ctxFor(d.id, 'S1', 'recheck', () => JSON.stringify({ verdicts: ['F1', 'F2', 'F3'].map((id) => ({ id, verdict: 'false', why: 'because' })) }));
     const out = await recheck(ctx, dive);
@@ -129,7 +129,7 @@ test('applyCheck takes out the unsupported statements, puts a withdrawn task\'s 
 });
 
 test('S6 sends every statement with the findings as evidence; it withdraws the unsupported ones, and "unsupported" needs a reason', async () => {
-  const d = await lanesOnDisk({ 'K-credibility': { findings: [f('Court case in 2019 against Acme')] }, 'S4-analysis': { notes: S4 }, 'S5-plan': { notes: S5 } });
+  const d = await lanesOnDisk({ 'K-credibility': { findings: [f('Court case in 2019 against Acme', 'high', { quote: 'Court case in 2019 against Acme', party: 'independent' })] }, 'S4-analysis': { notes: S4 }, 'S5-plan': { notes: S5 } });
   try {
     const { ctx, prompts } = ctxFor(d.id, 'S6', 'check', () => JSON.stringify({ checks: [
       { id: 'stories.0', verdict: 'unsupported', why: 'cites 62 staff, no finding says so' },
@@ -140,6 +140,9 @@ test('S6 sends every statement with the findings as evidence; it withdraws the u
     const out = await checkReport(ctx, dive);
     assert.equal(prompts.length, 1);
     for (const s of ['Court case in 2019 against Acme', 'stories.0 | story | First story', 'task.website.1 | task | Add FAQ', 'MEASURED FACTS']) assert.ok(prompts[0].includes(s), s);
+    assert.match(prompts[0], /Court case in 2019 against Acme \| detail of Court case in 2019 against Acme \| independent/);
+    assert.ok(prompts[0].includes("party is 'independent', or the finding is a register, government or RDAP result"));
+    assert.ok(prompts[0].includes("only the company's own pages, listings or entries it submitted, mark it unsupported"));
     const n: any = out.notes;
     assert.deepEqual(n.unsupported.map((u: any) => u.id), ['stories.0']);
     assert.equal(n.asked, 12);

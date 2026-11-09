@@ -17,8 +17,9 @@ export function promptOf(name: string, evidence: string, facts: string, list: St
   return `You are the fact checker of an online presence audit for the owner of ${name}. Below is EVIDENCE (the findings and measured facts), then STATEMENTS the report is about to print. Check each statement against the evidence only.\n\n` +
     `For EACH statement decide:\n- "supported": every number, name, date and claim in it appears in the evidence or follows directly from it. Advice ("do X") is supported when the finding it responds to is in the evidence. Plain-word rewording of a finding is fine.\n` +
     `- "unsupported": it states a number, name, date or claim that the evidence does not contain, or it contradicts the evidence.\n` +
+    `A statement calling something independent, third-party or verified by someone is supported only if the findings it rests on come from an independent source (party is 'independent', or the finding is a register, government or RDAP result); if they are only the company's own pages, listings or entries it submitted, mark it unsupported.\n` +
     `Use "unsupported" only when you can name the part that is missing or wrong in one short sentence. When unsure, say "supported". Do not rewrite anything.\n\n` +
-    `MEASURED FACTS (settled):\n${facts}\n\nFINDINGS (the evidence), as part | severity | finding | detail:\n${evidence}\n\n` +
+    `MEASURED FACTS (settled):\n${facts}\n\nFINDINGS (the evidence), as part | severity | finding | detail | party:\n${evidence}\n\n` +
     `STATEMENTS, as id | kind | text:\n${list.map((s) => `${s.id} | ${s.kind} | ${clip(s.text, 600)}`).join('\n')}\n\n` +
     `Return JSON only: {"checks":[{"id":"stories.0","verdict":"supported|unsupported","why":"at most 20 words"}]} with one entry per statement, using the ids above.`;
 }
@@ -32,7 +33,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     return { findings: [{ title: 'Report statements checked', detail: 'nothing to check', severity: 'info', source: null, checked_at: ctx.now() }], notes: { asked: 0, unsupported: [], ignored: false } };
   }
   const plain: Record<string, { title: string }> = L['S3-editor']?.notes?.plain ?? {};
-  const evidence = R.items.map((x) => `${x.area} | ${x.severity} | ${clip(plain[x.key]?.title ?? x.title, 160)} | ${clip(x.detail, 260)}`).join('\n');
+  const evidence = R.items.map((x) => `${x.area} | ${x.severity} | ${clip(plain[x.key]?.title ?? x.title, 160)} | ${clip(x.detail, 260)} | ${x.raw.party ?? ''}`).join('\n');
   const facts = JSON.stringify(factsOf(R));
   const byId = new Map(list.map((s) => [s.id, s]));
   const raw: Record<string, { verdict: 'supported' | 'unsupported'; why: string }> = {};

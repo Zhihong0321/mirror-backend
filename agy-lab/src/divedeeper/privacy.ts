@@ -2,6 +2,7 @@
 // shows only the company itself and its publicly named leadership. The full report goes to the
 // client, so it may name their staff, but never prints a private document link (a proposal,
 // invoice or portal meant for one customer) or an ID number.
+import { findPII } from '../report-rules/index.ts';
 
 /** A link to a document or portal meant for one customer or for staff, never for the public. */
 const PRIVATE_URL = /proposal|invoice|quotation|receipt|[?&](uid|token|key)=|\/inv[-/]|\/(admin|agent|portal|dashboard)(\/|$|\?)/i;
@@ -106,3 +107,11 @@ export function scrub(text: unknown, opts: { phones?: boolean; staff?: string[] 
   }
   return s;
 }
+
+/** The customer's own report prints a phone only when it is one of the company's published contacts (any country, via libphonenumber). */
+export function scrubPersonalPhones(text: string, ctx: { country: string; companyPhones: string[] }): string {
+  return text.replace(/\+?\(?\d[\d\s().-]{6,}\d/g, (span) => (findPII(span, 'report', { ...ctx, personNames: [] }).length ? 'a phone number' : span));
+}
+
+/** Names the report may print: reviewers never, staff only where the role is leadership. */
+export const mayNamePerson = (role: unknown): boolean => isLeadershipStrict(role);
