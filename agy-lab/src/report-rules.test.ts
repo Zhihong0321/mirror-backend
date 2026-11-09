@@ -107,4 +107,6 @@ test('R4: email domains and timestamp dates support claims', () => {
     assert.equal(daysToImpact([timestamp], new Date('2026-11-09T00:00:00Z')), 25);
   }
   assert.deepEqual(claimMismatches('Value 123', ['VALUE   123.']), []);
+  assert.deepEqual(claimMismatches('expires in 26 days', ['2026-12-04T12:12:03Z']), ['26']);
+  assert.deepEqual(claimMismatches('since 2015', ['in 2015 we']), []);
 });

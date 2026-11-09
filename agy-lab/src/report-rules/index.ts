@@ -96,7 +96,7 @@ export function claimMismatches(text: string, quotes: string[], country?: string
   const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim().replace(/[\p{P}]+$/gu, '');
   const normalizedQuotes = quotes.map(normalize);
   const quoteDigits = quotes.flatMap(q => [...q.matchAll(/\+?\d[\d ().-]{6,}\d/g)].map(m => m[0].replace(/\D/g, '')));
-  return [...new Set(claims(text, country).filter(([v, n]) => !supported.has(n) && !(v && normalizedQuotes.some(q => q.includes(normalize(v)))) && !(n.startsWith('phone:') && quoteDigits.includes(n.slice(6)))).map(([v]) => v))];
+  return [...new Set(claims(text, country).filter(([v, n]) => !supported.has(n) && !(v && normalize(v) && normalizedQuotes.some(q => new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(normalize(v))}(?![\\p{L}\\p{N}])`, 'u').test(q))) && !(n.startsWith('phone:') && quoteDigits.includes(n.slice(6)))).map(([v]) => v))];
 }
 export const BANNED_WORDS: string[] = JSON.parse(readFileSync(new URL('./banned-words.json', import.meta.url), 'utf8').replace(/^\uFEFF/, ''));
 export function bannedWords(text: string): string[] {
