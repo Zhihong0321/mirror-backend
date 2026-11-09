@@ -1,4 +1,4 @@
-﻿import { test } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { cleanText, claimMismatches, similarPairs, bannedWords, phonesIn, findPII, daysToImpact, severity, rankKey, localeFor, formatMoney, bareIds, deadLinks, leftoverMarkdown, plural } from './report-rules/index.ts';
 
@@ -46,3 +46,25 @@ test('PL21, PL22 and PL24 lint and plurals', () => {
   assert.deepEqual([0,1,2].map(n => plural(n,'review','reviews')), ['0 reviews','1 review','2 reviews']);
 });
 
+
+test('PL1 preserves ordinary text and handles currency markers', () => {
+  for (const text of ['open 9 AM', '10 KM', '5 MB', '24 HR', 'info_sales@x.com', 'file_name', '5* rating', 'A*B']) assert.equal(cleanText(text), text);
+  for (const [input, output] of [['35**RM million+**', 'RM35 million+'], ['USD 2 **million**', 'USD 2 million'], ['3 juta Rp', 'Rp3 juta'], ['**bold** __bold__ *word* _word_ `code`', 'bold bold word word code']]) assert.equal(cleanText(input), output);
+});
+test('PL8 allows ordinary customer wording', () => {
+  assert.deepEqual(bannedWords('123 Orchard Lane; a prompt reply; tidy and Brave; fetch'), []);
+  assert.deepEqual(bannedWords('the fetch'), ['the fetch']);
+});
+test('PL11 includes the nearest past expiry when requested', () => {
+  const now = new Date('2026-11-09T12:00:00Z');
+  assert.equal(daysToImpact(['2026-11-04', '2026-11-20'], now, {includePast:true}), -5);
+  assert.equal(daysToImpact(['2026-11-09'], now, {includePast:true}), 0);
+  for (const days of [-5, 0]) assert.equal(severity({recordLevel:1, confidence:'low', days}), 'critical');
+});
+test('PL20 resolves countries across regions', () => {
+  for (const [country, code, currency] of [['Thailand','TH','THB'], ['Indonesia','ID','IDR'], ['Philippines','PH','PHP'], ['Vietnam','VN','VND'], ['Japan','JP','JPY'], ['Australia','AU','AUD'], ['India','IN','INR'], ['UAE','AE','AED'], ['Germany','DE','EUR'], ['GB','GB','GBP']]) {
+    const loc = localeFor(country); assert.equal(loc.country, code); assert.equal(loc.currency, currency); assert.equal(loc.dateLocale, `en-${code}`);
+  }
+  assert.equal(localeFor('Japan', 'ko').dateLocale, 'ko-KR');
+  assert.equal(localeFor('Unknown place').country, 'Unknown place');
+});

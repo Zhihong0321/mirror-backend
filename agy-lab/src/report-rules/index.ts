@@ -2,30 +2,45 @@
 import { findPhoneNumbersInText, parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
 
 export type Locale = { country: string; currency: string; price: string | null; dateLocale: string };
-const countries: Record<string, [string, string, string]> = {
-  malaysia: ['MY', 'MYR', 'en-MY'], my: ['MY', 'MYR', 'en-MY'],
-  korea: ['KR', 'KRW', 'ko-KR'], 'south korea': ['KR', 'KRW', 'ko-KR'], kr: ['KR', 'KRW', 'ko-KR'],
-  singapore: ['SG', 'SGD', 'en-SG'], sg: ['SG', 'SGD', 'en-SG'],
-  'united states': ['US', 'USD', 'en-US'], usa: ['US', 'USD', 'en-US'], us: ['US', 'USD', 'en-US'],
-  'united kingdom': ['GB', 'GBP', 'en-GB'], gb: ['GB', 'GBP', 'en-GB'],
-};
+const currencies: Record<string, string> = JSON.parse(readFileSync(new URL('./country-currencies.json', import.meta.url), 'utf8'));
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+const regions = new Map<string, string>();
+for (let a = 65; a <= 90; a++) for (let b = 65; b <= 90; b++) {
+  const code = String.fromCharCode(a, b);
+  const name = regionNames.of(code);
+  if (name && name !== code) { regions.set(code.toLowerCase(), code); regions.set(name.toLowerCase(), code); }
+}
+for (const [name, code] of Object.entries({ 'south korea': 'KR', korea: 'KR', usa: 'US', uk: 'GB', uae: 'AE', vietnam: 'VN', 'viet nam': 'VN' })) regions.set(name, code);
+function resolveCountry(country: string): string | undefined { return regions.get(country.trim().toLowerCase()); }
 export function localeFor(country: string, language: 'en' | 'ko' = 'en'): Locale {
-  const [code, currency, dateLocale] = countries[country.trim().toLowerCase()] ?? ['', 'USD', 'en-US'];
+  const code = resolveCountry(country);
+  const currency = (code && currencies[code]) || 'USD';
   let prices: Record<string, string> = {};
   try { prices = JSON.parse(process.env.REPORT_PRICES ?? '{}'); } catch { /* Missing or invalid configuration. */ }
-  return { country: code || country, currency, price: typeof prices?.[currency] === 'string' ? prices[currency] : null, dateLocale: language === 'ko' ? 'ko-KR' : dateLocale };
+  return { country: code || country, currency, price: typeof prices?.[currency] === 'string' ? prices[currency] : null, dateLocale: language === 'ko' ? 'ko-KR' : `en-${code || 'US'}` };
 }
 export function formatMoney(amount: number, loc: Locale): string {
   return new Intl.NumberFormat(loc.dateLocale, { style: 'currency', currency: loc.currency, maximumFractionDigits: 2 }).format(amount);
 }
+const currencyMarkers = new Set(Intl.supportedValuesOf('currency'));
+for (const code of Object.keys(currencies)) for (const currency of Intl.supportedValuesOf('currency')) {
+  const parts = new Intl.NumberFormat(`en-${code}`, { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).formatToParts(1);
+  const marker = parts.find(part => part.type === 'currency')?.value;
+  if (marker) currencyMarkers.add(marker);
+}
+// KM is also a common distance unit, so leave it in its original order. 
+currencyMarkers.delete('KM');
+const currencyPattern = [...currencyMarkers].sort((a, b) => b.length - a.length).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+const trailingCurrency = new RegExp(`(\\d[\\d,.]*)(\\s+(?:[\\p{L}]+\\s+)?|\\s*)(${currencyPattern}|\\p{Sc})(?![\\p{L}\\p{N}])`, 'gu');
 export function cleanText(s: string): string {
   return s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/^\s{0,3}#{1,6}\s*/gm, '').replace(/^\s*[-*+]\s+/gm, '')
-    .replace(/\*\*|__|[*_`]/g, '').replace(/(\d[\d,.]*)\s*([A-Z]{2,3}|\p{Sc})(?=\s|\d|$)/gu, '$2$1')
+    .replace(/\*\*(?=\S)(.+?)(?<=\S)\*\*|(?<![\p{L}\p{N}_])__(?=\S)(.+?)(?<=\S)__(?![\p{L}\p{N}_])|(?<![\p{L}\p{N}_])\*(?=\S)(.+?)(?<=\S)\*(?![\p{L}\p{N}_])|(?<![\p{L}\p{N}_])_(?=\S)(.+?)(?<=\S)_(?![\p{L}\p{N}_])/gu, (_, a, b, c, d) => a ?? b ?? c ?? d)
+    .replace(/`([^`]+)`/g, '$1').replace(trailingCurrency, (_, number, middle, marker) => `${marker}${number}${middle.trim() ? ' ' + middle.trim() : ''}`)
     .replace(/\s+/g, ' ').trim();
 }
 export function plural(n: number, one: string, many: string): string { return `${n} ${n === 1 ? one : many}`; }
 function countryCode(country: string): CountryCode | undefined {
-  const code = countries[country.trim().toLowerCase()]?.[0] ?? country.toUpperCase();
+  const code = resolveCountry(country) ?? country.toUpperCase();
   return /^[A-Z]{2}$/.test(code) ? code as CountryCode : undefined;
 }
 export function phonesIn(text: string, country: string): string[] {
@@ -80,9 +95,10 @@ export function similarPairs(items: Array<{ id: string; text: string }>, thresho
   } return pairs;
 }
 export type Urgency = 'critical' | 'high' | 'medium' | 'low';
-export function daysToImpact(texts: string[], now: Date): number | null {
-  const dates = texts.flatMap(t => [...t.matchAll(datePattern)].map(m => dateValue(m[0]))).filter((n): n is number => n !== null && n >= Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  return dates.length ? Math.ceil((Math.min(...dates) - Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())) / 86400000) : null;
+export function daysToImpact(texts: string[], now: Date, options: { includePast?: boolean } = {}): number | null {
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const dates = texts.flatMap(t => [...t.matchAll(datePattern)].map(m => dateValue(m[0]))).filter((n): n is number => n !== null && (options.includePast || n >= today));
+  return dates.length ? Math.round((dates.sort((a, b) => Math.abs(a - today) - Math.abs(b - today) || a - b)[0] - today) / 86400000) : null;
 }
 export function severity(x: { recordLevel: number; confidence: string | undefined; days: number | null; reach?: number; breaks?: boolean }): Urgency {
   let level = Math.max(1, Math.min(4, x.recordLevel + (x.breaks ? 1 : 0)));
@@ -101,6 +117,7 @@ export function deadLinks(html: string): string[] {
   return [...new Set([...html.matchAll(/\bhref\s*=\s*["']#([^"']+)["']/gi)].map(m => m[1]).filter(id => !ids.has(id)).map(id => `#${id}`))];
 }
 export type GateFailure = { rule: string; where: string; detail: string };
+
 
 
 
