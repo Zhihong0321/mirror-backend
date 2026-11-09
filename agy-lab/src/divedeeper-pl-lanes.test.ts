@@ -9,6 +9,7 @@ import net from 'node:net';
 import tls from 'node:tls';
 import { htmlText, parseJson, writeLane, laneFile, type Ctx, type Finding } from './divedeeper/lib.ts';
 import { run as assets, ownershipOf, weakest, fixFor, mergeByCheck } from './divedeeper/sections/A-assets.ts';
+import { partyForUrl } from './divedeeper/sections/D-registry.ts';
 
 test('PL3 ownership comes from the registrant against the company names, for any country', () => {
   assert.equal(ownershipOf('NTK Elektro Oy', ['NTK Elektro Oy'], true), 'owned');
@@ -123,4 +124,35 @@ test('PL5 expiry on a domain held by a web agency is neutral', async (t) => {
   assert.match(u.detail, /If you control it, turn on auto-renew/);
   assert.doesNotMatch(u.title + u.detail, /your domain/i);
   assert.match(used.findings.find((f) => f.check === 'registrant')!.detail, /If you control it, transfer/);
+});
+
+test('R1 mergeByCheck: different failure modes of one check are not merged', () => {
+  const f = (domain: string, label: string, check = 'expiry', extra: Record<string, unknown> = {}) => ({ title: `${label} ${domain}`, detail: 'x', severity: 'medium', source: null, checked_at: 't', check, domain, ownership: 'owned', label, what: `${label}.`, fix: 'Fix.', ...extra }) as Finding;
+  const expiry = mergeByCheck([f('a.example', 'Registration expired'), f('b.example', 'Registration expires soon'), f('c.example', 'Registration expires soon')]);
+  assert.equal(expiry.length, 2);
+  assert.match(expiry.find((x) => /expired/.test(x.title))!.title, /a\.example/);
+  assert.equal((expiry.find((x) => /soon/.test(x.title))!.evidence_rows as any[]).length, 2);
+  const dmarc = mergeByCheck([f('a.example', 'No DMARC record', 'dmarc'), f('b.example', 'DMARC only watches', 'dmarc'), f('c.example', 'No DMARC record', 'dmarc')]);
+  assert.equal(dmarc.length, 2);
+  const spf = mergeByCheck([f('a.example', 'No SPF record', 'spf'), f('b.example', 'More than one SPF record', 'spf')]);
+  assert.equal(spf.length, 2);
+  assert.ok(spf.every((x) => /SPF/.test(x.title)));
+});
+
+test('R1 ownershipOf: a short name matches a whole word of the registrant', () => {
+  assert.equal(ownershipOf('HP Inc.', ['HP'], false), 'owned');
+  assert.equal(ownershipOf('3M Company', ['3M'], false), 'owned');
+  assert.equal(ownershipOf('SAP SE', ['SAP SE'], false), 'owned');
+  assert.equal(ownershipOf('LG Electronics Inc.', ['LG Electronics'], true), 'owned');
+  assert.equal(ownershipOf('비바리퍼블리카(토스)', ['토스'], false), 'owned');
+  assert.equal(ownershipOf('Hpe Holdings', ['HP'], true), 'used_by');
+  assert.equal(ownershipOf('Omega Foods', ['HP'], false), 'unknown');
+});
+
+test('R1 partyForUrl: no URL or an empty domain never counts as the company\'s own', () => {
+  assert.equal(partyForUrl(undefined, ['', 'example.com']), 'independent');
+  assert.equal(partyForUrl('', ['']), 'independent');
+  assert.equal(partyForUrl(null, undefined), 'independent');
+  assert.equal(partyForUrl('https://www.example.com/x', ['example.com']), 'first');
+  assert.equal(partyForUrl('https://register.gov.example/x', ['example.com']), 'independent');
 });

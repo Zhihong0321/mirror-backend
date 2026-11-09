@@ -226,7 +226,8 @@ const SOCIAL = /^(?:[a-z]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twit
 /** owned: the registrant is the company. used_by: the company uses the domain but the registrant is someone else or hidden. unknown: no tie shown. */
 export type Ownership = 'owned' | 'used_by' | 'unknown';
 const LEGAL_WORDS = new Set(['sdn', 'bhd', 'berhad', 'ltd', 'limited', 'llc', 'inc', 'incorporated', 'corp', 'corporation', 'plc', 'plt', 'pte', 'pty', 'gmbh', 'ag', 'sa', 'srl', 'bv', 'oy', 'ab', 'co', 'company', 'the', 'and', 'for', 'kk', 'pvt', 'private', 'public']);
-const nameTokens = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, ' ').split(' ').filter((t) => t.length >= 3 && !LEGAL_WORDS.has(t));
+const allTokens = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]+/gu, ' ').split(' ').filter((t) => t && !LEGAL_WORDS.has(t));
+const nameTokens = (s: string) => allTokens(s).filter((t) => t.length >= 3);
 /** Decided from data the lane already has: the registrant organisation against the company's names, and whether the company presents the domain as its own. */
 export function ownershipOf(registrant: string | null | undefined, companyNames: string[], linked: boolean): Ownership {
   const reg = new Set(nameTokens(registrant ?? ''));
@@ -234,6 +235,9 @@ export function ownershipOf(registrant: string | null | undefined, companyNames:
     const same = companyNames.map(nameTokens).some((c) => c.length && (c.every((t) => reg.has(t)) || [...reg].every((t) => c.includes(t))));
     if (same) return 'owned';
   }
+  // A short name ("HP", "3M") has no token of 3+ characters: it matches when each of its words is a whole word of the registrant.
+  const regWords = new Set(allTokens(registrant ?? ''));
+  if (companyNames.some((n) => !nameTokens(n).length && allTokens(n).length && allTokens(n).every((t) => regWords.has(t)))) return 'owned';
   return linked ? 'used_by' : 'unknown';
 }
 /** The weakest ownership of a group: a sentence about several domains may say "yours" only if all are. */
@@ -253,7 +257,8 @@ type Row = { domain: string; ownership: Ownership; text: string; source: string 
 const SEV = { info: 0, low: 1, medium: 2, high: 3 } as const;
 /** PL14: the same failed check on several domains becomes one finding with one evidence row per domain. */
 export function mergeByCheck(list: Finding[]): Finding[] {
-  const keyOf = (f: Finding) => `${f.check}|${f.sub ?? ''}`;
+  // The label names the failure mode: "expired" and "expires soon", or "no DMARC" and "p=none", are different findings.
+  const keyOf = (f: Finding) => `${f.check}|${f.sub ?? ''}|${f.label ?? ''}`;
   const groups = new Map<string, Finding[]>();
   for (const f of list) if (f.label && f.domain) (groups.get(keyOf(f)) ?? groups.set(keyOf(f), []).get(keyOf(f))!).push(f);
   const row = (f: Finding): Row => ({ domain: String(f.domain), ownership: f.ownership as Ownership, text: f.title, source: f.source, ...(f.evidence ? { evidence: f.evidence } : {}), ...(f.expires_at ? { expires_at: String(f.expires_at) } : {}) });

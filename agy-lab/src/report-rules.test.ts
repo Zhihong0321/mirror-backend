@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanText, claimMismatches, similarPairs, bannedWords, phonesIn, findPII, daysToImpact, severity, rankKey, localeFor, formatMoney, bareIds, deadLinks, leftoverMarkdown, plural } from './report-rules/index.ts';
+import { cleanText, claimMismatches, similarPairs, bannedWords, phonesIn, findPII, daysToImpact, severity, rankKey, localeFor, formatMoney, bareIds, deadLinks, leftoverMarkdown, plural, startsWithCurrency } from './report-rules/index.ts';
 
 test('PL1 cleans markdown and currencies', () => {
   assert.equal(cleanText('# **Sales**\n- 35**RM million+** and USD 2 **million**; ₩ 3억; € 1.2 m [source](https://example.com)'), 'Sales RM35 million+ and USD 2 million; ₩ 3억; € 1.2 m source');
@@ -67,4 +67,31 @@ test('PL20 resolves countries across regions', () => {
   }
   assert.equal(localeFor('Japan', 'ko').dateLocale, 'ko-KR');
   assert.equal(localeFor('Unknown place').country, 'Unknown place');
+});
+
+test('R1: 05/06/2024 is day first unless the country writes month first', () => {
+  const now = new Date('2024-01-01T00:00:00Z');
+  assert.equal(daysToImpact(['expires 05/06/2024'], now), 156); // 5 June
+  assert.equal(daysToImpact(['expires 05/06/2024'], now, { country: 'Malaysia' }), 156);
+  assert.equal(daysToImpact(['expires 05/06/2024'], now, { country: 'MY' }), 156);
+  assert.equal(daysToImpact(['expires 05/06/2024'], now, { country: 'United States' }), 126); // 6 May
+  assert.equal(daysToImpact(['expires 05/06/2024'], now, { country: 'US' }), 126);
+  assert.equal(daysToImpact(['expires 05/06/2024'], now, { country: 'Canada' }), 156);
+  // an unambiguous date is read the same everywhere
+  assert.equal(daysToImpact(['expires 25/06/2024'], now, { country: 'US' }), 176);
+  assert.equal(daysToImpact(['expires 06/25/2024'], now, { country: 'MY' }), 176);
+  assert.deepEqual(claimMismatches('due 05/06/2024', ['due 6 May 2024'], 'US'), []);
+  assert.deepEqual(claimMismatches('due 05/06/2024', ['due 6 May 2024']), ['05/06/2024']);
+});
+
+test('R1: a trailing marker moves only when it is a currency symbol or a code that is not an English word', () => {
+  for (const s of ['500 K', '4 K video', '100 ALL employees', 'Page 1 P', 'a top 10 TOP list']) assert.equal(cleanText(s), s);
+  assert.equal(cleanText('5 RM'), 'RM5');
+  assert.equal(cleanText('500 Rp'), 'Rp500');
+  assert.equal(cleanText('100 USD'), 'USD100');
+  assert.equal(cleanText('12 €'), '€12');
+  assert.equal(cleanText('35**RM million+**'), 'RM35 million+');
+  assert.equal(startsWithCurrency('RM million'), true);
+  assert.equal(startsWithCurrency('years'), false);
+  assert.equal(startsWithCurrency('K years'), false);
 });
