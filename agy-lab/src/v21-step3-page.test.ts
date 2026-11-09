@@ -116,10 +116,10 @@ test('the page says what the full report holds, so the price has something to bu
   assert.match(ko, /이 무료 보고서에는 문제 6개 중 3개만 있습니다/);
 });
 
-test('free page: a summary line that cites a locked item is dropped', () => {
+test('free page: every summary line is printed, even one that cites a locked item', () => {
   const html = reportPage(report, s2);
   assert.ok(html.includes('SUMMARY-OK'));
-  assert.ok(!html.includes('SUMMARY-LEAK'));
+  assert.ok(html.includes('SUMMARY-LEAK'));
 });
 
 test('free page: scorecard, records callout and sticky bar come from the real counts', () => {
@@ -151,11 +151,11 @@ test('Korean page prints the same gate', () => {
   assert.match(html, /문제점 3개 더 발견/);
 });
 
-test('R2: a summary line citing a free action step is kept; one citing a locked step is dropped', () => {
+test('R2: summary lines citing a free or a locked action step are both printed', () => {
   const r: any = { ...report, summary: [{ text: 'SUMMARY-STEP-FREE', cites: ['s1'] }, { text: 'SUMMARY-STEP-LOCKED', cites: ['s3'] }] };
   const html = reportPage(r, s2);
   assert.ok(html.includes('SUMMARY-STEP-FREE'));
-  assert.ok(!html.includes('SUMMARY-STEP-LOCKED'));
+  assert.ok(html.includes('SUMMARY-STEP-LOCKED'));
 });
 
 test('R2: a missing or invalid created_at falls back to today instead of throwing', () => {

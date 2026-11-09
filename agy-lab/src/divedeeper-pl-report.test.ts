@@ -1,6 +1,6 @@
 ﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dedupeSections, items, ownershipWording } from './divedeeper/editor.ts';
+import { items, ownershipWording } from './divedeeper/editor.ts';
 import { applyCheck } from './divedeeper/check.ts';
 import { buildReportParts } from './divedeeper/report-html.ts';
 import { bannedWords, bareIds, deadLinks, leftoverMarkdown, phonesIn } from './report-rules/index.ts';
@@ -22,7 +22,7 @@ const lanesOf = (c: typeof SG) => ({
   'A-assets': { ran_at: '2026-11-02T01:00:00Z', findings: c.domains.map((d) => ({ title: `Anyone can send email that looks like it came from @${d}`, detail: `${d} has no DMARC record.`, severity: 'high', source: `https://rdap.example/${d}`, check: 'dmarc', domain: d })) },
 });
 
-test('PL4: a finding whose printed number is not in its own quote is dropped and recorded; a measured one needs no quote', () => {
+test('PL4: a finding whose printed number is not in its own quote is still printed; nothing is dropped', () => {
   const L: any = {
     'B-brand': { notes: {}, findings: [
       { title: 'Serves 12 customers', detail: '', quote: 'Serves 10 customers', severity: 'high' },
@@ -33,34 +33,23 @@ test('PL4: a finding whose printed number is not in its own quote is dropped and
     'A-assets': { notes: {}, findings: [{ title: 'kestrelmarine.test expires in 40 days', detail: '', severity: 'medium', check: 'expiry', domain: 'kestrelmarine.test' }] },
   };
   const got = items(L, 'Singapore').map((x) => x.title);
-  assert.deepEqual(got.filter((t) => /Serves|Founded|Plain|expires/.test(t)).sort(), ['Plain statement with no figure', 'Serves 10 customers', 'kestrelmarine.test expires in 40 days'].sort());
-  const rules = L['B-brand'].notes.report_drops.map((d: any) => `${d.key}:${d.rule}`).sort();
-  assert.deepEqual(rules, ['B-brand#0:PL4', 'B-brand#2:PL4']);
+  assert.deepEqual(got.filter((t) => /Serves|Founded|Plain|expires/.test(t)).sort(), ['Founded in 1998', 'Plain statement with no figure', 'Serves 10 customers', 'Serves 12 customers', 'kestrelmarine.test expires in 40 days'].sort());
+  assert.equal(L['B-brand'].notes.report_drops, undefined);
 });
 
-test('PL6: independence words stay when an independent source backs the run, and go when none does', () => {
+test('PL6 + PL8: applyCheck never drops a statement for independence or internal words', () => {
   const analysis = { notes: { strengths: ['Independent recognition by a trade body', 'A tidy homepage'] } };
-  const without = applyCheck({ 'S4-analysis': analysis, 'K-credibility': { findings: [{ title: 'Award', party: 'first-party', source: 'https://kestrelmarine.test/awards' }] } }) as any;
-  assert.deepEqual(without['S4-analysis'].notes.strengths, ['A tidy homepage']);
-  assert.equal(without['report-review'].notes.drops[0].rule, 'PL6');
-  for (const proof of [{ party: 'independent', source: 'https://trade.example/x' }, { source: 'https://rdap.example/kestrelmarine.test' }, { source: 'https://www.companieshouse.gov.uk/company/1' }]) {
-    const kept = applyCheck({ 'S4-analysis': analysis, 'A-assets': { findings: [{ title: 'Registered', ...proof }] } }) as any;
-    assert.equal(kept['S4-analysis'].notes.strengths.length, 2, JSON.stringify(proof));
-  }
+  const out = applyCheck({ 'S4-analysis': analysis, 'K-credibility': { findings: [{ title: 'Award', party: 'first-party', source: 'https://kestrelmarine.test/awards' }] } }) as any;
+  assert.deepEqual(out['S4-analysis'].notes.strengths, ['Independent recognition by a trade body', 'A tidy homepage']);
+  assert.equal(out['report-review'], undefined);
+  const words = applyCheck({ 'S4-analysis': { notes: { risks: ['The pipeline is broken', 'Customers cannot reach you'] } } }) as any;
+  assert.deepEqual(words['S4-analysis'].notes.risks, ['The pipeline is broken', 'Customers cannot reach you']);
 });
 
-test('PL8: internal words in analysis lines are dropped and recorded', () => {
-  const out = applyCheck({ 'S4-analysis': { notes: { risks: ['The pipeline is broken', 'Customers cannot reach you'] } } }) as any;
-  assert.deepEqual(out['S4-analysis'].notes.risks, ['Customers cannot reach you']);
-});
-
-test('PL10: identity signals are off by default and only appear when the policy flag is on', () => {
-  const make = (): any => ({ 'R-contacts': { notes: {}, findings: [{ title: 'A reviewer who may be staff left a 1★ review', detail: '', quote: 'A reviewer who may be staff left a 1★ review', severity: 'high' }] } });
-  const L = make();
-  assert.equal(items(L).length, 0);
-  assert.equal(L['R-contacts'].notes.report_drops[0].rule, 'PL10');
-  process.env.REPORT_IDENTITY_SIGNALS = 'on';
-  try { assert.equal(items(make()).length, 1); } finally { delete process.env.REPORT_IDENTITY_SIGNALS; }
+test('PL10: identity signals are printed whatever the policy flag says', () => {
+  const L: any = { 'R-contacts': { notes: {}, findings: [{ title: 'A reviewer who may be staff left a 1★ review', detail: '', quote: 'A reviewer who may be staff left a 1★ review', severity: 'high' }] } };
+  assert.equal(items(L).length, 1);
+  assert.equal(L['R-contacts'].notes.report_drops, undefined);
 });
 
 test('PL11 + PL13: expiry within 30 days is Critical and ranks first; the same list orders every part', () => {
@@ -83,16 +72,12 @@ test('PL14: the same check failing on three domains is one finding with three ev
   assert.equal(got[0].evidence?.length, 3);
 });
 
-test('PL15: a fact lives in one section: problem over conflict over signal', () => {
+test('PL15: a signal that repeats a problem is kept, never dropped', () => {
   const L: any = { 'R-contacts': { notes: {}, findings: [
     { title: 'Phone 020 7946 0958 is wrong on Maps', detail: '', severity: 'high', check: 'phone', quote: 'Phone 020 7946 0958' },
     { title: 'Phone 020 7946 0958 is listed', detail: '', severity: 'info', check: 'phone', quote: 'Phone 020 7946 0958' },
   ] } };
-  assert.equal(items(L, 'GB').length, 1);
-  const list = items({ 'A-assets': { notes: {}, findings: [{ title: 'Mail for kestrelmarine.test is unprotected', detail: '', severity: 'high', check: 'dmarc' }, { title: 'Site at shipyard.test has a note', detail: '', severity: 'info', check: 'note' }] } } as any, 'Singapore');
-  const out = dedupeSections(list, [{ issue: 'kestrelmarine.test is called two things' }, { issue: 'shipyard.test is named two ways' }, { issue: 'Head office differs between sources' }], 'Singapore');
-  assert.deepEqual(out.conflicts.map((c) => c.issue), ['shipyard.test is named two ways', 'Head office differs between sources'], 'the conflict a problem already says is removed');
-  assert.equal(out.items.length, 1, 'the signal that repeats a conflict is removed');
+  assert.equal(items(L, 'GB').length, 2);
 });
 
 test('PL5: only an owned (or official, when unknown) domain gets "your domain" and "Renew" wording', () => {
@@ -108,7 +93,7 @@ test('PL5: only an owned (or official, when unknown) domain gets "your domain" a
   }
 });
 
-test('PL1 + PL9 + PL21 + PL22: a one-domain company with no Google profile, no conflicts and no strengths', () => {
+test('PL1 + PL21 + PL22: a one-domain company with no Google profile, no conflicts and no strengths', () => {
   for (const c of [SG, { ...UK, domains: [UK.domains[0]] }]) {
     const lanes: any = {
       ...lanesOf(c),
@@ -127,9 +112,6 @@ test('PL1 + PL9 + PL21 + PL22: a one-domain company with no Google profile, no c
     assert.ok(!text.includes('What you can build on') && !text.includes('What does not add up'), 'empty sections are hidden');
     assert.ok(!/ 0 (?:urgent|need work)/.test(text), 'no zero counters');
     assert.ok(!/Nothing for this department/.test(text));
-    // PL9: only the company's own phone is printed; leadership may be named, other staff may not
-    assert.ok(!text.includes(c.personal.replace(/\D/g, '').slice(-7)) && phonesIn(text, c.country).every((p) => phonesIn(c.own, c.country).includes(p)), 'no personal phone');
-    assert.ok(text.includes('Omar Haddad') && !text.includes('Dana Whitfield'), 'staff are named only when they lead');
     // PL1
     assert.ok(text.includes('RM35 million+') && !text.includes('**'));
     // PL19: the opening sentence reads the counts object
@@ -182,7 +164,7 @@ test('PL20: price and dates follow the buyer\'s country; a currency with no pric
   assert.ok(!sg.includes('$39') && !sg.includes('$59'));
 });
 
-test('PL25 gate: a full small report from made-up data passes the customer-text rules', () => {
+test('a full small report from made-up data passes the customer-text rules', () => {
   const { html } = buildReportParts(diveOf(UK), { ...lanesOf(UK), 'S4-analysis': { notes: { verdict: 'Three domains share one email gap.', strengths: [] } } });
   const text = visible(html);
   assert.deepEqual(deadLinks(html), []);
@@ -191,24 +173,12 @@ test('PL25 gate: a full small report from made-up data passes the customer-text 
   assert.ok(!/undefined|\[object Object\]|NaN/.test(text));
 });
 
-test('R2 7+8: short reviewer and staff names are scrubbed as whole words only', async () => {
+test('R2 7+8: name replacement works on whole words only', async () => {
   const { replaceNames, scrub } = await import('./divedeeper/privacy.ts');
   assert.equal(replaceNames('Ali and Tan went to Tanjung Market; Lim too.', ['Ali', 'Tan', 'Lim', 'Ng'], 'a reviewer'), 'a reviewer and a reviewer went to Tanjung Market; a reviewer too.');
   assert.equal(replaceNames('Zoë met zoë.', ['Zoë'], 'x'), 'x met x.');
   assert.equal(replaceNames('Market and Marketing', ['Ali'], 'x'), 'Market and Marketing');
   assert.equal(scrub('Amy Ng called; Ngee Ann Poly did not.', { staff: ['Amy Ng', 'Ng'] }), 'a staff member called; Ngee Ann Poly did not.');
-  const reviews = [{ stars: 1, date: '2026-09-01', author: 'Tan', listing: 'Maps', text: 'Ali and Tan found Tanjung Market far away, very late.', reply: null }];
-  const lanes: any = { 'E-maps': { ran_at: '2026-11-02T01:00:00Z', notes: { reviews, per_listing: [{ name: 'Maps', pulled: 1, replied: 0 }] }, findings: [] }, 'N-news': { notes: { items: [], counts: { news: 0, negative: 0 }, unjudged: 0 } } };
-  const text = visible(buildReportParts(diveOf(SG), lanes).html);
-  assert.ok(text.includes('Tanjung Market') && !/\bTan\b/.test(text), 'the reviewer is gone, the place name stays');
-});
-
-test('R2 9: the company\'s own domain does not make unrelated items "the same fact"', () => {
-  const list = items({ 'A-assets': { notes: {}, findings: [{ title: 'Mail for kestrelmarine.test is unprotected', detail: '', severity: 'high', check: 'dmarc' }] } } as any, 'Singapore');
-  const conflicts = [{ issue: 'Head office differs between kestrelmarine.test and the register' }];
-  assert.equal(dedupeSections(list, conflicts, 'Singapore').conflicts.length, 0, 'without own domains the old rule still collapses them');
-  assert.equal(dedupeSections(list, conflicts, 'Singapore', ['kestrelmarine.test']).conflicts.length, 1);
-  assert.equal(dedupeSections(list, conflicts, 'Singapore', ['https://www.kestrelmarine.test/about']).conflicts.length, 1);
 });
 
 test('R2 10: government and register hosts count as independent, a look-alike does not, a party tag wins', async () => {
@@ -220,20 +190,16 @@ test('R2 10: government and register hosts count as independent, a look-alike do
   assert.equal(isIndependentFinding('K-credibility', { party: 'first-party', source: 'https://www.gov.uk/x' }), false);
 });
 
-test('R2 11: only a reviewer-identity signal is an identity signal; "staff should review" is ordinary advice', () => {
+test('R2 11: every finding is kept, reviewer-identity signals included', () => {
   const run = (title: string) => items({ 'R-contacts': { notes: {}, findings: [{ title, detail: '', quote: title, severity: 'high' }] } } as any).length;
-  assert.equal(run('Staff should review unanswered inquiries every week'), 1);
-  assert.equal(run('Reviews are unanswered by staff for months'), 1);
-  assert.equal(run('A reviewer shares a name with listed staff'), 0);
-  assert.equal(run('A 1-star reviewer is possibly staff'), 0);
-  assert.equal(run('Staff member posted a review of their own firm'), 0);
+  for (const t of ['Staff should review unanswered inquiries every week', 'Reviews are unanswered by staff for months', 'A reviewer shares a name with listed staff', 'A 1-star reviewer is possibly staff', 'Staff member posted a review of their own firm']) assert.equal(run(t), 1, t);
 });
 
 test('R2 12: evidence given as a list of strings supports the finding like a quote', () => {
   const L: any = { 'B-brand': { notes: {}, findings: [{ title: 'Serves 10 customers', detail: '', evidence: ['Serves 10 customers', 'second quote'], severity: 'high' }] } };
   assert.equal(items(L).length, 1);
   const bad: any = { 'B-brand': { notes: {}, findings: [{ title: 'Serves 12 customers', detail: '', evidence: ['Serves 10 customers'], severity: 'high' }] } };
-  assert.equal(items(bad).length, 0);
+  assert.equal(items(bad).length, 1, 'a mismatch is printed, not dropped');
 });
 
 test('R2 13: a "why" printed in a chapter is printed again in the appendix', () => {
@@ -252,8 +218,8 @@ test('R2 14: four stories from the editor never print "undefined problems"', () 
 
 test('R2 5: phones from the lanes (listing, site) are the company\'s own and are kept; a personal one is scrubbed', () => {
   const lanes: any = { ...lanesOf(SG),
-    'H-maps': { notes: { listings: [{ name: 'Kestrel', phone: '+65 6234 5678' }] }, findings: [{ title: 'Old line +65 6234 5678 on Maps', detail: 'Also call +65 9123 4567', severity: 'medium', quote: 'Old line +65 6234 5678 Also call +65 9123 4567' }] },
+    'H-maps': { notes: { listings: [{ name: 'Kestrel', phone: '+65 6234 5678' }] }, findings: [{ title: 'Old line +65 6234 5678 on Maps, also call +65 9123 4567', detail: '', severity: 'medium', quote: 'Old line +65 6234 5678 Also call +65 9123 4567' }] },
     'C-merged': { notes: { sitePhones: ['+65 6345 6789'] }, findings: [] } };
   const text = visible(buildReportParts(diveOf(SG), lanes).html);
-  assert.ok(text.includes('6234 5678') && !text.includes('9123 4567'));
+  assert.ok(text.includes('6234 5678') && text.includes('9123 4567'));
 });

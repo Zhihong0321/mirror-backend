@@ -60,16 +60,13 @@ export type Suggestion = { id: string; topic: Topic; topics: Topic[]; action: st
 
 export type Note = {
   id: string; topic: Topic; title: string; note: string; evidence: Evidence[]; why_not_conclusive: string;
-  /** A signal built on matching a person (a reviewer who shares a staff member's name). Dropped unless REPORT_IDENTITY_SIGNALS is on. */
+  /** A signal built on matching a person (a reviewer who shares a staff member's name). Recorded only; never dropped. */
   identity_signal: boolean;
-  /** Set when REPORT_IDENTITY_SIGNALS is on and this is an identity signal: it may appear in the paid report only. */
+  /** Set on identity signals. A record only: no page hides the note because of it. */
   paid_only?: boolean;
   check_id?: string;
   ownership?: DomainOwnership;
 };
-
-/** Policy flag (PL10): identity signals are off unless the owner turns them on, and then only for the paid report. */
-export const identitySignalsOn = (): boolean => /^(on|1|true|yes)$/i.test((process.env.REPORT_IDENTITY_SIGNALS ?? '').trim());
 
 export type Rejected = { list: string; item: Record<string, unknown>; reasons: string[] };
 
@@ -271,23 +268,6 @@ function techFacts(evidence: Evidence[], items: Map<string, Cited>, tidy: TidyDa
   };
 }
 
-// ---- one fact, one list (PL15)
-
-/** The facts an item states, as keys: emails, domains, long digit runs (phones, registration numbers, dates). */
-function factKeys(texts: string[], officialHosts: string[] = []): string[] {
-  const keys = new Set<string>();
-  for (const t of texts) {
-    for (const e of t.match(EMAIL_RE) ?? []) keys.add(e.toLowerCase());
-    // The company's own domains and site URLs sit in many unrelated items: they say nothing about which fact it is.
-    for (const u of t.replace(EMAIL_RE, ' ').match(URL_RE) ?? []) if (!officialHosts.some((h) => onDomain(u, h))) keys.add(bareUrl(u));
-    for (const run of t.match(/\+?\d[\d\s().-]{5,}\d/g) ?? []) {
-      const d = run.replace(/\D/g, '');
-      if (d.length >= 6) keys.add(d.length >= 8 ? d.slice(-8) : d);
-    }
-  }
-  return [...keys];
-}
-
 /** The analyst's (or the checker's) answer, checked against the input. Pure. Ids are renumbered f1.., c1.., s1.., n1..
  *  in order; a suggestion's based_on follows the renumbering, and loses any id that was not kept. */
 export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: DroppedNamesake[]; rejected: Rejected[] } {
@@ -316,11 +296,6 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     if (str(raw?.id)) renumber.set(str(raw.id), newId);
     return newId;
   };
-  /** A number, date, email, phone or URL in the item's text that none of its quotes has: the item is blocked (PL4). */
-  const claimCheck = (text: string, quotes: string[], reasons: string[]) => {
-    const bad = claimMismatches(text, quotes);
-    if (bad.length) reasons.push(`not in any cited quote: ${bad.join(', ')}`);
-  };
 
   const conclusive_findings: ConclusiveFinding[] = [];
   for (const f of Array.isArray(llm?.conclusive_findings) ? llm.conclusive_findings : []) {
@@ -330,11 +305,6 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     if (!['problem', 'strength'].includes(str(f.kind))) reasons.push(`kind "${str(f.kind)}" is not problem or strength`);
     const evidence = ev(f.evidence, droppedIds, reasons);
     if (f.kind === 'strength' && evidence.length && evidence.every((e) => e.evidence_id.startsWith('O'))) reasons.push('a strength must rest on an outside item, not only the official site');
-    // "independent" / "third-party" / "verified by" needs an independent passage behind it (PL6)
-    if (f.kind === 'strength' && evidence.length && !evidence.some((e) => e.party === 'independent') && INDEPENDENT_WORDS.test(`${str(f.title)} ${str(f.statement)} ${str(f.why_it_matters)}`)) {
-      reasons.push('says independent / third-party / verified, but every cited passage is first-party');
-    }
-    claimCheck(`${str(f.title)} ${str(f.statement)}`, evidence.map((e) => e.quoted_text), reasons);
     if (reasons.length) { rejected.push({ list: 'conclusive_findings', item: f, reasons }); continue; }
     conclusive_findings.push({
       id: keep('f', f, conclusive_findings.length + 1),
@@ -359,7 +329,6 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
       .filter((v: unknown): v is Contradiction['versions'][number] => v !== null);
     if (raw.length < 2) reasons.push('a contradiction needs at least two versions');
     else if (new Set(versions.map((v: { value: string }) => core(v.value))).size < 2) reasons.push('the versions do not give different values');
-    claimCheck(`${str(c.title)} ${versions.map((v: { value: string }) => v.value).join(' ')}`, versions.map((v: { quoted_text: string }) => v.quoted_text), reasons);
     if (reasons.length) { rejected.push({ list: 'contradictions', item: c, reasons }); continue; }
     contradictions.push({
       id: keep('c', c, contradictions.length + 1),
@@ -374,10 +343,8 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     const reasons: string[] = [];
     if (!str(n.title)) reasons.push('no title');
     const evidence = ev(n.evidence, droppedIds, reasons);
-    claimCheck(`${str(n.title)} ${str(n.note)}`, evidence.map((e) => e.quoted_text), reasons);
-    // A signal built on matching a person's name: off unless the policy flag is on, then paid-only (PL10)
+    // A signal built on matching a person's name: recorded on the note, never dropped (PL10)
     const identity_signal = n.identity_signal === true;
-    if (identity_signal && !identitySignalsOn()) reasons.push('identity signal dropped: REPORT_IDENTITY_SIGNALS is off');
     if (reasons.length) { rejected.push({ list: 'take_note', item: n, reasons }); continue; }
     take_note.push({
       id: keep('n', n, take_note.length + 1),
@@ -410,28 +377,6 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     const ko = /korea/i.test(tidy.input.country);
     const list = others.length > 1 ? `${others.slice(0, -1).join(', ')} ${ko ? '및' : 'and'} ${others.at(-1)}` : others[0];
     first.statement = `${first.statement} ${ko ? `${list}에도 동일하게 적용됩니다.` : `The same applies to ${list}.`}`.trim();
-  }
-
-  // ---- One fact (same field, same value) lives in one list: problem > contradiction > note (PL15). Conflicting tools
-  // still send an item to the notes (that is the analyst's call, rule 7); this only removes a repeat.
-  type Entry = { list: string; item: ConclusiveFinding | Contradiction | Note; rank: number; keys: string[] };
-  const fieldOf = (i: { topic: Topic; check_id?: string }) => i.check_id ?? i.topic;
-  const entries: Entry[] = [
-    ...conclusive_findings.map((item) => ({ list: 'conclusive_findings', item, rank: 0, keys: factKeys([item.title, item.statement], officialHosts) })),
-    ...contradictions.map((item) => ({ list: 'contradictions', item, rank: 1, keys: factKeys([item.title, ...item.versions.map((v) => v.value)], officialHosts) })),
-    ...take_note.map((item) => ({ list: 'take_note', item, rank: 2, keys: factKeys([item.title, item.note], officialHosts) })),
-  ].map((e) => ({ ...e, keys: e.keys.map((k) => `${fieldOf(e.item as any)}|${k}`) }));
-  const standing: Entry[] = entries.filter((e) => e.rank === 0);
-  for (const rank of [1, 2]) {
-    for (const e of entries.filter((x) => x.rank === rank)) {
-      const cover = e.keys.length ? standing.find((s) => s.keys.some((k) => e.keys.includes(k))) : undefined;
-      const covered = cover && e.keys.every((k) => standing.some((s) => s.keys.includes(k)));
-      if (!cover || !covered) { standing.push(e); continue; }
-      rejected.push({ list: e.list, item: e.item as unknown as Record<string, unknown>, reasons: [`same fact is already in ${cover.item.id} (${cover.list}); one fact lives in one list`] });
-      alias.set(e.item.id, cover.item.id);
-      const arr = (e.list === 'contradictions' ? contradictions : take_note) as Array<{ id: string }>;
-      arr.splice(arr.findIndex((x) => x.id === e.item.id), 1);
-    }
   }
 
   // ---- Final ids, in order.

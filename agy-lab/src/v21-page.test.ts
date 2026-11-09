@@ -189,7 +189,7 @@ test('counts 0, 1 and 2 read correctly through the plural helper', () => {
   assert.match(zero, /1 item found/);
 });
 
-test('items for the paid report only (paid_only, identity_signal) are never printed; the same id is never printed twice', () => {
+test('paid_only and identity_signal items are printed like any other; the same id is never printed twice', () => {
   const s2 = make('Malaysia', {
     conclusive_findings: [finding('f1', 'problem', 'website'), finding('f2', 'problem', 'reviews', { paid_only: true }), finding('f1', 'problem', 'website', { title: 'DUPLICATE-F1' })],
     contradictions: [contra('c1', 'registration', { identity_signal: true })],
@@ -197,11 +197,9 @@ test('items for the paid report only (paid_only, identity_signal) are never prin
     suggestions: [{ id: 'g1', action: 'DO-1', why: 'w', based_on: ['f2'] }],
   });
   const html = reportPage(report([{ text: 'Leaky summary', cites: ['f2'] }]), s2, { now: NOW });
-  for (const gone of ['TITLE-f2', 'TITLE-c1', 'TITLE-n1', 'DUPLICATE-F1', 'Leaky summary']) assert.ok(!html.includes(gone), gone);
+  for (const kept of ['TITLE-f1', 'TITLE-f2', 'TITLE-c1', 'Leaky summary']) assert.ok(html.includes(kept), kept);
+  assert.ok(!html.includes('DUPLICATE-F1'));
   for (const id of ['f1', 'f2', 'c1', 'n1', 'n2']) assert.ok((html.match(new RegExp(`\\sid="${id}"`, 'g')) ?? []).length <= 1, id);
-  assert.ok(!html.includes('id="f2"') && !html.includes('id="c1"') && !html.includes('id="n1"'));
-  assert.ok(html.includes('TITLE-f1') && html.includes('NOTE-n2'));
-  assert.ok(!html.includes('id="g1"'));
   assert.deepEqual(deadLinks(html), []);
 });
 

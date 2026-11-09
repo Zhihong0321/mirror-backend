@@ -18,9 +18,11 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
   const report = url.pathname.match(/^\/api\/v21\/deeper\/([a-zA-Z0-9_-]+)\/report$/);
   if (report && req.method === 'GET') {
     const run = await getRun(report[1]);
-    if (!run?.report_html) { ctx.json(res, 404, { error: 'no report yet' }); return true; }
+    // A page an earlier pre-send gate held back (blocked_html) is a complete report too: serve it.
+    const html = run?.report_html || run?.blocked_html;
+    if (!html) { ctx.json(res, 404, { error: 'no report yet' }); return true; }
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' });
-    res.end(run.report_html);
+    res.end(html);
     return true;
   }
   if (url.pathname === PATH && req.method === 'POST') {

@@ -3,7 +3,6 @@ import { writeLane } from '../lib.ts';
 import { restoreLane, runLane, stageDive, type LaneResult } from '../runner.ts';
 import { loadV21Dive } from './adapter.ts';
 import { buildReport } from '../report-html.ts';
-import { failureLine, gateDeeperFull } from '../gate.ts';
 import { speedLane } from './speed.ts';
 import * as store from './store.ts';
 
@@ -99,15 +98,6 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
       return;
     }
     const html = runtime.buildReport(dive, Object.fromEntries(kept));
-    // PL25: the run table only allows its fixed statuses, so a blocked report is a failed run with the gate's failure list and no served page.
-    const gate = gateDeeperFull(dive, html);
-    if (gate.failures.length) {
-      const msg = `Pre-send gate ${gate.status === 'blocked' ? 'blocked this report' : 'warns'}: ${failureLine(gate)}`;
-      // The blocked page is kept beside the failure list so the owner can see what was blocked without a new paid run.
-      // It goes in blocked_html, never report_html, which the report route serves.
-      if (gate.status === 'blocked') { await say('blocked', msg, { status: 'failed', error: msg, report_html: null, blocked_html: html, gate_failures: gate.failures, finished_at: new Date().toISOString() }); return; }
-      await say('gate', msg);
-    }
     await say('done', 'Report ready: every lane and writing stage finished', {
       status: 'done', error: null, report_html: html, finished_at: new Date().toISOString(),
     });

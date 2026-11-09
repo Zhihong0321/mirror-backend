@@ -1,4 +1,4 @@
-import { cleanText, deadLinks, localeFor, similarPairs, plural } from '../report-rules/index.ts';
+import { cleanText, deadLinks, localeFor, plural } from '../report-rules/index.ts';
 // The report as one standalone HTML document of A4 pages, from data alone (no network, no files).
 // Styled after the Eternalgy corporate profile: two-tone headlines, dark pages for the numbers,
 // banded tables. On screen the pages stack like sheets; Print / Save as PDF gives clean A4.
@@ -17,9 +17,9 @@ import { cleanText, deadLinks, localeFor, similarPairs, plural } from '../report
 // the action plan from S5, each when it ran, else built in here. Used by the hub (divedeeper.ts) and by scripts/dive-deeper/report.ts.
 // A missing lane only drops its block; the report still builds.
 import { applyCheck } from './check.ts';
-import { AREAS, DEPTS, dedupeSections, deptOf, ownershipWording, resolve, type Item } from './editor.ts';
+import { AREAS, DEPTS, deptOf, ownershipWording, resolve, type Item } from './editor.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { isLeadershipStrict, isPrivateUrl, publicSources, replaceNames, scrub, scrubPersonalPhones } from './privacy.ts';
+import { isLeadershipStrict, isPrivateUrl, publicSources, scrub } from './privacy.ts';
 
 /** Why each area matters, said once for every client. No market statistics we cannot source. */
 export const OPENERS: Record<string, { q: [string, string]; body: (t: { trade: string; town: string }) => string }> = {
@@ -432,21 +432,10 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   const R = resolve(dive, L);
   const name = R.name;
   const country = String(dive.country ?? '');
-  // PL9: phones printed are the company's own contacts; reviewers are never named; staff only when they lead the company.
   const contactPoints: any[] = R.contact?.points ?? [];
-  const companyPhones: string[] = [
-    ...(r.identity?.phones ?? []), ...(L['H-maps']?.notes?.listings ?? []).map((x: any) => x?.phone), ...(L['C-merged']?.notes?.sitePhones ?? []),
-  ].filter(Boolean).map(String).concat([
-    ...contactPoints.filter((p: any) => p.kind !== 'email' && !p.left && !['personal', 'someone_else'].includes(p.status)).map((p: any) => String(p.value)),
-  ]);
-  const people: any[] = r.people?.people ?? [];
-  const reviewers = [...new Set([...(L['E-maps']?.notes?.reviews ?? []), ...R.reviews.unanswered_low, ...R.reviews.good_quotes].map((x: any) => String(x.author ?? '').trim()).filter((x) => x.length >= 2))];
-  const nonLeaders = people.filter((x) => !isLeadershipStrict(x.role ?? x.relation)).map((x) => String(x.name ?? '')).filter((x) => x.length >= 2);
   const quiet = (t: string) => {
     if (/^(?:https?:|mailto:|#|data:)/.test(t)) return t;
-    let out = scrub(t, { staff: nonLeaders });
-    out = replaceNames(out, reviewers, 'a reviewer');
-    out = scrubPersonalPhones(out, { country, companyPhones });
+    const out = t;
     // PL21: internal ids (f1, s3, c2, n4) are for the debug option only.
     return opts.debug ? out : out.replace(/\(\s*(?:[fscn]\d+\s*(?:,|and|&)?\s*)+\)/g, '').replace(/\s*(?<![\w./@#-])[fscn]\d+(?![\w@/-]|\.\w)/g, '').replace(/ {2,}/g, ' ').replace(/ ([,.;:])/g, '$1');
   };
@@ -499,8 +488,6 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   /** Finding rows in a banded table: status, finding with what it means, where we saw it. */
   const itemRows = (list: Item[]) => {
     if (!list.length) return '';
-    // Repeats are judged within one listing, not across the chapters and the appendix, so each table starts empty.
-    const previousWhy: { id: string; text: string }[] = [];
     // The editor reuses one consequence line for many findings ("This makes it harder for customers to
     // verify your company status." on twenty rows). Within one table it is said once, on its first row;
     // a line that only repeats the row's own title is dropped too.
@@ -508,9 +495,8 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     const said = new Set<string>();
     const consequence = (x: Item) => {
       const w = why(x), k = norm(w);
-      if (!k || k === norm(T(x)) || said.has(k) || similarPairs([...previousWhy, { id: x.key, text: w }]).some(([, b]) => b === x.key)) return '';
+      if (!k || k === norm(T(x)) || said.has(k)) return '';
       said.add(k);
-      previousWhy.push({ id: x.key, text: w });
       return w;
     };
     return `<table class="band items"><tbody>${list.map((x) => { const w = consequence(x); return `<tr><td class="st-cell"><span class="pill ${sevClass(x.severity)}">${esc(sevWord(x.severity))}</span></td><td><p class="t">${esc(T(x))}${opts.debug ? ` <span class="muted">[${esc(x.key)}]</span>` : ''}</p>${w ? `<p class="w">${esc(w)}</p>` : ''}${x.evidence && x.evidence.length > 1 ? `<ul class="plain small">${x.evidence.map((e) => `<li>${esc(typeset(scrub(e)))}</li>`).join('')}</ul>` : ''}</td><td class="where">${seeIt(x.source)}</td></tr>`; }).join('')}</tbody></table>`;
@@ -696,11 +682,9 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     return '';
   }
 
-  // PL15: the conflicts the problems already say are taken out here; PL19: every number below is read from `counts`.
+  // PL19: every number below is read from `counts`.
   const conflictsAll: any[] = an.mismatch?.length ? an.mismatch : (r.contradictions ?? []).slice(0, 5).map((c: string) => ({ issue: typeset(c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()), settled: null }));
-  const dd = dedupeSections(R.items, conflictsAll, country, R.identity.domains);
-  R.items = dd.items;
-  const mismatch = dd.conflicts;
+  const mismatch = conflictsAll;
   const inArea = (id: string) => R.items.filter((x) => x.area === id);
   const byAreaCounts = Object.fromEntries(AREAS.map((a) => [a.id, { all: inArea(a.id).length, urgent: inArea(a.id).filter((x) => x.severity === 'critical' || x.severity === 'high').length, needs: inArea(a.id).filter((x) => x.severity === 'medium').length }]));
   const problems = R.items.filter((x) => ['critical', 'high', 'medium'].includes(x.severity)).length;

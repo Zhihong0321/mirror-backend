@@ -5,8 +5,7 @@
 // Where sources conflict, the official register wins over the company-dive's research
 // (a CIDB grade read from CIDB beats one a website or directory printed).
 import { savedReviews } from './v21/reviews.ts';
-import { claimMismatches, daysToImpact, severity as urgency, rankKey, phonesIn, plural, similarPairs } from '../report-rules/index.ts';
-import { isJudged } from './check.ts';
+import { daysToImpact, severity as urgency, rankKey, plural } from '../report-rules/index.ts';
 
 // The malaysia-deeper-dive report is read in six research parts, then one full analysis and one action plan. A lane can feed two
 // parts: C-merged's website checks are sorted by what each one is about (see partOfCheck).
@@ -59,23 +58,6 @@ const token = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim()
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
 const SEV_LEVEL: Record<string, number> = { high: 3, medium: 2, low: 1, info: 1 };
-const factsOf = (text: string, country: string, ownHosts: string[] = []): Set<string> => new Set([
-  ...phonesIn(text, country),
-  ...(text.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g) ?? []).map((x) => x.toLowerCase()),
-  // The company's own domains sit in many unrelated items: they say nothing about which fact it is.
-  ...(text.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []).map((x) => x.toLowerCase().replace(/^www\./, '')).filter((h) => !ownHosts.some((o) => h === o || h.endsWith(`.${o}`))),
-]);
-// A signal about WHO a reviewer is: shares a name with staff, may be staff, is fake, or is a self-review. "Staff should
-// review unanswered inquiries" talks about reviewing, not about a reviewer's identity.
-const IDENTITY_SIGNAL = /\breviewers?\b.{0,80}\b(?:same names?|shares? (?:a |the )?names?|possibly (?:a |the )?(?:staff|employees?)|(?:may|might|could) be (?:a |the )?(?:staff|employees?)|fake)\b|\b(?:staff|employees?)\b.{0,60}\b(?:wrote|posted|left|gave)\b.{0,40}\b(?:reviews?|ratings?)\b|\bself[- ]?reviews?\b|\bfake reviews?\b/i;
-const isProblem = (x: { severity: string }) => ['critical', 'high', 'medium'].includes(x.severity);
-
-/** Drops one finding and records why, so the drop is visible to us (never to the customer). */
-function recordDrop(L: Record<string, any>, lane: string, key: string, rule: string, detail: unknown) {
-  const drops = ((L[lane].notes ??= {}).report_drops ??= []) as any[];
-  if (!drops.some((d) => d.key === key && d.rule === rule)) drops.push({ key, rule, detail });
-}
-
 /** Every finding in the report, with a stable key (lane#index) the editor's plain titles hang on, best first (PL11, PL13). */
 export function items(L: Record<string, any>, country = ''): Item[] {
   const out: Item[] = [];
@@ -85,19 +67,12 @@ export function items(L: Record<string, any>, country = ''): Item[] {
   for (const lane of STAGE1_LANES) (L[lane]?.findings ?? []).forEach((f: any, i: number) => {
     const key = `${lane}#${i}`;
     if (isPrivate(f)) return;
-    // PL10: a signal about who a person is (a reviewer who may be staff) is off unless the policy flag is on.
-    if (process.env.REPORT_IDENTITY_SIGNALS !== 'on' && (f.kind === 'identity' || /^identity/.test(String(f.check ?? '')) || IDENTITY_SIGNAL.test(`${f.title ?? ''} ${f.detail ?? ''}`))) return recordDrop(L, lane, key, 'PL10', null);
     if (rechecked[key]?.verdict === 'false') return;
     // Rollups repeat what the per-question findings say; the AI chart shows them instead.
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
     // Inventory and summary lines feed the part's table and headline number, not the finding list.
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
-    // PL4: every number, date, phone, email and URL a finding prints must be in its own quotes. No quote at all cannot support
-    // one, unless the lane measured it (a register result, an RDAP/DNS/DMARC/PageSpeed check): the measurement is the evidence.
-    const quotes = [f.quote, ...(Array.isArray(f.quotes) ? f.quotes : []), ...(Array.isArray(f.evidence) ? f.evidence : [f.evidence])].filter((q): q is string => typeof q === 'string' && !!q.trim());
     const printed = `${f.title ?? ''} ${f.detail ?? ''}`;
-    const bad = quotes.length ? claimMismatches(printed, quotes) : f.measured === true || !isJudged({ lane, check: f.check }) ? [] : claimMismatches(printed, []);
-    if (bad.length) return recordDrop(L, lane, key, 'PL4', bad);
     const area = lane === 'C-merged' ? partOfCheck(f.check) : AREAS.find((a) => a.lanes.includes(lane))!.id;
     // The register showing better than the claim (G7 where the site says G3) is a fix, not an alarm.
     const first = f.direction === 'undersell' ? 'medium' : String(f.severity ?? 'info');
@@ -119,29 +94,7 @@ export function items(L: Record<string, any>, country = ''): Item[] {
     if (!head) { if (g) groups.set(g, x); merged.push(x); continue; }
     (head.evidence ??= [head.title]).push(x.title);
   }
-  // PL15: one fact lives in one section, problem > conflict > signal. A signal that repeats a problem's check and facts goes.
-  const problems = merged.filter(isProblem);
-  return merged.filter((x) => {
-    if (isProblem(x)) return true;
-    const mine = factsOf(`${x.title} ${x.detail}`, country);
-    const same = problems.find((p) => {
-      if (!p.check || p.check !== x.check) return false;
-      const theirs = factsOf(`${p.title} ${p.detail}`, country);
-      return mine.size ? [...mine].some((v) => theirs.has(v)) : !theirs.size && similarPairs([{ id: 'a', text: p.title }, { id: 'b', text: x.title }]).length > 0;
-    });
-    if (same) recordDrop(L, x.lane, x.key, 'PL15', same.key);
-    return !same;
-  });
-}
-
-/** PL15: conflicts the problems already say are removed; signals a conflict already says are removed. Returns what is left. */
-export function dedupeSections<C extends { issue?: string }>(list: Item[], conflicts: C[], country: string, ownDomains: string[] = []): { items: Item[]; conflicts: C[] } {
-  const ownHosts = ownDomains.map((d) => String(d).toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[/?#].*$/, '')).filter(Boolean);
-  const covered = (text: string, by: string[]) => { const f = factsOf(text, country, ownHosts); return f.size > 0 && [...f].every((v) => by.some((t) => factsOf(t, country, ownHosts).has(v))); };
-  const problemText = list.filter(isProblem).map((x) => `${x.title} ${x.detail}`);
-  const kept = conflicts.filter((c) => !covered(String(c.issue ?? ''), problemText));
-  const conflictText = kept.map((c) => String(c.issue ?? ''));
-  return { conflicts: kept, items: list.filter((x) => isProblem(x) || !covered(`${x.title} ${x.detail}`, conflictText)) };
+  return merged;
 }
 
 /** PL5: only a domain we know the company owns gets "your domain" and "Renew / Set DMARC" wording; any other gets a neutral one. */

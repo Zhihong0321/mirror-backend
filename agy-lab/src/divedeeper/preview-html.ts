@@ -19,8 +19,8 @@
 // no research write-up (privacy.ts). Sources are the ones the company-dive judged to be about them.
 import { CHAPTER_EYEBROW, CHAPTER_ORDER, NB, OPENERS, PART_OPENERS, esc, tie, typeset } from './report-html.ts';
 import { PARTNERS_CSS, partnersHtml } from './partners.ts';
-import { companyContacts, isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
-import { bannedWords, cleanText, daysToImpact, findPII, localeFor, plural as pluralOf, rankKey, severity, similarPairs, type Urgency } from '../report-rules/index.ts';
+import { isLeadership, isLeadershipStrict, publicSources, scrub, scrubPublic } from './privacy.ts';
+import { cleanText, daysToImpact, localeFor, plural as pluralOf, rankKey, severity, type Urgency } from '../report-rules/index.ts';
 import type { PreviewNotes } from './preview-editor.ts';
 
 /** What the seller shows on the order panel; every field optional. */
@@ -146,40 +146,27 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
     (id.aliases ?? []).length && { label: 'Also known as', value: id.aliases.join(', ') },
     people[0] && { label: 'Leadership', value: `${people[0].name}${people[0].role ? `, ${people[0].role}` : ''}` },
   ].filter(Boolean) as { label: string; value: string }[];
-  // A name list and the contacts the company publishes itself, so PL9 can tell a staff member from the leadership
-  // and a private mobile from the switchboard on its own record.
-  const ownContacts = companyContacts(dive);
-  const pii = { country: loc.country, companyPhones: ownContacts, personNames: staff };
-  /** PL8 + PL9: text that may not be printed at all. It names someone who is not leadership, carries a phone the
-   *  company does not publish itself, or speaks in the pipeline's own vocabulary. */
-  const unprintable = (t: string) => !t.trim() || bannedWords(t).length > 0 || findPII(t, 'preview', pii).length > 0;
 
   // Switched page: warnings come only from notesV2, and one with no quote is dropped.
   const rawWarnings = v2
     ? (notesV2?.warnings ?? []).filter((w) => typeof w?.quote === 'string' && w.quote.trim())
     : (notes?.warnings?.length ? notes.warnings : fallbackWarnings(r));
   const now = new Date();
-  // PL10: only the four text types below are printed. An identity signal is never in a free preview, whatever the
-  // policy flag says, so any other type is dropped here instead of being drawn as a contradiction.
+  // A type the page has no label for is drawn as a contradiction, never dropped.
   // PL11 + PL13: one urgency and one sort key for every sign; the sections and the headline both read them.
   const ranked = rawWarnings
     .flatMap((w) => {
-      if (!w || !TYPE[w.type]) return [];
+      if (!w) return [];
       const days = daysToImpact([String(w.detail ?? ''), String(w.quote ?? '')], now);
       // A quote the editor found on the cited page is first-hand; a fallback warning has no quote at all.
       const urgency = severity({ recordLevel: RELEVEL[w.type] ?? 2, confidence: w.quote ? 'high' : 'medium', days, breaks: w.type === 'wrong' });
       return [{
-        type: w.type, urgency, days, rank: rankKey(urgency, days),
-        raw: `${w.title ?? ''} ${w.detail ?? ''} ${w.risk ?? ''} ${w.quote ?? ''}`,
+        type: TYPE[w.type] ? w.type : ('contradiction' as const), urgency, days, rank: rankKey(urgency, days),
         title: P(w.title), detail: P(w.detail), risk: P(w.risk), quote: P(w.quote),
         sources: (Array.isArray((w as { sources?: unknown }).sources) ? (w as { sources: unknown[] }).sources : []).map(Number),
       }];
     })
-    .filter((w) => w.title && !unprintable(w.raw))
     .sort((a, b) => b.rank - a.rank);
-  // PL7: a "why it matters" sentence that repeats an earlier item's does not earn its place, so it goes.
-  const repeated = new Set(similarPairs(ranked.map((w, i) => ({ id: String(i), text: w.risk })).filter((x) => x.text)).map(([, b]) => b));
-  ranked.forEach((w, i) => { if (repeated.has(String(i))) w.risk = ''; });
   // PL16: one gating rule. PL17: a shown sign keeps its quote and its source; a locked one keeps neither.
   const signs = gated(ranked, GATE.signs);
   const shownSigns = signs.shown;
@@ -193,7 +180,7 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   const claimRows = gated(claimFacts.flatMap((f) => {
     const raw = String(f.fact ?? '');
     const said = P(raw);
-    return said && !unprintable(raw) ? [{ said, sources: (f.sources ?? []).map(Number) }] : [];
+    return said ? [{ said, sources: (f.sources ?? []).map(Number) }] : [];
   }), GATE.claims);
   const claimsHeld = claimRows.shown.length + claimRows.locked.length;
   // Only what is shown may be cited: a locked item's source is not listed either (PL17).
@@ -229,9 +216,9 @@ export function buildPreview(dive: any, offer: Offer = {}, notes: PreviewNotes |
   ].filter(Boolean).join('\n  ');
   // One price in USD for every country; the caller reads it from the hub DB (fullReportPrice) and passes it in.
   const priceLabel = offer.price ? String(offer.price) : '';
-  // PL1 + PL8 + PL9: the editor's own line is printed like every other, or not at all.
+  // PL1: the editor's own line is printed like every other.
   const wroteHook = picked?.hook ? P(picked.hook) : '';
-  const hook = wroteHook && !unprintable(String(picked?.hook ?? ''))
+  const hook = wroteHook
     ? wroteHook
     : `This preview was prepared for ${name} alone, ${fromSources}. Here is what they say about you, and where they do not agree.`;
 

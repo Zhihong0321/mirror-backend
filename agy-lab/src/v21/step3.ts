@@ -155,7 +155,7 @@ function itemsForPrompt(s2: Step2V2Output): string {
   const f = (s2.conclusive_findings ?? []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, statement: x.statement, why_it_matters: x.why_it_matters, ...(x.ownership ? { domain_ownership: x.ownership } : {}), sources: [...new Set((x.evidence ?? []).map((e) => e.party))] }));
   const c = (s2.contradictions ?? []).map((x) => ({ id: x.id, title: x.title, versions: (x.versions ?? []).map((v) => `${v.source}: ${v.value}`), why_it_matters: x.why_it_matters }));
   const s = (s2.suggestions ?? []).map((x) => ({ id: x.id, action: x.action, why: x.why, based_on: x.based_on }));
-  const n = (s2.take_note ?? []).filter((x) => !x.paid_only).map((x) => ({ id: x.id, title: x.title, note: x.note, why_not_conclusive: x.why_not_conclusive }));
+  const n = (s2.take_note ?? []).map((x) => ({ id: x.id, title: x.title, note: x.note, why_not_conclusive: x.why_not_conclusive }));
   return JSON.stringify({ conclusive_findings: f, contradictions: c, suggestions: s, take_note: n }, null, 1);
 }
 
@@ -727,11 +727,9 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   type Sug = Step2V2Output['suggestions'][number];
   type Extra = { paid_only?: boolean; identity_signal?: boolean; check_id?: string; expires_at?: string };
 
-  // Never print the same id twice, and never print what is for the paid report only (paid_only, identity_signal).
-  const seen = new Set<string>(); const removed = new Set<string>();
+  // Never print the same id twice.
+  const seen = new Set<string>();
   const usable = <T extends { id: string }>(list: T[] | undefined): T[] => (list ?? []).filter((x) => {
-    const e = x as T & Extra;
-    if (e.paid_only || e.identity_signal) { removed.add(x.id); return false; }
     if (seen.has(x.id)) return false;
     seen.add(x.id);
     return true;
@@ -739,8 +737,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const findings = usable(s2.conclusive_findings);
   const contraAll = usable(s2.contradictions);
   const noteAll = usable(s2.take_note);
-  // A step resting on an item held back for the paid report is held back with it.
-  const sugAll = usable(s2.suggestions).filter((x) => !(x.based_on ?? []).some((id) => removed.has(id)));
+  const sugAll = usable(s2.suggestions);
 
   const quotes = (ev: Array<{ quoted_text: string }> | undefined) => (ev ?? []).map((e) => e.quoted_text);
   const ratings = new Map<string, Rated>();
@@ -766,9 +763,8 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const freeSugs = suggestions.filter((s) => (s.based_on ?? []).length > 0 && s.based_on.every((id) => visibleIds.has(id))).slice(0, FREE_N.suggestions);
   const freeSugIds = new Set(freeSugs.map((s) => s.id));
   const lockedSugs = suggestions.filter((s) => !freeSugIds.has(s.id));
-  // A summary line may cite only what is printed in full.
-  // The free action steps are printed in full too, so a line may cite them.
-  const summary = report.summary.filter((l) => l.cites.every((id) => visibleIds.has(id) || freeSugIds.has(id)));
+  // Every summary line is printed; a cite to a locked item is just not linked.
+  const summary = report.summary;
 
   // Every number on the page reads from this object. "issues" = problems + contradictions; "items" = everything found,
   // strengths and signals included (the action steps are advice, not findings).

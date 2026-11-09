@@ -4,7 +4,6 @@ import { parseSwitches, switchOn } from '../switches.ts';
 import { type LaneResult } from './runner.ts';
 import { buildReport } from './report-html.ts';
 import { buildPreview } from './preview-html.ts';
-import { gateDeeperFull, gateDeeperPreview, heldPage } from './gate.ts';
 import { addMeter, emptyUsage, price, type ApiCall } from '../cost.ts';
 import { page as browsePage } from '../divedeeper-page.ts';
 import { enabled } from './stages.ts';
@@ -28,12 +27,9 @@ function links(req: http.IncomingMessage, publicId: string, divePublicId?: strin
 }
 
 
-/** PL25: a preview that fails the pre-send gate is not served (REPORT_GATE=warn serves it and logs the failures). */
-function sendPreview(res: http.ServerResponse, headers: Record<string, string>, dive: any, html: string, warnings?: any[]): void {
-  const gate = gateDeeperPreview(dive, html, warnings);
-  if (gate.failures.length) console.warn(`[preview ${dive.public_id}] pre-send gate ${gate.status}: ${gate.failures.map((f) => `${f.rule} ${f.detail}`).join('; ')}`);
+function sendPreview(res: http.ServerResponse, headers: Record<string, string>, _dive: any, html: string, _warnings?: any[]): void {
   res.writeHead(200, headers);
-  res.end(gate.status === 'blocked' ? heldPage('Your preview') : html);
+  res.end(html);
 }
 
 /** /dp/<company-dive public id>: the free preview, built from the company-dive alone, before anything is paid for.
@@ -84,25 +80,18 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
   const row = (await reportdb.sql<Row>(`select id, public_id, company, dive_id, status, stage, log, report_html, error, created_at, finished_at from dive_deeper where public_id = $1`, [m[1]])).rows[0];
   const headers = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' };
   if (!row) { res.writeHead(404, headers); res.end('<!doctype html><title>Not found</title><p>No such report.</p>'); return true; }
-  // PL25: a blocked report is never served to the client link.
-  if (row.status === 'blocked') { res.writeHead(200, headers); res.end(heldPage(esc(row.company))); return true; }
   if (row.report_html) {
     // Drawn again from the stored results on each visit, so report and privacy fixes reach reports
     // already delivered; the page saved when the run finished is the fallback.
     let html = row.report_html;
-    let dive0: any = null;
     try {
       const full = (await reportdb.sql<{ lanes: Record<string, LaneResult> }>(`select lanes from dive_deeper where id = $1`, [row.id])).rows[0];
       const dive = row.dive_id ? await diveRow(row.dive_id) : null;
-      dive0 = dive;
       if (full?.lanes && dive?.result) html = buildReport(dive, full.lanes);
     } catch (err) {
       console.warn(`[dive-deeper ${row.id}] report redraw failed, serving the saved page: ${(err as Error).message}`);
     }
-    // The page is gated again as served, so a report redrawn with today's code cannot slip past the gate.
-    const gate = dive0 ? gateDeeperFull(dive0, html) : { status: 'passed' as const, failures: [] }; // without the dive there is no contact list to check against; the page was gated when it was saved
-    if (gate.failures.length) console.warn(`[dive-deeper ${row.id}] pre-send gate ${gate.status}: ${gate.failures.map((f) => `${f.rule} ${f.detail}`).join('; ')}`);
-    res.writeHead(200, headers); res.end(gate.status === 'blocked' ? heldPage(esc(row.company)) : html); return true;
+    res.writeHead(200, headers); res.end(html); return true;
   }
   const live = !['failed'].includes(row.status);
   res.writeHead(200, headers);

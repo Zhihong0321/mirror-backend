@@ -130,10 +130,5 @@ export function scrub(text: unknown, opts: { phones?: boolean; staff?: string[] 
   return s;
 }
 
-/** The customer's own report prints a phone only when it is one of the company's published contacts (any country, via libphonenumber). */
-export function scrubPersonalPhones(text: string, ctx: { country: string; companyPhones: string[] }): string {
-  return text.replace(/\+?\(?\d[\d\s().-]{6,}\d/g, (span) => (findPII(span, 'report', { ...ctx, personNames: [] }).length ? 'a phone number' : span));
-}
-
 /** Names the report may print: reviewers never, staff only where the role is leadership. */
 export const mayNamePerson = (role: unknown): boolean => isLeadershipStrict(role);

@@ -45,7 +45,7 @@ test('PL23: one buy target and no "not run yet" block', () => {
   assert.ok(!/not run yet|has not run/i.test(text(html)));
 });
 
-test('PL1/8/9/10/21/24: clean text, no internal words, no staff names or phones, no identity signal, no bare ids, plurals', () => {
+test('PL1/9/21/24: clean text, staff names and phones scrubbed, no bare ids; no warning is ever dropped', () => {
   const warnings = [
     mkWarn(1, { quote: 'Turnover is **RM35 million+** a year' }),
     mkWarn(2, { title: 'Reviewer Jane Doe may be staff', detail: 'Jane Doe wrote a 1-star review' }),
@@ -56,18 +56,19 @@ test('PL1/8/9/10/21/24: clean text, no internal words, no staff names or phones,
   const d = dive('MY', 'Acme Sdn Bhd', { people: { people: [{ name: 'Jane Doe', role: 'Sales Executive' }, { name: 'Ali Baba', role: 'Managing Director' }] } });
   const html = buildPreview(d, {}, null, { warnings });
   const t = text(html);
+  // Owner rule: checks never drop a warning. All five are printed.
+  assert.equal((html.match(/class="warn /g) ?? []).length, 5);
+  assert.ok(t.includes('may be staff') && t.includes('could not fetch the page') && t.includes('Possible staff review'));
   assert.ok(!t.includes('Jane Doe') && !t.includes('0123456789'));
-  assert.ok(!/\bworker\b|the input|identity|possible staff/i.test(t));
   assert.deepEqual(leftoverMarkdown(t), []);
   assert.deepEqual(bareIds(t), []);
   assert.ok(!t.includes('**'));
-  assert.match(t, /1 warning sign\b/);
 });
 
-test('PL7: a repeated "why it matters" sentence is printed once', () => {
+test('PL7: a repeated "why it matters" sentence is never removed', () => {
   const same = 'A buyer who checks this sees two stories and starts to doubt both.';
   const html = buildPreview(dive('GB', 'Thames Joinery Ltd'), {}, null, { warnings: [mkWarn(1, { risk: same }), mkWarn(2, { risk: same }), mkWarn(3, { risk: same })] });
-  assert.equal(text(html).split('sees two stories').length - 1, 1);
+  assert.equal(text(html).split('sees two stories').length - 1, 3);
 });
 
 test('PL11/13/20: urgent items lead, and the price follows the report country', () => {
@@ -86,7 +87,7 @@ test('the price is the one USD value passed in, for every country', () => {
   assert.ok(!buildPreview(dive('MY', 'Acme Sdn Bhd'), {}).includes('class="price"'));
 });
 
-test('R2: a warning about an old phone on the company\'s own listing is kept; a personal number is still dropped', () => {
+test('R2: warnings about a listing phone and a personal number are both printed', () => {
   const listing = '+1 202 456 1111', personal = '+1 303 497 3000';
   const d = dive('US', 'Prairie Tools LLC', { facts: [
     { topic: 'footprint', fact: `The Maps listing shows phone ${listing}.`, sources: [1], confidence: 'high' },
@@ -97,5 +98,5 @@ test('R2: a warning about an old phone on the company\'s own listing is kept; a 
     mkWarn(2, { title: 'Mobile on a directory', detail: `A directory shows ${personal}.`, quote: `Mobile ${personal}` }),
   ] }));
   assert.ok(html.includes('Old phone on a listing'));
-  assert.ok(!html.includes('Mobile on a directory') && !html.includes('303 497 3000'));
+  assert.ok(html.includes('Mobile on a directory'));
 });

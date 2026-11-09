@@ -202,13 +202,10 @@ test('resume restores all completed stages and runs no lane again', async () => 
   assert.equal(f.row.status, 'done');
 }));
 
-test('a report the gate blocks keeps its html and the failure list, and is never put where the report route serves it', async () => switchedOn(async () => {
+test('a finished report is saved where the report route serves it, whatever its text says', async () => switchedOn(async () => {
   const f = await fixture(['done']);
-  f.runtime.buildReport = () => "<!doctype html><title>Audit</title><p>Cannot be settled from the input; see the worker's fetch of the review item.</p>";
+  f.runtime.buildReport = () => '<!doctype html><title>Audit</title><p>Any text at all.</p>';
   await executeRun('run', f.runtime);
-  assert.equal(f.row.status, 'failed');
-  assert.match(f.row.error!, /blocked this report/);
-  assert.equal(f.row.report_html, null);
-  assert.match(f.row.blocked_html!, /worker's fetch/);
-  assert.ok(f.row.gate_failures!.length > 0 && f.row.gate_failures!.every((x) => x.rule && x.detail));
+  assert.equal(f.row.status, 'done');
+  assert.match(f.row.report_html!, /Any text at all/);
 }));

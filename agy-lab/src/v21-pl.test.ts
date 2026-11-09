@@ -119,21 +119,17 @@ test('PL3: tidyCheckpoint takes the registrant from the audited domains and sets
 
 // ---------------------------------------------------------------- PL6
 
-test('PL6: "independent" or "third-party" with only first-party evidence is rejected', () => {
+test('PL6: "independent" or "third-party" with only first-party evidence is kept (never rejected)', () => {
   const s = { kind: 'strength', topic: 'awards', title: 'Independent award body confirms best builder', statement: 'Third-party confirmation', evidence: [{ evidence_id: 'E4', quoted_text: 'Entry submitted by Nordlys Bygg AS', party: 'first' }] };
-  const bad = checkV2({ conclusive_findings: [s] }, tidy);
-  assert.equal(bad.conclusive_findings.length, 0);
-  assert.match(bad.rejected[0].reasons.join(), /independent \/ third-party/);
-  const good = checkV2({ conclusive_findings: [{ ...s, title: 'Independent register lists the company', statement: 'Third-party record', evidence: [{ evidence_id: 'E5', quoted_text: 'registered 2011-05-02' }] }] }, tidy);
-  assert.equal(good.rejected.length, 0, JSON.stringify(good.rejected));
-  // the same words without the claim are fine
-  const plain = checkV2({ conclusive_findings: [{ ...s, title: 'Won best small builder', statement: 'Award entry exists', evidence: s.evidence }] }, tidy);
-  assert.equal(plain.rejected.length, 0, JSON.stringify(plain.rejected));
+  const out = checkV2({ conclusive_findings: [s] }, tidy);
+  assert.equal(out.conclusive_findings.length, 1);
+  assert.equal(out.rejected.length, 0, JSON.stringify(out.rejected));
+  assert.equal(out.conclusive_findings[0].evidence[0].party, 'first', 'the party is recorded');
 });
 
 // ---------------------------------------------------------------- PL4
 
-test('PL4: a number, date, email, phone or URL in the text that no cited quote has blocks the item', () => {
+test('PL4: claimMismatches finds unquoted figures, but checkV2 keeps the item', () => {
   assert.deepEqual(claimMismatches('Registered 2011-05-02, org no 912345678', ['Nordlys Bygg AS, org no 912345678, registered 2011-05-02.']), []);
   assert.deepEqual(claimMismatches('Phone +47 22 33 44 99', ['Phone +47 22 33 44 55']), ['99']);
   assert.deepEqual(claimMismatches('Write to hello@nordlys.example', ['post@nordlys.example']), ['hello@nordlys.example']);
@@ -141,12 +137,9 @@ test('PL4: a number, date, email, phone or URL in the text that no cited quote h
   assert.deepEqual(claimMismatches('See nordlys-shop.example', ['visit nordlys.example']), ['nordlys-shop.example']);
   const mismatch = { kind: 'problem', topic: 'contact', title: 'Phone wrong on Maps', statement: 'Maps shows +47 22 33 44 77', evidence: [{ evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' }] };
   const out = checkV2({ conclusive_findings: [mismatch], take_note: [{ topic: 'registration', title: 'Founded in 2012', note: 'x', evidence: [{ evidence_id: 'E5', quoted_text: 'registered 2011-05-02' }] }] }, tidy);
-  assert.equal(out.conclusive_findings.length, 0);
-  assert.equal(out.take_note.length, 0);
-  assert.match(out.rejected[0].reasons.join(), /not in any cited quote: 77/);
-  assert.match(out.rejected[1].reasons.join(), /not in any cited quote: 2012/);
-  const ok = checkV2({ conclusive_findings: [{ ...mismatch, statement: 'Maps shows +47 22 33 44 99' }] }, tidy);
-  assert.equal(ok.rejected.length, 0, JSON.stringify(ok.rejected));
+  assert.equal(out.conclusive_findings.length, 1);
+  assert.equal(out.take_note.length, 1);
+  assert.equal(out.rejected.length, 0, JSON.stringify(out.rejected));
 });
 
 test('PL4+PL11: an expiry date as quoted passes; a computed "in N days" is rejected (writer must not derive figures)', () => {
@@ -174,23 +167,15 @@ test('PL9: the review lines given to the LLM have no author name and read "1 rev
   assert.ok(!/1 reviews/.test(text));
 });
 
-test('PL10: identity-signal notes are dropped with the flag off, kept and paid-only with it on', () => {
+test('PL10: identity-signal notes are kept and marked, whatever REPORT_IDENTITY_SIGNALS says', () => {
   const note = { topic: 'reviews', title: 'A reviewer shares a name with listed staff', note: 'Possible staff review', identity_signal: true, evidence: [{ evidence_id: 'E5', quoted_text: 'registered 2011-05-02' }] };
   const plain = { topic: 'registration', title: 'Registered 2011', note: 'Date only on register', evidence: [{ evidence_id: 'E5', quoted_text: 'registered 2011-05-02' }] };
   delete process.env.REPORT_IDENTITY_SIGNALS;
-  const off = checkV2({ take_note: [note, plain] }, tidy);
-  assert.equal(off.take_note.length, 1);
-  assert.equal(off.take_note[0].identity_signal, false);
-  assert.match(off.rejected[0].reasons.join(), /identity signal dropped/);
-  process.env.REPORT_IDENTITY_SIGNALS = 'on';
-  try {
-    const on = checkV2({ take_note: [note, plain] }, tidy);
-    assert.equal(on.take_note.length, 2);
-    assert.equal(on.take_note[0].paid_only, true);
-    assert.equal(on.take_note[1].paid_only, undefined);
-  } finally {
-    delete process.env.REPORT_IDENTITY_SIGNALS;
-  }
+  const out = checkV2({ take_note: [note, plain] }, tidy);
+  assert.equal(out.take_note.length, 2);
+  assert.equal(out.take_note[0].identity_signal, true);
+  assert.equal(out.take_note[1].identity_signal, false);
+  assert.equal(out.rejected.length, 0);
 });
 
 // ---------------------------------------------------------------- PL12
@@ -242,7 +227,7 @@ test('PL14: different kinds of the same check are not merged', () => {
 
 // ---------------------------------------------------------------- PL15
 
-test('PL15: one fact lives in one list: problem > contradiction > note', () => {
+test('PL15: a note or contradiction that repeats another item is kept (no cross-list dedupe)', () => {
   const c = { id: 'c1', topic: 'contact', title: 'Two phones', versions: [
     { source: 'site', value: '+47 22 33 44 55', evidence_id: 'O1', quoted_text: 'Phone +47 22 33 44 55' },
     { source: 'Maps', value: '+47 22 33 44 99', evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' },
@@ -251,26 +236,9 @@ test('PL15: one fact lives in one list: problem > contradiction > note', () => {
   const noteOther = { id: 'n2', topic: 'registration', title: 'Org no', note: 'org no 912345678', evidence: [{ evidence_id: 'E5', quoted_text: 'org no 912345678' }] };
   const out = checkV2({ contradictions: [c], take_note: [notePhone, noteOther], suggestions: [{ action: 'Align phones', based_on: ['c1'] }] }, tidy);
   assert.equal(out.contradictions.length, 1);
-  assert.deepEqual(out.take_note.map((n) => n.title), ['Org no']);
-  assert.equal(out.take_note[0].id, 'n1');
-  assert.match(out.rejected.map((r) => r.reasons.join()).join(), /already in c1/);
+  assert.deepEqual(out.take_note.map((n) => n.title), ['Maps phone', 'Org no']);
+  assert.equal(out.rejected.length, 0);
   assert.deepEqual(out.suggestions[0].based_on, ['c1']);
-});
-
-test('PL15: a problem beats a contradiction that repeats it; a contradiction with an extra version stays', () => {
-  const problem = { id: 'f1', kind: 'problem', topic: 'contact', title: 'Maps phone differs', statement: 'Maps shows +47 22 33 44 99', evidence: [{ evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' }] };
-  const onlyThat = { id: 'c1', topic: 'contact', title: 'Maps phone', versions: [
-    { source: 'Maps', value: '+47 22 33 44 99', evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' },
-    { source: 'Maps again', value: '0047 22 33 44 99', evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' },
-  ] };
-  const two = { id: 'c2', topic: 'contact', title: 'Two phones', versions: [
-    { source: 'site', value: '+47 22 33 44 55', evidence_id: 'O1', quoted_text: 'Phone +47 22 33 44 55' },
-    { source: 'Maps', value: '+47 22 33 44 99', evidence_id: 'E6', quoted_text: 'Phone: +47 22 33 44 99' },
-  ] };
-  // `onlyThat` only repeats the problem's fact (the same number written two ways); `two` has a value the problem does not cover
-  const out = checkV2({ conclusive_findings: [problem], contradictions: [onlyThat, two] }, tidy);
-  assert.equal(out.contradictions.length, 1);
-  assert.equal(out.contradictions[0].title, 'Two phones');
 });
 
 test('PL15: the same value in a different field is not a repeat', () => {

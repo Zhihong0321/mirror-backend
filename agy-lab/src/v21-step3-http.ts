@@ -19,8 +19,6 @@ import type { Lane } from './v21/judge.ts';
 import { missingPage, refineOn, reportPage, writeStep3 } from './v21/step3.ts';
 import * as store from './v21-store.ts';
 import { fullReportPrice } from './reportdb.ts';
-import { phonesIn } from './report-rules/index.ts';
-import { gateReport, gateResult, type GateItem, type GateResult } from './report-rules/gate.ts';
 
 type Ctx = {
   json: (res: http.ServerResponse, status: number, body: unknown) => void;
@@ -63,34 +61,6 @@ function baseUrl(req: http.IncomingMessage): string {
   return `${proto}://${host}`;
 }
 
-const INDEPENDENT_WORDS = /\b(independent(?:ly)?|third[- ]party|verified by)\b|독립|제3자/i;
-
-/** PL25: the free page as it would be served, run through the pre-send gate. The company's own published phones are the ones
- *  found in passages the company wrote itself (party 'first'); any other phone on the page is a hit. */
-export function gateStep3(report: any, s2: any, price: string | null = null): GateResult {
-  const country = String(s2?.input?.country ?? '');
-  const ev = (e: any[] | undefined) => (e ?? []) as Array<{ quoted_text?: string; party?: string }>;
-  const quotes = (e: any[] | undefined) => ev(e).map((x) => String(x.quoted_text ?? ''));
-  const own = [...(s2.conclusive_findings ?? []), ...(s2.take_note ?? [])].flatMap((x: any) => ev(x.evidence).filter((e) => e.party === 'first').map((e) => String(e.quoted_text ?? '')))
-    // Both sides of a contact conflict are numbers listed for the company.
-    .concat((s2.contradictions ?? []).flatMap((x: any) => ev(x.versions).filter((e) => e.party === 'first' || x.topic === 'contact').map((e) => String(e.quoted_text ?? ''))));
-  const items: GateItem[] = [
-    ...(s2.conclusive_findings ?? []).filter((x: any) => !x.paid_only).map((x: any): GateItem => ({
-      id: x.id, text: `${x.title}. ${x.statement}`, quotes: quotes(x.evidence), why: x.why_it_matters, ownership: x.ownership,
-      independentClaim: INDEPENDENT_WORDS.test(`${x.title} ${x.statement}`), hasIndependentSource: ev(x.evidence).some((e) => e.party === 'independent'),
-    })),
-    ...(s2.contradictions ?? []).map((x: any): GateItem => ({ id: x.id, text: x.title, quotes: quotes(x.versions), why: x.why_it_matters })),
-    ...(s2.take_note ?? []).filter((x: any) => !x.paid_only && !x.identity_signal).map((x: any): GateItem => ({ id: x.id, text: `${x.title}. ${x.note}`, quotes: quotes(x.evidence), ownership: x.ownership })),
-  ];
-  const byId = new Map(items.map((i) => [i.id, i]));
-  // A summary line is checked against the quotes of the items it cites.
-  (report.summary ?? []).forEach((l: any, i: number) => items.push({ id: `summary ${i + 1}`, text: String(l.text ?? ''), quotes: (l.cites ?? []).flatMap((id: string) => byId.get(id)?.quotes ?? []) }));
-  const html = reportPage(report, s2, { price });
-  return gateResult(gateReport({
-    html, kind: 'v21-free', country, companyPhones: own.flatMap((q) => phonesIn(q, country)), personNames: [], items,
-  }));
-}
-
 /** The whole run. Never throws: a failure is stored as 'report' and 'email' rows with status failed. */
 async function runStep3(reportId: string, s2row: { id: number; run_id: string; payload: any }, runId: string, reportUrl: string, test?: string): Promise<void> {
   let stub: { lane: Lane; close: () => void } | null = null;
@@ -104,14 +74,10 @@ async function runStep3(reportId: string, s2row: { id: number; run_id: string; p
     // The second pass reads the raw input this Step 2 run read: its 'tidy' row (same run_id). Only loaded when it runs.
     const raw = refineOn() ? ((await store.latestRaw(reportId, 'tidy', s2row.run_id))?.payload ?? null) : null;
     const { report, email } = await writeStep3(s2row.payload, { row_id: s2row.id, run_id: s2row.run_id }, reportUrl, { lanes, test, raw });
-    // PL25: a report that fails the gate is stored as 'blocked': the public link serves the holding page and nothing exports the email row.
-    const gate = !test && report.status === 'ok' ? gateStep3(report, s2row.payload, await fullReportPrice()) : null;
-    const blocked = gate?.status === 'blocked';
-    await store.addRaw(reportId, 3, 'report', runId, gate ? { ...report, gate } : report, test ? 'test' : blocked ? 'blocked' : report.status);
-    await store.addRaw(reportId, 3, 'email', runId, gate ? { ...email, gate } : email, test ? 'test' : blocked ? 'blocked' : email.status);
+    await store.addRaw(reportId, 3, 'report', runId, report, test ? 'test' : report.status);
+    await store.addRaw(reportId, 3, 'email', runId, email, test ? 'test' : email.status);
     const failed = report.status === 'failed' ? report.error : email.status === 'failed' ? email.error : null;
-    const gateNote = gate?.failures.length ? `pre-send gate ${gate.status}: ${gate.failures.map((f) => `${f.rule} (${f.where}): ${f.detail}`).join('; ')}` : null;
-    await store.setStatus(reportId, 3, failed ? 'failed' : 'done', failed ?? gateNote);
+    await store.setStatus(reportId, 3, failed ? 'failed' : 'done', failed);
   } catch (err: any) {
     const message = err?.message ?? String(err);
     console.error(`[v21 step3] ${reportId}: ${message}`);
@@ -141,10 +107,10 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
     res.end(html);
   };
   try {
-    const row = await store.latestRaw(m[1]!, 'report', undefined, 'ok');
-    // A newer run the gate blocked hides the page: the link never serves an older report in its place.
-    const held = await store.latestRaw(m[1]!, 'report', undefined, 'blocked');
-    if (row && held && held.id > row.id) return send(404, missingPage()), true;
+    // The newest written report. Rows an earlier pre-send gate marked 'blocked' are complete reports too.
+    const ok = await store.latestRaw(m[1]!, 'report', undefined, 'ok');
+    const old = await store.latestRaw(m[1]!, 'report', undefined, 'blocked');
+    const row = ok && old ? (old.id > ok.id ? old : ok) : (ok ?? old);
     const s2 = row ? await store.rawById(m[1]!, Number(row.payload.step2_row_id)) : null;
     if (!row || !s2) return send(404, missingPage()), true;
     return send(200, reportPage(row.payload, s2.payload, { price: await fullReportPrice() })), true;
