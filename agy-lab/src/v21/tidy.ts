@@ -13,6 +13,20 @@ export type TidyEvidence = {
   title?: string;
   text: string;
   query?: string;
+  /** Technical-check items (Step 1.5): which check made it, e.g. 'email-spoofing', 'domain-expiry', 'seo:onpage.title'. */
+  check_id?: string;
+  /** The domain a technical-check item is about. */
+  domain?: string;
+};
+
+export type DomainOwnership = 'owned' | 'used_by' | 'unknown';
+
+export type TidyDomain = {
+  domain: string;
+  role: string;
+  /** Registrant organisation from RDAP / WHOIS, null when the registry gave none (or hides it). */
+  registrant: string | null;
+  ownership: DomainOwnership;
 };
 
 export type TidyRegister = {
@@ -43,6 +57,8 @@ export type TidyData = {
     other_own_pages: Array<{ url: string; title: string; text: string }>;
   };
   own_linkedin: Record<string, string> | null;
+  /** Domains Step 1.5 audited, with who the registry says holds them. Absent on older checkpoints. */
+  domains?: TidyDomain[];
   evidence: TidyEvidence[];
   registers: TidyRegister[];
   technical_audit?: {
@@ -120,7 +136,10 @@ const MASK = '\u0002';
  */
 export function stripMarkdown(s: string): string {
   const spaced = (before: string, inner: string, after: string) => {
-    const l = WORD_CHAR.test(before) && WORD_CHAR.test(inner[0] ?? '') ? ' ' : '';
+    // "35**RM million+**" is one phrase: a bold that follows a digit and ends at a word boundary stays attached
+    // (TODO: call cleanText from ../report-rules to put the currency first, "RM35 million+")
+    const glued = /\d/.test(before) && !WORD_CHAR.test(after);
+    const l = !glued && WORD_CHAR.test(before) && WORD_CHAR.test(inner[0] ?? '') ? ' ' : '';
     const end = inner.at(-1) ?? '';
     const r = WORD_CHAR.test(after) && (WORD_CHAR.test(end) || /\s/.test(end)) ? ' ' : '';
     return l + inner.trim() + r;
@@ -148,7 +167,7 @@ export function stripMarkdown(s: string): string {
   );
 }
 
-function domainOf(rawUrl: string): string {
+export function domainOf(rawUrl: string): string {
   try {
     const u = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : 'https://' + rawUrl.trim();
     return new URL(u).hostname.replace(/^www\./i, '').toLowerCase();
@@ -157,7 +176,7 @@ function domainOf(rawUrl: string): string {
   }
 }
 
-function onDomain(url: string, domain: string): boolean {
+export function onDomain(url: string, domain: string): boolean {
   if (!domain) return false;
   const d = domainOf(url);
   return d === domain || d.endsWith('.' + domain);
@@ -192,6 +211,27 @@ function nameTerms(company: string): string[] {
   if (norm.length >= 3) out.add(norm);
   for (const w of words) out.add(w);
   return [...out];
+}
+
+const coreOf = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+
+/** True when a registrant organisation is this company: its whole name (any legal suffix) or all its distinctive words. */
+export function registrantMatches(org: string, company: string): boolean {
+  const o = coreOf(org);
+  if (!o) return false;
+  const terms = nameTerms(company);
+  const whole = coreOf(terms[0] ?? '');
+  if (whole.length >= 4 && (o.includes(whole) || (o.length >= 4 && whole.includes(o)))) return true;
+  const words = terms.slice(1).map(coreOf).filter(Boolean);
+  return words.length > 0 && words.every((w) => o.includes(w));
+}
+
+/** owned: the registry's registrant is this company. used_by: a registrant is named and it is someone else (an agency,
+ *  a person, a sister company), so the company uses the domain but may not control it. unknown: no registrant data. */
+export function ownershipOf(registrant: string | null | undefined, company: string): DomainOwnership {
+  const org = String(registrant ?? '').trim();
+  if (!org) return 'unknown';
+  return registrantMatches(org, company) ? 'owned' : 'used_by';
 }
 
 /** Find all places any name term appears in a register page; return non-overlapping excerpts. */
@@ -351,7 +391,11 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
 
   // ---- Step 1.5 Technical Infrastructure & Digital Assets Findings
   let technicalAudit: TidyData['technical_audit'] = undefined;
+  let tidyDomains: TidyDomain[] | undefined;
   if (assets) {
+    tidyDomains = (assets.domains ?? []).map((d) => ({
+      domain: d.domain.toLowerCase(), role: d.role, registrant: d.registration?.org ?? null, ownership: ownershipOf(d.registration?.org, input.company),
+    }));
     technicalAudit = {
       pagespeed_status: assets.pagespeed?.status ?? 'none',
       target_url: assets.pagespeed?.target_url,
@@ -377,6 +421,8 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
         url: f.evidence_url || f.source || (domain ? `https://${domain}` : ''),
         title: f.title,
         text: `[${f.severity.toUpperCase()}] ${f.title}. ${f.detail}`,
+        check_id: f.check,
+        ...(f.domain ? { domain: f.domain.toLowerCase() } : {}),
       });
     }
 
@@ -388,7 +434,8 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
     else {
       const d = gr.data;
       const line = (r: (typeof d.reviews)[number]) =>
-        `${r.date?.slice(0, 10) ?? '?'} | ${r.rating ?? '?'}★ | ${r.author}${r.author_reviews != null ? ` (${r.author_reviews} reviews by this person)` : ''} | ` +
+        // The reviewer's name is not given to Step 2 (privacy, PL9): only how many reviews they have written.
+        `${r.date?.slice(0, 10) ?? '?'} | ${r.rating ?? '?'}★ | ${r.author_reviews != null ? `reviewer has written ${r.author_reviews} ${r.author_reviews === 1 ? 'review' : 'reviews'} | ` : ''}` +
         `${r.text ? cleanText(r.text).slice(0, 600) : '(rating only, no text)'}` +
         `${r.owner_reply ? ` | OWNER REPLY: ${cleanText(r.owner_reply).slice(0, 400)}` : ''}`;
       evidence.push({
@@ -435,6 +482,7 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
           source_name: AUDIT_SOURCE,
           url: c.worstUrl || url,
           title: c.title,
+          check_id: `seo:${String(c.id ?? c.group ?? c.title)}`,
           text: `[${String(c.status).toUpperCase()}] ${c.title} (group ${c.group}; ${sure(c)}): ${cleanText(String(c.detail ?? ''))}`,
         });
       }
@@ -489,6 +537,7 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
     input,
     official: { domain, site_wide: siteWide.join('\n'), pages: tidyPages, other_own_pages: otherOwn },
     own_linkedin: ownLinkedin,
+    ...(tidyDomains ? { domains: tidyDomains } : {}),
     evidence,
     registers,
     technical_audit: technicalAudit,
@@ -530,7 +579,7 @@ export function renderTidy(t: TidyData, opts: { officialIds?: boolean } = {}): s
 
   out.push(`\n## C. OUTSIDE EVIDENCE (${t.evidence.length} items; which ones are this company is your call)`);
   for (const e of t.evidence) {
-    out.push(`\n[${e.id}] ${e.kind} | ${e.source_name} | ${e.url}${e.title ? ` | title: ${e.title}` : ''}${e.query ? ` | found by search: ${e.query}` : ''}`);
+    out.push(`\n[${e.id}] ${e.kind} | ${e.source_name} | ${e.url}${e.title ? ` | title: ${e.title}` : ''}${e.domain ? ` | domain: ${e.domain} (ownership: ${t.domains?.find((d) => d.domain === e.domain)?.ownership ?? 'unknown'})` : ''}${e.query ? ` | found by search: ${e.query}` : ''}`);
     out.push(e.text || '(no text)');
   }
 
