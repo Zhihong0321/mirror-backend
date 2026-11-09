@@ -191,7 +191,7 @@ The free report exists for one reason: to make the owner want the paid full repo
 
 RULES (selling never bends them)
 1. Every sentence (summary entry, subject, body paragraph) cites the ids of the items it rests on in "cites" (f#, c#, s#, n#). A sentence with nothing to cite is not written.
-2. No new facts: nothing that is not in the cited items, including no cost, audience, amount, date or consequence they do not give. Numbers, dates, names, domains and phone numbers are copied exactly as the items give them.
+2. No new facts: nothing that is not in the cited items, including no cost, audience, amount, date or consequence they do not give. Numbers, dates, names, domains and phone numbers are copied exactly as the items give them. Dates are stated as the item gives them ("expires on 2026-12-05"); never compute "in N days", "N years old" or other derived figures, code computes those. A count of reviews comes from the line that gives it.
 3. A "strength" stays a strength and a "problem" stays a problem. A contradiction is the sources disagreeing: say what differs, do not pick a winner.
 4. A take_note item (n#) is never a fact: word it as something worth checking ("may", "worth checking"), or leave it out.
 5. Persuasive, never false: urgency only from a real date or fact in the cited items (an expiry date, for example); no invented deadlines, no "hackers are attacking you", no threats, no fear beyond what the item says, no flattery beyond the strengths.

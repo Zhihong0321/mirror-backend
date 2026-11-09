@@ -149,6 +149,12 @@ test('PL4: a number, date, email, phone or URL in the text that no cited quote h
   assert.equal(ok.rejected.length, 0, JSON.stringify(ok.rejected));
 });
 
+test('PL4+PL11: an expiry date as quoted passes; a computed "in N days" is rejected (writer must not derive figures)', () => {
+  const quotes = ['Registry expiry date: 2026-12-05'];
+  assert.deepEqual(claimMismatches('The domain expires on 2026-12-05', quotes), []);
+  assert.deepEqual(claimMismatches('The domain expires in 26 days', quotes), ['26']);
+});
+
 // ---------------------------------------------------------------- PL9 / PL10
 
 test('PL9: the review lines given to the LLM have no author name and read "1 review" / "2 reviews"', () => {
