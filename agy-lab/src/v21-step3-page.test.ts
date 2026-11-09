@@ -150,3 +150,23 @@ test('Korean page prints the same gate', () => {
   assert.ok(!html.includes('HIDDEN-TITLE-6'));
   assert.match(html, /문제점 3개 더 발견/);
 });
+
+test('R2: a summary line citing a free action step is kept; one citing a locked step is dropped', () => {
+  const r: any = { ...report, summary: [{ text: 'SUMMARY-STEP-FREE', cites: ['s1'] }, { text: 'SUMMARY-STEP-LOCKED', cites: ['s3'] }] };
+  const html = reportPage(r, s2);
+  assert.ok(html.includes('SUMMARY-STEP-FREE'));
+  assert.ok(!html.includes('SUMMARY-STEP-LOCKED'));
+});
+
+test('R2: a missing or invalid created_at falls back to today instead of throwing', () => {
+  for (const created_at of [undefined, 'not a date', '']) {
+    const html = reportPage({ ...report, created_at }, s2, { now: NOW });
+    assert.ok(!html.includes('Invalid Date') && html.includes('9 Nov 2026'), String(created_at));
+  }
+});
+
+test('R2: a contradiction with no versions array still renders', () => {
+  const bad: any = { ...s2, contradictions: [{ id: 'c1', topic: 'registration', title: 'CONTRA-NOVERSIONS', why_it_matters: 'w', identity: 'x', confidence: 'high' }] };
+  const html = reportPage(report, bad, { now: NOW });
+  assert.ok(html.includes('CONTRA-NOVERSIONS'));
+});

@@ -153,7 +153,7 @@ export function checkLine(raw: any, items: Map<string, Item>, reasons: string[])
 
 function itemsForPrompt(s2: Step2V2Output): string {
   const f = (s2.conclusive_findings ?? []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, statement: x.statement, why_it_matters: x.why_it_matters, ...(x.ownership ? { domain_ownership: x.ownership } : {}), sources: [...new Set((x.evidence ?? []).map((e) => e.party))] }));
-  const c = (s2.contradictions ?? []).map((x) => ({ id: x.id, title: x.title, versions: x.versions.map((v) => `${v.source}: ${v.value}`), why_it_matters: x.why_it_matters }));
+  const c = (s2.contradictions ?? []).map((x) => ({ id: x.id, title: x.title, versions: (x.versions ?? []).map((v) => `${v.source}: ${v.value}`), why_it_matters: x.why_it_matters }));
   const s = (s2.suggestions ?? []).map((x) => ({ id: x.id, action: x.action, why: x.why, based_on: x.based_on }));
   const n = (s2.take_note ?? []).filter((x) => !x.paid_only).map((x) => ({ id: x.id, title: x.title, note: x.note, why_not_conclusive: x.why_not_conclusive }));
   return JSON.stringify({ conclusive_findings: f, contradictions: c, suggestions: s, take_note: n }, null, 1);
@@ -716,8 +716,11 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const c = s2.input.company;
   const loc = localeFor(s2.input.country, ko ? 'ko' : 'en');
   const price = options.price || null; // one USD price for every country, read from the hub DB by the caller
+  // A missing or invalid created_at falls back to now, so the date line never reads "Invalid Date" or throws.
+  const made = new Date(report.created_at);
+  const when = Number.isNaN(made.getTime()) ? now : made;
   let date: string;
-  try { date = new Date(report.created_at).toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { date = new Date(report.created_at).toISOString().slice(0, 10); }
+  try { date = when.toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { date = when.toISOString().slice(0, 10); }
   type Finding = Step2V2Output['conclusive_findings'][number];
   type Contra = Step2V2Output['contradictions'][number];
   type Note = Step2V2Output['take_note'][number];
@@ -742,7 +745,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const quotes = (ev: Array<{ quoted_text: string }> | undefined) => (ev ?? []).map((e) => e.quoted_text);
   const ratings = new Map<string, Rated>();
   for (const f of findings) ratings.set(f.id, rate({ ...f, expires_at: (f as Finding & Extra).expires_at }, [f.title, f.statement, f.why_it_matters, ...quotes(f.evidence)], now));
-  for (const x of contraAll) ratings.set(x.id, rate({ ...x, expires_at: (x as Contra & Extra).expires_at }, [x.title, x.why_it_matters, ...x.versions.flatMap((v) => [v.value, v.quoted_text])], now));
+  for (const x of contraAll) ratings.set(x.id, rate({ ...x, expires_at: (x as Contra & Extra).expires_at }, [x.title, x.why_it_matters, ...(x.versions ?? []).flatMap((v) => [v.value, v.quoted_text])], now));
   for (const x of noteAll) ratings.set(x.id, rate({ topic: x.topic, expires_at: (x as Note & Extra).expires_at }, [x.title, x.note, ...quotes(x.evidence)], now));
   const keyOf = (id: string) => ratings.get(id)?.key ?? 0;
 
@@ -764,7 +767,8 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const freeSugIds = new Set(freeSugs.map((s) => s.id));
   const lockedSugs = suggestions.filter((s) => !freeSugIds.has(s.id));
   // A summary line may cite only what is printed in full.
-  const summary = report.summary.filter((l) => l.cites.every((id) => visibleIds.has(id)));
+  // The free action steps are printed in full too, so a line may cite them.
+  const summary = report.summary.filter((l) => l.cites.every((id) => visibleIds.has(id) || freeSugIds.has(id)));
 
   // Every number on the page reads from this object. "issues" = problems + contradictions; "items" = everything found,
   // strengths and signals included (the action steps are advice, not findings).
@@ -840,7 +844,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
 
   // A shown contradiction shows every version with its source link and quote; a locked one shows none of it.
   const contradiction = (x: Contra) => `<article class="warn contra${x.id === topId ? ' first' : ''}" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, ratings.get(x.id)!.urg)}<h3>${esc(x.title)}</h3>
-<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${x.versions.map((v) => `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table>
+<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${(x.versions ?? []).map((v) => `<tr><td class="where">${esc(v.source)}<small>${sourceLink(v.source_url)}</small></td><td class="said"><b>${esc(v.value)}</b>${v.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table>
 ${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matters)}</p>` : ''}</article>`;
 
   const note = (x: Note) => `<article class="warn missing" id="${esc(x.id)}">${cardHead('missing', t.tag.note, x.id)}<h3>${esc(x.title)}</h3><p class="d">${esc(x.note)}</p>
