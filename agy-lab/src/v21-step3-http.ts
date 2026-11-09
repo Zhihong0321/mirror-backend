@@ -109,7 +109,7 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
     const row = await store.latestRaw(m[1]!, 'report', undefined, 'ok');
     const s2 = row ? await store.rawById(m[1]!, Number(row.payload.step2_row_id)) : null;
     if (!row || !s2) return send(404, missingPage()), true;
-    return send(200, reportPage(row.payload, s2.payload, { price: process.env.V21_REPORT_PRICE })), true;
+    return send(200, reportPage(row.payload, s2.payload)), true;
   } catch (err: any) {
     console.error(`[v21 step3] page ${m[1]}: ${err?.message ?? err}`);
     return send(503, missingPage()), true;

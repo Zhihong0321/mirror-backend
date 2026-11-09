@@ -2,7 +2,12 @@
 // contradiction carries an urgency badge set by code.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_PRICE, FREE_CONTRADICTIONS, FREE_PROBLEMS, FREE_SUGGESTIONS, reportPage, urgencyOf } from './v21/step3.ts';
+import { FREE_N, rate, reportPage } from './v21/step3.ts';
+
+// The price comes from the locale config (REPORT_PRICES), never from a hard-coded value.
+process.env.REPORT_PRICES = '{"MYR":"RM249","USD":"$59"}';
+const NOW = new Date('2026-11-09T00:00:00Z');
+const urgencyOf = (topic: string, text: string, confidence: string) => rate({ topic, confidence }, [text], NOW).urg;
 
 const ev = (n: number) => [{ evidence_id: `E${n}`, quoted_text: `QUOTE-${n}`, source_url: `https://registry.example/secret-${n}` }];
 const problem = (n: number, topic: string, title: string, confidence = 'high') => ({
@@ -47,7 +52,7 @@ test('urgency: record type sets the base, a break word adds one, medium confiden
 
 test('free page: only the top problems are printed, in urgency order, each with a badge', () => {
   const html = reportPage(report, s2);
-  assert.equal(FREE_PROBLEMS, 3);
+  assert.equal(FREE_N.problems, 3);
   // f3 (critical), f4 (high), f5 (contact + disconnected = critical) outrank f2 (low), f6 (medium), f7 (low).
   assert.ok(html.indexOf('id="f5"') < html.indexOf('id="f2"'));
   for (const shown of ['CRITTITLE-3', 'HIGHTITLE-4', 'HIDDEN-TITLE-5']) assert.ok(html.includes(shown), shown);
@@ -61,17 +66,19 @@ test('free page: only the top problems are printed, in urgency order, each with 
   assert.match(html, /3 more problems found/);
 });
 
-test('free page: contradictions beyond the first two keep title and values but lose the link and the quote', () => {
+test('free page: contradictions beyond the first two are locked whole: no title, values, link or quote', () => {
   const html = reportPage(report, s2);
-  assert.equal(FREE_CONTRADICTIONS, 2);
-  for (const t of ['CONTRA-1', 'CONTRA-2', 'CONTRA-3', 'VALUE-A-3', 'VALUE-B-3']) assert.ok(html.includes(t), t);
+  assert.equal(FREE_N.contradictions, 2);
+  for (const t of ['CONTRA-1', 'CONTRA-2']) assert.ok(html.includes(t), t);
+  for (const t of ['CONTRA-3', 'VALUE-A-3', 'VALUE-B-3', 'CWHY-3']) assert.ok(!html.includes(t), t);
+  assert.ok(!html.includes('Source link and quote'));
   assert.ok(html.includes('secret-11') && html.includes('secret-12'));
   assert.ok(!html.includes('secret-13') && !html.includes('secret-23') && !html.includes('QUOTE-13'));
 });
 
 test('free page: an action step is free only when everything it rests on is on the page', () => {
   const html = reportPage(report, s2);
-  assert.equal(FREE_SUGGESTIONS, 2);
+  assert.equal(FREE_N.suggestions, 2);
   assert.ok(html.includes('FREE-STEP-1') && html.includes('FREE-STEP-2'));
   assert.ok(!html.includes('LOCKED-STEP-3') && !html.includes('LEAK-STEP-4'));
   assert.match(html, /The full action plan, written out/);
@@ -79,24 +86,26 @@ test('free page: an action step is free only when everything it rests on is on t
   // No invented figures: no task count or page count; the only money on the page is the price.
   const text = html.replace(/<style[\s\S]*?<\/style>/, '');
   assert.ok(!/\b25\b|\b21 tasks|14-page|13-page/.test(text));
-  assert.deepEqual([...new Set(text.match(/\$\d+/g))], ['$59']);
+  assert.deepEqual([...new Set(text.match(/RM\d+|\$\d+/g))], ['RM249']);
 });
 
-test('the price is $59 unless the hub sets another; an empty setting hides it', () => {
-  assert.equal(DEFAULT_PRICE, '$59');
-  const html = reportPage(report, s2);
-  assert.match(html, /<p class="price">\$59<\/p>/);
-  assert.match(html, /<span class="pr">\$59<\/span>/);
-  assert.match(reportPage(report, s2, { price: '$79 USD' }), /<p class="price">\$79 USD<\/p>/);
-  const none = reportPage(report, s2, { price: '' });
-  assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d/.test(none.replace(/<style[\s\S]*?<\/style>/, '')));
+test('the price comes from the locale of the report country; none configured means none shown', () => {
+  const html = reportPage(report, s2, { now: NOW });
+  assert.match(html, /<p class="price">RM249<\/p>/);
+  assert.match(html, /<span class="pr">RM249<\/span>/);
+  const us: any = { ...s2, input: { ...s2.input, country: 'United States' } };
+  assert.match(reportPage(report, us, { now: NOW }), /<p class="price">\$59<\/p>/);
+  // A currency with no configured price shows no price at all, not a dollar fallback.
+  const jp: any = { ...s2, input: { ...s2.input, country: 'Japan' } };
+  const none = reportPage(report, jp, { now: NOW });
+  assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d|RM\d/.test(none.replace(/<style[\s\S]*?<\/style>/, '')));
 });
 
 test('the page says what the full report holds, so the price has something to buy', () => {
   const html = reportPage(report, s2);
   assert.match(html, /<section id="inside"/);
   for (const part of ['Your scorecard', 'Every finding, with its evidence', 'What ChatGPT and Gemini say about you', 'What a stranger learns in ten minutes',
-    'An action plan, department by department', 'Done for you: the copy, written', 'A plan to get recommended by AI assistants', 'All of it for $59']) {
+    'An action plan, department by department', 'Done for you: the copy, written', 'A plan to get recommended by AI assistants']) {
     assert.ok(html.includes(part), part);
   }
   assert.match(html, /This free report prints 3 of 6 problems\./);
@@ -105,7 +114,6 @@ test('the page says what the full report holds, so the price has something to bu
   assert.ok(!html.includes('LOCKED-STEP-3') && !html.includes('HIDDEN-TITLE-6'));
   const ko = reportPage({ ...report, language: 'ko' }, s2);
   assert.match(ko, /ChatGPT와 Gemini가 귀사에 대해 말하는 것/);
-  assert.match(ko, /전부 \$59/);
   assert.match(ko, /이 무료 보고서에는 문제 6개 중 3개만 있습니다/);
 });
 
@@ -133,7 +141,9 @@ test('a company with nothing to lock gets no lock card; one with no issues gets 
   assert.ok(html.includes('<div class="sticky">'));
   const clean: any = { ...small, conclusive_findings: [{ ...problem(1, 'other', 'S'), kind: 'strength' }] };
   const none = reportPage({ ...report, summary: [] }, clean);
-  assert.ok(!none.includes('<div class="sticky">') && !none.includes('class="exec"') && !none.includes('class="callout"') && !none.includes('id="inside"'));
+  assert.ok(!none.includes('<div class="sticky">') && !none.includes('class="exec"') && !none.includes('class="callout"'));
+  // The order block is always there, so every buy button has a target.
+  assert.ok(none.includes('id="order"'));
 });
 
 test('Korean page prints the same gate', () => {
