@@ -68,7 +68,8 @@ export function handlerFor(handlers: Map<string, HandlerEntry>, question: string
 // ---------------------------------------------------------------- global handlers (country "ALL")
 // A global handler applies to every report whatever the country and takes the company's website domain as its
 // keyword (DNS, SSL certificate, certificate logs, Wayback Machine, YouTube). It is not matched to a catalog prompt:
-// each one runs once per report on the confirmed official domain. Off unless V21_GLOBAL_HANDLERS=on.
+// each one runs once per report on the confirmed official domain, in Step 1.5 (assets.ts, `global_handlers` block).
+// Off unless V21_GLOBAL_HANDLERS=on.
 export const globalHandlersOn = (): boolean => envValue('V21_GLOBAL_HANDLERS').trim().toLowerCase() === 'on';
 
 /** The runnable global handlers (tier 1 and 2), in id order. Empty when the service cannot be read. */
@@ -81,6 +82,42 @@ export async function loadGlobalHandlers(): Promise<HandlerEntry[]> {
     return list.filter((h) => h && h.id && (h.tier === 1 || h.tier === 2)).sort((a, b) => a.id.localeCompare(b.id));
   } catch {
     return [];
+  }
+}
+
+/** One global handler's answer, kept as it came back, with the handler's own description for whoever reads it. */
+export type GlobalHandlerAnswer = {
+  id: string;
+  question: string;
+  source_name: string;
+  why_it_matters: string;
+  lookup: SiteLookupResult;
+};
+
+/** Step 1.5's `global_handlers` block. done: every handler was asked (each answer carries its own status).
+ *  not_run: no official domain. failed: the handler list could not be read. */
+export type GlobalHandlersBlock = {
+  status: 'done' | 'not_run' | 'failed';
+  reason?: string;
+  error?: string;
+  domain?: string;
+  handlers: GlobalHandlerAnswer[];
+};
+
+/** Run every global handler on the official domain, in parallel, on worker PCs. Never throws; a handler that did not
+ *  run is in the block with its error, and the others are kept. */
+export async function runGlobalHandlers(domain: string): Promise<GlobalHandlersBlock> {
+  try {
+    const list = await loadGlobalHandlers();
+    if (!list.length) return { status: 'failed', domain, error: 'no global handlers could be read from the worker service', handlers: [] };
+    const answers = await Promise.all(list.map((h) => siteLookup(h.id, domain)));
+    return {
+      status: 'done',
+      domain,
+      handlers: list.map((h, i) => ({ id: h.id, question: h.question, source_name: h.source_name ?? h.host, why_it_matters: h.why_it_matters ?? '', lookup: answers[i] })),
+    };
+  } catch (err: any) {
+    return { status: 'failed', domain, error: err?.message ?? String(err), handlers: [] };
   }
 }
 

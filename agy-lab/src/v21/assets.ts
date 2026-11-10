@@ -5,6 +5,8 @@
 //   3. Google Maps reviews of the company's own profile (Scraper.Tech).
 //   4. SEO and GEO benchmark of the official website on a Local Gmap Worker PC (site.audit; V21_SITE_AUDIT=on). The
 //      worker's report is kept as it came back (scores, checks, pages, facts, notChecked); nothing is judged here.
+//   5. The global handlers on the official domain, on Local Gmap Worker PCs (DNS, SSL certificate, certificate logs,
+//      Wayback Machine, YouTube; V21_GLOBAL_HANDLERS=on). Each answer is kept as it came back.
 //
 // Runs after Step 1 (Research) and before Step 2 (Analyse) so that objective technical facts feed the judge.
 import net from 'node:net';
@@ -14,6 +16,7 @@ import { pagespeed, scrapertech } from '../core/index.ts';
 import { readPsi, type Psi } from '../divedeeper/sections/W-speed.ts';
 import type { RawResearchCheckpoint } from './research.ts';
 import { workerAudit } from './cloud.ts';
+import { siteLookupOn, globalHandlersOn, runGlobalHandlers, type GlobalHandlersBlock } from './site-lookup.ts';
 
 const FREE_MAIL = /^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|me|aol|proton|protonmail|qq|163|126|zoho)\./i;
 const SOCIAL_DOMAINS = /^(?:[a-z0-9-]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twitter|xiaohongshu|threads|weibo|github|pinterest|whatsapp|telegram)\.com$/i;
@@ -119,6 +122,8 @@ export type Step1_5_AssetsOutput = {
   google_reviews: GoogleReviewsBlock;
   /** The worker's SEO / GEO benchmark of the official website. Absent when V21_SITE_AUDIT is not on. */
   site_audit?: SiteAuditBlock;
+  /** The global handlers' answers for the official domain. Absent when V21_GLOBAL_HANDLERS is not on. */
+  global_handlers?: GlobalHandlersBlock;
   findings: TechnicalFinding[];
   stats: {
     domains_checked: number;
@@ -587,6 +592,20 @@ export async function runStep1_5Assets(
     }
   }
 
+  // 5. The global handlers run on worker PCs (the slowest, Wayback, can take a minute) while PageSpeed and the reviews
+  // read go; awaited at the end. A handler that fails is recorded in its answer; it never stops the rest of Step 1.5.
+  let globalHandlers: GlobalHandlersBlock | undefined;
+  let globalRun: Promise<GlobalHandlersBlock> | null = null;
+  if (siteLookupOn() && globalHandlersOn()) {
+    const officialDomain = checkpoint.official_site?.domain;
+    if (checkpoint.skipped || !officialDomain) {
+      globalHandlers = { status: 'not_run', reason: checkpoint.skipped ? `Research skipped: ${checkpoint.skipped}` : 'No confirmed official website', handlers: [] };
+    } else {
+      log(`[Step 1.5] Global handlers on ${officialDomain} (worker PCs)...`);
+      globalRun = runGlobalHandlers(officialDomain);
+    }
+  }
+
   if (checkpoint.skipped || !officialSiteUrl) {
     psiStatus = 'skipped';
     psiReason = checkpoint.skipped ? `Research skipped: ${checkpoint.skipped}` : 'No confirmed official website';
@@ -722,6 +741,11 @@ export async function runStep1_5Assets(
     log(`[Step 1.5] SEO / GEO benchmark: ${siteAudit.status}${sc ? ` (SEO ${sc.seo}, GEO ${sc.geo})` : ''}${siteAudit.error ? `: ${siteAudit.error}` : ''}`);
   }
 
+  if (globalRun) {
+    globalHandlers = await globalRun;
+    log(`[Step 1.5] Global handlers: ${globalHandlers.status}${globalHandlers.error ? ` (${globalHandlers.error})` : ''}${globalHandlers.handlers.length ? ` - ${globalHandlers.handlers.map((h) => `${h.id} ${h.lookup.job_status === 'done' ? h.lookup.status : 'did not run'}`).join(', ')}` : ''}`);
+  }
+
   const durationMs = Date.now() - started;
   log(`[Step 1.5] Completed in ${durationMs}ms with ${findings.length} technical findings.`);
 
@@ -749,6 +773,7 @@ export async function runStep1_5Assets(
     domains: auditedDomains,
     google_reviews,
     ...(siteAudit ? { site_audit: siteAudit } : {}),
+    ...(globalHandlers ? { global_handlers: globalHandlers } : {}),
     findings,
     stats: {
       domains_checked: auditedDomains.length,

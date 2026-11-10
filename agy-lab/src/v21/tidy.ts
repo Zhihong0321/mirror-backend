@@ -491,6 +491,31 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
       }
       for (const x of ar.notChecked ?? []) couldNotCheck.push({ target: 'SEO / GEO benchmark', reason: String(x) });
     }
+
+    // Global handlers on the official domain (Step 1.5 global_handlers; DNS, SSL certificate, certificate logs, Wayback
+    // Machine, YouTube feed). One item per handler that answered, its excerpt as the handler wrote it. A handler that
+    // did not run or could not check is "could not check", never a finding. The block is absent when the flag is off.
+    const gh = assets.global_handlers;
+    if (gh && gh.status !== 'done') {
+      couldNotCheck.push({ target: 'Public records on the website domain', reason: gh.reason || gh.error || `global handlers ${gh.status}` });
+    }
+    for (const h of gh?.handlers ?? []) {
+      const l = h.lookup;
+      if (!l || l.job_status !== 'done' || !l.status || l.status === 'couldnt_check') {
+        couldNotCheck.push({ target: h.source_name, reason: l?.error || l?.reason || cleanText(String(l?.excerpt ?? '')).slice(0, 200) || 'did not answer' });
+        continue;
+      }
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: h.source_name,
+        url: l.source_url || '',
+        title: `${h.source_name}: ${l.status === 'found' ? 'records found' : 'nothing found'} for ${gh?.domain ?? 'the website domain'}`,
+        text: String(l.excerpt ?? ''),
+        check_id: `global:${h.id}`,
+        ...(gh?.domain ? { domain: gh.domain.toLowerCase() } : {}),
+      });
+    }
   }
 
   // ---- Catalog probes: not run -> could not check; read pages -> passages where the name appears.
