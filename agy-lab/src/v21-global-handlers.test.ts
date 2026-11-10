@@ -6,9 +6,9 @@ import { globalHandlersOn, loadGlobalHandlers } from './v21/site-lookup.ts';
 const realFetch = globalThis.fetch;
 test.afterEach(() => { globalThis.fetch = realFetch; delete process.env.V21_GLOBAL_HANDLERS; });
 
-test('global handlers are off unless V21_GLOBAL_HANDLERS=on', () => {
+test('global handlers are on unless V21_GLOBAL_HANDLERS=off', () => {
   delete process.env.V21_GLOBAL_HANDLERS;
-  assert.equal(globalHandlersOn(), false);
+  assert.equal(globalHandlersOn(), true);
   process.env.V21_GLOBAL_HANDLERS = 'on';
   assert.equal(globalHandlersOn(), true);
   process.env.V21_GLOBAL_HANDLERS = 'off';

@@ -6,7 +6,7 @@
 //   4. SEO and GEO benchmark of the official website on a Local Gmap Worker PC (site.audit; V21_SITE_AUDIT=on). The
 //      worker's report is kept as it came back (scores, checks, pages, facts, notChecked); nothing is judged here.
 //   5. The global handlers on the official domain, on Local Gmap Worker PCs (DNS, SSL certificate, certificate logs,
-//      Wayback Machine, YouTube; V21_GLOBAL_HANDLERS=on). Each answer is kept as it came back.
+//      Wayback Machine, YouTube; on unless V21_GLOBAL_HANDLERS=off). Each answer is kept as it came back.
 //
 // Runs after Step 1 (Research) and before Step 2 (Analyse) so that objective technical facts feed the judge.
 import net from 'node:net';
@@ -122,7 +122,7 @@ export type Step1_5_AssetsOutput = {
   google_reviews: GoogleReviewsBlock;
   /** The worker's SEO / GEO benchmark of the official website. Absent when V21_SITE_AUDIT is not on. */
   site_audit?: SiteAuditBlock;
-  /** The global handlers' answers for the official domain. Absent when V21_GLOBAL_HANDLERS is not on. */
+  /** The global handlers' answers for the official domain. Absent when V21_GLOBAL_HANDLERS=off. */
   global_handlers?: GlobalHandlersBlock;
   findings: TechnicalFinding[];
   stats: {

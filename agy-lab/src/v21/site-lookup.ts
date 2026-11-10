@@ -69,8 +69,8 @@ export function handlerFor(handlers: Map<string, HandlerEntry>, question: string
 // A global handler applies to every report whatever the country and takes the company's website domain as its
 // keyword (DNS, SSL certificate, certificate logs, Wayback Machine, YouTube). It is not matched to a catalog prompt:
 // each one runs once per report on the confirmed official domain, in Step 1.5 (assets.ts, `global_handlers` block).
-// Off unless V21_GLOBAL_HANDLERS=on.
-export const globalHandlersOn = (): boolean => envValue('V21_GLOBAL_HANDLERS').trim().toLowerCase() === 'on';
+// On unless V21_GLOBAL_HANDLERS=off (owner, 2026-11-11).
+export const globalHandlersOn = (): boolean => envValue('V21_GLOBAL_HANDLERS').trim().toLowerCase() !== 'off';
 
 /** The runnable global handlers (tier 1 and 2), in id order. Empty when the service cannot be read. */
 export async function loadGlobalHandlers(): Promise<HandlerEntry[]> {
