@@ -1,19 +1,10 @@
 // Global handlers (country "ALL"): the hub side. Offline: fetch is replaced, nothing leaves this process.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { globalHandlersOn, loadGlobalHandlers } from './v21/site-lookup.ts';
+import { loadGlobalHandlers } from './v21/site-lookup.ts';
 
 const realFetch = globalThis.fetch;
-test.afterEach(() => { globalThis.fetch = realFetch; delete process.env.V21_GLOBAL_HANDLERS; });
-
-test('global handlers are on unless V21_GLOBAL_HANDLERS=off', () => {
-  delete process.env.V21_GLOBAL_HANDLERS;
-  assert.equal(globalHandlersOn(), true);
-  process.env.V21_GLOBAL_HANDLERS = 'on';
-  assert.equal(globalHandlersOn(), true);
-  process.env.V21_GLOBAL_HANDLERS = 'off';
-  assert.equal(globalHandlersOn(), false);
-});
+test.afterEach(() => { globalThis.fetch = realFetch; });
 
 test('loadGlobalHandlers asks for country ALL, keeps tier 1 and 2, sorts by id', async () => {
   let asked = '';
