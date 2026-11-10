@@ -17,6 +17,11 @@ export type HandlerEntry = {
   tier: number;
   method: string;
   pdf: boolean;
+  /** Global handlers only (country "ALL"): they take the website domain, not a company name. */
+  input?: string;
+  scope?: string;
+  source_name?: string;
+  why_it_matters?: string;
 };
 
 export type SiteLookupResult = {
@@ -58,6 +63,25 @@ export async function loadHandlers(countryCode: string): Promise<Map<string, Han
 
 export function handlerFor(handlers: Map<string, HandlerEntry>, question: string): HandlerEntry | undefined {
   return handlers.get(norm(question));
+}
+
+// ---------------------------------------------------------------- global handlers (country "ALL")
+// A global handler applies to every report whatever the country and takes the company's website domain as its
+// keyword (DNS, SSL certificate, certificate logs, Wayback Machine, YouTube). It is not matched to a catalog prompt:
+// each one runs once per report on the confirmed official domain. Off unless V21_GLOBAL_HANDLERS=on.
+export const globalHandlersOn = (): boolean => envValue('V21_GLOBAL_HANDLERS').trim().toLowerCase() === 'on';
+
+/** The runnable global handlers (tier 1 and 2), in id order. Empty when the service cannot be read. */
+export async function loadGlobalHandlers(): Promise<HandlerEntry[]> {
+  try {
+    const res = await fetch(`${HUB_URL}/api/handlers?country=ALL`, { headers: headers() });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const list: HandlerEntry[] = Array.isArray(data) ? data : (data.handlers ?? []);
+    return list.filter((h) => h && h.id && (h.tier === 1 || h.tier === 2)).sort((a, b) => a.id.localeCompare(b.id));
+  } catch {
+    return [];
+  }
 }
 
 /** Run one handler with one name on a worker PC. Never throws: a lookup that did not run comes back failed with why. */

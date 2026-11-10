@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { loadChecklist, type ResearchPrompt } from './catalog.ts';
 import { braveSearch, tavilySearch, mapsSearch, workerFetch, linkedinCompanyExa, type BraveHit, type TavilyHit } from './cloud.ts';
 import { readWebPage, type PageResult } from './reader.ts';
-import { siteLookupOn, loadHandlers, handlerFor, siteLookup, naverPlaceSearch, type HandlerEntry, type SiteLookupResult, type NaverPlace } from './site-lookup.ts';
+import { siteLookupOn, loadHandlers, handlerFor, siteLookup, naverPlaceSearch, globalHandlersOn, loadGlobalHandlers, type HandlerEntry, type SiteLookupResult, type NaverPlace } from './site-lookup.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // On the hub (production) the checkpoints go to the /data volume, which outlives a redeploy.
@@ -571,7 +571,43 @@ export async function runStep1Research(
     probe({ query: '', evidence_urls: [], snippets: [], not_run: why });
   }
 
-  checkpoint.google_maps = { query: mapsQuery, ...(await maps) };
+  // 5b. Global handlers (country "ALL"): DNS, SSL certificate, certificate logs, Wayback Machine, YouTube. They apply
+  // to every report and take the confirmed official domain. Each answer is kept as it came back, and a handler that
+  // did not run is recorded as not run with why; neither stops the report. Off unless V21_GLOBAL_HANDLERS=on.
+  if (siteLookupOn() && globalHandlersOn()) {
+    try {
+      const globals = await loadGlobalHandlers();
+      log(`Global handlers on: ${globals.length} for ${officialDomain}`);
+      const answers = await Promise.all(globals.map((h) => siteLookup(h.id, officialDomain)));
+      globals.forEach((h, i) => {
+        const lookup = answers[i];
+        const ran = lookup.job_status === 'done';
+        log(`Global handler ${h.id}: ${ran ? `${lookup.status}${lookup.reason ? ` (${lookup.reason})` : ''}` : `did not run (${lookup.error})`}`);
+        checkpoint.probes.push({
+          rank: 1000 + i,
+          category: 'global',
+          question: h.question,
+          why_it_matters: h.why_it_matters ?? '',
+          source: { name: h.source_name ?? h.host, url: h.source_url, type: 'global_handler' },
+          how_to_query: `Global handler ${h.id} run on a worker PC with the website domain`,
+          query_type: 'global_handler',
+          applies_when: 'every report',
+          query: `site.lookup ${h.id} "${officialDomain}"`,
+          evidence_urls: lookup.source_url ? [lookup.source_url] : [],
+          snippets: lookup.excerpt ? [lookup.excerpt] : [],
+          ...(ran ? {} : { not_run: `global handler did not run: ${lookup.error}` }),
+          lookup,
+          found_when: 'the handler returned records for this domain',
+          not_found_when: 'the source holds nothing for this domain',
+          couldnt_check_when: 'the source could not be read from the worker PC',
+        });
+      });
+    } catch (err: any) {
+      log(`Global handlers failed to start: ${err?.message ?? err}`);
+    }
+  }
+
+  checkpoint.google_maps ={ query: mapsQuery, ...(await maps) };
   log(`Google Maps search: ${checkpoint.google_maps.status}`);
   if (naver) {
     checkpoint.naver_place = { query: naverQuery, ...(await naver) };
