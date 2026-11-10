@@ -22,7 +22,11 @@ export async function runStep1_6(reportId: string, checkpoint: any, runId: strin
   const entry = { runId, out: null as Step1_6_PeopleOutput | null, status: 'running' as 'running' | 'done' | 'failed', error: undefined as string | undefined };
   live.set(reportId, entry);
   try {
-    const out = await runStep1_6People(checkpoint, (m) => console.log(`[v21 step1.6] ${reportId}: ${m}`), async (o) => { entry.out = o; });
+    // Every round is written as it ends (status 'round'), so a restart or deploy mid-run loses one round at most.
+    const out = await runStep1_6People(checkpoint, (m) => console.log(`[v21 step1.6] ${reportId}: ${m}`), async (o) => {
+      entry.out = o;
+      await store.addRaw(reportId, 1, 'people', runId, o, 'round');
+    });
     entry.out = out;
     await store.addRaw(reportId, 1, 'people', runId, out, out.status);
     entry.status = 'done';
