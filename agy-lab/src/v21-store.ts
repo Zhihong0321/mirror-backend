@@ -29,7 +29,7 @@ type Ctx = {
 
 export type ReportInput = { company: string; country: string; industry: string; website?: string };
 export type StepStatus = 'none' | 'running' | 'done' | 'failed' | 'skipped';
-export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets' | 'report' | 'email' | 'lens';
+export type RawKind = 'checkpoint' | 'log' | 'tidy' | 'judge' | 'recheck' | 'result' | 'assets' | 'report' | 'email' | 'lens' | 'people';
 
 const PATH = '/api/v21/report';
 

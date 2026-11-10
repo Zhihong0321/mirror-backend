@@ -32,6 +32,7 @@ import * as contactKeys from './contact-keys.ts';
 import * as v21Bench from './v21-bench-store.ts';
 import * as v21Step1 from './v21-step1-http.ts';
 import * as v21Step1_5 from './v21-step1-5-http.ts';
+import * as v21Step1_6 from './v21-step1-6-http.ts';
 import * as v21Step2 from './v21-step2-http.ts';
 import * as v21Store from './v21-store.ts';
 import * as v21Step3 from './v21-step3-http.ts';
@@ -444,6 +445,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
 
   // ---- V2.1 Step 1.5 technical audit on the hub ----
   if (await v21Step1_5.handle(req, res, url, { json, readJson })) return;
+  if (await v21Step1_6.handle(req, res, url, { json, readJson })) return;
 
   // ---- V2.1 Step 2 on the hub, and the stored raw data of both steps (read by report UID) ----
   if (await v21Step2.handle(req, res, url, { json, readJson })) return;
