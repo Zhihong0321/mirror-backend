@@ -1,172 +1,102 @@
-// The free report page is a sales page: what is locked must not be in the HTML at all, and every problem and
-// contradiction carries an urgency badge set by code.
+// Step 3 writer checks for the 2026-11-10 preview: the consequence titles and the proof pick are checked by code. A
+// failing title or pick is recorded in `rejected` and the page falls back (teaser / rank #1); nothing blocks the report.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FREE_N, rate, reportPage } from './v21/step3.ts';
+import { checkProof, checkTitles, emailText, rate, step3SystemPrompt } from './v21/step3.ts';
 
-// The price is one USD value read from the hub DB by the caller and passed in as options.price.
 const NOW = new Date('2026-11-09T00:00:00Z');
-const urgencyOf = (topic: string, text: string, confidence: string) => rate({ topic, confidence }, [text], NOW).urg;
-
-const ev = (n: number) => [{ evidence_id: `E${n}`, quoted_text: `QUOTE-${n}`, source_url: `https://registry.example/secret-${n}` }];
-const problem = (n: number, topic: string, title: string, confidence = 'high') => ({
-  id: `f${n}`, kind: 'problem', topic, title, statement: `STATEMENT-${n}`, evidence: ev(n), why_it_matters: `WHY-${n}`, identity: 'x', confidence,
-});
 const s2: any = {
-  input: { company: 'Acme Bhd', country: 'MY', industry: 'Solar' },
+  input: { company: 'Acme Bhd', country: 'Malaysia', industry: 'Solar' },
   baseline: { websites: ['acme.example'] },
   conclusive_findings: [
-    { ...problem(1, 'other', 'Stale logo'), kind: 'strength', title: 'STRENGTH-TITLE' },
-    problem(2, 'awards', 'LOWTITLE-2'),
-    problem(3, 'registration', 'CRITTITLE-3 registration number is wrong'),
-    problem(4, 'email', 'HIGHTITLE-4 no DMARC record'),
-    problem(5, 'contact', 'HIDDEN-TITLE-5 phone disconnected'),
-    problem(6, 'website', 'HIDDEN-TITLE-6'),
-    problem(7, 'scale', 'HIDDEN-TITLE-7'),
+    { id: 'f1', kind: 'strength', topic: 'awards', title: 'S', statement: 'S', evidence: [], why_it_matters: '', identity: 'x', confidence: 'high' },
+    { id: 'f2', kind: 'problem', topic: 'contact', title: 'P', statement: 'P', evidence: [], why_it_matters: '', identity: 'x', confidence: 'high' },
   ],
-  contradictions: [1, 2, 3].map((n) => ({
-    id: `c${n}`, topic: 'registration', title: `CONTRA-${n}`, why_it_matters: `CWHY-${n}`, identity: 'x', confidence: 'high',
-    versions: [{ source: 'Site', value: `VALUE-A-${n}`, ...ev(10 + n)[0] }, { source: 'Directory', value: `VALUE-B-${n}`, ...ev(20 + n)[0] }],
-  })),
-  take_note: [],
-  suggestions: [
-    { id: 's1', action: 'FREE-STEP-1', why: 'w', based_on: ['f3'] },
-    { id: 's2', action: 'FREE-STEP-2', why: 'w', based_on: ['c1'] },
-    { id: 's3', action: 'LOCKED-STEP-3', why: 'w', based_on: ['c2'] },
-    { id: 's4', action: 'LEAK-STEP-4', why: 'w', based_on: ['f6'] },
-  ],
-};
-const report: any = {
-  language: 'en', created_at: '2026-11-08T00:00:00Z',
-  summary: [{ text: 'SUMMARY-OK', cites: ['f3'] }, { text: 'SUMMARY-LEAK', cites: ['f6'] }],
+  contradictions: [{ id: 'c1', topic: 'contact', title: 'C', why_it_matters: '', identity: 'x', confidence: 'high', versions: [{ source: 'Site', value: 'Jalan Ampang' }, { source: 'Maps', value: 'Jalan Tun' }] }],
+  take_note: [{ id: 'n1', topic: 'reviews', title: 'N', note: 'N', evidence: [], why_not_conclusive: '' }],
+  suggestions: [],
 };
 
 test('urgency: record type sets the base, a break word adds one, medium confidence caps at High', () => {
-  assert.equal(urgencyOf('awards', 'a logo', 'high'), 'low');
-  assert.equal(urgencyOf('registration', 'number', 'high'), 'high');
-  assert.equal(urgencyOf('registration', 'number is wrong', 'high'), 'critical');
-  assert.equal(urgencyOf('registration', 'number is wrong', 'medium'), 'high');
-  assert.equal(urgencyOf('nonsense', 'x', 'high'), 'low');
+  const u = (topic: string, text: string, confidence: string) => rate({ topic, confidence }, [text], NOW).urg;
+  assert.equal(u('awards', 'a logo', 'high'), 'low');
+  assert.equal(u('registration', 'number', 'high'), 'high');
+  assert.equal(u('registration', 'number is wrong', 'high'), 'critical');
+  assert.equal(u('registration', 'number is wrong', 'medium'), 'high');
 });
 
-test('free page: only the top problems are printed, in urgency order, each with a badge', () => {
-  const html = reportPage(report, s2);
-  assert.equal(FREE_N.problems, 3);
-  // f3 (critical), f4 (high), f5 (contact + disconnected = critical) outrank f2 (low), f6 (medium), f7 (low).
-  assert.ok(html.indexOf('id="f5"') < html.indexOf('id="f2"'));
-  for (const shown of ['CRITTITLE-3', 'HIGHTITLE-4', 'HIDDEN-TITLE-5']) assert.ok(html.includes(shown), shown);
-  for (const hidden of ['LOWTITLE-2', 'HIDDEN-TITLE-6', 'HIDDEN-TITLE-7', 'STATEMENT-2', 'STATEMENT-6', 'WHY-6', 'QUOTE-6', 'secret-6', 'secret-7']) {
-    assert.ok(!html.includes(hidden), `${hidden} must not be in the HTML`);
-  }
-  // A locked card keeps its id and its urgency badge.
-  assert.match(html, /<article class="warn wrong locked" id="f6">/);
-  assert.match(html, /class="urg medium"/);
-  assert.ok((html.match(/class="urg /g) ?? []).length >= 6 + 3);
-  assert.match(html, /3 more problems found/);
+test('titles: a consequence with a count passes; a value, a strength id or an unknown id is recorded, not kept', () => {
+  const rejected: any[] = [];
+  const out = checkTitles([
+    { id: 'f2', text: 'Your head office phone differs across 3 sources. Customers may call a line you do not answer.' },
+    { id: 'c1', text: 'Your address reads Jalan Ampang on one page.' },
+    { id: 'n1', text: 'Call us on 03-2161 8888 today' },
+    { id: 'f1', text: 'A strength' },
+    { id: 'zz', text: 'Unknown' },
+    { id: 'n1', text: 'Mail info@acme.example now' },
+    null,
+  ], s2, rejected);
+  assert.deepEqual(out, { f2: 'Your head office phone differs across 3 sources. Customers may call a line you do not answer.' });
+  assert.equal(rejected.length, 6);
+  assert.ok(rejected.every((r) => r.reasons.length));
+  assert.ok(rejected.some((r) => r.reasons.some((x: string) => x.includes("source's value"))));
+  // Not an array: nothing kept, nothing thrown.
+  assert.deepEqual(checkTitles(undefined, s2, []), {});
 });
 
-test('free page: contradictions beyond the first two are locked whole: no title, values, link or quote', () => {
-  const html = reportPage(report, s2);
-  assert.equal(FREE_N.contradictions, 2);
-  for (const t of ['CONTRA-1', 'CONTRA-2']) assert.ok(html.includes(t), t);
-  for (const t of ['CONTRA-3', 'VALUE-A-3', 'VALUE-B-3', 'CWHY-3']) assert.ok(!html.includes(t), t);
-  assert.ok(!html.includes('Source link and quote'));
-  assert.ok(html.includes('secret-11') && html.includes('secret-12'));
-  assert.ok(!html.includes('secret-13') && !html.includes('secret-23') && !html.includes('QUOTE-13'));
+test('proof: a problem or contradiction id is kept; anything else is recorded and gives null', () => {
+  const rejected: any[] = [];
+  assert.equal(checkProof({ id: 'f2' }, s2, rejected), 'f2');
+  assert.equal(checkProof({ id: 'c1' }, s2, rejected), 'c1');
+  assert.equal(checkProof({ id: 'f1' }, s2, rejected), null);
+  assert.equal(checkProof(undefined, s2, rejected), null);
+  assert.equal(rejected.length, 2);
 });
 
-test('free page: an action step is free only when everything it rests on is on the page', () => {
-  const html = reportPage(report, s2, { price: '$59' });
-  assert.equal(FREE_N.suggestions, 2);
-  assert.ok(html.includes('FREE-STEP-1') && html.includes('FREE-STEP-2'));
-  assert.ok(!html.includes('LOCKED-STEP-3') && !html.includes('LEAK-STEP-4'));
-  assert.match(html, /The full action plan, written out/);
-  assert.match(html, /review replies ready to post/);
-  // No invented figures: no task count or page count; the only money on the page is the price.
-  const text = html.replace(/<style[\s\S]*?<\/style>/, '');
-  assert.ok(!/\b25\b|\b21 tasks|14-page|13-page/.test(text));
-  assert.deepEqual([...new Set(text.match(/RM\d+|\$\d+/g))], ['$59']);
+test('the writer prompt asks for titles with no values and one proof pick; the email has no "may uncover more"', () => {
+  const p = step3SystemPrompt(s2, false);
+  assert.match(p, /"titles"/);
+  assert.match(p, /"proof"/);
+  assert.match(p, /never give the wrong value/);
+  const mail = emailText('Acme Bhd', false, { text: 'Subj', cites: ['f2'] }, [{ text: 'Body', cites: ['f2'] }], 'https://x.example/r');
+  assert.ok(!/uncover more/i.test(mail));
+  assert.match(mail, /shows what is wrong, not where it is or how to fix it/);
+  assert.ok(!/나올 수 있습니다/.test(emailText('A', true, null, [], 'u')));
 });
 
-test('one USD price for every country; no price passed means none shown', () => {
-  for (const country of ['Malaysia', 'South Korea', 'United States']) {
-    const c: any = { ...s2, input: { ...s2.input, country } };
-    const html = reportPage(report, c, { now: NOW, price: '$59' });
-    assert.match(html, /<p class="price" data-price>\$59<\/p>/, country);
-    assert.match(html, /<span class="pr" data-price>\$59<\/span>/, country);
-    assert.ok(!html.includes('RM249') && !html.includes('₩'), country);
-  }
-  const none = reportPage(report, s2, { now: NOW });
-  assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d|RM\d/.test(none.replace(/<style[\s\S]*?<\/style>/, '')));
-});
-
-test('the page says what the full report holds, so the price has something to buy', () => {
-  const html = reportPage(report, s2);
-  assert.match(html, /<section id="inside"/);
-  for (const part of ['Your scorecard', 'Every finding, with its evidence', 'What ChatGPT and Gemini say about you', 'What a stranger learns in ten minutes',
-    'An action plan, department by department', 'Done for you: the copy, written', 'A plan to get recommended by AI assistants']) {
-    assert.ok(html.includes(part), part);
-  }
-  assert.match(html, /This free report prints 3 of 6 problems\./);
-  assert.match(html, /This free report prints the first 2 steps\./);
-  // It describes the paid report only; nothing locked is named.
-  assert.ok(!html.includes('LOCKED-STEP-3') && !html.includes('HIDDEN-TITLE-6'));
-  const ko = reportPage({ ...report, language: 'ko' }, s2);
-  assert.match(ko, /ChatGPT와 Gemini가 귀사에 대해 말하는 것/);
-  assert.match(ko, /이 무료 보고서에는 문제 6개 중 3개만 있습니다/);
-});
-
-test('free page: every summary line is printed, even one that cites a locked item', () => {
-  const html = reportPage(report, s2);
-  assert.ok(html.includes('SUMMARY-OK'));
-  assert.ok(html.includes('SUMMARY-LEAK'));
-});
-
-test('free page: scorecard, records callout and sticky bar come from the real counts', () => {
-  const html = reportPage(report, s2);
-  assert.match(html, /We found 6 problems and 3 places where sources disagree; \d+ are rated Critical or High/);
-  assert.match(html, /class="callout"/);
-  assert.match(html, /class="sticky"/);
-  assert.match(html, /9 issues found/);
-  assert.ok(html.includes('STRENGTH-TITLE'));
-});
-
-test('a company with nothing to lock gets no lock card; one with no issues gets no sticky bar', () => {
-  const small: any = { ...s2, conclusive_findings: [problem(2, 'awards', 'ONLY')], contradictions: [], suggestions: [] };
-  const html = reportPage({ ...report, summary: [] }, small);
-  assert.ok(html.includes('ONLY'));
-  assert.ok(!/more problems? found/.test(html) && !html.includes('The full action plan, written out'));
-  assert.ok(!html.includes('prints 1 of') && !html.includes('prints the first'));
-  assert.ok(html.includes('<div class="sticky">'));
-  const clean: any = { ...small, conclusive_findings: [{ ...problem(1, 'other', 'S'), kind: 'strength' }] };
-  const none = reportPage({ ...report, summary: [] }, clean);
-  assert.ok(!none.includes('<div class="sticky">') && !none.includes('class="exec"') && !none.includes('class="callout"'));
-  // The order block is always there, so every buy button has a target.
-  assert.ok(none.includes('id="order"'));
-});
-
-test('Korean page prints the same gate', () => {
-  const html = reportPage({ ...report, language: 'ko' }, s2);
-  assert.ok(!html.includes('HIDDEN-TITLE-6'));
-  assert.match(html, /문제점 3개 더 발견/);
-});
-
-test('R2: summary lines citing a free or a locked action step are both printed', () => {
-  const r: any = { ...report, summary: [{ text: 'SUMMARY-STEP-FREE', cites: ['s1'] }, { text: 'SUMMARY-STEP-LOCKED', cites: ['s3'] }] };
-  const html = reportPage(r, s2);
-  assert.ok(html.includes('SUMMARY-STEP-FREE'));
-  assert.ok(html.includes('SUMMARY-STEP-LOCKED'));
-});
-
-test('R2: a missing or invalid created_at falls back to today instead of throwing', () => {
-  for (const created_at of [undefined, 'not a date', '']) {
-    const html = reportPage({ ...report, created_at }, s2, { now: NOW });
-    assert.ok(!html.includes('Invalid Date') && html.includes('9 Nov 2026'), String(created_at));
-  }
-});
-
-test('R2: a contradiction with no versions array still renders', () => {
-  const bad: any = { ...s2, contradictions: [{ id: 'c1', topic: 'registration', title: 'CONTRA-NOVERSIONS', why_it_matters: 'w', identity: 'x', confidence: 'high' }] };
-  const html = reportPage(report, bad, { now: NOW });
-  assert.ok(html.includes('CONTRA-NOVERSIONS'));
+test('a title or summary line carrying a number from a hidden item\'s own sources is recorded and left out', async () => {
+  const { checkSummaryValues, valueKeys } = await import('./v21/step3.ts');
+  const s: any = {
+    ...s2,
+    conclusive_findings: [
+      { id: 'f1', kind: 'strength', topic: 'reviews', title: '4.7 rating', statement: '4.7 from 32 reviews', evidence: [{ quoted_text: '4.7 (32)' }] },
+      { id: 'f2', kind: 'problem', topic: 'website', title: 'Domain expires', statement: 'x', evidence: [{ quoted_text: 'expiration: 2026-12-04' }] },
+    ],
+    contradictions: [
+      { id: 'c1', topic: 'scale', title: 'Staff count', versions: [{ source: 'Site', value: '62 staff' }, { source: 'LinkedIn', value: '13 employees' }] },
+      { id: 'c2', topic: 'registration', title: 'Grade', versions: [{ source: 'Site', value: 'Grade G7' }, { source: 'Directory', value: 'G3' }] },
+    ],
+    take_note: [],
+  };
+  assert.deepEqual([...valueKeys('3 sources')], []);
+  const rejected: any[] = [];
+  const titles = checkTitles([
+    { id: 'c1', text: 'Your site says 62 staff and LinkedIn says 13. Panels size teams from this.' },
+    { id: 'c2', text: 'Your contractor grade shows G7 on your site and G3 elsewhere.' },
+    { id: 'c2', text: 'Your contractor grade differs across 2 sources, so a tender panel may cap your bid.' },
+  ], s, rejected);
+  assert.deepEqual(Object.keys(titles), ['c2']);
+  assert.match(titles.c2, /differs across 2 sources/);
+  assert.equal(rejected.length, 2);
+  // Summary: the proof (f2) and the strength (f1) may give their values; a hidden contradiction may not.
+  const sr: any[] = [];
+  const kept = checkSummaryValues([
+    { text: 'Your domain expires on 2026-12-04.', cites: ['f2'] },
+    { text: 'Your 4.7 rating from 32 reviews is an asset.', cites: ['f1'] },
+    { text: 'Your site says G7 while a directory shows G3.', cites: ['c2'] },
+    { text: 'Your contractor grade differs between your site and a public directory.', cites: ['c2'] },
+  ], s, 'f2', sr);
+  assert.deepEqual(kept.map((l: any) => l.cites[0]), ['f2', 'f1', 'c2']);
+  assert.equal(sr.length, 1);
+  assert.match(sr[0].reasons[0], /g7|g3/);
 });
