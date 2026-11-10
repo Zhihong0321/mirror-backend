@@ -109,7 +109,13 @@ export async function runGlobalHandlers(domain: string): Promise<GlobalHandlersB
   try {
     const list = await loadGlobalHandlers();
     if (!list.length) return { status: 'failed', domain, error: 'no global handlers could be read from the worker service', handlers: [] };
-    const answers = await Promise.all(list.map((h) => siteLookup(h.id, domain)));
+    // No handler may hold Step 1.5 (and the report) for ever: one that has not answered in 5 minutes is recorded as
+    // not run, and the others keep their answers. The service itself ends a lookup after about 150 s.
+    const capped = (id: string): Promise<SiteLookupResult> => new Promise((resolve) => {
+      const timer = setTimeout(() => resolve({ handler: id, job_status: 'failed', error: 'no answer within 5 minutes' }), 5 * 60_000);
+      siteLookup(id, domain).then((r) => { clearTimeout(timer); resolve(r); }, (e) => { clearTimeout(timer); resolve({ handler: id, job_status: 'failed', error: String(e?.message ?? e) }); });
+    });
+    const answers = await Promise.all(list.map((h) => capped(h.id)));
     return {
       status: 'done',
       domain,
