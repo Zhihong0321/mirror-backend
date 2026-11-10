@@ -2,15 +2,16 @@
 // Reads the Step 1 checkpoint, searches in rounds until nothing new, and saves every call with what came back
 // plus the names and contacts read from the results. It never decides who is really linked: Step 2 does that.
 // Paid APIs are used for web search only. Any tool failing is one recorded line; the step always saves its output.
-import { exa, brave, tavily } from '../core/index.ts';
+// Call set trimmed after the Eternalgy prod test (docs/reports/v21-people-eternalgy-2026-11-10.md): 4 broad searches,
+// Exa web per new name, and a free worker read of the company's own llms.txt and PDFs. No Brave, no assistants.
+import { exa, tavily } from '../core/index.ts';
 import { toHit } from '../companydive-people.ts';
-import { chat } from '../divedeeper/v21/myworker.ts';
-import { liveHub } from '../divedeeper/sections/G-search.ts';
+import { readWebPage } from './reader.ts';
 import { askLanes } from './judge.ts';
 
 export type Hit = { url: string; title: string; text: string };
 export type PeopleCall = {
-  id: string; round: number; tool: 'step1-pages' | 'exa-people' | 'exa-web' | 'brave' | 'tavily' | 'chatgpt' | 'gemini';
+  id: string; round: number; tool: 'step1-pages' | 'own-site' | 'exa-people' | 'exa-web' | 'tavily';
   query: string; why: string; hits: Hit[]; ms: number; usd?: number; error?: string;
 };
 export type Mention = { call: string; hit: number; url: string; name: string; role: string; contact: string; quote: string };
@@ -26,9 +27,9 @@ export type Step1_6_PeopleOutput = {
   log: string[];
 };
 
-const MAX_NAMES = 16;
-const MAX_CONTACTS = 10;
-const MAX_ROUNDS = 4;
+const MAX_NAMES = 8;
+const MAX_ROUNDS = 3;
+const MAX_OWN_PDFS = 3;
 const clean = (v: unknown, n: number) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
 const hostLabel = (u: string) => { try { return new URL(/^https?:/.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').split('.')[0] ?? ''; } catch { return ''; } };
 
@@ -80,17 +81,36 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
     const r = await exa.request('search', { query: q, type: 'auto', numResults: 10, userLocation: 'MY', contents: { highlights: { maxCharacters: 900 } } });
     return { usd: Number(r?.costDollars?.total ?? 0), hits: (Array.isArray(r?.results) ? r.results : []).map((x: any) => ({ url: String(x?.url ?? ''), title: clean(x?.title, 160), text: clean([...(Array.isArray(x?.highlights) ? x.highlights : []), x?.text ?? ''].join(' … '), 2000) })) };
   };
-  const braveQ = (q: string) => async () => ({ hits: (await brave.search(q, { country: 'MY' })).map((h) => ({ url: h.url, title: h.title, text: (h.snippets ?? []).join(' … ') })) });
   const tavilyQ = (q: string) => async () => ({ hits: (await tavily.search(q, { maxResults: 10, depth: 'advanced' })).map((h) => ({ url: h.url, title: h.title, text: clean(h.content, 2000) })) });
-  const assistantPrompt = `Who are the founders, directors, shareholders, managers, sales agents and staff of ${company}${website ? ` (${website})` : ''}, ${industry ? `a ${industry} ` : ''}in ${country}? List every person you can find, with their role and the URL where it is stated. Also list every phone number and email address tied to the company or to these people, with the URL. Say when you are unsure.`;
-  const chatgptQ = () => async () => { const r = await chat(assistantPrompt); if ('error' in r) throw new Error(r.error); return { hits: [{ url: 'chatgpt-answer', title: 'ChatGPT answer', text: r.answer }] }; };
-  const geminiQ = () => async () => { const hub = liveHub(); const w = await hub.workers(); if (!w.length) throw new Error('no Gemini worker online'); return { hits: [{ url: 'gemini-answer', title: 'Gemini answer', text: await hub.ask(assistantPrompt, w[0]!) }] }; };
+  /** Free worker reads of the company's own files that list people: llms.txt and PDFs the site links to. */
+  const ownSite = async () => {
+    let origin = '';
+    try { origin = website ? new URL(/^https?:/.test(website) ? website : 'https://' + website).origin : ''; } catch { origin = ''; }
+    if (!origin) throw new Error('no official website to read');
+    const links = new Set<string>([origin + '/llms.txt']);
+    for (const p of checkpoint?.official_site?.pages ?? []) {
+      for (const m of String(p?.markdown ?? '').matchAll(/\]\(([^)\s]+\.pdf)\)/gi)) {
+        try { const u = new URL(m[1]!, origin); if (u.origin === origin && links.size < MAX_OWN_PDFS + 1) links.add(u.href); } catch { /* not a URL */ }
+      }
+    }
+    const hits: Hit[] = []; const failed: string[] = [];
+    for (const url of links) {
+      const r = await readWebPage(url).catch((e) => ({ status: 'error', markdown: '', error: String(e?.message ?? e) }) as any);
+      if (r?.status === 'ok' && r.markdown) hits.push({ url, title: url.split('/').pop() ?? url, text: clean(r.markdown, 30000) });
+      else failed.push(`${url}: ${clean(r?.error ?? r?.status, 120)}`);
+    }
+    if (failed.length) log(`own-site reads not done: ${failed.join(' | ')}`);
+    return { hits };
+  };
 
-  /** Read names and contacts out of one call's hits (8 at a time), on the V2.1 lanes. No judging. */
+  /** Read names and contacts out of one call's hits (8 at a time), on the V2.1 lanes. No judging. Only hits that carry
+   *  the brand word are read: the rest cost LLM time and, in the Eternalgy test, gave nothing new. */
   const read = async (call: PeopleCall) => {
-    for (let i = 0; i < call.hits.length; i += 8) {
-      const part = call.hits.slice(i, i + 8);
-      const block = part.map((h, j) => `[${i + j + 1}] ${h.title} | ${h.url}\n    ${clean(h.text, 3000)}`).join('\n');
+    const toRead = call.hits.map((h, idx) => ({ h, n: idx + 1 })).filter(({ h }) => call.tool === 'step1-pages' || call.tool === 'own-site' || carriesBrand(h, brand));
+    const size = call.tool === 'own-site' ? 1 : 8;
+    for (let i = 0; i < toRead.length; i += size) {
+      const part = toRead.slice(i, i + size);
+      const block = part.map(({ h, n }) => `[${n}] ${h.title} | ${h.url}\n    ${clean(h.text, call.tool === 'own-site' ? 30000 : 3000)}`).join('\n');
       const prompt = `Results (each starts with [n]):\n${block}\n\nList every PERSON named in these results and every PHONE NUMBER or EMAIL ADDRESS in them, with the hit number, the person's role as written, and the exact words. A person and their contact on the same line go in one item. Copy; do not judge or leave out.\n\nAnswer ONLY JSON: {"items": [{"hit": 1, "name": "", "role": "", "contact": "", "quote": ""}]}`;
       const t = Date.now();
       try {
@@ -113,17 +133,17 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
     await Promise.all(Array.from({ length: 4 }, async () => { while (q.length) await read(q.shift()!); }));
     await persist();
   };
-  /** Names and contacts from hits that carry the brand word: the leads the next round searches. */
+  /** Names from search hits that carry the brand word (and Step 1 pages): the leads the next round searches. */
   const leads = () => {
-    const names = new Map<string, string>(); const contacts = new Map<string, string>();
+    const names = new Map<string, string>();
     for (const m of out.mentions) {
       const call = out.calls.find((c) => c.id === m.call);
       const hit = call?.hits[m.hit - 1];
-      if (!hit || !(carriesBrand(hit, brand) || call!.tool === 'chatgpt' || call!.tool === 'gemini' || call!.tool === 'step1-pages')) continue;
+      // Names from the own-site files (e.g. an agent list in llms.txt) are saved but not searched one by one.
+      if (!hit || call!.tool === 'own-site' || !(carriesBrand(hit, brand) || call!.tool === 'step1-pages')) continue;
       const n = normName(m.name); if (n && n.split(' ').length >= 2) names.set(n, m.name);
-      const c = normContact(m.contact); if (c.length >= 7 && c.length <= 60) contacts.set(c, m.contact);
     }
-    return { names, contacts };
+    return { names };
   };
 
   try {
@@ -133,48 +153,31 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
       ...(checkpoint?.third_party_pages ?? []).map((p: any) => ({ url: String(p?.url ?? ''), title: clean(p?.title, 160), text: clean(p?.markdown ?? p?.text ?? p?.content, 4000) })),
     ].filter((h) => h.text);
     out.calls.push({ id: 'S1', round: 0, tool: 'step1-pages', query: '(pages Step 1 read)', why: 'seed', hits: step1Hits, ms: 0 });
+    await run('O1', 0, 'own-site', '(llms.txt and linked PDFs on the official site, free worker read)', 'own files that list people', ownSite);
     await readRound(0);
 
-    // Round 1: broad, every tool at once.
+    // Round 1: the 4 broad searches that found the outside people in the Eternalgy test.
     const where = [industry, country].filter(Boolean).join(', ');
     await Promise.all([
-      run('P1', 1, 'exa-people', `people who work at ${short}, ${where}`, 'broad', exaPeople(`people who work at ${short}, ${where}`)),
+      run('P1', 1, 'exa-people', `people who work at ${short}, ${where}`, 'staff profiles', exaPeople(`people who work at ${short}, ${where}`)),
       run('P2', 1, 'exa-people', `${company} founder director CEO`, 'leaders', exaPeople(`${company} founder director CEO`)),
-      run('P3', 1, 'exa-people', `${short} sales consultant agent ${country}`, 'sales', exaPeople(`${short} sales consultant agent ${country}`)),
-      run('P4', 1, 'exa-people', `${short} engineer technician project manager ${country}`, 'staff', exaPeople(`${short} engineer technician project manager ${country}`)),
       run('W1', 1, 'exa-web', `${company} director founder`, 'leaders on the web', exaWeb(`${company} director founder`)),
-      run('W2', 1, 'exa-web', `${short} ${country} CEO interview`, 'press', exaWeb(`${short} ${country} CEO interview`)),
-      run('B1', 1, 'brave', `"${company}" director OR founder OR CEO`, 'leaders on the web', braveQ(`"${company}" director OR founder OR CEO`)),
-      run('B2', 1, 'brave', `"${short}" ${industry} ${country}`, 'broad web', braveQ(`"${short}" ${industry} ${country}`)),
       run('T1', 1, 'tavily', `${company} ${country} founder news`, 'news', tavilyQ(`${company} ${country} founder news`)),
-      run('C1', 1, 'chatgpt', 'who runs and works at the company', 'assistant lead', chatgptQ()),
-      run('G1', 1, 'gemini', 'who runs and works at the company', 'assistant lead', geminiQ()),
     ]);
     await readRound(1);
 
-    // Rounds 2+: each new name (Exa web + Exa people), each new contact (Brave, Exa web when Brave fails).
-    const searchedNames = new Set<string>(); const searchedContacts = new Set<string>();
+    // Rounds 2+: Exa web per new name from brand hits, up to MAX_NAMES per round.
+    const searchedNames = new Set<string>();
     for (let round = 2; round <= MAX_ROUNDS + 1; round++) {
-      const { names, contacts } = leads();
+      const { names } = leads();
       const newNames = [...names.keys()].filter((n) => !searchedNames.has(n));
-      const newContacts = [...contacts.keys()].filter((c) => !searchedContacts.has(c));
-      if (!newNames.length && !newContacts.length) { log(`round ${round}: nothing new to search, stopping`); break; }
-      if (round > MAX_ROUNDS) { out.not_searched = { names: newNames.map((n) => names.get(n)!), contacts: newContacts.map((c) => contacts.get(c)!) }; log(`round limit reached; ${newNames.length} names, ${newContacts.length} contacts left`); break; }
-      const nameNow = newNames.slice(0, MAX_NAMES); const contactNow = newContacts.slice(0, MAX_CONTACTS);
+      if (!newNames.length) { log(`round ${round}: nothing new to search, stopping`); break; }
+      if (round > MAX_ROUNDS) { out.not_searched.names.push(...newNames.map((n) => names.get(n)!)); log(`round limit reached; ${newNames.length} names left`); break; }
+      const nameNow = newNames.slice(0, MAX_NAMES);
       out.not_searched.names.push(...newNames.slice(MAX_NAMES).map((n) => names.get(n)!));
-      out.not_searched.contacts.push(...newContacts.slice(MAX_CONTACTS).map((c) => contacts.get(c)!));
-      nameNow.forEach((n) => searchedNames.add(n)); contactNow.forEach((c) => searchedContacts.add(c));
-      newNames.slice(MAX_NAMES).forEach((n) => searchedNames.add(n)); newContacts.slice(MAX_CONTACTS).forEach((c) => searchedContacts.add(c));
-      log(`round ${round}: ${nameNow.length} names, ${contactNow.length} contacts`);
-      await Promise.all([
-        ...nameNow.flatMap((n, i) => [
-          run(`R${round}N${i + 1}w`, round, 'exa-web', `"${names.get(n)}" ${short}`, `name: ${names.get(n)}`, exaWeb(`"${names.get(n)}" ${short}`)),
-          run(`R${round}N${i + 1}p`, round, 'exa-people', `${names.get(n)} ${short} ${country}`, `name: ${names.get(n)}`, exaPeople(`${names.get(n)} ${short} ${country}`)),
-        ]),
-        ...contactNow.map((c, i) => run(`R${round}K${i + 1}`, round, 'brave', `"${contacts.get(c)}"`, `contact: ${contacts.get(c)}`, async () => {
-          try { return await braveQ(`"${contacts.get(c)}"`)(); } catch { return await exaWeb(`"${contacts.get(c)}"`)(); }
-        })),
-      ]);
+      newNames.forEach((n) => searchedNames.add(n));
+      log(`round ${round}: ${nameNow.length} names (${newNames.length - nameNow.length} left unsearched)`);
+      await Promise.all(nameNow.map((n, i) => run(`R${round}N${i + 1}`, round, 'exa-web', `"${names.get(n)}" ${short}`, `name: ${names.get(n)}`, exaWeb(`"${names.get(n)}" ${short}`))));
       await readRound(round);
     }
   } catch (e) {
