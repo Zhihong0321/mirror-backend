@@ -160,15 +160,17 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }
 
   // ---- 4. Who the people behind personal mailboxes and WhatsApp names are. ----
-  if (ctx.v21) skipPeople(ctx);
-  const people: any[] = (ctx.v21 ? [] : r.people?.people ?? []).map((p: any) => ({ name: p.name, role: p.role, current: p.current, relation: p.relation }));
+  const people: any[] = (r.people?.people ?? []).map((p: any) => ({ name: p.name, role: p.role, current: p.current, relation: p.relation }));
+  if (!people.length) skipPeople(ctx);
   const personal = [...points.values()].flatMap((p) => {
     if (p.kind === 'email' && !ROLE_BOX.test(p.key.split('@')[0])) return [{ point: p.id, hint: p.key.split('@')[0].replace(/[._-]+/g, ' ') }];
     if (p.kind === 'whatsapp' && p.whatsapp_name && !N.mentions(p.whatsapp_name) && !(N.brand && p.whatsapp_name.toLowerCase().includes(N.brand))) return [{ point: p.id, hint: p.whatsapp_name }];
     return [];
   });
   const lookups: Record<string, any[]> = {};
-  for (const x of ctx.v21 ? [] : personal.slice(0, 4)) {
+  // One lookup per name ("amy" from a mailbox and "Amy" on WhatsApp are one person).
+  const seenHint = new Set<string>();
+  for (const x of personal.filter((x) => { const k = x.hint.trim().toLowerCase(); return k && !seenHint.has(k) && seenHint.add(k); }).slice(0, 4)) {
     const known = people.find((p) => p.name && x.hint.length >= 3 && p.name.toLowerCase().includes(x.hint.toLowerCase().split(' ')[0]));
     if (known && known.current !== undefined) continue;
     const rows = await ctx.exa(`${x.hint} ${N.short} Malaysia`, { numResults: 5, text: 600 });
@@ -186,8 +188,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   }));
   const verdict = list.length ? ctx.parseJson(await ctx.llm(
     `You are checking how customers can reach ${N.legal} (${N.industry}; address on record: ${N.address || 'unknown'}). Official domains: ${N.domains.join(', ') || 'none'}.\n` +
-    `People the research found (current=false means they have left):\n${JSON.stringify(people.slice(0, 30))}\n\n` +
-    (ctx.v21 ? 'Search titles and ranks identify pages only. Judge external evidence from worker-read text; an unread page proves nothing. Key people have not been researched.\n' : '') +
+    `People the research found (current=false means they have left):\n${JSON.stringify(people)}\n\n` +
+    (ctx.v21 ? `Search titles and ranks identify pages only. Judge external evidence from worker-read text; an unread page proves nothing.${people.length ? '' : ' No key people were found for this company.'}\n` : '') +
     `Every contact point we found, with where it is published and what a web search for it shows:\n${JSON.stringify(brief)}\n\n` +
     `For EACH contact point decide its status:\n` +
     `- current: the company's working, official contact (on its own site or Maps, and nothing suggests otherwise)\n` +

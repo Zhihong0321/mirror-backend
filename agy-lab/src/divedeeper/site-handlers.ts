@@ -70,5 +70,5 @@ export const handlerText = (out: HandlerResult): string =>
   [out.records.length ? JSON.stringify(out.records) : '', out.excerpt].filter(Boolean).join('\n');
 
 export function skipPeople(ctx: Ctx): void {
-  ctx.warn('V2.1 has no key people step yet; person searches are skipped.');
+  ctx.warn('No key people were found for this company; person searches are skipped.');
 }

@@ -971,7 +971,27 @@ ${actionPlan()}
   ${foot(`Part ${chapters.length + 2} · Ready to use`)}
 </section>
 
-<section class="page" id="appendix">
+${dive.v21 ? (() => {
+  // People and contacts tied to the brand (V2.1 Step 2 people list, from Step 1.6), in full, and the public-record
+  // checks of the official domain (V2.1 Step 1.5 global handlers), each as its source answered. Both always shown;
+  // an empty or missing list says so.
+  const ppl: any[] = Array.isArray(dive.v21.people) ? dive.v21.people : [];
+  const srcOf = (p: any) => (Array.isArray(p?.evidence) ? p.evidence : []).map((e: any) => String(e?.source_url ?? '')).filter((u: string) => /^https?:/.test(u));
+  const pplRows = ppl.map((p: any) => `<tr><td><p class="t">${esc(p.name || '–')}</p>${p.role ? `<p class="small">${esc(p.role)}</p>` : ''}</td><td>${esc(p.contact || '–')}</td><td><p class="small">${esc(p.how_linked || '')}</p>${(Array.isArray(p.evidence) ? p.evidence : []).map((e: any) => e?.quoted_text ? `<p class="small muted">“${esc(cleanText(String(e.quoted_text)))}”</p>` : '').join('')}</td><td class="where">${[...new Set(srcOf(p))].map((u) => seeIt(u)).join('<br>') || '–'}</td></tr>`).join('');
+  const gh = dive.v21.assets?.global_handlers;
+  const hs: any[] = Array.isArray(gh?.handlers) ? gh.handlers : [];
+  const hWord = (l: any) => (!l || l.job_status !== 'done' ? ['info', 'Not answered'] : l.status === 'found' ? ['good', 'Records found'] : l.status === 'not_found' ? ['fix', 'Nothing found'] : ['info', 'Could not check']);
+  const hRows = hs.map((h: any) => { const l = h?.lookup; const [c, w] = hWord(l); return `<tr><td><p class="t">${esc(h.source_name ?? h.id)}</p>${h.why_it_matters ? `<p class="small">${esc(h.why_it_matters)}</p>` : ''}</td><td><span class="pill ${c}">${esc(w)}</span></td><td><p class="small">${esc(cleanText(String(l?.excerpt ?? l?.error ?? l?.reason ?? '')))}</p></td><td class="where">${l?.source_url ? seeIt(l.source_url) : '–'}</td></tr>`; }).join('');
+  return `<section class="page" id="people-records">
+  <p class="eyebrow">People and public records</p>
+  <h2 class="display">All people and contacts associated with your brand directly.<br><span class="g">Do you know all of them? Are they all legit?</span></h2>
+  ${ppl.length ? `<table class="band"><thead><tr><th>Name and role</th><th>Contact</th><th>How it ties to you</th><th>Where it is published</th></tr></thead><tbody>${pplRows}</tbody></table>` : '<p class="note">The public sources we read named no person or contact tied to your brand, or the people search did not run for this report.</p>'}
+  <h3 class="sub" style="margin-top:28px">Public records on ${esc(gh?.domain ?? 'your website domain')}</h3>
+  ${hs.length ? `<table class="band"><thead><tr><th>Record</th><th>Result</th><th>What it shows</th><th>Source</th></tr></thead><tbody>${hRows}</tbody></table>` : `<p class="note">The public-record checks did not run for this report${gh?.reason || gh?.error ? ` (${esc(gh.reason || gh.error)})` : ''}.</p>`}
+  ${foot('People and public records')}
+</section>
+`;
+})() : ''}<section class="page" id="appendix">
   <p class="eyebrow">Appendix</p>
   <h2 class="display">The full checklist.<br><span class="g">Every finding, part by part.</span></h2>
   ${AREAS.filter((a) => byArea(a.id).length).map((a) => { const list = byArea(a.id); return `<div id="appx-${a.id}"><h3 class="sub" style="font-size:17px">${esc(a.title)} <span class="muted" style="font-family:var(--body);font-size:11px;font-weight:400;letter-spacing:0">${[counts.byArea[a.id].urgent ? `${counts.byArea[a.id].urgent} urgent` : '', counts.byArea[a.id].needs ? `${counts.byArea[a.id].needs} need work` : '', `${counts.byArea[a.id].all} in all`].filter(Boolean).join(' · ')}</span></h3>${itemRows(list)}</div>`; }).join('')}

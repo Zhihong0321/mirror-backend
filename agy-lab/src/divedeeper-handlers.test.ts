@@ -34,7 +34,8 @@ function answer(handler: string, status = 'found', extra: Record<string, unknown
   return { handler, version: 'test', status, reason: '', source_url: `https://${handler.slice(3).split('/')[0]}/`,
     records: status === 'found' ? [{ company: LEGAL, record: 'WORKER RECORD' }] : [], excerpt: '', ...extra };
 }
-const hasPeopleWarning = (warnings: string[]) => assert.equal(warnings.filter((w) => /person searches are skipped/.test(w)).length, 1);
+// V2.1 uses the key people from Step 2's people list (owner, 2026-11-11): the fixture has one, so no skip warning.
+const hasPeopleWarning = (warnings: string[]) => assert.equal(warnings.filter((w) => /person searches are skipped/.test(w)).length, 0);
 
 test('K uses the eight handler ids, reuses Step 1, retries only name misses, and classifies worker evidence', async () => {
   const d = dive(), ctx = context();
@@ -55,7 +56,7 @@ test('K uses the eight handler ids, reuses Step 1, retries only name misses, and
   ctx.read = async (url) => { reads.push(url); return { url, finalUrl: url, status: url.endsWith('unread') ? 503 : 200, text: 'Acme: WORKER GOVERNMENT PAGE', via: 'test-worker' }; };
   ctx.llm = async (prompt) => {
     prompts.push(prompt);
-    assert.doesNotMatch(prompt, /POISON|Known Person/);
+    assert.doesNotMatch(prompt, /POISON/);
     assert.match(prompt, /WORKER RECORD/);
     assert.match(prompt, /WORKER GOVERNMENT PAGE/);
     return JSON.stringify({ items: [...prompt.matchAll(/^#(\d+) \[([^\]]+)\]/gm)].map((m) => ({ i: Number(m[1]), about: 'company',
@@ -78,7 +79,7 @@ test('K uses the eight handler ids, reuses Step 1, retries only name misses, and
   for (const id of ['insolvency', 'trademark']) assert.equal(out.findings.filter((f) => f.check === `cred-${id}`).length, 1);
   assert.ok(out.findings.some((f) => f.check === 'cred-security'));
   assert.ok(out.findings.some((f) => f.check === 'cred-licence'));
-  assert.deepEqual(out.notes.people, []);
+  assert.deepEqual(out.notes.people, out.notes.people.length && typeof out.notes.people[0] === 'string' ? ['Known Person'] : [{ name: 'Known Person', role: 'Director' }]);
   hasPeopleWarning(ctx.warnings);
 });
 
@@ -99,7 +100,7 @@ test('N reads at most twenty unique addresses, ranks recent relevant pages, adds
   ctx.brave = async (q) => { queries.push(q); return [{ ...rows[0], description: 'BRAVE POISON', extra_snippets: ['EXTRA POISON'] }, { url: 'https://acme.test/own', title: 'Acme' }]; };
   ctx.read = async (url) => { reads.push(url); return { url, finalUrl: url, status: 200, text: `Acme: WORKER PAGE ${url}. Worker quote for Acme.`, via: 'test-worker' }; };
   ctx.llm = async (prompt) => {
-    assert.doesNotMatch(prompt, /POISON|Known Person/);
+    assert.doesNotMatch(prompt, /POISON/);
     assert.match(prompt, /WORKER PAGE/);
     return JSON.stringify({ items: [...prompt.matchAll(/^#(\d+) \| (.*?) \| (.*?) \|/gm)].map((m) => ({
       i: Number(m[1]), about: 'company', kind: 'news', sentiment: 'neutral', date: '2026-10-25', summary: 'Read page mentions Acme',
@@ -110,13 +111,13 @@ test('N reads at most twenty unique addresses, ranks recent relevant pages, adds
   assert.equal(reads.length, 20);
   assert.equal(new Set(reads).size, 20);
   assert.deepEqual(reads.slice(0, 3), ['https://forum.lowyat.net/topic/1', 'https://news.test/25', 'https://news.test/24']);
-  assert.ok(queries.every((q) => !q.includes('Known Person')));
+  assert.ok(queries.some((q) => q.includes('Known Person')));
   const items = out.notes.items as any[];
   assert.equal(items.find((x) => x.url === 'https://forum.lowyat.net/topic/1').kind, 'forum');
   assert.equal(items.find((x) => x.url === 'https://news.test/25').quote, '', 'a search title cannot pass the quote check');
   assert.ok(items.some((x) => x.quote === 'Worker quote for Acme.'));
   assert.equal(out.notes.unjudged, 6);
-  assert.deepEqual(out.notes.people, []);
+  assert.deepEqual(out.notes.people, out.notes.people.length && typeof out.notes.people[0] === 'string' ? ['Known Person'] : [{ name: 'Known Person', role: 'Director' }]);
   hasPeopleWarning(ctx.warnings);
 });
 
@@ -170,7 +171,7 @@ test('D uses saved claims, selects handlers once, reuses checks and compares onl
   };
   ctx.llm = async (prompt) => {
     prompts.push(prompt);
-    assert.doesNotMatch(prompt, /Known Person|Saved official page|901010|staff@private|Private Contact|0123456789/);
+    assert.doesNotMatch(prompt, /Saved official page|901010|staff@private|Private Contact|0123456789/);
     if (prompts.length === 1) {
       assert.match(prompt, /ISO certified/);
       assert.match(prompt, /500 projects/);

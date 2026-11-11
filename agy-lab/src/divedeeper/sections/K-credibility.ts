@@ -43,9 +43,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, checked_at: ctx.now() } as Finding);
   const legal = N.legal.replace(/\./g, '');
-  const people = (ctx.v21 ? [] : r.people?.people ?? []).filter((p: any) => KEY_ROLE.test(`${p.role ?? ''} ${p.relation ?? ''}`) && /\s/.test(String(p.name ?? '').trim()) && !/unknown/i.test(p.name)).slice(0, 2).map((p: any) => String(p.name).trim());
+  const people = (r.people?.people ?? []).filter((p: any) => KEY_ROLE.test(`${p.role ?? ''} ${p.relation ?? ''}`) && /\s/.test(String(p.name ?? '').trim()) && !/unknown/i.test(p.name)).slice(0, 2).map((p: any) => String(p.name).trim());
   const handlerResults: { group: string; label: string; out: HandlerResult }[] = [];
-  if (ctx.v21) skipPeople(ctx);
+  if (!people.length) skipPeople(ctx);
 
   // ---- 1. Searches, grouped by the check they answer. ----
   type Hit = { group: string; url: string; title: string; text: string; person?: string };

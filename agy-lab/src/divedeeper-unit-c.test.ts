@@ -143,12 +143,13 @@ test('R V2.1 searches each contact once, reads at most 15 unique pages and never
   const out = await contacts(f.ctx, d);
   assert.equal(f.searches.length, 3); // Two phones (one also on WhatsApp), one email.
   assert.equal(f.reads.length, 15); assert.equal(new Set(f.reads).size, 15);
-  assert.deepEqual(f.profiles, []); assert.deepEqual(calls, []);
-  assert.equal(f.warnings.filter((w) => w.includes('no key people')).length, 1);
+  // The personal mailbox "amy" is looked up once (V2.1 person research, owner 2026-11-11).
+  assert.deepEqual(f.profiles, ['amy Acme Malaysia']); assert.deepEqual(calls, []);
+  assert.equal(f.warnings.filter((w) => /no key people/i.test(w)).length, 1);
   assert.match(f.prompts[0], /WORKER_TEXT/);
   assert.doesNotMatch(f.prompts[0], /SEARCH_SNIPPET_POISON|PAID_TEXT_POISON|EXTRA_SNIPPET_POISON|FAILED_TEXT_POISON/);
   assert.match(f.prompts[0], /2, Jalan Dua|3, Jalan Tiga/);
-  assert.deepEqual(out.notes.lookups, {});
+  assert.deepEqual(out.notes.lookups, { 'email:amy@acme.test': [] }); // the one person lookup, recorded even when it finds nothing
   const evidence = out.notes.evidence as any[];
   assert.equal(evidence[0].pages[1].rank, 2);
 });

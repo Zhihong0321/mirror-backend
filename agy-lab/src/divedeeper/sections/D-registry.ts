@@ -392,7 +392,7 @@ async function lookup(ctx: Ctx, dive: any, c: Claim, cache: Map<string, Promise<
 }
 
 async function workerRecords(ctx: Ctx, dive: any, claims: Claim[]): Promise<Rec[]> {
-  skipPeople(ctx);
+  if (!(dive?.result?.people?.people ?? []).length) skipPeople(ctx);
   if (!claims.length) return [];
   const picked = ctx.parseJson<{ claims: any[] }>(await ctx.llm(
     `Choose the issuing body and ONE site handler for each official claim by ${companyNames(dive).legal}.\n` +

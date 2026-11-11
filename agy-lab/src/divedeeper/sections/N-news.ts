@@ -24,11 +24,11 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const N = nameOf(dive);
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, 'checked_at'>) => findings.push({ ...f, checked_at: ctx.now() } as Finding);
-  const people = (ctx.v21 ? [] : r.people?.people ?? [])
+  const people = (r.people?.people ?? [])
     .filter((p: any) => p.current !== false && KEY_ROLE.test(`${p.role ?? ''} ${p.relation ?? ''}`) && /\s/.test(String(p.name ?? '').trim()) && !/unknown/i.test(p.name))
     .slice(0, 3).map((p: any) => ({ name: String(p.name).trim(), role: String(p.role ?? p.relation ?? '') }));
   ctx.log(`key people: ${people.map((p: any) => p.name).join(', ') || 'none'}`);
-  if (ctx.v21) skipPeople(ctx);
+  if (!people.length) skipPeople(ctx);
   let lowyat: HandlerResult | undefined;
   let unread = 0;
   const failedBefore = ctx.meter.exa.failed + ctx.meter.brave.failed;

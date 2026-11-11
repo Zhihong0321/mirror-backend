@@ -38,6 +38,28 @@ function domainLabel(domain: string): string {
   return parts.at(-suffix - 1) ?? '';
 }
 
+// The relation the old lanes key on, read from the role words as written (mechanical; Step 2 already judged who belongs).
+function relationOf(role: string): string {
+  const r = role.toLowerCase();
+  if (/founder|co-founder|pengasas/.test(r)) return 'founder';
+  if (/director|pengarah|chairman|ceo|managing|owner|proprietor|president/.test(r)) return 'director';
+  if (/shareholder|pemegang saham/.test(r)) return 'shareholder';
+  if (/manager|head|lead|chief|gm|general manager/.test(r)) return 'management';
+  if (/agent|dealer|reseller|ejen/.test(r)) return 'agent';
+  if (/partner/.test(r)) return 'partner';
+  if (/former|ex-/.test(r)) return 'former';
+  return r ? 'employee' : 'other';
+}
+
+/** Step 2's people list (every person and contact tied to the brand) in the shape the old lanes read. */
+function peopleOf(list: unknown): any[] {
+  return (Array.isArray(list) ? list : []).filter((p: any) => p && String(p.name ?? '').trim()).map((p: any) => ({
+    name: String(p.name).trim(), role: String(p.role ?? ''), relation: relationOf(String(p.role ?? '')), current: null,
+    evidence: (Array.isArray(p.evidence) ? p.evidence : []).map((e: any) => ({ url: String(e?.source_url ?? ''), quote: String(e?.quoted_text ?? '') })),
+    confidence: 'high', ...(p.contact ? { notes: `contact: ${p.contact}` } : {}),
+  }));
+}
+
 export async function loadV21Dive(reportId: string, reader?: Reader) {
   const source = reader ?? await import('../../v21-store.ts');
   const report = await source.getReport(reportId);
@@ -92,12 +114,13 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
         identity: { legal_name: legalName, aliases, address: addresses[0] ?? '', industry: report.industry, official_domains: unique([gate, ...domains]), registration_numbers: registrations,
           summary: pages.map((p) => `${p.label}: ${p.text}`).join('\n').slice(0, 1500) },
         facts, contradictions,
-        people: { people: [] }, sources: pages.filter((p) => p.url).map((p, i) => ({ id: i + 1, url: p.url, title: p.label })),
+        people: { people: peopleOf(raw.result.payload?.people) }, sources: pages.filter((p) => p.url).map((p, i) => ({ id: i + 1, url: p.url, title: p.label })),
       },
       v21: { report_id: reportId, company_uid: report.company_uid ?? null, maps_own: raw.checkpoint.payload?.google_maps?.result?.businesses ?? [], pages, site_wide: siteWide,
         assets: raw.assets?.payload ?? null, baseline,
         warnings: ['V2.1 has no company-dive background dossier; that appendix is omitted.',
           ...(raw.assets?.payload?.google_reviews?.data?.truncated ? ['Step 1.5 Google reviews are a saved sample; review counts in the analysis cover only that sample.'] : [])],
+        people: Array.isArray(raw.result.payload?.people) ? raw.result.payload.people : [],
         lookups, claims: { claimed_credentials: strings(baseline.claimed_credentials), claimed_numbers: strings(baseline.claimed_numbers) } },
     },
     rows: Object.fromEntries(kinds.map((kind) => [kind, raw[kind]?.id ?? null])),
