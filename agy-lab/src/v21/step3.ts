@@ -660,6 +660,29 @@ const P = {
     reader: (n: number, proof: boolean) => (n
       ? `This page states that ${plural(n, 'finding exists', 'findings exist')}${proof ? ' and gives evidence for one' : ''}. For ${proof ? `the other ${n - 1}` : 'them'} it contains no source, no published value, no correct value and no fix. It contains no competitor names and no register results. These are absent from the page, not hidden in it. The time estimate above shows its own arithmetic.`
       : 'This page found no problem in the public sources it read. It contains no competitor names and no register results: those were not tested for this preview. The time estimate above shows its own arithmetic.'),
+    // What the full report researches, part by part. The full run starts only after payment, so this names what each
+    // part will research and never a result: every result is a "?" until that run fills it in.
+    partsEye: 'What the full report researches', partsH: 'Each part gets its own', partsG: 'deep research run.',
+    partsP: 'This free check read the public pages about you once. After you order, the full report runs a separate, deeper research pass for each part below. Nothing in this section is a result yet: each “?” is filled in by that run.',
+    partN: (n: number) => `Part ${n}`, partRes: 'In your report:',
+    parts: [
+      { n: 'Contact and reachability', q: 'When a customer reaches out, does it reach you?', know: ['Every phone number, email and WhatsApp link published about you, and where each one really leads', 'Old numbers, ex-staff lines and dead mailboxes still in public', 'Where Google Maps, directories and your own site disagree'], res: '? of ? contact details reach you' },
+      { n: 'How the internet understands you', q: 'Does the internet understand what you sell, and why you?', know: ['Search results, Maps, directories, AI summaries and your homepage, read the way a buyer meets them', 'What they get right, get wrong or leave out', 'Selling points nobody outside your own site repeats'], res: 'Understood ? out of 100' },
+      { n: 'Reviews, discussion and news', q: 'What do people say about you when you are not in the room?', know: ['Your Google reviews, and which still have no reply from you', 'News, forum threads and social posts about your company and the people who run it', 'What customers praise, in their own words'], res: '? of ? reviews answered' },
+      { n: 'Credibility and official records', q: 'Can a stranger verify that you are who you say you are?', know: ['Regulators’ alert lists, court records and insolvency notices', 'Government company records', 'Each licence and award you claim, looked up in the issuer’s own register'], res: '? of ? risk checks clear' },
+      { n: 'Digital assets', q: 'Who really holds the keys to your name online?', know: ['Who holds each of your domains, and when it expires', 'Where your sites are hosted and who carries your email', 'Whether anyone can send email pretending to be you, forgotten subdomains and lookalike domains'], res: '? risks across your domains' },
+      { n: 'Website speed and quality', q: 'How does Google rate your website?', know: ['Google’s own speed, accessibility, good-practice and SEO scores, on a phone and on a computer', 'What real Chrome visitors experienced over the last 28 days', 'Google’s top fixes, biggest saving first'], res: '? out of 100 on a phone' },
+      { n: 'AI assistants', q: 'Does AI name you when a customer asks?', know: ['The questions your customers ask ChatGPT and Gemini, for your trade and your towns', 'Whether they name you when the customer does not, and how they rate you against your competitors', 'Whether they would recommend you over those competitors, and who they name instead'], res: '? of ? AI answers name you' },
+    ] as Array<{ n: string; q: string; know: string[]; res: string }>,
+    partsAfterH: 'Then, read across every part',
+    partsAfter: [
+      'What it all means: each part’s verdict, and what ties them together',
+      'What a customer, bank or tender officer learns about you in ten minutes',
+      'An action plan for each department, and how to check your fixes after 30 days',
+      'Done for you: your homepage rewritten, a page for each town, review replies ready to post',
+      'Every person and contact linked to your brand, in full, each with its source',
+      'The full checklist of everything the run checked',
+    ],
     offerEye: 'The full report', offerH: 'The working document for your team.',
     offerP: 'The preview shows the problems exist. The full report says where each one is, who fixes it, and gives the fix written out where we can.',
     gets: [
@@ -950,7 +973,17 @@ footer .in{padding-block:36px 56px;display:grid;grid-template-columns:repeat(4,m
 footer div{display:grid;gap:4px;align-content:start}
 footer .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .notready{padding:96px 20px}
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.part{background:var(--paper);padding:24px;display:grid;gap:10px;grid-template-rows:auto auto 1fr auto;border-top:3px solid var(--ink)}
+.part .pn{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.part h3{font-size:21px;line-height:1.2}
+.part ul,.after ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px;color:var(--grey)}
+.part .res{font-size:14px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.part .res b{font-family:var(--display);font-weight:600}
+.after{grid-column:1/-1;background:var(--paper);padding:24px;display:grid;gap:12px;border-top:3px solid var(--line)}
+.after h3{font-size:21px}
 @media (max-width:900px){
+.parts{grid-template-columns:1fr}
 .sec{padding-block:60px}
 .hero .in{grid-template-columns:1fr;gap:36px;padding-block:48px 56px}
 .qs,.goods,.cmp,.offer,.proof{grid-template-columns:1fr}
@@ -1231,6 +1264,11 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
 <div class="sum"><b>${esc(hours)}</b><span>${esc(t.diySum(price))}</span></div></div>
 <div class="reader"><h3>${esc(t.readerH)}</h3><p>${esc(t.reader(counts.findings, !!proofId))}</p></div></div></section>`;
 
+  // ---- what the full report researches, part by part: what each run will look at, never a result (it runs after payment)
+  const partsSec = `<section class="sec band" id="parts"><div class="in"><div class="head"><p class="eyebrow">${esc(t.partsEye)}</p><h2>${esc(t.partsH)} <span class="g">${esc(t.partsG)}</span></h2><p class="lead">${esc(t.partsP)}</p></div>
+<div class="parts">${t.parts.map((p, i) => `<div class="part"><p class="pn">${esc(t.partN(i + 1))} · ${esc(p.n)}</p><h3>${esc(p.q)}</h3><ul>${p.know.map((k) => `<li>${esc(k)}</li>`).join('')}</ul><p class="res">${esc(t.partRes)} <b>${esc(p.res)}</b></p></div>`).join('')}
+<div class="after"><h3>${esc(t.partsAfterH)}</h3><ul>${t.partsAfter.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div></div></section>`;
+
   // ---- the offer: the only #order on the page
   const getsN: GetsN = { findings: counts.findings };
   const offer = `<section class="sec dark" id="offer"><div class="in offer"><div><p class="eyebrow">${esc(t.offerEye)}</p><h2>${esc(t.offerH)}</h2><p class="lead">${esc(t.offerP)}</p>
@@ -1271,6 +1309,7 @@ ${list}
 ${peopleSec}
 ${working}
 ${notOn}
+${partsSec}
 ${offer}
 ${closing}
 ${footer}
