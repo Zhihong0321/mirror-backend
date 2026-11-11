@@ -973,17 +973,16 @@ footer .in{padding-block:36px 56px;display:grid;grid-template-columns:repeat(4,m
 footer div{display:grid;gap:4px;align-content:start}
 footer .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .notready{padding:96px 20px}
-.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.part{background:var(--paper);padding:24px;display:grid;gap:10px;grid-template-rows:auto auto 1fr auto;border-top:3px solid var(--ink)}
+.parts{display:grid;grid-template-columns:1fr;gap:14px}
+.part{background:var(--paper);padding:24px;display:grid;gap:10px;border-top:3px solid var(--ink)}
 .part .pn{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .part h3{font-size:21px;line-height:1.2}
-.part ul,.after ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px;color:var(--grey)}
+.part ul,.across ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px;color:var(--grey)}
 .part .res{font-size:14px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
 .part .res b{font-family:var(--display);font-weight:600}
-.after{grid-column:1/-1;background:var(--paper);padding:24px;display:grid;gap:12px;border-top:3px solid var(--line)}
-.after h3{font-size:21px}
+.across{grid-column:1/-1;background:var(--paper);padding:24px;display:grid;gap:12px;border-top:3px solid var(--line)}
+.across h3{font-size:21px}
 @media (max-width:900px){
-.parts{grid-template-columns:1fr}
 .sec{padding-block:60px}
 .hero .in{grid-template-columns:1fr;gap:36px;padding-block:48px 56px}
 .qs,.goods,.cmp,.offer,.proof{grid-template-columns:1fr}
@@ -1267,7 +1266,7 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
   // ---- what the full report researches, part by part: what each run will look at, never a result (it runs after payment)
   const partsSec = `<section class="sec band" id="parts"><div class="in"><div class="head"><p class="eyebrow">${esc(t.partsEye)}</p><h2>${esc(t.partsH)} <span class="g">${esc(t.partsG)}</span></h2><p class="lead">${esc(t.partsP)}</p></div>
 <div class="parts">${t.parts.map((p, i) => `<div class="part"><p class="pn">${esc(t.partN(i + 1))} · ${esc(p.n)}</p><h3>${esc(p.q)}</h3><ul>${p.know.map((k) => `<li>${esc(k)}</li>`).join('')}</ul><p class="res">${esc(t.partRes)} <b>${esc(p.res)}</b></p></div>`).join('')}
-<div class="after"><h3>${esc(t.partsAfterH)}</h3><ul>${t.partsAfter.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div></div></section>`;
+<div class="across"><h3>${esc(t.partsAfterH)}</h3><ul>${t.partsAfter.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div></div></section>`;
 
   // ---- the offer: the only #order on the page
   const getsN: GetsN = { findings: counts.findings };
