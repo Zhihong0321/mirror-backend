@@ -6,3 +6,6 @@ agy-lab/worker.env
 gmap-diver.log
 gmap-diver.err
 fetch-diver.err
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

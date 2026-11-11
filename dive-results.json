@@ -1,0 +1,99 @@
+{
+ "Malaysia": {
+  "company": "Synapse Comms",
+  "website": "https://synapsecomms.com/",
+  "dive_id": 28,
+  "dive_public": "O6L8m8dLuEAQBCJGF_Tw",
+  "dive_link": "https://company-diver-production.up.railway.app/d/O6L8m8dLuEAQBCJGF_Tw",
+  "dive_status": "done",
+  "dive_error": null,
+  "dive_cost": {
+   "usd": 0.47298801388888895,
+   "estimated": false,
+   "unpriced": [
+    "deepseek-ai/deepseek-v4.1-flash-1017 (1 call)"
+   ],
+   "lines": [
+    {
+     "item": "LLM deepseek-v4.1-flash-1017",
+     "detail": "7 calls, 122.6k in / 20.6k out tokens",
+     "usd": 0.001988013888888889
+    },
+    {
+     "item": "LLM deepseek-ai/deepseek-v4.1-flash-1017",
+     "detail": "1 call, 6.8k in / 13.4k out tokens",
+     "usd": null
+    },
+    {
+     "item": "Tavily",
+     "detail": "13 calls, 24 credits",
+     "usd": 0.192
+    },
+    {
+     "item": "Brave",
+     "detail": "8 calls",
+     "usd": 0.04
+    },
+    {
+     "item": "Exa",
+     "detail": "19 calls",
+     "usd": 0.23900000000000005
+    },
+    {
+     "item": "Failed calls",
+     "detail": "1 call, not billed",
+     "usd": 0
+    }
+   ]
+  },
+  "deeper_id": 6,
+  "deeper_public": "NfA3H_uKIMGabt_GhwJK",
+  "deeper_link": "https://company-diver-production.up.railway.app/dd/NfA3H_uKIMGabt_GhwJK",
+  "deeper_status": "partial",
+  "deeper_error": null,
+  "deeper_cost": {
+   "usd": 0.25441937500000006,
+   "estimated": false,
+   "unpriced": [
+    "deepseek-ai/deepseek-v4.1-flash-1017 (61 calls)"
+   ],
+   "lines": [
+    {
+     "item": "LLM deepseek-v4.1-flash-1017",
+     "detail": "44 calls, 90.6k in / 59.6k out tokens",
+     "usd": 0.0020860416666666666
+    },
+    {
+     "item": "LLM deepseek-ai/deepseek-v4.1-flash-1017",
+     "detail": "61 calls, 134.4k in / 102.5k out tokens",
+     "usd": null
+    },
+    {
+     "item": "Brave",
+     "detail": "25 calls",
+     "usd": 0.125
+    },
+    {
+     "item": "Exa",
+     "detail": "18 calls",
+     "usd": 0.12600000000000006
+    },
+    {
+     "item": "Google Maps (scraper.tech)",
+     "detail": "10 calls",
+     "usd": 0.0013333333333333335
+    },
+    {
+     "item": "Other web calls",
+     "detail": "22 calls, free",
+     "usd": 0
+    },
+    {
+     "item": "Failed calls",
+     "detail": "11 calls, not billed",
+     "usd": 0
+    }
+   ]
+  }
+ }
+}

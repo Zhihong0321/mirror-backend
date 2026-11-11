@@ -1,0 +1,194 @@
+{
+ "report": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.943Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 27,
+  "step2_run_id": "d3dcfc19-4d4e-4558-8838-c62e6d545214",
+  "kind": "report",
+  "status": "ok",
+  "error": null,
+  "summary": [
+   {
+    "text": "The domain behind your published company email lapses soon, so your quotes and invoices will bounce — and anyone can already send mail that looks like yours.",
+    "cites": [
+     "f1",
+     "f2"
+    ]
+   },
+   {
+    "text": "Your head-office phone, email and branch list differ across your own sites and listings, so a customer ready to enquire can reach the wrong line or inbox.",
+    "cites": [
+     "c1",
+     "c2",
+     "c3",
+     "c6"
+    ]
+   },
+   {
+    "text": "Your Google rating of 4.7 from 32 reviews is a real asset, yet none of your newest reviews has a reply from you.",
+    "cites": [
+     "f9",
+     "f5"
+    ]
+   }
+  ],
+  "titles": {
+   "f1": "The domain behind your company email lapses soon. Quotes and tender mail sent there will bounce.",
+   "f2": "Anyone can send email that looks like it comes from you, so a forged invoice can reach your clients in your name.",
+   "f3": "On a phone your site shows nothing for seconds, and that is where most homeowners first meet you.",
+   "f4": "A search-engine check fails on your homepage, so new project and credential pages are slower to appear in search.",
+   "f5": "Prospects see an unanswered low rating at the top of your Google profile and no reply from you on the newest reviews.",
+   "f6": "Your LinkedIn phone field holds nothing dialable, so a partner or recruiter who clicks call gets no answer.",
+   "c1": "Your head-office phone differs across your own sites and listings; a missed call at the quotation stage is a lost project.",
+   "c2": "You publish two different contact emails, so enquiries split and one inbox can go unanswered.",
+   "c3": "Your two sites list different branches, so a customer near a branch you run sees none on one of them.",
+   "c4": "Your head-office address is written two different ways, so couriers, auditors and site visits can reach the wrong unit.",
+   "c5": "Your staff count differs by a wide margin between your site and a public profile, weakening the scale you claim in tenders.",
+   "c6": "Every channel names a different one of your sites as official, so your newest credentials and project pages stay unseen.",
+   "n1": "A blank low rating carries the name of one of your engineers; worth checking, with nothing proven.",
+   "n2": "Clusters of top reviews land on the same days; worth watching before a rival points at them.",
+   "n3": "Your headline project and revenue figures appear only on your own pages, so a bank or tender panel cannot verify them.",
+   "n4": "A solar directory still files you under small installations, which undercuts the scale you pitch for.",
+   "n5": "A third domain serves a copy of your site; worth checking who controls it before it confuses customers."
+  },
+  "proof": "f1",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 2",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 241,
+     "error": "HTTP 429: {\"request_id\":\"req_vt_2e923b160b40d9e5b6da0554b6d96c22\",\"error\":{\"type\":\"rate_limit_error\",\"code\":\"VectorTide_rate_limit_exceeded\",\"requestId\":\"req_vt"
+    },
+    {
+     "lane": "Vectide plan 2",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 40011,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 5829,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 4720,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5715,
+      "prompt_tokens": 5715,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 11544
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 40549
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The domain behind your published company email lapses soon, so your quotes and invoices will bounce — and anyone can already send mail that looks like yours.\",\n      \"cites\": [\"f1\", \"f2\"]\n    },\n    {\n      \"text\": \"Your head-office phone, email and branch list differ across your own sites and listings, so a customer ready to enquire can reach the wrong line or inbox.\",\n      \"cites\": [\"c1\", \"c2\", \"c3\", \"c6\"]\n    },\n    {\n      \"text\": \"Your Google rating of 4.7 from 32 reviews is a real asset, yet none of your newest reviews has a reply from you.\",\n      \"cites\": [\"f9\", \"f5\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your company email sits on a domain that lapses soon\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"We read what the public internet says about Eternalgy. One finding stood out: the domain behind your published company email lapses soon, and mail sent to it would bounce without warning.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"It is not the only gap. Your head-office phone and email differ between your own sites and your listings, and your 4.7 rating from 32 reviews is undercut by the silence on the newest ones.\",\n        \"cites\": [\"c1\", \"c2\", \"f9\", \"f5\"]\n      },\n      {\n        \"text\": \"The link below opens with the item we would act on first, and you can confirm it yourself in a minute.\",\n        \"cites\": [\"f1\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind your company email lapses soon. Quotes and tender mail sent there will bounce.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Anyone can send email that looks like it comes from you, so a forged invoice can reach your clients in your name.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"On a phone your site shows nothing for seconds, and that is where most homeowners first meet you.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"A search-engine check fails on your homepage, so new project and credential pages are slower to appear in search.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Prospects see an unanswered low rating at the top of your Google profile and no reply from you on the newest reviews.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your LinkedIn phone field holds nothing dialable, so a partner or recruiter who clicks call gets no answer.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head-office phone differs across your own sites and listings; a missed call at the quotation stage is a lost project.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"You publish two different contact emails, so enquiries split and one inbox can go unanswered.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your two sites list different branches, so a customer near a branch you run sees none on one of them.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your head-office address is written two different ways, so couriers, auditors and site visits can reach the wrong unit.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your staff count differs by a wide margin between your site and a public profile, weakening the scale you claim in tenders.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Every channel names a different one of your sites as official, so your newest credentials and project pages stay unseen.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A blank low rating carries the name of one of your engineers; worth checking, with nothing proven.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Clusters of top reviews land on the same days; worth watching before a rival points at them.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your headline project and revenue figures appear only on your own pages, so a bank or tender panel cannot verify them.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"A solar directory still files you under small installations, which undercuts the scale you pitch for.\"\n    },\n    {\n      \"id\": \"n5\",\n      \"text\": \"A third domain serves a copy of your site; worth checking who controls it before it confuses customers.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can confirm the expiry in a minute with a domain lookup, every published company email depends on it, and renewing it leaves every other finding untouched.\"\n  }\n}"
+ },
+ "email": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.943Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 27,
+  "step2_run_id": "d3dcfc19-4d4e-4558-8838-c62e6d545214",
+  "kind": "email",
+  "status": "ok",
+  "error": null,
+  "subject": {
+   "text": "Your company email sits on a domain that lapses soon",
+   "cites": [
+    "f1"
+   ]
+  },
+  "body": [
+   {
+    "text": "We read what the public internet says about Eternalgy. One finding stood out: the domain behind your published company email lapses soon, and mail sent to it would bounce without warning.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "It is not the only gap. Your head-office phone and email differ between your own sites and your listings, and your 4.7 rating from 32 reviews is undercut by the silence on the newest ones.",
+    "cites": [
+     "c1",
+     "c2",
+     "f9",
+     "f5"
+    ]
+   },
+   {
+    "text": "The link below opens with the item we would act on first, and you can confirm it yourself in a minute.",
+    "cites": [
+     "f1"
+    ]
+   }
+  ],
+  "report_url": "https://example.invalid/v21/r/1ed41496-308e-4fb2-a0bd-3f08fc110593",
+  "text": "Subject: Your company email sits on a domain that lapses soon\n\nHello Eternalgy Sdn Bhd team,\n\nWe read what the public internet says about Eternalgy. One finding stood out: the domain behind your published company email lapses soon, and mail sent to it would bounce without warning.\n\nIt is not the only gap. Your head-office phone and email differ between your own sites and your listings, and your 4.7 rating from 32 reviews is undercut by the silence on the newest ones.\n\nThe link below opens with the item we would act on first, and you can confirm it yourself in a minute.\n\nThis free report shows what is wrong, not where it is or how to fix it. The full report gives every source and every fix, and goes deeper across 7 research areas: contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality; social media. Reply to this email to get your full report.\n\nYour free report: https://example.invalid/v21/r/1ed41496-308e-4fb2-a0bd-3f08fc110593\n\nThe Eternalgy team",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 2",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 241,
+     "error": "HTTP 429: {\"request_id\":\"req_vt_2e923b160b40d9e5b6da0554b6d96c22\",\"error\":{\"type\":\"rate_limit_error\",\"code\":\"VectorTide_rate_limit_exceeded\",\"requestId\":\"req_vt"
+    },
+    {
+     "lane": "Vectide plan 2",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 40011,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 5829,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 4720,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5715,
+      "prompt_tokens": 5715,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 11544
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 40549
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The domain behind your published company email lapses soon, so your quotes and invoices will bounce — and anyone can already send mail that looks like yours.\",\n      \"cites\": [\"f1\", \"f2\"]\n    },\n    {\n      \"text\": \"Your head-office phone, email and branch list differ across your own sites and listings, so a customer ready to enquire can reach the wrong line or inbox.\",\n      \"cites\": [\"c1\", \"c2\", \"c3\", \"c6\"]\n    },\n    {\n      \"text\": \"Your Google rating of 4.7 from 32 reviews is a real asset, yet none of your newest reviews has a reply from you.\",\n      \"cites\": [\"f9\", \"f5\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your company email sits on a domain that lapses soon\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"We read what the public internet says about Eternalgy. One finding stood out: the domain behind your published company email lapses soon, and mail sent to it would bounce without warning.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"It is not the only gap. Your head-office phone and email differ between your own sites and your listings, and your 4.7 rating from 32 reviews is undercut by the silence on the newest ones.\",\n        \"cites\": [\"c1\", \"c2\", \"f9\", \"f5\"]\n      },\n      {\n        \"text\": \"The link below opens with the item we would act on first, and you can confirm it yourself in a minute.\",\n        \"cites\": [\"f1\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind your company email lapses soon. Quotes and tender mail sent there will bounce.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Anyone can send email that looks like it comes from you, so a forged invoice can reach your clients in your name.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"On a phone your site shows nothing for seconds, and that is where most homeowners first meet you.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"A search-engine check fails on your homepage, so new project and credential pages are slower to appear in search.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Prospects see an unanswered low rating at the top of your Google profile and no reply from you on the newest reviews.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your LinkedIn phone field holds nothing dialable, so a partner or recruiter who clicks call gets no answer.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head-office phone differs across your own sites and listings; a missed call at the quotation stage is a lost project.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"You publish two different contact emails, so enquiries split and one inbox can go unanswered.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your two sites list different branches, so a customer near a branch you run sees none on one of them.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your head-office address is written two different ways, so couriers, auditors and site visits can reach the wrong unit.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your staff count differs by a wide margin between your site and a public profile, weakening the scale you claim in tenders.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Every channel names a different one of your sites as official, so your newest credentials and project pages stay unseen.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A blank low rating carries the name of one of your engineers; worth checking, with nothing proven.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Clusters of top reviews land on the same days; worth watching before a rival points at them.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your headline project and revenue figures appear only on your own pages, so a bank or tender panel cannot verify them.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"A solar directory still files you under small installations, which undercuts the scale you pitch for.\"\n    },\n    {\n      \"id\": \"n5\",\n      \"text\": \"A third domain serves a copy of your site; worth checking who controls it before it confuses customers.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can confirm the expiry in a minute with a domain lookup, every published company email depends on it, and renewing it leaves every other finding untouched.\"\n  }\n}"
+ }
+}

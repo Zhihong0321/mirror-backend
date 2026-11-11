@@ -1,0 +1,1025 @@
+{
+  "version": "2.1",
+  "stage": 1,
+  "created_at": "2026-11-10T15:37:14.133Z",
+  "input": {
+    "company": "Dezeno",
+    "country": "Malaysia",
+    "industry": "Interior designer",
+    "website": "https://dezeno.com.my"
+  },
+  "catalog": {
+    "country": "Malaysia",
+    "industry": "Interior designer",
+    "prompt_count": 5,
+    "country_layer_count": 0
+  },
+  "official_site": {
+    "domain": "dezeno.com.my",
+    "resolved_url": "https://dezeno.com.my",
+    "tried": [
+      "https://dezeno.com.my: ok"
+    ],
+    "pages": [
+      {
+        "url": "https://dezeno.com.my",
+        "label": "home",
+        "status": "ok",
+        "charCount": 14063,
+        "markdown": "[DEZENO](https://dezeno.com.my/)\n[Projects](https://dezeno.com.my/projects/)\n[ESG](https://dezeno.com.my/dezeno-esg-initiatives/)\n[Join Us](https://dezeno.com.my/join-us/)\n[Contact](https://dezeno.com.my/contact-us/)\n\nYour space, *thoughtfully built*\n================================\n\nDesa ParkCity's trusted design & build firm. One in-house team, from concept to handover — creating spaces that are beautiful, functional, and healthy to live in.\n\n用心构筑，健康空间\n\n[Get a free consultation](https://dezeno.com.my/contact-us)[See our projects](https://dezeno.com.my/projects/)\n\n![Living room at Jendela Residences, KLGCC, designed and built by Dezeno](https://dezeno.com.my/wp-content/uploads/dezeno-grid/JENDELA-LIVING-ROOM-1600.webp)\n\nResidential**Jendela Residences, KLGCC**Renovation\n\n![Bedroom at The Mansions, Desa ParkCity, by Dezeno](https://dezeno.com.my/wp-content/uploads/dezeno-grid/WL92-1600.webp)\n\nLanded**The Mansions I, Desa ParkCity**Full renovation\n\nCredentials\n\nCIDB G7, Malaysia's highest contractor grade. MFIDA 2024 award for International Best Luxury Mansion Design. Rated 5.0 by 27 homeowners on Google.\n\n01 Design & build\n\nBuilt as one, start to *finish*\n-------------------------------\n\n设计施工，一站服务\n\nNo middlemen, no hand-offs. Your designer is your builder — one team from first sketch to final fitting, so your space comes together exactly as imagined.\n\nConcept, carpentry and construction handled fully in-house — faster decisions, tighter quality control, a calmer renovation.\n\nResidential · Landed · Commercial · Custom carpentry\n\n02 How it works\n\nSee it before we *build it*\n---------------------------\n\n先见结果，后动工\n\nFull space planning, 3D renders and material selections — you approve every detail before a single panel is cut.\n\n1. 01**Consult**Free consult — we align on vision & budget.\n2. 02**Design**3D renders & material selections to approve.\n3. 03**Build**In-house carpenters build with precision.\n4. 04**Handover**Snag-free — done when you're happy.\n\n![Living and kitchen at Eco Forest Residence by Dezeno](https://dezeno.com.my/wp-content/uploads/dezeno-grid/ECO-FOREST-1600.webp)\n\nResidential**Eco Forest Residence, Klang Valley**Renovation\n\n![Family lounge at The Mansions, Desa ParkCity, by Dezeno](https://dezeno.com.my/wp-content/uploads/dezeno-grid/the-mansions-basement-karaoke-scaled-1600.webp)\n\nLanded**The Mansions II, Desa ParkCity**Full renovation\n\n03 Why it matters\n\nA home for the people you *love*\n--------------------------------\n\n美的空间，更是安心的空间\n\nBeautiful to look at. Built to live in. Healthy to breathe. Every Dezeno home balances design, function and wellbeing — made with family-safe materials, for the people who matter most.\n\n[Get a free consultation](https://dezeno.com.my/contact-us)\n\nOur Work\n\nFeatured *Projects*\n-------------------\n\n[View All Projects →](https://dezeno.com.my/projects/)\n\nAll Work\nResidential\nCondo\nCommercial\n\n[![The Mansions II, Desa ParkCity — Landed by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAwIiBoZWlnaHQ9Ijg5NiIgdmlld0JveD0iMCAwIDE2MDAgODk2Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nDesa ParkCity\nThe Mansions II\nLanded · Full Renovation\n\n55 photos](https://dezeno.com.my/projects/)\n[![The Mansions I, Desa ParkCity — Landed by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjkwMCIgdmlld0JveD0iMCAwIDEyMDAgOTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nDesa ParkCity\nThe Mansions I\nLanded · Full Renovation\n\n35 photos](https://dezeno.com.my/projects/)\n[![Park Place II, Desa ParkCity — Condo by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgwIiBoZWlnaHQ9Ijk2MCIgdmlld0JveD0iMCAwIDEyODAgOTYwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nDesa ParkCity\nPark Place II\nCondo · Interior Design\n\n13 photos](https://dezeno.com.my/projects/)\n[![Park Place, Desa ParkCity — Condo by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjE2MTYiIHZpZXdCb3g9IjAgMCAxMDgwIDE2MTYiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nDesa ParkCity\nPark Place\nCondo · Interior Design\n\n9 photos](https://dezeno.com.my/projects/)\n[![Park Regent, Desa ParkCity — Residential by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDU2IiBoZWlnaHQ9IjkwMCIgdmlld0JveD0iMCAwIDEwNTYgOTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nDesa ParkCity\nPark Regent\nResidential · Renovation\n\n4 photos](https://dezeno.com.my/projects/)\n[![Jendela Residences, KLGCC Resort, KL — Residential by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTM0IiBoZWlnaHQ9IjczOSIgdmlld0JveD0iMCAwIDExMzQgNzM5Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nKLGCC Resort, KL\nJendela Residences\nResidential · Renovation](https://dezeno.com.my/projects/)\n[![Sacoor Office, Pavilion KL, Bukit Bintang, KL — Commercial by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjkwMCIgdmlld0JveD0iMCAwIDEyMDAgOTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nBukit Bintang, KL\nSacoor Office, Pavilion KL\nCommercial · Office\n\n10 photos](https://dezeno.com.my/projects/)\n[![Penang University, Penang — Commercial by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDEwIiBoZWlnaHQ9Ijk5NiIgdmlld0JveD0iMCAwIDEwMTAgOTk2Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nPenang\nPenang University\nCommercial · Institutional\n\n12 photos](https://dezeno.com.my/projects/)\n[![Casa Desa, Old Klang Road, KL — Condo by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAwIiBoZWlnaHQ9IjEwNjciIHZpZXdCb3g9IjAgMCAxNjAwIDEwNjciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nOld Klang Road, KL\nCasa Desa\nCondo · Full Renovation\n\n8 photos](https://dezeno.com.my/projects/)\n[![Putrajaya Kindergarten, Putrajaya — Commercial by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAwIiBoZWlnaHQ9IjExNjYiIHZpZXdCb3g9IjAgMCAxNjAwIDExNjYiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nPutrajaya\nPutrajaya Kindergarten\nCommercial · Institutional\n\n4 photos](https://dezeno.com.my/projects/)\n[![Mont Kiara Condo, Mont Kiara, KL — Condo by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAwIiBoZWlnaHQ9IjkwMCIgdmlld0JveD0iMCAwIDEyMDAgOTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nMont Kiara, KL\nMont Kiara Condo\nCondo · Renovation\n\n4 photos](https://dezeno.com.my/projects/)\n[![Seri Riana Residence, Wangsa Maju, KL — Condo by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAwIiBoZWlnaHQ9IjEwNjkiIHZpZXdCb3g9IjAgMCAxNjAwIDEwNjkiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nWangsa Maju, KL\nSeri Riana Residence\nCondo · Renovation\n\n4 photos](https://dezeno.com.my/projects/)\n[![Kiara 163 Restaurant, Mont Kiara, KL — Commercial by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4OTciIGhlaWdodD0iMTA4MCIgdmlld0JveD0iMCAwIDg5NyAxMDgwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2ZkNGRiIi8+PC9zdmc+)\n\nMont Kiara, KL\nKiara 163 Restaurant\nCommercial · F&B\n\n4 photos](https://dezeno.com.my/projects/)\n[![Eco Park Residence, Klang Valley — Residential by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjEwODAiIHZpZXdCb3g9IjAgMCAxMDgwIDEwODAiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nKlang Valley\nEco Park Residence\nResidential · Renovation\n\n4 photos](https://dezeno.com.my/projects/)\n[![Eco Sanctuary Residence, Klang Valley — Residential by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjEwODAiIHZpZXdCb3g9IjAgMCAxMDgwIDEwODAiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nKlang Valley\nEco Sanctuary Residence\nResidential · Renovation\n\n4 photos](https://dezeno.com.my/projects/)\n[![Eco Forest Residence, Klang Valley — Residential by Dezeno](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjEwODAiIHZpZXdCb3g9IjAgMCAxMDgwIDEwODAiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\nKlang Valley\nEco Forest Residence\nResidential · Renovation\n\n3 photos](https://dezeno.com.my/projects/)\n\nWhere We Work\n\nDesa ParkCity & KLGCC's Renovation Specialist\n---------------------------------------------\n\nServed Projects\n\nThe MansionsPark RegentSouth Brooks\nPark PlaceWestside IIJendela KLGCCZenia& more\n\nDEzeno is a **design & build firm rooted in Desa ParkCity, Kuala Lumpur**. We handle everything in-house — concept, carpentry, and construction — so your renovation runs smoothly from day one to handover.\n\nWhether you're renovating a landed home in Desa ParkCity, a condominium in Mont Kiara, or a shophouse in Kepong, our team brings design, precision and care to every space across the Klang Valley.\n\n**Desa ParkCity** — Primary Service Area\n\n**Puchong** Kinrara\n\n**Bukit Jalil** Selangor\n\n**Mont Kiara** & Sri Hartamas\n\n**Petaling Jaya** & Subang Jaya\n\n**Klang Valley** — Full Coverage\n\n[G7\n\nCIDB Certified Contractor ↗](https://drive.google.com/file/d/1D6KPQ-WE9Wz7qg2G-cW4DtcjeSGDB-_o/view)\n[2024\n\nMFIDA International Award ↗](https://creativehomex.com/mfida-2024-winning-projects-international-best-luxury-mansion-design/)\n[ESG\n\nEco-Conscious Build Standards ↗](https://www.dezeno.com.my/dezeno-esg-initiatives)\n\nWhat We Do\n\nFull-Scope *Renovation Services*\n--------------------------------\n\nFrom concept to handover — one team, one quote, zero stress.\n\n01\n\n### Interior Design\n\nFull space planning, mood boards, 3D visualisation, and material selection tailored to your lifestyle and budget.\n\nResidentialCondoBungalow\n\n02\n\n### Renovation & Build\n\nFull gut renovation, structural works, plumbing, electrical, plastering, tiling — all under one roof with one project manager.\n\nTurn-Key Solution\n\n03\n\n### Custom Design Carpentry\n\nWardrobes, kitchen cabinets and built-ins, precision-made and on-site installed — finished with family-safe materials.\n\nCustom Built-Ins\n\n04\n\n### Commercial & Office\n\nRetail fit-outs, office renovations, and commercial spaces designed for productivity, brand identity, and footfall.\n\nOfficeRetailF&B\n\n05\n\n### Landed Property\n\nBungalows, semi-Ds, and terraced houses. We handle the complexity of landed renovations including structural extension works.\n\nBungalowSemi-DTerrace\n\n06\n\n### Smart Home Integration\n\nAqara, smart lighting, automated curtains, and energy-saving systems seamlessly woven into your renovation plan.\n\nAqaraSmart Lighting\n\n[Discuss Your Project →](https://dezeno.com.my/contact-us)\n\nOur Commitment\n\nBuilt on Trust, *Delivered with Care*\n-------------------------------------\n\nAt DEzeno, we believe a renovation should feel exciting, not stressful. We engineer our entire process — from quoting to handover — around clarity, craftsmanship, and creating spaces people love to live in.\n\n### Beautiful & Functional\n\nDesign that looks stunning and works for how you actually live.\n\n### Precise Detailing\n\nEvery millimetre matters. Craftsmen trained to hotel-standard tolerances.\n\n### Healthy Space\n\nFamily-safe materials, so your space is safe for pets, kids, preggies and elders.\n\n### Transparent Process\n\nFixed-price quotes, weekly WhatsApp updates, site visits welcome anytime.\n\nCredentials & Certifications\n\n[MFIDA Award 2024International Best Luxury Mansion Design\n\n↗](https://creativehomex.com/mfida-2024-winning-projects-international-best-luxury-mansion-design/)\n[CIDB G7 RegisteredLicensed renovation contractor, Malaysia\n\n↗](https://drive.google.com/file/d/1D6KPQ-WE9Wz7qg2G-cW4DtcjeSGDB-_o/view)\n[ESG Eco-Conscious BuildSustainable, family-safe build standards\n\n↗](https://www.dezeno.com.my/dezeno-esg-initiatives)\n[5.0★ Google RatingBased on 27 verified customer reviews\n\n↗](https://g.page/r/CRNFq3sXo8YKEBE/review)\n[MFIDA 2024 — International AwardBest Luxury Mansion Design · Creative Home Excellence](https://www.facebook.com/story.php?story_fbid=994819536021729&id=100064810747952&rdid=7jzlGW6FFsBsjZab)\n\nStart Your Renovation\n\nReady to Transform Your *Space?*\n--------------------------------\n\n空间蜕变，从此刻开始\n\nFree consultation · No obligation · Fast response on email & Instagram\n\n[Get a Free Consultation](https://dezeno.com.my/contact-us)\n[Email Us](mailto:hello@dezeno.com.my)\n\n© Dezeno Sdn Bhd (1057095-P). All Rights Reserved. | Renovation & Interior Design · Kuala Lumpur, Malaysia\n\n[小红书](https://www.xiaohongshu.com/user/profile/652cba1c000000002a0373b2 \"小红书\")\n\nFree design consult · 免费设计咨询\n\nLet’s plan your space\n---------------------\n\nTell us about your property, pick a weekday slot, and meet a Dezeno designer at our Taman Desa office. We confirm on WhatsApp.\n\n* CIDB G7\n* MFIDA 2024\n* 5.0★ Google\n\nRather chat first? [WhatsApp us](https://wa.me/60196636601?text=Hi%20Dezeno%2C%20I%20would%20like%20to%20discuss%20my%20renovation.%20%5BWeb%5D)\n\n[Book consult](#dzl)[WhatsApp us](https://wa.me/60196636601?text=Hi%20Dezeno%2C%20I%20would%20like%20to%20discuss%20my%20renovation.%20%5BWeb%5D)[Book consult](#dzl)[WhatsApp](https://wa.me/60196636601?text=Hi%20Dezeno%2C%20I%20would%20like%20to%20discuss%20my%20renovation.%20%5BWeb%5D)\n\n**We use cookies.** Necessary ones keep the site working. With your OK, Google Analytics helps us see which pages are useful. [Cookie Policy](/cookie-policy/)\n\nReject\nAccept",
+        "method": "worker"
+      },
+      {
+        "url": "https://dezeno.com.my/contact-us/",
+        "label": "contact",
+        "status": "ok",
+        "charCount": 1876,
+        "markdown": "Wisma Miramas, Taman Desa Business Park, 58100 Kuala Lumpur\n\n[+6019 663 6601](tel:+6019%20663%206601 \"Call +6019 663 6601\")\n\n[hello@dezeno.com.my](mailto:hello@dezeno.com.my \"Send an email to hello@dezeno.com.my\")\n\n![](data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMTYwIiBoZWlnaHQ9IjIxNjAiIHZpZXdCb3g9IjAgMCAyMTYwIDIxNjAiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNjZmQ0ZGIiLz48L3N2Zz4=)\n\n* [ESG](https://dezeno.com.my/dezeno-esg-initiatives/)\n* [Book a Consult](https://dezeno.com.my/contact-us/)\n* [Join Us](https://dezeno.com.my/join-us/)\n* [Projects](https://dezeno.com.my/projects/)\n\n* [ESG](https://dezeno.com.my/dezeno-esg-initiatives/)\n* [Book a Consult](https://dezeno.com.my/contact-us/)\n* [Join Us](https://dezeno.com.my/join-us/)\n* [Projects](https://dezeno.com.my/projects/)\n\nBook a Design *Consult*\n=======================\n\nTalk to us\n----------\n\nPrefer to message? Fast response on email & Instagram.\n\n* [Emailhello@dezeno.com.my](mailto:hello@dezeno.com.my)\n* [Instagram@dezeno\\_sb](https://www.instagram.com/dezeno_sb)\n\n[Get directions](https://maps.google.com/?q=Wisma+Miramas,+1+Jalan+2/109E,+Taman+Desa+Business+Park,+58100+Kuala+Lumpur)\n\nOffice hours\n------------\n\n|  |  |\n| --- | --- |\n| Monday – Friday | 9:00 AM – 6:00 PM |\n| Saturday | By appointment |\n| Sunday | Closed |\n\n© Dezeno Sdn Bhd (1057095-P). All Rights Reserved.\n\n[Book consult](#dz-book)[WhatsApp us](https://wa.me/60196636601?text=Hi%20Dezeno%2C%20I%20would%20like%20to%20discuss%20my%20renovation.%20%5BWeb%5D)[Book consult](#dz-book)[WhatsApp](https://wa.me/60196636601?text=Hi%20Dezeno%2C%20I%20would%20like%20to%20discuss%20my%20renovation.%20%5BWeb%5D)\n\n**We use cookies.** Necessary ones keep the site working. With your OK, Google Analytics helps us see which pages are useful. [Cookie Policy](/cookie-policy/)\n\nReject\nAccept",
+        "method": "worker"
+      }
+    ]
+  },
+  "third_party_discoveries": [
+    {
+      "url": "https://dezeno.com.my/projects/",
+      "title": "Interior Design Projects Malaysia | Dezeno Portfolio",
+      "snippets": [
+        "Interior design projects Malaysia: completed Dezeno homes and commercial fit-outs across Kuala Lumpur and Klang Valley. See the full portfolio."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://dezeno.com.my/contact-us/",
+      "title": "Book a Design Consult | Dezeno Interior Design KL",
+      "snippets": [
+        "Whether you have a project in mind or simply want to explore what’s possible — we’d love to hear from you · Email us and we’ll get back to you within 3 business days. We’re happy to answer questions, discuss your vision, or arrange a showroom visit"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://dezeno.com.my/join-us/",
+      "title": "Join Us - DEzeno",
+      "snippets": [
+        "Keep the financial and administrative engine of DEzeno running smoothly — from invoicing and supplier payments to expense tracking and record management."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://www.signalhire.com/companies/dezeno-sdn-bhd",
+      "title": "Dezeno Sdn Bhd Information | SignalHire Company Profile",
+      "snippets": [
+        "The headquarters of Dezeno Sdn Bhd are located in kuala lumpur, Malaysia."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://dezeno.com.my/blog/",
+      "title": "Home Makeover Loose Furniture or Built in? Renovation Carpentry House Renovation Malaysia",
+      "snippets": [
+        "O O Loose Furniture or Built In ... Ins... Read More ... <strong>DEzeno Interior offers a full solution to your interior design needs whatever the project and to whatever degree of involvement is requested</strong>...."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://www.facebook.com/DEzenointerior/",
+      "title": "DEzeno | Kuala Lumpur | Facebook",
+      "snippets": [
+        "DEzeno, Kuala Lumpur. 1,880 followers · 3 were here. Dezeno Interior Design and Build | KL. Condo . Comemrcial. Landed . CIDB G7 . MFIDA Award Email us at hello@dezeno.com.my"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-designers-architects/dezeno-sdn-bhd-1989",
+      "title": "Dezeno Sdn Bhd - Updated 2026 Interior Designer Reviews, Projects, Pricing - Qanvast",
+      "snippets": [
+        "Dezeno Sdn Bhd has 1 showroom in Malaysia."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://dezeno.com.my/about-us/",
+      "title": "DEzeno – Zero Formaldehyde Renovation Contractor",
+      "snippets": [
+        "Your address will show here <strong>+12 34 56 78</strong> [email protected]"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia"
+    },
+    {
+      "url": "https://dezeno.com.my/terms-and-conditions",
+      "title": "Terms & Conditions - Dezeno",
+      "snippets": [
+        "## 01About us\n\nDezeno Sdn Bhd (1057095-P) is a renovation and interior design company registered in Malaysia, holding a CIDB G7 licence. Office: Level 6-1, Wisma Miramas, Jalan 2/109E, Taman Desa Business Park, Taman Desa, 58100 Kuala Lumpur, Malaysia.\n\n## 02Using this website [...] Wisma Miramas, Taman Desa Business Park, 58100 Kuala Lumpur    +6019 663 6601     (/cdn-cgi/l/email-protection#49212c252526092d2c332c2726672a2624672430 \"Send an email to hello@dezeno.com.my\")\n\nLegal · Dezeno Sdn Bhd\n\n# Terms & Conditions\n\nLast updated: 28 September 2026\n\nThese terms apply to your use of dezeno.com.my and to consultations, design and renovation services provided by Dezeno Sdn Bhd. By using the site or booking with us, you agree to them.\n\n## 01About us [...] ## 15Changes\n\nWe may update these terms. The version on this page on the date you book or sign applies to you.\n\nDezeno Sdn Bhd (1057095-P)\n\nLevel 6-1, Wisma Miramas, Jalan 2/109E, Taman Desa Business Park, Taman Desa, 58100 Kuala Lumpur, Malaysia\n\nhello@dezeno.com.my · +60 19-663 6601\n\nPrivacy Policy Cookie Policy Terms & Conditions Refund Policy\n\nBook consultWhatsApp us"
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://dezeno.com.my",
+      "title": "Interior Design Kuala Lumpur & Renovation | Dezeno",
+      "snippets": [
+        "DEzeno is a renovation contractor and interior design firm based in Desa ParkCity, Kuala Lumpur, Malaysia. We specialise in home renovation, interior design, and design-and-build services for residential and commercial properties in Desa ParkCity, Mont Kiara, Kepong, Sri Damansara, Segambut, Batu Caves, Petaling Jaya, Subang Jaya, and the wider Klang Valley region. DEzeno holds a CIDB G7 contractor licence and won the MFIDA 2024 International Award for Best Luxury Mansion Design. We create [...] Design. We create beautiful, functional and healthy homes using family-safe materials. Our company registration is Dezeno Sdn Bhd (1057095-P). We are a trusted renovation expert in Desa ParkCity, Kuala Lumpur. [...] DEzeno is a design & build firm rooted in Desa ParkCity, Kuala Lumpur. We handle everything in-house — concept, carpentry, and construction — so your renovation runs smoothly from day one to handover.\n\nWhether you're renovating a landed home in Desa ParkCity, a condominium in Mont Kiara, or a shophouse in Kepong, our team brings design, precision and care to every space across the Klang Valley.\n\nDesa ParkCity — Primary Service Area\n\nPuchong Kinrara\n\nBukit Jalil Selangor"
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://dezeno.com.my/privacy-policy",
+      "title": "Privacy Policy - Dezeno",
+      "snippets": [
+        "Personal Data\n  Any information that relates to an identified or identifiable individual.\n Service\n  The Website — dezeno interior design and build, accessible from www.dezeno.com.my\n Service Provider\n  Any natural or legal person who processes the data on behalf of the Company. Refers to third-party companies or individuals employed by the Company to facilitate the Service.\n Usage Data [...] Company\n  Dezeno Sdn Bhd, Level 6-1 Wisma Miramas, Jalan 2/109E, Taman Desa Business Park, Taman Desa 58100, Kuala Lumpur, Malaysia. Also referred to as “We”, “Us” or “Our”.\n Cookies\n  Small files placed on your computer, mobile device or any other device by a website, containing the details of your browsing history on that website among its many uses.\n Country\n  Malaysia\n Device\n  Any device that can access the Service such as a computer, a cellphone or a digital tablet.\n Personal Data [...] Wisma Miramas, Taman Desa Business Park, 58100 Kuala Lumpur\n\n+6019 663 6601\n\nhello@dezeno.com.my\n\nPrivacy Policy – DEzeno\n\nLegal · Dezeno Sdn Bhd\n\n# Privacy Policy"
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://www.linkedin.com/company/dezeno-sdn-bhd",
+      "title": "Dezeno Sdn Bhd",
+      "snippets": [
+        "# Dezeno Sdn Bhd\n\nDescription: Dezeno Sdn Bhd (1057095-P) \nLinkedIn:  · 32 followers\nIndustry: Construction\nType: Privately Held\nHeadquarters: kuala lumpur, kuala lumpur, Malaysia\nSocial Profiles:   \n\n## Employees\n- Now: 12 [...] ## Products and services\nKeywords: construction, contractor, zero formaldehyde renovation, zero formaldehyde [...] - 2024-10-25: RM 600K Muji-Inspired Home Renovation: Custom Cabinets & Minimalist Design Explore a stunning RM 600K renovation featuring sleek custom cabinets and a clean, modern Muji-inspired aesthetic. Simple, functional, and beautifully minimalist! Tap the link below for a dose of inspiration! >>>  #design..."
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-designers-architects/dezeno-sdn-bhd-1989",
+      "title": "Dezeno Sdn Bhd - Updated 2026 Interior Designer Reviews, Projects, Pricing - Qanvast",
+      "snippets": [
+        "Dezeno Sdn Bhd has 1 showroom in Malaysia.See Dezeno Sdn Bhd's showroom address.\n\n### Is Dezeno Sdn Bhd popular among homeowners?\n\n1 homeowners have recently enquired with Dezeno Sdn Bhd for their upcoming renovation project.Enquire with Dezeno Sdn Bhd.\n\nUnlock Your Quote\n\nImage 30 Dezeno Sdn Bhd\n\nProperty Type \n\nApartment\n\nProperty Status \n\nNew\n\nArea Size ( sq. ft.) \n\nBudget (RM) \n\nStyle Preference \n\nNo Preference\n\nKeys Collected \n\nYes\n\nGet Free Quote\n\n## Check out these similar IDs [...] Policies\n   Review Policy\n   Privacy Policy\n   Terms of Service\n\nCompany\n   About Us\n   Careers\n   Advertise With Us\n   Email Us\n\nImage 44: qanvast-logo\n\nImage 45: qanvast-app-storeImage 46: qanvast-play-store\n\nGet local home ideas and renovation tips!\n\nSubscribe\n\nImage 47: FacebookImage 48: Instagram\n\n  \n\n© 2026 Qanvast Sdn Bhd\n\n· Business Registration No: 1183866-X\n\nSingapore · Malaysia\n\nChat\n\nSign in with Google. Opens in new tab [...] ## Reviews\n\nCompleted your renovation with this firm?Write a review\n\n## About Dezeno Sdn Bhd\n\nOur team aims to design & build not just an Ordinary space, but a Safer and Happier space that suits ur budget, needs and lifestyle in endemic period Check us out at \n\n### Showrooms (1)\n\nLevel 6, Wisma Miramas, No 1, Jalan 2/109E Taman Desa, Jalan Kelang Lama, Kuala Lumpur Wilayah Persekutuan Open Google Maps\n\n  \n\n## Frequently Asked Questions\n\n### Where is Dezeno Sdn Bhd's showroom?"
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://my714129-dezeno-interior-sdn-bhd.contact.page",
+      "title": "DEZENO INTERIOR SDN BHD contact information. Interior Design, in Kuala Lumpur",
+      "snippets": [
+        "DEZENO INTERIOR SDN BHD Kuala Lumpur - Malaysia\n\nCALL OR CHAT NOW\n\n 03-7971 9\\\\XX\n\nWhatsApp AI Assistant  Email\n\n Contact\n Address\n Images\n Profile\n\n suhaila 2\n Fotor0625171810\n suhaila 1\n Capture\n\nAd\n\nDEZENO INTERIOR SDN BHD - Interior Design - Kuala Lumpur\n\n# DEZENO INTERIOR SDN BHD\n\nInterior Design in Kuala Lumpur\n\nBusiness activities:  Interior Design,   Interior Design,   Office,   Renovation,   Smart Home\n\n## Contact Info\n\n Call  03-7971 9\\\\XX\n Fax  03-7980 1\\\\XX\n\n## Map Location\n\nAddress [...] DEZENO INTERIOR SDN. BHD. offers the full solution to your interior design needs whatever the project and to whatever degree of involvement is requested. Our style is predominantly ‘ Contemporary’ . Our designers work on projects of every size and on every aspect of the design from initial archit...\n\nView More\n\n## Business Hours\n\n Sunday\n\n  Closed\n Monday\n\n  08:00 AM - 05:00 PM\n Tuesday\n\n  08:00 AM - 05:00 PM\n Wednesday\n\n  08:00 AM - 05:00 PM\n Thursday\n\n  08:00 AM - 05:00 PM\n Friday [...] Address\n\nNo 19, Jalan 109E, Desa Business Park, 58100, Kuala Lumpur, Wilayah Persekutuan, Malaysia Open Map\n\n## Albums\n\n 208105 421109257954473 1949986504 n\n\n  ### Cover Photo (9)\n 12\n\n  ### Wardrobe (2)\n\nView More\n\n## Photos\n\n suhaila 2\n Fotor0625171810\n suhaila 1\n Capture\n 12\n facade design 5\n aman kiara koi pond  b\n Booth\n\nView More\n\nAd\n\n## Profile\n\n383445 421097957955603 19849872 n\n\n### About DEZENO INTERIOR"
+      ],
+      "source": "tavily",
+      "query": "Dezeno Malaysia official website"
+    },
+    {
+      "url": "https://www.recommend.my/businesses/dezeno-interior-839",
+      "title": "DEzeno Sdn Bhd | Recommend.my",
+      "snippets": [
+        "My personal experience dealing with DEzeno: <strong>Quality layout design and workmanship, excellent service and attitude</strong>."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-designers-architects/dezeno-sdn-bhd-1989",
+      "title": "Dezeno Sdn Bhd - Updated 2026 Interior Designer Reviews, Projects, Pricing - Qanvast",
+      "snippets": [
+        "Dezeno Sdn Bhd has 1 showroom in Malaysia."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://www.trustedmalaysia.com/best-interior-design-kl/",
+      "title": "The 8 Best Interior Design Firms in Kuala Lumpur [2025 ]",
+      "snippets": [
+        "As clients of Dezeno, we were <strong>thoroughly impressed by the quality of their interior design services</strong>."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-design-malaysia/dezeno-sdn-bhd-the-mansions-kuala-lumpur-22912",
+      "title": "The Mansions, Kuala Lumpur | Landed (2023) by Dezeno Sdn Bhd | Qanvast",
+      "snippets": [
+        "Find out more about the The Mansions, Kuala Lumpur renovation and interior design project, complete with costs and reviews."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-design-malaysia/dezeno-sdn-bhd-nguyens-kuala-lumpur-20798",
+      "title": "Nguyen's, Kuala Lumpur | Commercial (2019) by Dezeno Sdn Bhd | Qanvast",
+      "snippets": [
+        "Find out more about the Nguyen&#x27;s, Kuala Lumpur renovation and interior design project, complete with costs and reviews."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://www.glassdoor.co.uk/Overview/Working-at-Dezeno-EI_IE9782285.11,17.htm",
+      "title": "Dezeno Career: Working at Dezeno | Glassdoor",
+      "snippets": [
+        "--Reviews · --Jobs · 1Salaries · --Interviews · --Benefits · --Photos · Work here? Claim your free Employer Profile · dezeno.com.my · Kuala Lumpur, Malaysia · 1 to 50 Employees · Type: Company - Private · Revenue: Unknown / Non-Applicable · NestléCompensation and benefits ·"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://www.recommend.my/professionals/interior-design/melaka",
+      "title": "The 10 Best Interior Designers in Melaka (October 2026) | Recommend.my",
+      "snippets": [
+        "The best interior designers in Melaka for home or office, with automatic damage insurance and deposit protection. Submit a request online for quotes"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-design-malaysia/dezeno-sdn-bhd-cloth-store-pahang-20799",
+      "title": "Cloth Store, Pahang | Commercial (2023) by Dezeno Sdn Bhd | Qanvast",
+      "snippets": [
+        "Find out more about the Cloth Store, Pahang renovation and interior design project, complete with costs and reviews."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia reviews"
+    },
+    {
+      "url": "https://www.recommend.my/businesses/dezeno-interior-839",
+      "title": "DEzeno Sdn Bhd | Recommend.my",
+      "snippets": [
+        "My personal experience dealing with DEzeno: <strong>Quality layout design and workmanship, excellent service and attitude</strong>."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://www.glassdoor.co.uk/Overview/Working-at-Dezeno-EI_IE9782285.11,17.htm",
+      "title": "Dezeno Career: Working at Dezeno | Glassdoor",
+      "snippets": [
+        "What is it really like to work at Dezeno? What do employees say about pay and career opportunities? Discover anonymous reviews now!"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://www.trustedmalaysia.com/best-interior-design-kl/",
+      "title": "The 8 Best Interior Design Firms in Kuala Lumpur [2025 ]",
+      "snippets": [
+        "As clients of Dezeno, we were <strong>thoroughly impressed by the quality of their interior design services</strong>."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://my.jobstreet.com/companies/dezeno-168552258398538/reviews",
+      "title": "Reviews Dezeno employee ratings and reviews | JobStreet",
+      "snippets": [
+        "Thinking of working at Dezeno? Read 0 employee review on JobStreet to learn about salaries, benefits, company culture, work-life balance, and career opportunities"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://my.jobstreet.com/companies/dezeno-168552258398538",
+      "title": "Working at Dezeno company profile and information | Jobstreet",
+      "snippets": [
+        "We have a young and energetic working team that are all good teammates who delivers proactively and effectively.DEzeno is an Interior Design &amp; Build company that remodels and engages closely with customers to craft the environment they love to live or work in. We have a young and energetic working team that are all good teammates who delivers proactively and effectively. ... We don&#x27;t have enough reviews for Dezeno yet to show an average rating."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-designers-architects/dezeno-sdn-bhd-1989",
+      "title": "Dezeno Sdn Bhd - Updated 2026 Interior Designer Reviews, Projects, Pricing - Qanvast",
+      "snippets": [
+        "Dezeno Sdn Bhd has 1 showroom in Malaysia."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://www.signalhire.com/companies/dezeno-sdn-bhd",
+      "title": "Dezeno Sdn Bhd Information | SignalHire Company Profile",
+      "snippets": [
+        "The business currently specializes in Construction area. The company has 10-50 employees. Register with SignalHire to connect with Dezeno Sdn Bhd employees and management"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://www.linkedin.com/company/dezeno-sdn-bhd",
+      "title": "Dezeno Sdn Bhd",
+      "snippets": [
+        "1 billion members | Manage your professional identity. Build and engage with your professional network. Access knowledge, insights and opportunities."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia employee reviews"
+    },
+    {
+      "url": "https://creativehomex.com/cn-dezeno-wilsons-residence-shines-at-the-light-of-asian-youth-designers-2025/",
+      "title": "馬來西亞設計團隊 DEzeno 以《Wilson's Residence》奪下「2025 亞洲青年設計之光」！ - Creativehomex",
+      "snippets": [
+        "「2025 亞洲青年設計之光」頒獎典禮於廣州設計週期間舉行，現場聚集來自亞洲各地的設計師與媒體代表。這一次，來自馬來西亞的設計團隊 DEzeno Sdn Bhd，由 Vincent Tan 代表登台，憑藉高端住宅作品《Wilson’s Residence》獲頒本屆「亞洲青年設計之光」殊榮。"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://finance.yahoo.com/news/favourite-international-design-award-2025-074400180.html",
+      "title": "MY FAVOURITE INTERNATIONAL DESIGN AWARD 2025: Honouring Excellence in Interior Design",
+      "snippets": [
+        "<strong>As Malaysia&#x27;s first and only international design award</strong>, it continues to honour projects that seamlessly blend luxury, functionality, and artistic vision. Winning an MFID award is more than just a professional milestone, it is a distinguished ..."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://www.threads.com/@dezeno_sb",
+      "title": "DEzeno (@dezeno_sb) • Threads, Say more",
+      "snippets": [
+        "Unboxing master bedroom customized cabinets, we turned old cabinets into a modern sleek beautiful customized cabinets for max storage✨ #dezeno #interiordesignandbuild #renovationcompanymalaysia #zeroformaldehyde #desaparkcity"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://www.trustedmalaysia.com/best-interior-design-kl/",
+      "title": "The 8 Best Interior Design Firms in Kuala Lumpur [2025 ]",
+      "snippets": [
+        "As clients of Dezeno, we were thoroughly impressed by the quality of their interior design services."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://www.facebook.com/DEzenointerior/",
+      "title": "DEzeno | Kuala Lumpur | Facebook",
+      "snippets": [
+        "DEzeno, Kuala Lumpur. 1,880 followers · 3 were here. Dezeno Interior Design and Build | KL. Condo . Comemrcial. Landed . CIDB G7 . MFIDA Award Email us at hello@dezeno.com.my"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://www.handymanreviewed.com/best-renovation-contractors-malaysia/",
+      "title": "The 15 Best Renovation Contractors in Malaysia [2026 ]",
+      "snippets": [
+        "Incorporated in 2007, Stylehome ... in Malaysia. They provide unique and stylish designs as well as implement quality craftsmanship. With their extensive experience in the business, they know that on-time completion of the project is crucial to building the client’s trust. DEzeno engages with ..."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://qanvast.com/my/interior-design-malaysia/dezeno-sdn-bhd-cloth-store-pahang-20799",
+      "title": "Cloth Store, Pahang | Commercial (2023) by Dezeno Sdn Bhd | Qanvast",
+      "snippets": [
+        "Find out more about the Cloth Store, Pahang renovation and interior design project, complete with costs and reviews."
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    },
+    {
+      "url": "https://www.recommend.my/businesses/dezeno-interior-839",
+      "title": "DEzeno Sdn Bhd | Recommend.my",
+      "snippets": [
+        "Dezeno Sdn Bhd incorporates several eco-friendly practices in its interior design and renovation projects:"
+      ],
+      "source": "brave",
+      "query": "\"Dezeno\" Malaysia news"
+    }
+  ],
+  "probes": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "question": "Is the lead designer or firm officially registered as a Registered Interior Designer (IDr) or Interior Design Consultancy Practice under the Architects Act 1967?",
+      "why_it_matters": "Under the Architects Act 1967, using the title 'Interior Designer' or offering professional interior design services without LAM registration is an illegal offense carrying statutory penalties.",
+      "source": {
+        "name": "Lembaga Arkitek Malaysia (Board of Architects Malaysia)",
+        "url": "https://www.lam.gov.my/welcome",
+        "type": "statutory_regulator"
+      },
+      "how_to_query": "Search the LAM Public Search Register under 'Interior Designer' or 'Interior Design Practice' for {company} or principal name",
+      "query": "",
+      "evidence_urls": [],
+      "snippets": [],
+      "not_run": "site lookup did not run: fetch failed",
+      "lookup": {
+        "handler": "MY-lam.gov.my/w1",
+        "job_status": "failed",
+        "error": "fetch failed"
+      },
+      "found_when": "The firm markets itself as an 'Interior Designer' or uses 'IDr' title but neither firm nor lead partner is registered on the LAM roll",
+      "not_found_when": "The designer or practice is confirmed with an active LAM registration number",
+      "couldnt_check_when": "The LAM portal search system is offline"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "question": "Does the interior design firm hold an active CIDB Contractor Registration Certificate (Grade G1–G7 with category B04/B28) for executing interior fit-out and renovation works?",
+      "why_it_matters": "Executing commercial or residential construction/renovation contracts in Malaysia without CIDB registration violates Act 520 and subjects the firm to stop-work orders and hefty fines.",
+      "source": {
+        "name": "Construction Industry Development Board Malaysia (CIDB)",
+        "url": "https://www.cidb.gov.my/",
+        "type": "statutory_regulator"
+      },
+      "how_to_query": "Search CIDB CIMS contractor directory using company name or SSM number to check registration validity and grade (G1 to G7)",
+      "query": "site.lookup MY-cidb.gov.my/w1 \"Dezeno\"",
+      "evidence_urls": [
+        "https://cims.cidb.gov.my/smis/regcontractor/reglocalsearchcontractor.vbhtml"
+      ],
+      "snippets": [
+        "DEZENO SDN. BHD. | G7 | WILAYAH PERSEKUTUAN KUALA LUMPUR"
+      ],
+      "lookup": {
+        "handler": "MY-cidb.gov.my/w1",
+        "version": "9671f21734fe",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 3410,
+        "status": "found",
+        "reason": "",
+        "records": [
+          {
+            "name": "DEZENO SDN. BHD.",
+            "grade": "G7",
+            "state": "WILAYAH PERSEKUTUAN KUALA LUMPUR",
+            "district": "KUALA LUMPUR",
+            "phone": "0379719037",
+            "ppk": "Yes",
+            "spkk": "",
+            "stb": "",
+            "ppk_no": "",
+            "ppk_valid_until": "",
+            "categories": "",
+            "specializations": "",
+            "has_b04": "",
+            "has_b28": ""
+          }
+        ],
+        "source_url": "https://cims.cidb.gov.my/smis/regcontractor/reglocalsearchcontractor.vbhtml",
+        "excerpt": "DEZENO SDN. BHD. | G7 | WILAYAH PERSEKUTUAN KUALA LUMPUR"
+      },
+      "found_when": "The firm accepts renovation contracts but lacks active CIDB contractor registration or required building specialization code",
+      "not_found_when": "Firm holds active CIDB certificate with appropriate grade covering contract sum",
+      "couldnt_check_when": "CIDB CIMS system is undergoing server maintenance"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "question": "Does the interior designer or practice hold verified Corporate Member or Corporate Practice status with the Malaysian Institute of Interior Designers (MIID)?",
+      "why_it_matters": "Falsely displaying the MIID badge or claiming corporate practice standing damages client trust and breaches intellectual property agreements with the national institute.",
+      "source": {
+        "name": "Malaysian Institute of Interior Designers (MIID)",
+        "url": "https://miid.org.my/",
+        "type": "professional_body"
+      },
+      "how_to_query": "Check the MIID Member Directory on miid.org.my for {company} or practitioner name",
+      "query": "site.lookup MY-miid.org.my/w1 \"Dezeno\"",
+      "evidence_urls": [
+        "https://miid.org.my/wp-json/wp/v2/search?search=Dezeno"
+      ],
+      "snippets": [
+        "No records matching search query"
+      ],
+      "lookup": {
+        "handler": "MY-miid.org.my/w1",
+        "version": "cf1e260c64ca",
+        "job_status": "done",
+        "worker": "mac-gans-mac-mini",
+        "took_ms": 450,
+        "status": "not_found",
+        "reason": "",
+        "records": [],
+        "source_url": "https://miid.org.my/wp-json/wp/v2/search?search=Dezeno",
+        "excerpt": "No records matching search query"
+      },
+      "found_when": "The website displays MIID corporate badges but the firm or practitioner is absent from the MIID register",
+      "not_found_when": "The firm or principal is verified as an active MIID Corporate Member or Practice",
+      "couldnt_check_when": "The MIID directory is temporarily unreachable"
+    },
+    {
+      "rank": 4,
+      "category": "awards",
+      "question": "Can the national design awards (such as the MIID REKA Awards for Design Excellence) claimed in the firm's portfolio be verified against official competition records?",
+      "why_it_matters": "Falsely claiming prestigious national design awards exposes the studio to public copyright challenges and disqualification from institutional developer tenders.",
+      "source": {
+        "name": "MIID REKA Awards",
+        "url": "https://miid.org.my/",
+        "type": "award_organization"
+      },
+      "how_to_query": "Query MIID REKA Awards published winners catalogs for project name, category, and designer",
+      "query": "",
+      "evidence_urls": [],
+      "snippets": [],
+      "not_run": "no working site handler for this source yet",
+      "found_when": "A portfolio project claims an official MIID REKA award that is absent from the official winners catalog",
+      "not_found_when": "The project award title, category, and winning year match official MIID documentation",
+      "couldnt_check_when": "MIID REKA archive files are inaccessible"
+    },
+    {
+      "rank": 5,
+      "category": "reviews",
+      "question": "Do customer reviews and project completion complaints on leading Malaysian renovation portal Atap.co contradict the firm's claimed on-time delivery guarantees?",
+      "why_it_matters": "Unresolved abandonment complaints or poor craftsmanship ratings on local renovation platforms drive away high-value homeowners and commercial fitout leads.",
+      "source": {
+        "name": "Atap.co Malaysia",
+        "url": "https://atap.co/malaysia/",
+        "type": "industry_directory"
+      },
+      "how_to_query": "Search Atap.co firm profile for customer ratings, completed project badges, and negative dispute feedback",
+      "query": "site.lookup MY-atap.co/w1 \"Dezeno\"",
+      "evidence_urls": [
+        "https://atap.co/malaysia/en/professionals/dezeno-interior-sdn-bhd"
+      ],
+      "snippets": [
+        "DEzeno Sdn Bhd | WP Kuala Lumpur | trusted inactive | verified inactive | reviews not published | +60196636601 | "
+      ],
+      "lookup": {
+        "handler": "MY-atap.co/w1",
+        "version": "ca823e97f10e",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 1337,
+        "status": "found",
+        "reason": "",
+        "records": [
+          {
+            "name": "DEzeno Sdn Bhd",
+            "location": "WP Kuala Lumpur",
+            "categories": "Architect, Interior Designer",
+            "phone": "+60196636601",
+            "trusted": "inactive",
+            "verified": "inactive",
+            "reviews": "not published",
+            "blurb": "",
+            "profile_url": "https://atap.co/malaysia/en/professionals/dezeno-interior-sdn-bhd"
+          }
+        ],
+        "source_url": "https://atap.co/malaysia/en/professionals/dezeno-interior-sdn-bhd",
+        "excerpt": "DEzeno Sdn Bhd | WP Kuala Lumpur | trusted inactive | verified inactive | reviews not published | +60196636601 | "
+      },
+      "found_when": "Multiple customer reviews report project delays, cost blowouts, or abandoned renovation works",
+      "not_found_when": "Firm maintains strong rating and positive verified homeowner feedback with zero unresolved dispute reports",
+      "couldnt_check_when": "Atap.co page is protected by bot detection"
+    },
+    {
+      "rank": 1000,
+      "category": "global",
+      "question": "Which subdomains and hostnames have ever had a public SSL certificate under this domain, and since when?",
+      "why_it_matters": "Certificate logs reveal forgotten sites, staging and test servers, old brands and how long the domain has been in real use, all without touching the company's systems.",
+      "source": {
+        "name": "Certificate Transparency logs (crt.sh)",
+        "url": "https://crt.sh/",
+        "type": "global_handler"
+      },
+      "how_to_query": "Global handler ALL-crtsh/w1 run on a worker PC with the website domain",
+      "query_type": "global_handler",
+      "applies_when": "every report",
+      "query": "site.lookup ALL-crtsh/w1 \"dezeno.com.my\"",
+      "evidence_urls": [
+        "https://crt.sh/?q=%25.dezeno.com.my"
+      ],
+      "snippets": [
+        "Certificate Transparency logs for dezeno.com.my (crt.sh):\n8 distinct hostnames across 229 certificate entries; first certificate 2017-04-17, latest expiry 2026-12-26.\nIssuers: Let's Encrypt (176), Google Trust Services (24), Google Trust Services LLC (12), cPanel, Inc. (10), Cloudflare, Inc. (5), CloudFlare, Inc. (2)\nHostnames (first seen): dezeno.com.my (2017-04-17), mail.dezeno.com.my (2017-04-17), www.dezeno.com.my (2017-04-17), cpanel.dezeno.com.my (2017-04-24), webdisk.dezeno.com.my (2017-04-24), webmail.dezeno.com.my (2017-04-24), cpcalendars.dezeno.com.my (2021-09-30), cpcontacts.dezeno.com.my (2021-09-30)\nNo hostname contains a test/staging/old-style word."
+      ],
+      "lookup": {
+        "handler": "ALL-crtsh/w1",
+        "version": "73e5dff3eaf2",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 5514,
+        "status": "found",
+        "reason": null,
+        "records": [
+          {
+            "domain": "dezeno.com.my",
+            "via": "crt.sh",
+            "partial": false,
+            "cert_rows": 229,
+            "hostname_count": 8,
+            "first_seen": "2017-04-17",
+            "last_expiry": "2026-12-26",
+            "issuers": [
+              "Let's Encrypt (176)",
+              "Google Trust Services (24)",
+              "Google Trust Services LLC (12)",
+              "cPanel, Inc. (10)",
+              "Cloudflare, Inc. (5)",
+              "CloudFlare, Inc. (2)"
+            ],
+            "non_production_names": [],
+            "hostnames": [
+              {
+                "name": "dezeno.com.my",
+                "first_seen": "2017-04-17",
+                "last_expiry": "2026-12-26",
+                "certs": 313,
+                "wildcard": true
+              },
+              {
+                "name": "mail.dezeno.com.my",
+                "first_seen": "2017-04-17",
+                "last_expiry": "2026-12-26",
+                "certs": 145,
+                "wildcard": false
+              },
+              {
+                "name": "www.dezeno.com.my",
+                "first_seen": "2017-04-17",
+                "last_expiry": "2026-12-26",
+                "certs": 145,
+                "wildcard": false
+              },
+              {
+                "name": "cpanel.dezeno.com.my",
+                "first_seen": "2017-04-24",
+                "last_expiry": "2026-12-26",
+                "certs": 48,
+                "wildcard": false
+              },
+              {
+                "name": "webdisk.dezeno.com.my",
+                "first_seen": "2017-04-24",
+                "last_expiry": "2026-12-26",
+                "certs": 48,
+                "wildcard": false
+              },
+              {
+                "name": "webmail.dezeno.com.my",
+                "first_seen": "2017-04-24",
+                "last_expiry": "2026-12-26",
+                "certs": 48,
+                "wildcard": false
+              },
+              {
+                "name": "cpcalendars.dezeno.com.my",
+                "first_seen": "2021-09-30",
+                "last_expiry": "2026-12-26",
+                "certs": 47,
+                "wildcard": false
+              },
+              {
+                "name": "cpcontacts.dezeno.com.my",
+                "first_seen": "2021-09-30",
+                "last_expiry": "2026-12-26",
+                "certs": 47,
+                "wildcard": false
+              }
+            ]
+          }
+        ],
+        "source_url": "https://crt.sh/?q=%25.dezeno.com.my",
+        "excerpt": "Certificate Transparency logs for dezeno.com.my (crt.sh):\n8 distinct hostnames across 229 certificate entries; first certificate 2017-04-17, latest expiry 2026-12-26.\nIssuers: Let's Encrypt (176), Google Trust Services (24), Google Trust Services LLC (12), cPanel, Inc. (10), Cloudflare, Inc. (5), CloudFlare, Inc. (2)\nHostnames (first seen): dezeno.com.my (2017-04-17), mail.dezeno.com.my (2017-04-17), www.dezeno.com.my (2017-04-17), cpanel.dezeno.com.my (2017-04-24), webdisk.dezeno.com.my (2017-04-24), webmail.dezeno.com.my (2017-04-24), cpcalendars.dezeno.com.my (2021-09-30), cpcontacts.dezeno.com.my (2021-09-30)\nNo hostname contains a test/staging/old-style word."
+      },
+      "found_when": "the handler returned records for this domain",
+      "not_found_when": "the source holds nothing for this domain",
+      "couldnt_check_when": "the source could not be read from the worker PC"
+    },
+    {
+      "rank": 1001,
+      "category": "global",
+      "question": "Which email provider, sending services and SaaS tools does this domain's DNS show, and how is its email authentication set up?",
+      "why_it_matters": "MX, SPF includes and verification TXT records show which mail provider and tools the company really uses, and how mature its email setup is.",
+      "source": {
+        "name": "Public DNS records (MX, SPF, TXT, NS)",
+        "url": "https://www.iana.org/domains/root/db",
+        "type": "global_handler"
+      },
+      "how_to_query": "Global handler ALL-dns/w1 run on a worker PC with the website domain",
+      "query_type": "global_handler",
+      "applies_when": "every report",
+      "query": "site.lookup ALL-dns/w1 \"dezeno.com.my\"",
+      "evidence_urls": [
+        "https://dnschecker.org/all-dns-records-of-domain.php?query=dezeno.com.my&rtype=ALL"
+      ],
+      "snippets": [
+        "DNS records for dezeno.com.my (read from the worker PC's resolver):\nMail (MX): 10 mx.zoho.com, 20 mx2.zoho.com, 50 mx3.zoho.com -> Zoho Mail\nSPF: present, strict (-all: unlisted senders fail); senders listed: Zoho (zoho.com)\nTools shown by verification records: none recognised\nName servers: barbara.ns.cloudflare.com, nitin.ns.cloudflare.com -> Cloudflare"
+      ],
+      "lookup": {
+        "handler": "ALL-dns/w1",
+        "version": "70118989accb",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 208,
+        "status": "found",
+        "reason": null,
+        "records": [
+          {
+            "domain": "dezeno.com.my",
+            "mx": [
+              {
+                "priority": 10,
+                "exchange": "mx.zoho.com"
+              },
+              {
+                "priority": 20,
+                "exchange": "mx2.zoho.com"
+              },
+              {
+                "priority": 50,
+                "exchange": "mx3.zoho.com"
+              }
+            ],
+            "mail_provider": [
+              "Zoho Mail"
+            ],
+            "spf": {
+              "present": true,
+              "record_count": 1,
+              "record": "v=spf1 include:zoho.com -all",
+              "strictness": "strict (-all: unlisted senders fail)",
+              "senders": [
+                {
+                  "host": "zoho.com",
+                  "vendor": "Zoho"
+                }
+              ]
+            },
+            "ns": [
+              "barbara.ns.cloudflare.com",
+              "nitin.ns.cloudflare.com"
+            ],
+            "ns_provider": [
+              "Cloudflare"
+            ],
+            "txt_verifications": [],
+            "txt_record_count": 1,
+            "query_errors": []
+          }
+        ],
+        "source_url": "https://dnschecker.org/all-dns-records-of-domain.php?query=dezeno.com.my&rtype=ALL",
+        "excerpt": "DNS records for dezeno.com.my (read from the worker PC's resolver):\nMail (MX): 10 mx.zoho.com, 20 mx2.zoho.com, 50 mx3.zoho.com -> Zoho Mail\nSPF: present, strict (-all: unlisted senders fail); senders listed: Zoho (zoho.com)\nTools shown by verification records: none recognised\nName servers: barbara.ns.cloudflare.com, nitin.ns.cloudflare.com -> Cloudflare"
+      },
+      "found_when": "the handler returned records for this domain",
+      "not_found_when": "the source holds nothing for this domain",
+      "couldnt_check_when": "the source could not be read from the worker PC"
+    },
+    {
+      "rank": 1002,
+      "category": "global",
+      "question": "Who issued the website's SSL certificate, when does it expire, and does it cover the domain?",
+      "why_it_matters": "An expired, soon-to-expire or mismatched certificate is a basic sign of how well a site is looked after, and the issuer and dates are hard facts.",
+      "source": {
+        "name": "The website's TLS certificate (port 443)",
+        "url": "https://crt.sh/",
+        "type": "global_handler"
+      },
+      "how_to_query": "Global handler ALL-ssl/w1 run on a worker PC with the website domain",
+      "query_type": "global_handler",
+      "applies_when": "every report",
+      "query": "site.lookup ALL-ssl/w1 \"dezeno.com.my\"",
+      "evidence_urls": [
+        "https://crt.sh/?q=dezeno.com.my"
+      ],
+      "snippets": [
+        "SSL certificate served by dezeno.com.my:\nIssuer: Let's Encrypt / YR1\nValid 2026-11-04 to 2027-02-02 (83 days left; 90-day certificate)\nTrusted chain: yes\nCovers dezeno.com.my: yes\nNames on the certificate (2): dezeno.com.my, www.dezeno.com.my"
+      ],
+      "lookup": {
+        "handler": "ALL-ssl/w1",
+        "version": "7f34086e20a2",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 242,
+        "status": "found",
+        "reason": null,
+        "records": [
+          {
+            "host": "dezeno.com.my",
+            "subject": "dezeno.com.my",
+            "issuer_org": "Let's Encrypt",
+            "issuer_name": "YR1",
+            "valid_from": "2026-11-04",
+            "valid_to": "2027-02-02",
+            "days_left": 83,
+            "expired": false,
+            "lifetime_days": 90,
+            "trusted_chain": true,
+            "trust_error": null,
+            "covers_host": true,
+            "mismatch": null,
+            "names": [
+              "dezeno.com.my",
+              "www.dezeno.com.my"
+            ],
+            "name_count": 2,
+            "protocol": "TLSv1.3",
+            "fingerprint256": "78:41:4C:DB:12:1C:26:3C:37:D5:58:B5:33:AD:44:70:F3:9D:BA:33:2F:EA:32:31:A1:D3:29:FB:8A:28:34:E5"
+          }
+        ],
+        "source_url": "https://crt.sh/?q=dezeno.com.my",
+        "excerpt": "SSL certificate served by dezeno.com.my:\nIssuer: Let's Encrypt / YR1\nValid 2026-11-04 to 2027-02-02 (83 days left; 90-day certificate)\nTrusted chain: yes\nCovers dezeno.com.my: yes\nNames on the certificate (2): dezeno.com.my, www.dezeno.com.my"
+      },
+      "found_when": "the handler returned records for this domain",
+      "not_found_when": "the source holds nothing for this domain",
+      "couldnt_check_when": "the source could not be read from the worker PC"
+    },
+    {
+      "rank": 1003,
+      "category": "global",
+      "question": "How long has this website existed in the Internet Archive, and what did its home page say in earlier years?",
+      "why_it_matters": "Old snapshots show when the site first appeared and let claims such as staff numbers, project counts or awards be checked against what the company said before.",
+      "source": {
+        "name": "Internet Archive Wayback Machine",
+        "url": "https://web.archive.org/",
+        "type": "global_handler"
+      },
+      "how_to_query": "Global handler ALL-wayback/w1 run on a worker PC with the website domain",
+      "query_type": "global_handler",
+      "applies_when": "every report",
+      "query": "site.lookup ALL-wayback/w1 \"dezeno.com.my\"",
+      "evidence_urls": [
+        "https://web.archive.org/web/*/dezeno.com.my"
+      ],
+      "snippets": [
+        "Internet Archive for dezeno.com.my: first successful capture 2014-07-06; captured in 12 different years (2014 to 2026).\nYears with a capture: 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025, 2026\nSnapshot 2014-07-06 (https://web.archive.org/web/20140706163932/http://www.dezeno.com.my:80/): could not be read (HTTP 429)\nSnapshot 2023-02-07 (https://web.archive.org/web/20230207192139/https://dezeno.com.my/): could not be read (HTTP 429)\nSnapshot 2025-02-10 (https://web.archive.org/web/20250210112257/https://dezeno.com.my/): could not be read (HTTP 429)"
+      ],
+      "lookup": {
+        "handler": "ALL-wayback/w1",
+        "version": "ce0ba6fe168f",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 34108,
+        "status": "found",
+        "reason": null,
+        "records": [
+          {
+            "domain": "dezeno.com.my",
+            "first_snapshot": "2014-07-06",
+            "last_snapshot_year": "2026",
+            "years_archived": [
+              "2014",
+              "2015",
+              "2016",
+              "2017",
+              "2018",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025",
+              "2026"
+            ],
+            "snapshots": [
+              {
+                "timestamp": "20140706163932",
+                "date": "2014-07-06",
+                "url": "https://web.archive.org/web/20140706163932/http://www.dezeno.com.my:80/",
+                "error": "HTTP 429"
+              },
+              {
+                "timestamp": "20230207192139",
+                "date": "2023-02-07",
+                "url": "https://web.archive.org/web/20230207192139/https://dezeno.com.my/",
+                "error": "HTTP 429"
+              },
+              {
+                "timestamp": "20250210112257",
+                "date": "2025-02-10",
+                "url": "https://web.archive.org/web/20250210112257/https://dezeno.com.my/",
+                "error": "HTTP 429"
+              }
+            ]
+          }
+        ],
+        "source_url": "https://web.archive.org/web/*/dezeno.com.my",
+        "excerpt": "Internet Archive for dezeno.com.my: first successful capture 2014-07-06; captured in 12 different years (2014 to 2026).\nYears with a capture: 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025, 2026\nSnapshot 2014-07-06 (https://web.archive.org/web/20140706163932/http://www.dezeno.com.my:80/): could not be read (HTTP 429)\nSnapshot 2023-02-07 (https://web.archive.org/web/20230207192139/https://dezeno.com.my/): could not be read (HTTP 429)\nSnapshot 2025-02-10 (https://web.archive.org/web/20250210112257/https://dezeno.com.my/): could not be read (HTTP 429)"
+      },
+      "found_when": "the handler returned records for this domain",
+      "not_found_when": "the source holds nothing for this domain",
+      "couldnt_check_when": "the source could not be read from the worker PC"
+    },
+    {
+      "rank": 1004,
+      "category": "global",
+      "question": "Does the website link a YouTube channel, and when did that channel last post and how often?",
+      "why_it_matters": "A channel the company advertises but stopped feeding long ago is a sign of abandoned marketing; an active one backs up claims of activity.",
+      "source": {
+        "name": "YouTube channel feed (linked from the company website)",
+        "url": "https://www.youtube.com/",
+        "type": "global_handler"
+      },
+      "how_to_query": "Global handler ALL-youtube/w1 run on a worker PC with the website domain",
+      "query_type": "global_handler",
+      "applies_when": "every report",
+      "query": "site.lookup ALL-youtube/w1 \"dezeno.com.my\"",
+      "evidence_urls": [
+        "https://dezeno.com.my/"
+      ],
+      "snippets": [
+        "YouTube channels linked from https://dezeno.com.my/:\nDEZENO_SB (https://www.youtube.com/channel/UCHYiLYRp5JoMwVY534NRJuw): last video 2026-11-09, 1 days ago; 15 videos in the last 90 days, 15 in the last 365; about 3.4 days between the newest 15.\n  2026-11-09  Bringing a vision to life, one piece of furniture at a time.\n  2026-11-06  A 4-Storey Home With Its Own Soul ✨\n  2026-11-03  Transition to a peaceful home ✨\nThe feed lists only the newest 15 videos, so older history is not shown."
+      ],
+      "lookup": {
+        "handler": "ALL-youtube/w1",
+        "version": "f5a8f8b14d5e",
+        "job_status": "done",
+        "worker": "pc-desktop-camhl16",
+        "took_ms": 1092,
+        "status": "found",
+        "reason": null,
+        "records": [
+          {
+            "path": "@dezeno_sb",
+            "channel_id": "UCHYiLYRp5JoMwVY534NRJuw",
+            "channel_url": "https://www.youtube.com/channel/UCHYiLYRp5JoMwVY534NRJuw",
+            "title": "DEZENO_SB",
+            "feed_videos": 15,
+            "last_post": "2026-11-09",
+            "days_since_last_post": 1,
+            "posts_last_90_days": 15,
+            "posts_last_365_days": 15,
+            "average_days_between_posts": 3.4,
+            "newest": [
+              {
+                "date": "2026-11-09",
+                "title": "Bringing a vision to life, one piece of furniture at a time.",
+                "url": "https://www.youtube.com/watch?v=OTA5h8q3nB8"
+              },
+              {
+                "date": "2026-11-06",
+                "title": "A 4-Storey Home With Its Own Soul ✨",
+                "url": "https://www.youtube.com/watch?v=Lq6zOvtsbJA"
+              },
+              {
+                "date": "2026-11-03",
+                "title": "Transition to a peaceful home ✨",
+                "url": "https://www.youtube.com/watch?v=dxR6rsPxn6w"
+              },
+              {
+                "date": "2026-10-30",
+                "title": "Watch This Bedroom Get a Complete Makeover",
+                "url": "https://www.youtube.com/watch?v=Zzlm6zjXW94"
+              },
+              {
+                "date": "2026-10-27",
+                "title": "Ready for new project ✨ The Mansions",
+                "url": "https://www.youtube.com/watch?v=DJfbQjDZeVw"
+              }
+            ],
+            "feed_is_capped_at_15": true
+          }
+        ],
+        "source_url": "https://dezeno.com.my/",
+        "excerpt": "YouTube channels linked from https://dezeno.com.my/:\nDEZENO_SB (https://www.youtube.com/channel/UCHYiLYRp5JoMwVY534NRJuw): last video 2026-11-09, 1 days ago; 15 videos in the last 90 days, 15 in the last 365; about 3.4 days between the newest 15.\n  2026-11-09  Bringing a vision to life, one piece of furniture at a time.\n  2026-11-06  A 4-Storey Home With Its Own Soul ✨\n  2026-11-03  Transition to a peaceful home ✨\nThe feed lists only the newest 15 videos, so older history is not shown."
+      },
+      "found_when": "the handler returned records for this domain",
+      "not_found_when": "the source holds nothing for this domain",
+      "couldnt_check_when": "the source could not be read from the worker PC"
+    }
+  ],
+  "google_maps": {
+    "query": "Dezeno Kuala Lumpur Malaysia",
+    "status": "done",
+    "worker": "pc-desktop-camhl16",
+    "result": {
+      "query": "Dezeno Kuala Lumpur Malaysia",
+      "keyword": "Dezeno Kuala Lumpur Malaysia",
+      "place": null,
+      "businesses": [
+        {
+          "name": "DEzeno Sdn Bhd",
+          "rating": 5,
+          "reviews": 27,
+          "category": "Interior designer",
+          "address": "Level 6, Wisma Miramas, 1, Jalan 2/109e, Taman Desa, 58100 Kuala Lumpur",
+          "phone": "019-663 6601",
+          "website": "https://dezeno.com.my/?utm_source=gbp&utm_medium=organic&utm_campaign=profile",
+          "mapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJqcBH4jtKzDERE0Wrexejxgo",
+          "place_id": "ChIJqcBH4jtKzDERE0Wrexejxgo"
+        }
+      ],
+      "found": 1,
+      "capped": false,
+      "blocked": false,
+      "blockedReason": null,
+      "limitedView": false,
+      "categories": null,
+      "outsideArea": 0,
+      "streets": null,
+      "skippedSearches": null,
+      "scrolls": 0,
+      "provider": "maps-list-local",
+      "worker": "pc-desktop-camhl16",
+      "mapCentre": "3.139,101.6869",
+      "googleRequests": 1,
+      "stoppedEarly": null,
+      "tookMs": 345,
+      "at": "2026-11-10T15:37:23.8781658Z"
+    }
+  },
+  "linkedin": {
+    "url": "https://www.linkedin.com/company/dezeno-sdn-bhd/",
+    "status": "done",
+    "worker": "exa",
+    "result": {
+      "data": {
+        "linkedin_url": "https://www.linkedin.com/company/dezeno-sdn-bhd/",
+        "name": "Dezeno Sdn Bhd",
+        "website": "dezeno.com.my",
+        "phone": "(1057095",
+        "company_type": "Privately held",
+        "headquarters": "Kuala Lumpur, Malaysia",
+        "founded": "2013",
+        "industry": "Construction",
+        "company_size": "11 employees",
+        "about_us": "Dezeno Sdn Bhd (1057095-P) https://dezeno.com.my/projects"
+      }
+    }
+  }
+}

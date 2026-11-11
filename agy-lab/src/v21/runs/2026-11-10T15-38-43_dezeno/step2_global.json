@@ -1,0 +1,135 @@
+{
+  "version": "2.1",
+  "stage": 2,
+  "created_at": "2026-11-10T15:48:40.625Z",
+  "input": {
+    "company": "Dezeno",
+    "country": "Malaysia",
+    "industry": "Interior designer",
+    "website": "https://dezeno.com.my"
+  },
+  "skip_reason": null,
+  "could_not_check": [
+    {
+      "target": "Lembaga Arkitek Malaysia (Board of Architects Malaysia)",
+      "reason": "site lookup did not run: fetch failed"
+    },
+    {
+      "target": "MIID REKA Awards",
+      "reason": "no working site handler for this source yet"
+    }
+  ],
+  "status": "analyzed",
+  "error": null,
+  "baseline": {
+    "official_domain": "dezeno.com.my",
+    "pages_present": [
+      "home",
+      "contact"
+    ],
+    "brand_names": [
+      "DEZENO",
+      "DEzeno"
+    ],
+    "legal_names": [
+      "Dezeno Sdn Bhd (1057095-P)"
+    ],
+    "phones": [
+      "+6019 663 6601"
+    ],
+    "addresses": [
+      "Wisma Miramas, Taman Desa Business Park, 58100 Kuala Lumpur",
+      "Level 6-1, Wisma Miramas, Jalan 2/109E, Taman Desa Business Park, Taman Desa, 58100 Kuala Lumpur, Malaysia"
+    ],
+    "claimed_credentials": [
+      "CIDB G7 registered contractor",
+      "MFIDA 2024 award — International Best Luxury Mansion Design",
+      "5.0 Google rating based on 27 verified customer reviews",
+      "ESG eco-conscious build standards",
+      "Zero formaldehyde / family-safe materials"
+    ]
+  },
+  "findings": [
+    {
+      "id": "f1",
+      "type": "missed_advantage",
+      "category": "awards",
+      "title": "DEzeno won the 2025 'Light of Asian Youth Designers' award at Guangzhou Design Week; the official site only mentions MFIDA 2024",
+      "claim": "Not on the pages read: home, contact",
+      "outside_source": "Creativehomex reports that Malaysian design firm DEzeno Sdn Bhd, represented by Vincent Tan, received the 「2025 亞洲青年設計之光」 (Light of Asian Youth Designers 2025) honour at the ceremony held during Guangzhou Design Week, for the high-end residential project 《Wilson's Residence》.",
+      "source_name": "Creativehomex (creativehomex.com)",
+      "source_url": "https://creativehomex.com/cn-dezeno-wilsons-residence-shines-at-the-light-of-asian-youth-designers-2025/",
+      "quoted_text": "來自馬來西亞的設計團隊 DEzeno Sdn Bhd，由 Vincent Tan 代表登台，憑藉高端住宅作品《Wilson’s Residence》獲頒本屆「亞洲青年設計之光」殊榮。",
+      "confidence": "medium",
+      "identity_justification": "Exact legal name DEzeno Sdn Bhd identified as a Malaysian interior design/renovation design team — same name and same line of business; the item carries no official domain, phone, address or registration number, hence medium confidence.",
+      "evidence_id": "E16"
+    }
+  ],
+  "rejected_findings": [],
+  "dropped_namesakes": [
+    {
+      "name": "DEZENO INTERIOR SDN BHD",
+      "url": "https://my714129-dezeno-interior-sdn-bhd.contact.page",
+      "snippet": "DEZENO INTERIOR SDN BHD Interior Design in Kuala Lumpur",
+      "reason_dropped": "Different legal entity name (Dezeno Interior Sdn Bhd, not Dezeno Sdn Bhd) and a different phone (03-7971 9XX, not +6019 663 6601); the item shows no official domain, no address matching the official site and no registration number, so identity is not established.",
+      "evidence_id": "E6"
+    }
+  ],
+  "stats": {
+    "findings_count": 1,
+    "rejected_count": 0,
+    "dropped_namesakes_count": 1,
+    "could_not_check_count": 2,
+    "llm_calls": 2,
+    "duration_ms": 34444
+  },
+  "meta": {
+    "prompt": "tidy-v1",
+    "lane": "Vectide plan 2",
+    "model": "deepseek-v4.1-flash-1017",
+    "attempts": [
+      {
+        "lane": "Vectide plan 1",
+        "model": "deepseek-v4.1-flash-1017",
+        "ms": 533,
+        "error": "HTTP 429: {\"request_id\":\"req_vt_ed915304300cba9c3cee5c2d81b62849\",\"error\":{\"code\":\"VectorTide_rate_limit_exceeded\",\"type\":\"rate_limit_error\",\"message\":\"请求过于频繁，请"
+      },
+      {
+        "lane": "Vectide plan 2",
+        "model": "deepseek-v4.1-flash-1017",
+        "ms": 33414,
+        "finish_reason": "stop",
+        "usage": {
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "completion_tokens": 6049,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "cached_tokens": 0,
+            "reasoning_tokens": 5339,
+            "rejected_prediction_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 8871,
+          "prompt_tokens": 8871,
+          "prompt_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "cached_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "total_tokens": 14920
+        },
+        "won": true
+      }
+    ]
+  },
+  "llm_raw": "{\n  \"baseline_summary\": {\n    \"brand_names\": [\"DEZENO\", \"DEzeno\"],\n    \"legal_names\": [\"Dezeno Sdn Bhd (1057095-P)\"],\n    \"phones\": [\"+6019 663 6601\"],\n    \"addresses\": [\n      \"Wisma Miramas, Taman Desa Business Park, 58100 Kuala Lumpur\",\n      \"Level 6-1, Wisma Miramas, Jalan 2/109E, Taman Desa Business Park, Taman Desa, 58100 Kuala Lumpur, Malaysia\"\n    ],\n    \"claimed_credentials\": [\n      \"CIDB G7 registered contractor\",\n      \"MFIDA 2024 award — International Best Luxury Mansion Design\",\n      \"5.0 Google rating based on 27 verified customer reviews\",\n      \"ESG eco-conscious build standards\",\n      \"Zero formaldehyde / family-safe materials\"\n    ]\n  },\n  \"findings\": [\n    {\n      \"id\": \"f1\",\n      \"type\": \"missed_advantage\",\n      \"category\": \"awards\",\n      \"title\": \"DEzeno won the 2025 'Light of Asian Youth Designers' award at Guangzhou Design Week; the official site only mentions MFIDA 2024\",\n      \"claim\": \"Not on the pages read: home, contact\",\n      \"outside_source\": \"Creativehomex reports that Malaysian design firm DEzeno Sdn Bhd, represented by Vincent Tan, received the 「2025 亞洲青年設計之光」 (Light of Asian Youth Designers 2025) honour at the ceremony held during Guangzhou Design Week, for the high-end residential project 《Wilson's Residence》.\",\n      \"evidence_id\": \"E16\",\n      \"source_name\": \"Creativehomex (creativehomex.com)\",\n      \"source_url\": \"https://creativehomex.com/cn-dezeno-wilsons-residence-shines-at-the-light-of-asian-youth-designers-2025/\",\n      \"quoted_text\": \"來自馬來西亞的設計團隊 DEzeno Sdn Bhd，由 Vincent Tan 代表登台，憑藉高端住宅作品《Wilson’s Residence》獲頒本屆「亞洲青年設計之光」殊榮。\",\n      \"confidence\": \"medium\",\n      \"identity_justification\": \"Exact legal name DEzeno Sdn Bhd identified as a Malaysian interior design/renovation design team — same name and same line of business; the item carries no official domain, phone, address or registration number, hence medium confidence.\"\n    }\n  ],\n  \"dropped_namesakes\": [\n    {\n      \"evidence_id\": \"E6\",\n      \"name\": \"DEZENO INTERIOR SDN BHD\",\n      \"url\": \"https://my714129-dezeno-interior-sdn-bhd.contact.page\",\n      \"snippet\": \"DEZENO INTERIOR SDN BHD Interior Design in Kuala Lumpur\",\n      \"reason_dropped\": \"Different legal entity name (Dezeno Interior Sdn Bhd, not Dezeno Sdn Bhd) and a different phone (03-7971 9XX, not +6019 663 6601); the item shows no official domain, no address matching the official site and no registration number, so identity is not established.\"\n    }\n  ]\n}",
+  "bench": {
+    "judge_id": 39,
+    "recheck_id": null,
+    "error": null
+  }
+}

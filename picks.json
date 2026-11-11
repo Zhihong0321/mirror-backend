@@ -1,0 +1,177 @@
+[
+ {
+  "country": "Argentina",
+  "industry": "Web design company",
+  "name": "LA IDEA Agencia Creativa",
+  "website": "http://www.laidea.com.ar/",
+  "cat": "Graphic designer"
+ },
+ {
+  "country": "Australia",
+  "industry": "Digital marketing agency",
+  "name": "Digital Next",
+  "website": "https://www.digitalnext.com.au/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Brazil",
+  "industry": "Web design company",
+  "name": "Criação de Sites - Sitecloud - Website Profissional",
+  "website": "http://sitecloud.com.br/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Canada",
+  "industry": "Web design company",
+  "name": "My Cheap Web Design",
+  "website": "https://www.mycheapwebdesign.com/",
+  "cat": "Website designer"
+ },
+ {
+  "country": "France",
+  "industry": "Digital marketing agency",
+  "name": "Goclic",
+  "website": "https://www.goclic.fr/",
+  "cat": "Website designer"
+ },
+ {
+  "country": "Germany",
+  "industry": "Web design company",
+  "name": "designdeck",
+  "website": "http://www.designdeck.de/",
+  "cat": "Website designer"
+ },
+ {
+  "country": "India",
+  "industry": "Digital marketing agency",
+  "name": "Codux Digital",
+  "website": "https://www.coduxdigital.com/",
+  "cat": "Internet marketing service"
+ },
+ {
+  "country": "Indonesia",
+  "industry": "Web design company",
+  "name": "Program and Website Development Services - AbelPutra.com",
+  "website": "http://www.abelputra.com/",
+  "cat": "Computer software store"
+ },
+ {
+  "country": "Ireland",
+  "industry": "Digital marketing agency",
+  "name": "The Content Lab",
+  "website": "http://www.thecontentlab.ie/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Japan",
+  "industry": "Digital marketing agency",
+  "name": "Niwaka Soft",
+  "website": "http://niwakasoft.jp/",
+  "cat": "Internet marketing service"
+ },
+ {
+  "country": "Malaysia",
+  "industry": "Digital marketing agency",
+  "name": "Synapse Comms",
+  "website": "https://synapsecomms.com/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Netherlands",
+  "industry": "Digital marketing agency",
+  "name": "PlanC Media",
+  "website": "https://plancmedia.nl/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "New Zealand",
+  "industry": "Digital marketing agency",
+  "name": "Mixtape Media",
+  "website": "https://www.mixtape.co.nz/",
+  "cat": "Internet marketing service"
+ },
+ {
+  "country": "Philippines",
+  "industry": "Digital marketing agency",
+  "name": "Chibot Media Inc.",
+  "website": "http://www.chibotxr.com/",
+  "cat": "Software company"
+ },
+ {
+  "country": "Russia",
+  "industry": "Web design company",
+  "name": "Olprime",
+  "website": "https://olprime.ru/",
+  "cat": "Internet service provider"
+ },
+ {
+  "country": "Singapore",
+  "industry": "Digital marketing agency",
+  "name": "DANAMIC",
+  "website": "https://danamic.org/",
+  "cat": "Media company"
+ },
+ {
+  "country": "South Korea",
+  "industry": "Digital marketing agency",
+  "name": "Punch Digital Marketing",
+  "website": "https://punchkorea.com/",
+  "cat": "3D printing service"
+ },
+ {
+  "country": "Spain",
+  "industry": "Digital marketing agency",
+  "name": "Jamenet",
+  "website": "http://jamenet.eus/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Switzerland",
+  "industry": "Web design company",
+  "name": "Notion Design",
+  "website": "http://www.notiondesign.ch/",
+  "cat": "Design agency"
+ },
+ {
+  "country": "Taiwan",
+  "industry": "Digital marketing agency",
+  "name": "好心地文創",
+  "website": "https://howdy-creative.co/",
+  "cat": "Paper Product Supplier"
+ },
+ {
+  "country": "Thailand",
+  "industry": "Web design company",
+  "name": "Hue Marketing",
+  "website": "https://hue-marketing.com/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "United Arab Emirates",
+  "industry": "Digital marketing agency",
+  "name": "Doit Digital",
+  "website": "https://www.doitmena.com/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "United Kingdom",
+  "industry": "Digital marketing agency",
+  "name": "E-business Promotion",
+  "website": "https://www.e-businesspromotion.co.uk/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "United States",
+  "industry": "Digital marketing agency",
+  "name": "The Ads Tutor- Ads Agency in Austin",
+  "website": "https://theadstutor.com/",
+  "cat": "Marketing agency"
+ },
+ {
+  "country": "Vietnam",
+  "industry": "Digital marketing agency",
+  "name": "Creative Station Agency",
+  "website": "https://creativestation.com.vn/",
+  "cat": "Event planner"
+ }
+]

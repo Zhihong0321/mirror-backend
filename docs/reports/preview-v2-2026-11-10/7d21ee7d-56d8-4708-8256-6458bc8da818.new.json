@@ -1,0 +1,173 @@
+{
+ "report": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.946Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 77,
+  "step2_run_id": "27677144-f6c4-480e-a855-3acfcd32fea5",
+  "kind": "report",
+  "status": "ok",
+  "error": null,
+  "summary": [
+   {
+    "text": "The domain behind the email address you publish expires on 2026-12-04, and every enquiry, quotation and SEDA submission routed through that mailbox stops with it.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "Your contractor grade differs between your own site and a public contractor directory, so a tender panel can rule you out before your submission is even opened.",
+    "cites": [
+     "c5"
+    ]
+   },
+   {
+    "text": "Your Google rating is strong, and not a single review on the profile has an answer from you; the lone bad rating sits there unexplained.",
+    "cites": [
+     "f3",
+     "f7"
+    ]
+   }
+  ],
+  "titles": {
+   "f1": "The domain behind the email address you publish expires, and every enquiry sent there stops with it.",
+   "f2": "Your site sends none of the standard security headers, and a bank or insurer reviewing it will see that.",
+   "f3": "Not one review on your Google profile has a reply, and the bad one sits there unexplained.",
+   "f4": "Your site is built for Google, not for the AI assistants buyers now ask for a shortlist of contractors.",
+   "c1": "Your head office unit number differs across 3 sources. Couriers, auditors and site visitors may arrive at the wrong door.",
+   "c2": "Enquiries land in different mailboxes depending on which page a customer reads, so half your quote requests can go unread.",
+   "c3": "Your two sites list different branches, so a customer near one of your listed offices sees no office on the other site.",
+   "c4": "Three published totals for completed projects disagree, and the lowest sits on a public directory beside your name.",
+   "c5": "Your contractor grade differs between your own site and a public directory. A tender panel may rule you out before reading your bid.",
+   "c6": "An employer profile gives your company the wrong legal form, and contracts and payments are matched on the registered name.",
+   "c7": "Three sources name three different websites for you, so enquiries land in three places and none of them is authoritative.",
+   "n1": "A contractor directory places you in a different state from your head office. Worth checking before your next tender."
+  },
+  "proof": "f1",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 22415,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 3300,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 2376,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 4944,
+      "prompt_tokens": 4944,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 8244
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 22700
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The domain behind the email address you publish expires on 2026-12-04, and every enquiry, quotation and SEDA submission routed through that mailbox stops with it.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your contractor grade differs between your own site and a public contractor directory, so a tender panel can rule you out before your submission is even opened.\",\n      \"cites\": [\"c5\"]\n    },\n    {\n      \"text\": \"Your Google rating is strong, and not a single review on the profile has an answer from you; the lone bad rating sits there unexplained.\",\n      \"cites\": [\"f3\", \"f7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The email address on your site stops working on 2026-12-04\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"We read what the public internet says about Eternalgy Sdn Bhd. The domain behind the email address on your own site expires on 2026-12-04, and when it lapses, mail to that address bounces.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"There is more of the same: a public contractor directory shows a different grade from the one your site claims, and not one review on your Google profile has a reply.\",\n        \"cites\": [\"c5\", \"f3\"]\n      },\n      {\n        \"text\": \"All of it is public today, so any customer, bank or tender panel checking you can see it before you get the chance to explain.\",\n        \"cites\": [\"f1\", \"c5\", \"f3\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind the email address you publish expires, and every enquiry sent there stops with it.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Your site sends none of the standard security headers, and a bank or insurer reviewing it will see that.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Not one review on your Google profile has a reply, and the bad one sits there unexplained.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your site is built for Google, not for the AI assistants buyers now ask for a shortlist of contractors.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office unit number differs across 3 sources. Couriers, auditors and site visitors may arrive at the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Enquiries land in different mailboxes depending on which page a customer reads, so half your quote requests can go unread.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your two sites list different branches, so a customer near one of your listed offices sees no office on the other site.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Three published totals for completed projects disagree, and the lowest sits on a public directory beside your name.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your contractor grade differs between your own site and a public directory. A tender panel may rule you out before reading your bid.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"An employer profile gives your company the wrong legal form, and contracts and payments are matched on the registered name.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Three sources name three different websites for you, so enquiries land in three places and none of them is authoritative.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A contractor directory places you in a different state from your head office. Worth checking before your next tender.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can confirm the expiry in a minute with a public lookup, the mailbox and every enquiry through it stop on that date, and renewing it leaves every other problem on the page untouched.\"\n  }\n}"
+ },
+ "email": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.946Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 77,
+  "step2_run_id": "27677144-f6c4-480e-a855-3acfcd32fea5",
+  "kind": "email",
+  "status": "ok",
+  "error": null,
+  "subject": {
+   "text": "The email address on your site stops working on 2026-12-04",
+   "cites": [
+    "f1"
+   ]
+  },
+  "body": [
+   {
+    "text": "We read what the public internet says about Eternalgy Sdn Bhd. The domain behind the email address on your own site expires on 2026-12-04, and when it lapses, mail to that address bounces.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "There is more of the same: a public contractor directory shows a different grade from the one your site claims, and not one review on your Google profile has a reply.",
+    "cites": [
+     "c5",
+     "f3"
+    ]
+   },
+   {
+    "text": "All of it is public today, so any customer, bank or tender panel checking you can see it before you get the chance to explain.",
+    "cites": [
+     "f1",
+     "c5",
+     "f3"
+    ]
+   }
+  ],
+  "report_url": "https://example.invalid/v21/r/7d21ee7d-56d8-4708-8256-6458bc8da818",
+  "text": "Subject: The email address on your site stops working on 2026-12-04\n\nHello Eternalgy Sdn Bhd team,\n\nWe read what the public internet says about Eternalgy Sdn Bhd. The domain behind the email address on your own site expires on 2026-12-04, and when it lapses, mail to that address bounces.\n\nThere is more of the same: a public contractor directory shows a different grade from the one your site claims, and not one review on your Google profile has a reply.\n\nAll of it is public today, so any customer, bank or tender panel checking you can see it before you get the chance to explain.\n\nThis free report shows what is wrong, not where it is or how to fix it. The full report gives every source and every fix, and goes deeper across 7 research areas: contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality; social media. Reply to this email to get your full report.\n\nYour free report: https://example.invalid/v21/r/7d21ee7d-56d8-4708-8256-6458bc8da818\n\nThe Eternalgy team",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 22415,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 3300,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 2376,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 4944,
+      "prompt_tokens": 4944,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 8244
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 22700
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The domain behind the email address you publish expires on 2026-12-04, and every enquiry, quotation and SEDA submission routed through that mailbox stops with it.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your contractor grade differs between your own site and a public contractor directory, so a tender panel can rule you out before your submission is even opened.\",\n      \"cites\": [\"c5\"]\n    },\n    {\n      \"text\": \"Your Google rating is strong, and not a single review on the profile has an answer from you; the lone bad rating sits there unexplained.\",\n      \"cites\": [\"f3\", \"f7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The email address on your site stops working on 2026-12-04\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"We read what the public internet says about Eternalgy Sdn Bhd. The domain behind the email address on your own site expires on 2026-12-04, and when it lapses, mail to that address bounces.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"There is more of the same: a public contractor directory shows a different grade from the one your site claims, and not one review on your Google profile has a reply.\",\n        \"cites\": [\"c5\", \"f3\"]\n      },\n      {\n        \"text\": \"All of it is public today, so any customer, bank or tender panel checking you can see it before you get the chance to explain.\",\n        \"cites\": [\"f1\", \"c5\", \"f3\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind the email address you publish expires, and every enquiry sent there stops with it.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Your site sends none of the standard security headers, and a bank or insurer reviewing it will see that.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Not one review on your Google profile has a reply, and the bad one sits there unexplained.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your site is built for Google, not for the AI assistants buyers now ask for a shortlist of contractors.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office unit number differs across 3 sources. Couriers, auditors and site visitors may arrive at the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Enquiries land in different mailboxes depending on which page a customer reads, so half your quote requests can go unread.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your two sites list different branches, so a customer near one of your listed offices sees no office on the other site.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Three published totals for completed projects disagree, and the lowest sits on a public directory beside your name.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your contractor grade differs between your own site and a public directory. A tender panel may rule you out before reading your bid.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"An employer profile gives your company the wrong legal form, and contracts and payments are matched on the registered name.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Three sources name three different websites for you, so enquiries land in three places and none of them is authoritative.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A contractor directory places you in a different state from your head office. Worth checking before your next tender.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can confirm the expiry in a minute with a public lookup, the mailbox and every enquiry through it stop on that date, and renewing it leaves every other problem on the page untouched.\"\n  }\n}"
+ }
+}

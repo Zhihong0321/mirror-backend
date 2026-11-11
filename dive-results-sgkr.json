@@ -1,0 +1,99 @@
+{
+ "Singapore": {
+  "company": "DANAMIC",
+  "website": "https://danamic.org/",
+  "dive_id": 32,
+  "dive_public": "m6xuAQIKfDWHdX72VKhi",
+  "dive_link": "https://company-diver-production.up.railway.app/d/m6xuAQIKfDWHdX72VKhi",
+  "dive_status": "done",
+  "dive_error": null,
+  "dive_cost": {
+   "usd": 0.6744916944444446,
+   "estimated": false,
+   "unpriced": [],
+   "lines": [
+    {
+     "item": "LLM deepseek-v4.1-flash-1017",
+     "detail": "8 calls, 209.8k in / 41.6k out tokens",
+     "usd": 0.003491694444444445
+    },
+    {
+     "item": "Tavily",
+     "detail": "14 calls, 27 credits",
+     "usd": 0.216
+    },
+    {
+     "item": "Brave",
+     "detail": "12 calls",
+     "usd": 0.06
+    },
+    {
+     "item": "Exa",
+     "detail": "20 calls",
+     "usd": 0.3950000000000001
+    },
+    {
+     "item": "Failed calls",
+     "detail": "2 calls, not billed",
+     "usd": 0
+    }
+   ]
+  },
+  "deeper_id": 8,
+  "deeper_public": "mYC1kS7jUvdEjWevlt7Z",
+  "deeper_link": "https://company-diver-production.up.railway.app/dd/mYC1kS7jUvdEjWevlt7Z",
+  "error": "GET /api/dive-deeper/8 502 {\"status\":\"error\",\"code\":502,\"message\":\"Application failed to respond\",\"request_id\":\"TklSiUIbTdqON0iDoB_USg\"}"
+ },
+ "South Korea": {
+  "company": "Punch Digital Marketing",
+  "website": "https://punchkorea.com/",
+  "dive_id": 31,
+  "dive_public": "RVmh6f9reUmcQSwV3qC-",
+  "dive_link": "https://company-diver-production.up.railway.app/d/RVmh6f9reUmcQSwV3qC-",
+  "dive_status": "done",
+  "dive_error": null,
+  "dive_cost": {
+   "usd": 0.5868581944444444,
+   "estimated": false,
+   "unpriced": [
+    "deepseek-ai/deepseek-v4.1-flash-1017 (1 call)"
+   ],
+   "lines": [
+    {
+     "item": "LLM deepseek-ai/deepseek-v4.1-flash-1017",
+     "detail": "1 call, 7.8k in / 5.4k out tokens",
+     "usd": null
+    },
+    {
+     "item": "LLM deepseek-v4.1-flash-1017",
+     "detail": "7 calls, 241.6k in / 36.1k out tokens",
+     "usd": 0.0038581944444444445
+    },
+    {
+     "item": "Tavily",
+     "detail": "14 calls, 23 credits",
+     "usd": 0.184
+    },
+    {
+     "item": "Brave",
+     "detail": "16 calls",
+     "usd": 0.08
+    },
+    {
+     "item": "Exa",
+     "detail": "20 calls",
+     "usd": 0.31900000000000006
+    },
+    {
+     "item": "Failed calls",
+     "detail": "1 call, not billed",
+     "usd": 0
+    }
+   ]
+  },
+  "deeper_id": 7,
+  "deeper_public": "S5mUG5XGy3_SKaaKwRwe",
+  "deeper_link": "https://company-diver-production.up.railway.app/dd/S5mUG5XGy3_SKaaKwRwe",
+  "error": "GET /api/dive-deeper/7 502 {\"status\":\"error\",\"code\":502,\"message\":\"Application failed to respond\",\"request_id\":\"Q2YxkM8PTA6xoOig0ubPiw\"}"
+ }
+}

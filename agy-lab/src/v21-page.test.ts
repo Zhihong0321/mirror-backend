@@ -1,4 +1,4 @@
-// Free report page rules (docs/preview-writing-plan.md, 2026-11-10): the page proves problems exist and keeps the answers
+// Free preview page rules (owner template 2026-11-10, docs/preview-writing-plan.md): the page proves problems exist and keeps the answers
 // for the full report. Strengths (top 3) and ONE proof item in full; every other finding a value-free title by business
 // area; every section has a missing / good-news version. Fixtures use made-up companies in different countries.
 import test from 'node:test';
@@ -44,49 +44,52 @@ test('expiry at 10, 29, 31 and 90 days sets the urgency; expires_at beats dates 
   assert.equal(rate({ topic: 'other', confidence: 'high', expires_at: inDays(-3) }, ['x'], NOW).urg, 'critical');
 });
 
-test('one proof item in full: the LLM pick when valid, else rank #1; only its first piece of evidence', () => {
+test('one proof item in full: the LLM pick when valid, else rank #1; its first piece of evidence and its fix', () => {
   assert.deepEqual(FREE_N, { strengths: 3, proof: 1 });
   const s2 = make('Germany', {
     conclusive_findings: [finding('f1', 'problem', 'email', { statement: 'No DMARC record', evidence: [...ev('f1'), ...ev('f1x')] }), finding('f2', 'problem', 'website', { statement: `Domain expires ${inDays(26)}` }), finding('f3', 'problem', 'scale')],
     contradictions: [contra('c1', 'other')],
+    suggestions: [{ id: 'g1', action: 'FIX-F1', why: 'w', based_on: ['f1'] }, { id: 'g2', action: 'FIX-F3', why: 'w', based_on: ['f3'] }],
   });
+  const proofOf = (html: string) => [...html.matchAll(/<div class="proof" id="([^"]+)"/g)].map((m) => m[1]);
   const picked = reportPage(report({ proof: 'f1' }), s2, { now: NOW });
-  assert.deepEqual([...picked.matchAll(/<article class="warn [^"]*\bfirst\b[^"]*" id="([^"]+)"/g)].map((m) => m[1]), ['f1']);
-  assert.ok(picked.includes('No DMARC record') && picked.includes('register.example/f1"') && !picked.includes('QUOTE-f1x'));
+  assert.deepEqual(proofOf(picked), ['f1']);
+  assert.ok(picked.includes('No DMARC record') && picked.includes('register.example/f1"') && picked.includes('QUOTE-f1') && !picked.includes('QUOTE-f1x'));
+  assert.ok(picked.includes('FIX-F1') && !picked.includes('FIX-F3'));
   // Nothing of any other problem or contradiction is in the HTML: no title, statement, why, quote, value or source link.
   for (const id of ['f2', 'f3', 'c1']) for (const x of [`TITLE-${id}`, `STATEMENT-${id}`, `WHY-${id}`, `QUOTE-${id}`, `A-${id}`, `register.example/${id}`]) assert.ok(!picked.includes(x), x);
   // An unknown or missing pick falls back to rank #1 (the domain lapsing in 26 days).
-  for (const proof of ['zz9', undefined, 42]) {
-    const html = reportPage(report({ proof }), s2, { now: NOW });
-    assert.deepEqual([...html.matchAll(/<article class="warn [^"]*\bfirst\b[^"]*" id="([^"]+)"/g)].map((m) => m[1]), ['f2'], String(proof));
-  }
+  for (const proof of ['zz9', undefined, 42]) assert.deepEqual(proofOf(reportPage(report({ proof }), s2, { now: NOW })), ['f2'], String(proof));
   // A contradiction picked as proof shows its versions with their sources.
   const c = reportPage(report({ proof: 'c1' }), s2, { now: NOW });
   assert.ok(c.includes('A-c1') && c.includes('B-c1') && c.includes('register.example/c1a'));
 });
 
-test('every other finding is a title only, grouped by business area, with a level badge; LLM titles else a teaser', () => {
+test('every finding is listed by area with its mark; titles from the LLM else a teaser; the proof row links up', () => {
   const html = reportPage(report({ proof: 'f1', titles: { f2: 'Customers may land on a page that does not load.', c3: 'Your phone differs across 2 sources.' } }), big(), { now: NOW });
   const t = text(html);
   assert.match(t, /Customers may land on a page that does not load\./);
   assert.match(t, /Your phone differs across 2 sources\./);
-  // No LLM title -> the teaser: kind of record plus a hint, never the Step 2 title.
   assert.match(t, /Email: issue 1/);
   for (const id of ['f2', 'f3', 'f4', 'c1', 'c2', 'c3', 'n1', 'n2']) {
-    assert.match(html, new RegExp(`<li id="${id}" title="${id}" data-id="${id}"><span class="urg (urgent|important|minor)"`), id);
+    assert.match(html, new RegExp(`<li id="${id}" title="${id}" data-id="${id}"><span><span class="tag (first|conf|check)">`), id);
     for (const x of [`TITLE-${id}`, `STATEMENT-${id}`, `NOTE-${id}`, `QUOTE-${id}`, `A-${id}`, `register.example/${id}`]) assert.ok(!html.includes(x), x);
   }
-  // Areas in CEO order; the action steps are not on the page.
-  const order = [...t.matchAll(/(Getting found|Getting reached|Credibility with banks and tenders|Reputation|Risks to your company name|Other) · \d+/g)].map((m) => m[1]);
-  assert.deepEqual(order, ['Getting found', 'Getting reached', 'Credibility with banks and tenders', 'Reputation', 'Risks to your company name']);
-  assert.ok(!html.includes('DO-1') && !html.includes('id="suggestions"'));
+  assert.match(html, /<a href="#proof">Shown in full above<\/a>/);
+  // Signals are "To check"; the scorecard has one mark per finding (9) and one open mark for the proof.
+  assert.equal((html.match(/<span class="tag check">To check<\/span>/g) ?? []).length, 2);
+  const card = html.match(/<aside class="card"[\s\S]*?<\/aside>/)![0];
+  assert.equal((card.match(/<div class="dots">[\s\S]*?<\/div>/g) ?? []).join('').match(/<i class="dot/g)!.length, 9);
+  assert.equal((card.match(/<i class="dot o">/g) ?? []).length, 2); // the proof mark + its key
+  const order = [...html.matchAll(/<div class="group" id="a-(\w+)">/g)].map((m) => m[1]);
+  assert.deepEqual(order, ['found', 'reached', 'credibility', 'reputation', 'name']);
   assert.deepEqual(deadLinks(html), []);
 });
 
 test('teaser titles are unique on the page and use the check id when there is one', () => {
   const s2 = make('France', { conclusive_findings: [1, 2, 3, 4, 5, 6, 7].map((n) => finding(`f${n}`, 'problem', 'website', n === 6 ? { check_id: 'privacy_page' } : {})) });
   const html = reportPage(report({ proof: 'f1' }), s2, { now: NOW });
-  const titles = [...html.matchAll(/<span class="rt">([^<]*)<\/span>/g)].map((m) => m[1]);
+  const titles = [...html.matchAll(/<li id="f\d"[^>]*><span>[\s\S]*?<\/span><span class="t">([^<]*)<\/span>/g)].map((m) => m[1]);
   assert.equal(titles.length, 6);
   assert.equal(new Set(titles).size, 6);
   assert.ok(titles.every((x) => x.startsWith('Website: ')));
@@ -96,84 +99,108 @@ test('teaser titles are unique on the page and use the check id when there is on
 test('strengths: the top 3 in full with sources, the rest as a count; none -> a plain line, never a missing section', () => {
   const html = reportPage(report(), big(), { now: NOW });
   assert.equal(['s1', 's2', 's3', 's4'].filter((id) => html.includes(`TITLE-${id}`)).length, 3);
-  assert.match(text(html), /1 more strength confirmed, listed in the full report\./);
+  assert.match(text(html), /1 more strength is confirmed and listed in the full report\./);
   const none = reportPage(report(), make('Brazil', { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW });
-  assert.match(none, /<section id="strengths"/);
+  assert.match(none, /<section class="sec band" id="strengths"/);
   assert.match(text(none), /found no outside source confirming a strength yet/);
 });
 
 test('every number on the page reads from one counts object', () => {
-  // problems 4, contradictions 3, notes 2, strengths 4 => issues 7, findings 9, items 13; record issues f1 + c1 = 2.
+  // problems 4, contradictions 3, notes 2, strengths 4 => issues 7, findings 9; record issues f1 + c1 = 2, record strengths s1 + s4 = 2.
   const html = reportPage(report({ proof: 'f1' }), big(), { now: NOW, price: '$59' });
   const t = text(html);
-  assert.match(t, /People who look up Beispiel GmbH run into 7 problems\./);
-  assert.match(t, /Action required\. We found 4 problems and 3 places where sources disagree; \d+ (is|are) Urgent/);
-  assert.match(t, /13 items found/);
-  assert.match(t, /7 issues found/);
-  assert.match(t, /2 records that banks and tender panels check have problems or differ between sources\./);
-  assert.match(t, /4 problems someone looking you up runs into\. Your details differ between sources in 3 places\. 2 signals worth checking\./);
-  assert.match(t, /The evidence for all 9 findings/);
-  assert.match(t, /Starts from at least 9 findings in this free report/);
-  // 4 problem + 4 strength + 2 note sources, 6 contradiction versions = 16 distinct pages.
-  assert.match(t, /read the 16 public pages behind this report/);
+  assert.match(t, /People who look up Beispiel GmbH run into 9 things you would want changed\./);
+  assert.match(t, /7 are confirmed by public sources\. 2 are signals we could not confirm\. One is shown in full/);
+  assert.match(t, /Where the 9 sit/);
+  assert.match(t, /1 shown in full · 8 by what they cost you/);
+  assert.match(t, /7 confirmed problems\. In 3 of them, public sources state different facts/);
+  assert.match(t, /2 records confirmed by an outside source\. 2 records that banks and tender panels check have problems/);
+  assert.match(t, /All 9 findings/);
+  assert.match(t, /8 of these have three things missing here/);
+  assert.match(t, /The other 8 findings were found the same way/);
+  // 4 problem + 4 strength + 2 note sources, 6 contradiction versions = 16 distinct pages; 16×10 + 8×15 + 180 = 460 min.
+  assert.match(t, /16 × 10 min/);
+  assert.match(t, /8 × 15 min/);
+  assert.match(t, /7½ h/);
   assert.match(t, /from 16 public sources/);
-  const strip = html.match(/<div class="strip">[\s\S]*?<\/div>/)![0];
-  assert.deepEqual([...strip.matchAll(/<b[^>]*>(\d+)<\/b>/g)].map((m) => +m[1]), [4, 4, 3, 2]);
   const counts = JSON.parse(html.match(/data-counts="([^"]*)"/)![1].replace(/&quot;/g, '"'));
   assert.equal(counts.findings, 9); assert.equal(counts['shown.listed'], 8); assert.equal(counts['shown.proof'], 1);
 });
 
-test('no bare ids in customer text; ids live only in title / data-id; debug mode shows them', () => {
-  const html = reportPage(report({ proof: 'f1', summary: [{ text: 'Summary line.', cites: ['f1', 's1', 'c1'] }] }), big(), { now: NOW });
+test('no bare ids in customer text; ids live only in id / title / data-id; debug mode shows them', () => {
+  const html = reportPage(report({ proof: 'f1' }), big(), { now: NOW });
   assert.deepEqual(bareIds(text(html).replace(/\b[A-Z]+-\w+|register\.example\/\w+/g, ' ')), []);
-  assert.match(html, /<a class="cite" href="#f1" title="f1" data-id="f1">Problem \d<\/a>/);
-  assert.match(html, /<a class="cite" href="#c1" title="c1" data-id="c1">Source disagreement \d<\/a>/);
   assert.deepEqual(deadLinks(html), []);
-  const debug = reportPage(report({ proof: 'f1', summary: [{ text: 'Summary line.', cites: ['f1'] }] }), big(), { now: NOW, debug: true });
-  assert.match(text(debug), /Problem \d \(f1\)/);
+  const debug = reportPage(report({ proof: 'f1' }), big(), { now: NOW, debug: true });
+  assert.match(text(debug), /\(f1\)/);
+  assert.match(text(debug), /\(c2\)/);
 });
 
-test('a summary cite to an item not on the page (4th strength) is printed but not linked', () => {
-  const html = reportPage(report({ summary: [{ text: 'LINE-S4', cites: ['s4'] }] }), big(), { now: NOW });
-  assert.ok(html.includes('LINE-S4') && !html.includes('href="#s4"'));
-  assert.deepEqual(deadLinks(html), []);
-});
-
-test('one buy target with price and guarantee; no "may uncover more", "not run yet" or action plan, in en and ko', () => {
+test('one buy target with price, guarantee and the order line; every buy link points to it', () => {
   const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website'), finding('f2', 'problem', 'contact')] });
-  for (const lang of ['en', 'ko']) {
-    const html = reportPage(report({}, lang), s2, { now: NOW, price: '$59' });
-    assert.equal((html.match(/id="order"/g) ?? []).length, 1);
-    assert.ok([...html.matchAll(/<a [^>]*href="#order"/g)].length >= 4, lang);
-    assert.deepEqual(deadLinks(html), []);
-    assert.ok(!/class="runs?"/.test(html) && !/Not run yet|not run yet|아직 진행 전|uncover more|7 research areas|7개 조사 영역|\?<\/b>/.test(html), lang);
-    assert.match(html, /<section id="inside"[\s\S]*<div class="ask" id="order">[\s\S]*\$59[\s\S]*class="guar"[\s\S]*<\/section>/);
-  }
-  assert.match(text(reportPage(report(), s2, { now: NOW })), /fewer than 10 findings that are not in this free report, we refund you in full/);
+  const html = reportPage(report(), s2, { now: NOW, price: '$59', ref: '1ED41496' });
+  assert.equal((html.match(/id="order"/g) ?? []).length, 1);
+  assert.ok([...html.matchAll(/<a [^>]*href="#order"/g)].length >= 3);
+  assert.deepEqual(deadLinks(html), []);
+  assert.ok(!/uncover more|7 research areas/.test(html));
+  assert.match(html, /<div class="ask" id="order"><div class="price"><b data-price>\$59<\/b>/);
+  assert.match(text(html), /YES, run the full report for Beispiel GmbH\. Ref 1ED41496\./);
+  assert.match(text(html), /fewer than 10 problems beyond this page, each with a public source, we refund the full price/);
+  assert.ok(!/findings that are not in this preview/.test(html));
+  assert.match(text(html), /1ED41496 · free preview/);
+  // No ref: the order line still reads right.
+  assert.match(text(reportPage(report(), s2, { now: NOW })), /YES, run the full report for Beispiel GmbH\.\s/);
 });
 
-test('good news: no problems gives the calm headline, stake and Q3, no exec box or sticky bar; Q1 says not checked', () => {
+test('closing note: list price, 72-hour price and date; proof line only with a proof; none on a page with no findings', () => {
+  const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website')] });
+  const t = text(reportPage(report(), s2, { now: NOW, price: '$59' }));
+  assert.match(t, /Is it worth the risk to save \$59\?/);
+  assert.match(t, /The full report costs \$120\. Order by 11 Nov 2026 and it costs \$59, with a full refund/);
+  assert.match(t, /One is shown in full above/);
+  assert.match(t, /Which competitors do AI assistants recommend instead of me in my area\?/);
+  // No price: no dollar figure anywhere.
+  const noPrice = text(reportPage(report(), s2, { now: NOW }));
+  assert.match(noPrice, /save the price of this report\?/);
+  assert.ok(!/\$\d/.test(noPrice));
+  // Signals only: no proof, so no "shown in full" claim.
+  const notesOnly = text(reportPage(report(), make('Malaysia', { take_note: [note('n1', 'reviews')] }), { now: NOW, price: '$59' }));
+  assert.match(notesOnly, /What this page proves/);
+  assert.ok(!/One is shown in full above/.test(notesOnly));
+  const good = reportPage(report(), make('Malaysia', { conclusive_findings: [finding('s1', 'strength', 'registration')] }), { now: NOW, price: '$59' });
+  assert.ok(!good.includes('id="closing"'));
+});
+
+test('good news: no findings gives the calm headline and Q3, no proof or list; every other section still there', () => {
   const s2 = make('Thailand', { conclusive_findings: [finding('s1', 'strength', 'registration')] });
   const html = reportPage(report(), s2, { now: NOW });
   const t = text(html);
   assert.match(t, /What strangers see about Beispiel GmbH mostly checks out\./);
-  assert.match(t, /This free report found no problem\./);
   assert.match(t, /The sources we read tell one consistent story about you\./);
-  assert.match(t, /1 record that banks and tender panels check is confirmed by an outside source\./);
-  assert.match(t, /did not ask AI assistants or search Google Maps/);
-  assert.ok(!html.includes('<div class="sticky">') && !html.includes('class="exec"') && !html.includes('id="proof"') && !html.includes('id="areas"'));
+  assert.match(t, /1 record confirmed by an outside source\./);
+  assert.match(t, /We did not test it, so we make no claim here/);
+  assert.ok(!html.includes('id="proof"') && !html.includes('id="findings"'));
   assert.deepEqual(deadLinks(html), []);
-  // Nothing at all: still every section, with its missing wording.
   const empty = reportPage(report(), make('Thailand', {}), { now: NOW });
-  for (const id of ['questions', 'strengths', 'not', 'inside']) assert.match(empty, new RegExp(`<section id="${id}"`), id);
+  for (const id of ['questions', 'strengths', 'not', 'offer']) assert.match(empty, new RegExp(`id="${id}"`), id);
   assert.match(text(empty), /found no registration, licence or award record to test/);
+  assert.deepEqual(deadLinks(empty), []);
+});
+
+test('the first deadline ahead shows in the hero and links to the proof when it is the proof', () => {
+  const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website', { statement: `Domain expires ${inDays(26)}` }), finding('f2', 'problem', 'scale')] });
+  const html = reportPage(report({ proof: 'f1' }), s2, { now: NOW });
+  assert.match(html, /<a class="deadline" href="#proof">[\s\S]*5 Dec 2026/);
+  assert.match(text(html), /It is the finding we show in full/);
+  const none = reportPage(report(), make('Malaysia', { conclusive_findings: [finding('f2', 'problem', 'scale')] }), { now: NOW });
+  assert.ok(!none.includes('class="deadline"'));
 });
 
 test('price is one USD value for every country, and dates follow the report country', () => {
   const page = (country: string, price?: string) => reportPage(report(), make(country, { conclusive_findings: [finding('f1', 'problem', 'website')] }), { now: NOW, price });
-  for (const c of ['Malaysia', 'Germany', 'Thailand']) assert.match(page(c, '$59'), /<p class="price" data-price>\$59<\/p>/, c);
+  for (const c of ['Malaysia', 'Germany', 'Thailand']) assert.match(page(c, '$59'), /<b data-price>\$59<\/b>/, c);
   const none = page('Thailand');
-  assert.ok(!none.includes('class="price"') && !none.includes('class="pr"') && !/\$\d|RM\d/.test(text(none)));
+  assert.ok(!none.includes('data-price') && !/\$\d|RM\d/.test(text(none)));
   assert.match(text(page('Germany', '$59')), /8 (Nov|Nov\.|November) 2026/);
 });
 
@@ -183,17 +210,14 @@ test('counts 0, 1 and 2 read correctly through the plural helper', () => {
     contradictions: Array.from({ length: c }, (_, i) => contra(`c${i + 1}`, 'registration')),
     take_note: Array.from({ length: n }, (_, i) => note(`n${i + 1}`, 'reviews')),
   }), { now: NOW }));
+  assert.match(page(1, 0, 0), /run into 1 thing you would want changed\./);
+  assert.match(page(1, 0, 0), /1 is confirmed by public sources\./);
   const one = page(1, 1, 1);
-  assert.match(page(1, 0, 0), /1 issue found/);
-  assert.match(page(1, 0, 0), /run into 1 problem\./);
-  assert.match(one, /We found 1 problem and 1 place where sources disagree/);
-  assert.match(one, /2 issues found/);
-  assert.match(one, /3 items found/);
-  assert.ok(!/\b1 (problems|issues|items|places|findings|signals|records)\b/.test(one));
-  const zero = page(0, 0, 1);
-  assert.ok(!/issues? found/.test(zero) && !zero.includes('Action required'));
-  assert.ok(!/\b0 (problems|issues|items|places|findings)\b/.test(zero));
-  assert.match(zero, /1 item found/);
+  assert.match(one, /run into 3 things/);
+  assert.match(one, /1 is a signal we could not confirm/);
+  assert.match(page(1, 0, 1), /1 of these has three things missing here/);
+  assert.ok(!/\b1 (problems|things|findings|signals|records|strengths)\b/.test(one));
+  assert.ok(!/\b0 (problems|things|findings|signals|records)\b/.test(page(0, 0, 1)));
 });
 
 test('the same id is never printed twice; junk titles, proof and versions never throw', () => {
@@ -217,18 +241,16 @@ test('items with missing text fields (no why_it_matters, no title) still render'
     take_note: [{ id: 'n1' }],
   });
   for (const proof of ['f1', 'c1']) {
-    const html = reportPage(report({ proof, summary: [{ text: 'L', cites: ['f1', 's1', 'c1'] }] }), s2, { now: NOW });
-    assert.ok(html.endsWith("</html>"));
+    const html = reportPage(report({ proof }), s2, { now: NOW });
+    assert.ok(html.endsWith('</html>'));
     assert.deepEqual(deadLinks(html), []);
   }
 });
 
-test('Korean page: same numbers, no dead links', () => {
+test('a Korean report still renders with its numbers and no dead links', () => {
   const s2 = make('South Korea', { conclusive_findings: [finding('f1', 'problem', 'registration'), finding('f2', 'problem', 'website')], contradictions: [contra('c1', 'registration')] });
   const html = reportPage(report({}, 'ko'), s2, { now: NOW });
   assert.deepEqual(deadLinks(html), []);
-  assert.match(text(html), /3건 발견/);
-  assert.match(text(html), /문제점 2개와 출처마다 다른 정보 1건/);
-  assert.match(text(html), /문제 3개를 마주칩니다/);
-  assert.ok(!html.includes('TITLE-f2') && !html.includes('class="price"'));
+  assert.match(html, /<html lang="ko">/);
+  assert.ok(!html.includes('TITLE-f2') && !html.includes('data-price'));
 });

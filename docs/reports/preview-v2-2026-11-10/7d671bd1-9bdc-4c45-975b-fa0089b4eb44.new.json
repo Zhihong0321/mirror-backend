@@ -1,0 +1,178 @@
+{
+ "report": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.949Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 88,
+  "step2_run_id": "0c2e8d30-1d75-411e-95d9-7787834227da",
+  "kind": "report",
+  "status": "ok",
+  "error": null,
+  "summary": [
+   {
+    "text": "The contact email printed on your official site sits on a domain you use, and its registration runs out — after that, every enquiry sent to it bounces.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "Your public rating is strong, yet none of the newest reviews on that profile carries a reply from you, so a homeowner comparing installers reads silence as indifference.",
+    "cites": [
+     "f3",
+     "f6"
+    ]
+   },
+   {
+    "text": "Your contractor grade differs between your own site and a public directory, so a tender panel caps the contract value it thinks you can take.",
+    "cites": [
+     "c7"
+    ]
+   }
+  ],
+  "titles": {
+   "f1": "Your official contact email sits on a domain registration that runs out, so enquiries will bounce.",
+   "f2": "Your company profile's phone field holds something nobody can dial, so recruiters and buyers move on.",
+   "f3": "None of your newest reviews carries a reply from you, so a homeowner reads your silence as indifference.",
+   "f7": "A file that tells search engines what they may index is reported invalid, so your pages may stay unseen.",
+   "f8": "Your pages carry no contact or privacy link, so a customer with a complaint, or a bank checking you, stops.",
+   "c1": "Two different main phone numbers are in public use, so callers reach different lines with no idea which is sales.",
+   "c2": "Your two websites print different contact emails, so enquiries split across two inboxes.",
+   "c3": "Your head office address is published four ways, so a courier or auditor can be sent to the wrong door.",
+   "c4": "Your two sites list different branches, so customers cannot tell which offices are current.",
+   "c5": "Three different staff counts are in public, so a tender panel judging your capacity gets three answers.",
+   "c6": "A public directory shows less than half your own project count, so a buyer doubts every number you print.",
+   "c7": "Your contractor grade differs between your site and a public directory, so a panel caps the contract value.",
+   "c8": "A job board shows your company as a foreign entity, the kind of mismatch that stalls a background check.",
+   "c9": "Three different websites are given as yours, so search engines and customers build recognition on none of them.",
+   "n1": "A public contractor profile may carry placeholder phone details, worth checking before a panel relies on it.",
+   "n2": "A revenue figure on your site is not repeated anywhere outside, worth checking how it reads to a buyer.",
+   "n3": "One listed office carries no street address, worth checking that customers can find and reach it.",
+   "n4": "Several of your newest reviews carry the same date, worth watching even though it proves nothing alone."
+  },
+  "proof": "f1",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 31660,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 4654,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 3624,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5387,
+      "prompt_tokens": 5387,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 10041
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 31946
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The contact email printed on your official site sits on a domain you use, and its registration runs out — after that, every enquiry sent to it bounces.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your public rating is strong, yet none of the newest reviews on that profile carries a reply from you, so a homeowner comparing installers reads silence as indifference.\",\n      \"cites\": [\"f3\", \"f6\"]\n    },\n    {\n      \"text\": \"Your contractor grade differs between your own site and a public directory, so a tender panel caps the contract value it thinks you can take.\",\n      \"cites\": [\"c7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The email address on your site sits on a domain registration that runs out\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"The contact email printed on your official site sits on a domain you use, and that registration runs out. From that day, every enquiry sent to it bounces.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"Your record is otherwise solid: an independent credit bureau matches your registration number, and your map rating is strong.\",\n        \"cites\": [\"f4\", \"f6\"]\n      },\n      {\n        \"text\": \"But none of your newest map reviews carries a reply, and your contractor grade differs between your site and a public directory — the kind of gap a tender panel notices.\",\n        \"cites\": [\"f3\", \"c7\"]\n      }\n    ]\n  },\n  \"titles\": [\n    { \"id\": \"f1\", \"text\": \"Your official contact email sits on a domain registration that runs out, so enquiries will bounce.\" },\n    { \"id\": \"f2\", \"text\": \"Your company profile's phone field holds something nobody can dial, so recruiters and buyers move on.\" },\n    { \"id\": \"f3\", \"text\": \"None of your newest reviews carries a reply from you, so a homeowner reads your silence as indifference.\" },\n    { \"id\": \"f7\", \"text\": \"A file that tells search engines what they may index is reported invalid, so your pages may stay unseen.\" },\n    { \"id\": \"f8\", \"text\": \"Your pages carry no contact or privacy link, so a customer with a complaint, or a bank checking you, stops.\" },\n    { \"id\": \"c1\", \"text\": \"Two different main phone numbers are in public use, so callers reach different lines with no idea which is sales.\" },\n    { \"id\": \"c2\", \"text\": \"Your two websites print different contact emails, so enquiries split across two inboxes.\" },\n    { \"id\": \"c3\", \"text\": \"Your head office address is published four ways, so a courier or auditor can be sent to the wrong door.\" },\n    { \"id\": \"c4\", \"text\": \"Your two sites list different branches, so customers cannot tell which offices are current.\" },\n    { \"id\": \"c5\", \"text\": \"Three different staff counts are in public, so a tender panel judging your capacity gets three answers.\" },\n    { \"id\": \"c6\", \"text\": \"A public directory shows less than half your own project count, so a buyer doubts every number you print.\" },\n    { \"id\": \"c7\", \"text\": \"Your contractor grade differs between your site and a public directory, so a panel caps the contract value.\" },\n    { \"id\": \"c8\", \"text\": \"A job board shows your company as a foreign entity, the kind of mismatch that stalls a background check.\" },\n    { \"id\": \"c9\", \"text\": \"Three different websites are given as yours, so search engines and customers build recognition on none of them.\" },\n    { \"id\": \"n1\", \"text\": \"A public contractor profile may carry placeholder phone details, worth checking before a panel relies on it.\" },\n    { \"id\": \"n2\", \"text\": \"A revenue figure on your site is not repeated anywhere outside, worth checking how it reads to a buyer.\" },\n    { \"id\": \"n3\", \"text\": \"One listed office carries no street address, worth checking that customers can find and reach it.\" },\n    { \"id\": \"n4\", \"text\": \"Several of your newest reviews carry the same date, worth watching even though it proves nothing alone.\" }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can check the domain's expiry in a minute, every enquiry bounces the day it lapses, and fixing it leaves every other public mismatch untouched.\"\n  }\n}"
+ },
+ "email": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.949Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 88,
+  "step2_run_id": "0c2e8d30-1d75-411e-95d9-7787834227da",
+  "kind": "email",
+  "status": "ok",
+  "error": null,
+  "subject": {
+   "text": "The email address on your site sits on a domain registration that runs out",
+   "cites": [
+    "f1"
+   ]
+  },
+  "body": [
+   {
+    "text": "The contact email printed on your official site sits on a domain you use, and that registration runs out. From that day, every enquiry sent to it bounces.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "Your record is otherwise solid: an independent credit bureau matches your registration number, and your map rating is strong.",
+    "cites": [
+     "f4",
+     "f6"
+    ]
+   },
+   {
+    "text": "But none of your newest map reviews carries a reply, and your contractor grade differs between your site and a public directory — the kind of gap a tender panel notices.",
+    "cites": [
+     "f3",
+     "c7"
+    ]
+   }
+  ],
+  "report_url": "https://example.invalid/v21/r/7d671bd1-9bdc-4c45-975b-fa0089b4eb44",
+  "text": "Subject: The email address on your site sits on a domain registration that runs out\n\nHello Eternalgy Sdn Bhd team,\n\nThe contact email printed on your official site sits on a domain you use, and that registration runs out. From that day, every enquiry sent to it bounces.\n\nYour record is otherwise solid: an independent credit bureau matches your registration number, and your map rating is strong.\n\nBut none of your newest map reviews carries a reply, and your contractor grade differs between your site and a public directory — the kind of gap a tender panel notices.\n\nThis free report shows what is wrong, not where it is or how to fix it. The full report gives every source and every fix, and goes deeper across 7 research areas: contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality; social media. Reply to this email to get your full report.\n\nYour free report: https://example.invalid/v21/r/7d671bd1-9bdc-4c45-975b-fa0089b4eb44\n\nThe Eternalgy team",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 31660,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 4654,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 3624,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5387,
+      "prompt_tokens": 5387,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 10041
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 31946
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"The contact email printed on your official site sits on a domain you use, and its registration runs out — after that, every enquiry sent to it bounces.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your public rating is strong, yet none of the newest reviews on that profile carries a reply from you, so a homeowner comparing installers reads silence as indifference.\",\n      \"cites\": [\"f3\", \"f6\"]\n    },\n    {\n      \"text\": \"Your contractor grade differs between your own site and a public directory, so a tender panel caps the contract value it thinks you can take.\",\n      \"cites\": [\"c7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The email address on your site sits on a domain registration that runs out\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"The contact email printed on your official site sits on a domain you use, and that registration runs out. From that day, every enquiry sent to it bounces.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"Your record is otherwise solid: an independent credit bureau matches your registration number, and your map rating is strong.\",\n        \"cites\": [\"f4\", \"f6\"]\n      },\n      {\n        \"text\": \"But none of your newest map reviews carries a reply, and your contractor grade differs between your site and a public directory — the kind of gap a tender panel notices.\",\n        \"cites\": [\"f3\", \"c7\"]\n      }\n    ]\n  },\n  \"titles\": [\n    { \"id\": \"f1\", \"text\": \"Your official contact email sits on a domain registration that runs out, so enquiries will bounce.\" },\n    { \"id\": \"f2\", \"text\": \"Your company profile's phone field holds something nobody can dial, so recruiters and buyers move on.\" },\n    { \"id\": \"f3\", \"text\": \"None of your newest reviews carries a reply from you, so a homeowner reads your silence as indifference.\" },\n    { \"id\": \"f7\", \"text\": \"A file that tells search engines what they may index is reported invalid, so your pages may stay unseen.\" },\n    { \"id\": \"f8\", \"text\": \"Your pages carry no contact or privacy link, so a customer with a complaint, or a bank checking you, stops.\" },\n    { \"id\": \"c1\", \"text\": \"Two different main phone numbers are in public use, so callers reach different lines with no idea which is sales.\" },\n    { \"id\": \"c2\", \"text\": \"Your two websites print different contact emails, so enquiries split across two inboxes.\" },\n    { \"id\": \"c3\", \"text\": \"Your head office address is published four ways, so a courier or auditor can be sent to the wrong door.\" },\n    { \"id\": \"c4\", \"text\": \"Your two sites list different branches, so customers cannot tell which offices are current.\" },\n    { \"id\": \"c5\", \"text\": \"Three different staff counts are in public, so a tender panel judging your capacity gets three answers.\" },\n    { \"id\": \"c6\", \"text\": \"A public directory shows less than half your own project count, so a buyer doubts every number you print.\" },\n    { \"id\": \"c7\", \"text\": \"Your contractor grade differs between your site and a public directory, so a panel caps the contract value.\" },\n    { \"id\": \"c8\", \"text\": \"A job board shows your company as a foreign entity, the kind of mismatch that stalls a background check.\" },\n    { \"id\": \"c9\", \"text\": \"Three different websites are given as yours, so search engines and customers build recognition on none of them.\" },\n    { \"id\": \"n1\", \"text\": \"A public contractor profile may carry placeholder phone details, worth checking before a panel relies on it.\" },\n    { \"id\": \"n2\", \"text\": \"A revenue figure on your site is not repeated anywhere outside, worth checking how it reads to a buyer.\" },\n    { \"id\": \"n3\", \"text\": \"One listed office carries no street address, worth checking that customers can find and reach it.\" },\n    { \"id\": \"n4\", \"text\": \"Several of your newest reviews carry the same date, worth watching even though it proves nothing alone.\" }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The owner can check the domain's expiry in a minute, every enquiry bounces the day it lapses, and fixing it leaves every other public mismatch untouched.\"\n  }\n}"
+ }
+}

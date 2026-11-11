@@ -1,0 +1,196 @@
+{
+ "report": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.952Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 0,
+  "step2_run_id": "ba50350e-3fca-4a5b-8997-76c1233dd2f7",
+  "kind": "report",
+  "status": "ok",
+  "error": null,
+  "summary": [
+   {
+    "text": "Your website sends enquiries to a contact email on a domain that is about to lapse, and your published head-office details disagree from page to page.",
+    "cites": [
+     "f1",
+     "c1"
+    ]
+   },
+   {
+    "text": "The award organiser's own hall of fame lists you as a 2025 winner, and Google reviewers give you a 4.7 rating, yet a contractor directory shows a lower grade than your site claims.",
+    "cites": [
+     "f8",
+     "f10",
+     "c5"
+    ]
+   },
+   {
+    "text": "None of your newest Google reviews carries a reply from you, and your mobile homepage is slow on the phones most enquiries come from.",
+    "cites": [
+     "f5",
+     "f7"
+    ]
+   }
+  ],
+  "titles": {
+   "f1": "The domain behind your printed contact email expires soon, and your site's mail routing goes with it.",
+   "f2": "Anyone can send email that looks like it comes from your addresses, so a forged invoice can reach your client.",
+   "f3": "Your LinkedIn phone field holds part of your registration number, so a prospect who taps it cannot call you.",
+   "f4": "A contractor directory under your own registration number shows a dummy phone and hides your address.",
+   "f5": "Not one of your newest Google reviews has a reply from you, and the lone negative one sits unanswered.",
+   "f6": "Google reports your robots file as invalid, which weakens the search ranking your site claims for itself.",
+   "f7": "Your mobile homepage is slow to paint while your desktop version is instant, on the device most enquiries come from.",
+   "c1": "Your two websites give different head-office phone numbers, so one set of customers dials a line that may be stale.",
+   "c2": "Your head-office unit number appears three different ways, so couriers and survey teams can arrive at the wrong door.",
+   "c3": "Your branch list differs between your own two sites and a directory, so customers see different offices near them.",
+   "c4": "Your staff count reads three different ways on pages you control, so a bank or a candidate sees three companies.",
+   "c5": "A contractor directory shows a lower grade than your own site claims, which can rule you out of larger tenders.",
+   "c6": "Your completed-project count more than doubles depending on which page a prospect finds first.",
+   "c7": "A job board gives you a foreign legal form, so a customer or bank reads a company unsure of its own name.",
+   "c8": "Your two sites print different head-office emails, and one of them depends on the domain that is lapsing.",
+   "n1": "Worth checking: your only negative Google review carries the same name as one of your own engineers.",
+   "n2": "Worth checking why several of your five-star reviews landed on the same day.",
+   "n3": "A directory snippet attaches a different main phone number to your office; worth checking which line it belongs to.",
+   "n4": "Your revenue figure and an award profile's sales figure read as the same number; worth checking how a reader takes it.",
+   "n5": "Worth knowing that no tender awards, extortion listings or sanctions name you, which is a clean record rather than an achievement.",
+   "n6": "Google Maps sends visitors to one of your domains while your site calls another canonical; worth checking where that link lands."
+  },
+  "proof": "f1",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 2",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 241,
+     "error": "HTTP 429: {\"request_id\":\"req_vt_caaec00b1e601fb959875748fcb53d2e\",\"error\":{\"type\":\"rate_limit_error\",\"code\":\"VectorTide_rate_limit_exceeded\",\"requestId\":\"req_vt"
+    },
+    {
+     "lane": "Vectide plan 2",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 74914,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1792,
+      "completion_tokens": 5090,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 3822,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 1792,
+      "prompt_cache_miss_tokens": 4685,
+      "prompt_tokens": 6477,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 1792,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 11567
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 75440
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"Your website sends enquiries to a contact email on a domain that is about to lapse, and your published head-office details disagree from page to page.\",\n      \"cites\": [\"f1\", \"c1\"]\n    },\n    {\n      \"text\": \"The award organiser's own hall of fame lists you as a 2025 winner, and Google reviewers give you a 4.7 rating, yet a contractor directory shows a lower grade than your site claims.\",\n      \"cites\": [\"f8\", \"f10\", \"c5\"]\n    },\n    {\n      \"text\": \"None of your newest Google reviews carries a reply from you, and your mobile homepage is slow on the phones most enquiries come from.\",\n      \"cites\": [\"f5\", \"f7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The domain behind your contact email expires on 2026-12-04\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"The contact address printed on your website sits on a domain you use, and that registration expires on 2026-12-04. If it lapses, the site's mail routing goes with it and anyone writing to that address is cut off.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"Your two websites also give different head-office phone numbers and different enquiry emails, so a customer who finds one page cannot reach the office the other page describes.\",\n        \"cites\": [\"c1\", \"c8\"]\n      },\n      {\n        \"text\": \"Your Google rating is strong, and a contractor directory still shows a lower grade than your own site claims, which is what a tender panel may read first.\",\n        \"cites\": [\"f10\", \"c5\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind your printed contact email expires soon, and your site's mail routing goes with it.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Anyone can send email that looks like it comes from your addresses, so a forged invoice can reach your client.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your LinkedIn phone field holds part of your registration number, so a prospect who taps it cannot call you.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"A contractor directory under your own registration number shows a dummy phone and hides your address.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Not one of your newest Google reviews has a reply from you, and the lone negative one sits unanswered.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Google reports your robots file as invalid, which weakens the search ranking your site claims for itself.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your mobile homepage is slow to paint while your desktop version is instant, on the device most enquiries come from.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your two websites give different head-office phone numbers, so one set of customers dials a line that may be stale.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your head-office unit number appears three different ways, so couriers and survey teams can arrive at the wrong door.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your branch list differs between your own two sites and a directory, so customers see different offices near them.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your staff count reads three different ways on pages you control, so a bank or a candidate sees three companies.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"A contractor directory shows a lower grade than your own site claims, which can rule you out of larger tenders.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your completed-project count more than doubles depending on which page a prospect finds first.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"A job board gives you a foreign legal form, so a customer or bank reads a company unsure of its own name.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your two sites print different head-office emails, and one of them depends on the domain that is lapsing.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Worth checking: your only negative Google review carries the same name as one of your own engineers.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Worth checking why several of your five-star reviews landed on the same day.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"A directory snippet attaches a different main phone number to your office; worth checking which line it belongs to.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your revenue figure and an award profile's sales figure read as the same number; worth checking how a reader takes it.\"\n    },\n    {\n      \"id\": \"n5\",\n      \"text\": \"Worth knowing that no tender awards, extortion listings or sanctions name you, which is a clean record rather than an achievement.\"\n    },\n    {\n      \"id\": \"n6\",\n      \"text\": \"Google Maps sends visitors to one of your domains while your site calls another canonical; worth checking where that link lands.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The expiry date can be checked in a minute, it is urgent, and renewing the domain still leaves the phone, grade, review and search problems untouched.\"\n  }\n}"
+ },
+ "email": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.952Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 0,
+  "step2_run_id": "ba50350e-3fca-4a5b-8997-76c1233dd2f7",
+  "kind": "email",
+  "status": "ok",
+  "error": null,
+  "subject": {
+   "text": "The domain behind your contact email expires on 2026-12-04",
+   "cites": [
+    "f1"
+   ]
+  },
+  "body": [
+   {
+    "text": "The contact address printed on your website sits on a domain you use, and that registration expires on 2026-12-04. If it lapses, the site's mail routing goes with it and anyone writing to that address is cut off.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "Your two websites also give different head-office phone numbers and different enquiry emails, so a customer who finds one page cannot reach the office the other page describes.",
+    "cites": [
+     "c1",
+     "c8"
+    ]
+   },
+   {
+    "text": "Your Google rating is strong, and a contractor directory still shows a lower grade than your own site claims, which is what a tender panel may read first.",
+    "cites": [
+     "f10",
+     "c5"
+    ]
+   }
+  ],
+  "report_url": "https://example.invalid/v21/r/91930aba-14ff-4039-a10d-bf0e0a09d1a7",
+  "text": "Subject: The domain behind your contact email expires on 2026-12-04\n\nHello Eternalgy Sdn Bhd team,\n\nThe contact address printed on your website sits on a domain you use, and that registration expires on 2026-12-04. If it lapses, the site's mail routing goes with it and anyone writing to that address is cut off.\n\nYour two websites also give different head-office phone numbers and different enquiry emails, so a customer who finds one page cannot reach the office the other page describes.\n\nYour Google rating is strong, and a contractor directory still shows a lower grade than your own site claims, which is what a tender panel may read first.\n\nThis free report shows what is wrong, not where it is or how to fix it. The full report gives every source and every fix, and goes deeper across 7 research areas: contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality; social media. Reply to this email to get your full report.\n\nYour free report: https://example.invalid/v21/r/91930aba-14ff-4039-a10d-bf0e0a09d1a7\n\nThe Eternalgy team",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 2",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 241,
+     "error": "HTTP 429: {\"request_id\":\"req_vt_caaec00b1e601fb959875748fcb53d2e\",\"error\":{\"type\":\"rate_limit_error\",\"code\":\"VectorTide_rate_limit_exceeded\",\"requestId\":\"req_vt"
+    },
+    {
+     "lane": "Vectide plan 2",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 74914,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 1792,
+      "completion_tokens": 5090,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 3822,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 1792,
+      "prompt_cache_miss_tokens": 4685,
+      "prompt_tokens": 6477,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 1792,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 11567
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 75440
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"Your website sends enquiries to a contact email on a domain that is about to lapse, and your published head-office details disagree from page to page.\",\n      \"cites\": [\"f1\", \"c1\"]\n    },\n    {\n      \"text\": \"The award organiser's own hall of fame lists you as a 2025 winner, and Google reviewers give you a 4.7 rating, yet a contractor directory shows a lower grade than your site claims.\",\n      \"cites\": [\"f8\", \"f10\", \"c5\"]\n    },\n    {\n      \"text\": \"None of your newest Google reviews carries a reply from you, and your mobile homepage is slow on the phones most enquiries come from.\",\n      \"cites\": [\"f5\", \"f7\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"The domain behind your contact email expires on 2026-12-04\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"The contact address printed on your website sits on a domain you use, and that registration expires on 2026-12-04. If it lapses, the site's mail routing goes with it and anyone writing to that address is cut off.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"Your two websites also give different head-office phone numbers and different enquiry emails, so a customer who finds one page cannot reach the office the other page describes.\",\n        \"cites\": [\"c1\", \"c8\"]\n      },\n      {\n        \"text\": \"Your Google rating is strong, and a contractor directory still shows a lower grade than your own site claims, which is what a tender panel may read first.\",\n        \"cites\": [\"f10\", \"c5\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"The domain behind your printed contact email expires soon, and your site's mail routing goes with it.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Anyone can send email that looks like it comes from your addresses, so a forged invoice can reach your client.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your LinkedIn phone field holds part of your registration number, so a prospect who taps it cannot call you.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"A contractor directory under your own registration number shows a dummy phone and hides your address.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Not one of your newest Google reviews has a reply from you, and the lone negative one sits unanswered.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Google reports your robots file as invalid, which weakens the search ranking your site claims for itself.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your mobile homepage is slow to paint while your desktop version is instant, on the device most enquiries come from.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your two websites give different head-office phone numbers, so one set of customers dials a line that may be stale.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your head-office unit number appears three different ways, so couriers and survey teams can arrive at the wrong door.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your branch list differs between your own two sites and a directory, so customers see different offices near them.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your staff count reads three different ways on pages you control, so a bank or a candidate sees three companies.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"A contractor directory shows a lower grade than your own site claims, which can rule you out of larger tenders.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your completed-project count more than doubles depending on which page a prospect finds first.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"A job board gives you a foreign legal form, so a customer or bank reads a company unsure of its own name.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your two sites print different head-office emails, and one of them depends on the domain that is lapsing.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Worth checking: your only negative Google review carries the same name as one of your own engineers.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Worth checking why several of your five-star reviews landed on the same day.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"A directory snippet attaches a different main phone number to your office; worth checking which line it belongs to.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your revenue figure and an award profile's sales figure read as the same number; worth checking how a reader takes it.\"\n    },\n    {\n      \"id\": \"n5\",\n      \"text\": \"Worth knowing that no tender awards, extortion listings or sanctions name you, which is a clean record rather than an achievement.\"\n    },\n    {\n      \"id\": \"n6\",\n      \"text\": \"Google Maps sends visitors to one of your domains while your site calls another canonical; worth checking where that link lands.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The expiry date can be checked in a minute, it is urgent, and renewing the domain still leaves the phone, grade, review and search problems untouched.\"\n  }\n}"
+ }
+}

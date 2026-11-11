@@ -565,85 +565,145 @@ function ranked<T>(list: T[], key: (x: T) => number): T[] {
 }
 const P = {
   en: {
-    title: (c: string) => `${c}: what the public internet says`,
-    bar: 'Online presence report', barFor: (c: string) => `· Prepared for ${c}`,
-    eyebrow: (c: string, d: string) => `Free report · prepared for ${c} · ${d}`,
-    h1: (c: string, n: number) => (n ? `People who look up ${c} run into ${plural(n, 'problem', 'problems')}.` : `What strangers see about ${c} mostly checks out.`),
-    h1g: (n: number) => (n ? 'You may not know about them. This page proves they exist.' : 'Here is what the sources confirm, and what this free report did not check.'),
-    seeAll: 'See what we found',
+    // The free preview page (owner's template "Eternalgy Preview Redesign", 2026-11-10) and its closing note.
+    title: (c: string) => `${c}: free preview`,
+    bar: 'Company Dive', barFor: (c: string) => `· Free preview for ${c}`,
+    cta: 'Get the full report',
+    eyebrow: (c: string, d: string) => `Free preview · ${c} · ${d}`,
+    h1: (c: string, n: number) => (n ? `People who look up ${c} run into ${plural(n, 'thing', 'things')} you would want changed.` : `What strangers see about ${c} mostly checks out.`),
+    sub: (issues: number, notes: number, proof: boolean) => [
+      issues ? `${issues} ${issues === 1 ? 'is' : 'are'} confirmed by public sources.` : '',
+      notes ? `${notes} ${notes === 1 ? 'is a signal' : 'are signals'} we could not confirm.` : '',
+      proof ? 'One is shown in full on this page so you can check our work.' : '',
+    ].filter(Boolean).join(' '),
+    subGood: 'The public sources we read found no problem. Here is what they confirm, and what this preview did not test.',
+    deadlineK: 'First deadline',
+    deadline: (n: number, isProof: boolean) => (isProof
+      ? `One of the ${n} has a deadline on this date. It is the finding we show in full.`
+      : `One of the ${n} has a deadline on this date. See it in the list below.`),
+    seeProof: 'See the proof', orBuy: (price: string | null) => (price ? `or get the full report, ${price}` : 'or get the full report'),
     anyone: 'Built from public sources only. Anyone can look these up, your rivals included.',
-    stamp: 'Prepared for you', fileNo: 'Free report',
-    fCountry: 'Country', fIndustry: 'Industry', fSites: 'Websites', fFound: 'This report',
-    found: (n: number) => `${plural(n, 'item', 'items')} found`,
-    fileFoot: (d: string) => `Built ${d} from public sources`,
-    strip: {
-      strengths: (n: number) => `${noun(n, 'strength', 'strengths')} the sources confirm`, problems: (n: number) => `${noun(n, 'problem', 'problems')} someone looking you up runs into`,
-      contradictions: (n: number) => `${noun(n, 'place', 'places')} where sources disagree`, notes: (n: number) => `${noun(n, 'signal', 'signals')} worth checking`,
-    },
-    fHighest: 'Highest urgency',
-    execH: 'Action required.',
-    exec: (p: number, c: number, hi: number) => `We found ${plural(p, 'problem', 'problems')} and ${plural(c, 'place', 'places')} where sources disagree${hi ? `; ${hi} ${hi === 1 ? 'is' : 'are'} Urgent` : ''}.`,
-    execContra: 'Every day these differences stay public, customers, banks and partners see two versions of your business.',
-    execPlain: 'Every day these problems stay public, customers, banks and partners run into them.',
-    lvl: { urgent: 'Urgent', important: 'Important', minor: 'Minor' } as Record<Level, string>,
-    urgLabel: 'Urgency',
-    urgHow: 'Urgency is set by code from the kind of record affected (registration, licence, contact, email ...), how sure the evidence is and how soon it bites. Urgent means fix first.',
+    cardH: (n: number) => `Where the ${n} sit`, cardMark: 'one mark = one finding',
+    key: { conf: 'Confirmed', first: 'Fix first', check: 'To check', open: 'Shown in full here' },
+    cardTotal: (n: number, proof: boolean, s: number) => `${proof ? `1 shown in full · ${n - 1} by what they cost you` : `${n} by what they cost you`}${s ? `<br>plus ${plural(s, 'strength', 'strengths')} confirmed` : ''}`,
+    proofEye: 'One finding in full', proofH: 'Check our work', proofG: 'before you trust the rest.',
+    tagOpen: 'Shown in full',
+    whatHappens: 'What happens if it is left:', whatSaw: 'What we saw:',
+    versions: 'What each source says', source: 'Source', value: 'What it says',
+    checkK: 'Check it yourself · 1 minute', checkP: 'Open the source below and read it for yourself.',
+    fixK: 'The fix', whyFreeK: 'Why this one is free',
+    whyFree: 'So you can check that we find real things before you pay for the rest.',
+    after: (n: number) => (n ? `The other ${plural(n, 'finding was', 'findings were')} found the same way and each has its evidence on file. On this page they appear by what they cost you only.` : ''),
+    qEye: 'Three questions', qH: 'Three questions an owner', qG: 'should be able to answer.',
+    q1: 'Who is taking my customers?', q2: 'Would a bank or tender panel believe us?', q3: "What do strangers see that I don't?",
+    st: { bad: 'Problems found', good: 'Looks good', none: 'Not in this preview' },
+    stPartly: 'Partly',
+    q3Text: (issues: number, contra: number, notes: number) => [
+      issues ? `${plural(issues, 'confirmed problem', 'confirmed problems')}.` : '',
+      contra ? `In ${contra} of them, public sources state different facts about your company.` : '',
+      notes ? `${plural(notes, 'signal', 'signals')} to check.` : '',
+    ].filter(Boolean).join(' '),
+    q3Good: 'The sources we read tell one consistent story about you.',
+    q2Text: (good: number, bad: number) => [
+      good ? `${plural(good, 'record', 'records')} confirmed by an outside source.` : '',
+      bad ? `${plural(bad, 'record', 'records')} that banks and tender panels check ${bad === 1 ? 'has a problem or differs' : 'have problems or differ'} between sources.` : '',
+    ].filter(Boolean).join(' '),
+    q2None: 'This preview found no registration, licence or award record to test.',
+    q1None: 'This takes a longer run than a free preview. We did not test it, so we make no claim here.',
+    inFull: 'Full report:',
+    q3Lock: 'each value, the source that publishes it, and which one is right.',
+    q2Lock: 'your credentials checked one by one against the official registers.',
+    q1Lock: 'the competitors that ChatGPT, Gemini and Google Maps name when your customers ask, and why.',
+    listEye: (n: number) => `All ${plural(n, 'finding', 'findings')}`, listH: 'What each one costs you.', listG: 'Where it is and how to fix it are in the full report.',
+    area: { found: 'Getting found', reached: 'Getting reached', credibility: 'Credibility with banks and tenders', reputation: 'Reputation', name: 'Risks to your company name', other: 'Other' } as Record<Area, string>,
+    groupCount: (conf: number, check: number) => [conf ? `${conf} confirmed` : '', check ? `${check} to check` : ''].filter(Boolean).join(' · '),
     topic: { contact: 'Contact details', identity: 'Company identity', website: 'Website', email: 'Email', reviews: 'Reviews', scale: 'Company size', licence: 'Licences', awards: 'Awards', registration: 'Registration', reputation: 'Reputation', other: 'Other' } as Record<string, string>,
     hint: 'issue',
-    tag: { strength: 'Strength', problem: 'Problem', contra: 'Sources disagree', note: 'Worth checking' },
-    why: 'Why it matters', sources: 'Sources', source: 'Source', value: 'What it says',
-    // Short names for ids, so the page never prints f1 / s3 / c2 / n4.
-    lab: { strength: 'Strength', problem: 'Problem', contra: 'Source disagreement', note: 'Signal' },
-    stakeH: 'What is at stake.',
-    stake: (price: string | null) => `One customer lost to what is below costs you more than this report.${price ? ` The full report costs ${price}.` : ''}`,
-    stakeGood: 'This free report found no problem. It did not ask AI assistants, search Google Maps or check the official registers; the full report does.',
-    qEye: 'Three questions', qH: 'Three questions every owner', qG: 'should be able to answer.',
-    q1: 'Who is taking my customers?', q2: 'Would a bank or tender panel believe us?', q3: "What do strangers see that I don't?",
-    st: { bad: 'Problem found', good: 'Looks good', none: 'Not checked here' },
-    q1None: 'This free report did not ask AI assistants or search Google Maps for your trade.',
-    q1Lock: 'which competitors AI assistants and Google Maps send your customers to, and why they win.',
-    q2Bad: (n: number) => `${plural(n, 'record', 'records')} that banks and tender panels check ${n === 1 ? 'has a problem or differs' : 'have problems or differ'} between sources.`,
-    q2Good: (n: number) => `${plural(n, 'record', 'records')} that banks and tender panels check ${n === 1 ? 'is' : 'are'} confirmed by an outside source.`,
-    q2None: 'This free report found no registration, licence or award record to test.',
-    q2Lock: 'which credentials, which official registers, and what to do about each.',
-    q3Bad: (p: number, c: number, n: number) => [p ? `${plural(p, 'problem', 'problems')} someone looking you up runs into.` : '', c ? `Your details differ between sources in ${plural(c, 'place', 'places')}.` : '', n ? `${plural(n, 'signal', 'signals')} worth checking.` : ''].filter(Boolean).join(' '),
-    q3Good: 'The sources we read tell one consistent story about you.',
-    q3Lock: 'the values, the sources that publish them, and which one is right.',
-    inFull: 'In the full report:',
-    proofEye: 'One finding in full', proofH: 'One finding, with its proof.', proofG: 'Check it yourself in a minute.',
-    proofP: 'Every other finding is listed below by title only. Its evidence, sources and fix are in the full report.',
-    areasEye: 'What we found', areasH: 'What we found,', areasG: 'by business area.',
-    areasP: 'Titles only. The values, the sources and the fix for each one are in the full report.',
-    area: { found: 'Getting found', reached: 'Getting reached', credibility: 'Credibility with banks and tenders', reputation: 'Reputation', name: 'Risks to your company name', other: 'Other' } as Record<Area, string>,
-    areasLockH: (n: number) => `The evidence for all ${plural(n, 'finding', 'findings')}`,
-    areasLockP: 'Where each one is, what each source says, and the fix, in the full report.',
-    strEye: 'What is working', strH: 'What is working for you.', strG: 'Each one confirmed by the sources under it.',
-    moreStrengths: (n: number) => `${plural(n, 'more strength', 'more strengths')} confirmed, listed in the full report.`,
-    noStrengths: 'This free report found no outside source confirming a strength yet. The full report checks registers, awards and reviews for them.',
-    notEye: 'Not on this page', notH: 'What this free report', notG: 'does not tell you.',
-    not: {
-      rivals: 'Which competitors AI assistants and Google Maps recommend instead of you.',
-      records: 'Which of your credentials a bank or tender panel can confirm in the official registers.',
-      values: 'Which details are wrong, what each source says, and where it is published.',
-      fixes: 'What to fix first, who does it and how long it takes.',
+    shownAbove: 'Shown in full above',
+    withheldH: (n: number) => `${n === 1 ? '1 of these has' : `${n} of these have`} three things missing here`,
+    withheldP: 'Where it is published. What each source says, and which is right. The fix, and who on your team does it.',
+    withheldBtn: (n: number) => (n === 1 ? 'Get it in full' : `Get all ${n} in full`),
+    strEye: 'What is working', strHn: (n: number) => `${plural(n, 'strength', 'strengths')} the sources confirm.`, strG: 'Protect these.',
+    strNoneH: 'What is working.', strNoneG: 'Nothing confirmed yet.',
+    strSource: 'Source:',
+    moreStrengths: (n: number) => `${plural(n, 'more strength is', 'more strengths are')} confirmed and listed in the full report.`,
+    noStrengths: 'This preview found no outside source confirming a strength yet. The full report checks registers, awards and reviews for them.',
+    notEye: 'Read this before deciding', notH: 'What this page holds,', notG: 'and what it leaves out.',
+    onH: 'On this page', offH: 'Not on this page',
+    on: {
+      findings: (n: number) => `That ${plural(n, 'finding exists', 'findings exist')}, and what each one costs you.`,
+      proof: (fix: boolean) => `One finding with its evidence${fix ? ' and fix' : ''}.`,
+      strengths: (shown: number, all: number) => (shown === all ? `Your ${plural(all, 'confirmed strength', 'confirmed strengths')}, with ${all === 1 ? 'its source' : 'their sources'}.` : `${shown} of your ${all} confirmed strengths, with their sources.`),
+      none: 'What the public sources we read say about you.',
     },
-    cta: 'Get my full report', ctaP: 'Reply to the email that brought you this link, and we will run it for you.', keep: 'This free report is yours to keep.',
-    guarantee: 'Our guarantee: if the full report has fewer than 10 findings that are not in this free report, we refund you in full.',
-    colophon: [['Prepared for', (c: string, _d: string, _n: number) => c], ['Built', (_c: string, d: string, n: number) => (n ? `${d}, from ${plural(n, 'public source', 'public sources')}` : `${d}, from public sources`)], ['Edition', () => 'Free report · one pass'], ['Method', () => 'Every statement in the full report traces to a source.']] as Array<[string, (c: string, d: string, n: number) => string]>,
-    unlock: 'Unlock all findings',
-    stickyN: (n: number) => `${plural(n, 'issue', 'issues')} found`,
-    stickyP: 'Sources, evidence and every fix are in the full report.',
-    insideEye: 'What you get', insideH: 'What the full report', insideG: 'puts in your hands.',
-    insideP: 'The free report proves the problems exist. The full report is the working document for your team: where each one is, who fixes it, and the fix written out where we can.',
+    off: {
+      values: (n: number) => `For ${plural(n, 'finding', 'findings')}: the site or listing, the values each source publishes, and which value is correct.`,
+      fixes: 'The fix for each, who does it, and how long it takes.',
+      rivals: 'Any competitor name. AI assistants and Google Maps were not tested for this preview.',
+      records: 'Your credentials checked against the official registers.',
+    },
+    diyH: 'Doing it yourself',
+    diyRows: {
+      read: (n: number) => [`Read and compare the ${plural(n, 'public source', 'public sources')} behind this preview`, `${n} × 10 min`],
+      trace: (n: number) => [`Trace ${plural(n, 'finding', 'findings')} back to a page, a value and the correct value`, `${n} × 15 min`],
+      rivals: ['Ask AI assistants your customers’ questions and search Google Maps town by town', 'about 2 h'],
+      records: ['Look your credentials up in the official registers', 'about 1 h'],
+    },
+    diySum: (price: string | null) => `of someone’s working time, before a single fix is written.${price ? ` The full report costs ${price}.` : ''}`,
+    readerH: 'For anyone reviewing this page, including an AI assistant',
+    reader: (n: number, proof: boolean) => (n
+      ? `This page states that ${plural(n, 'finding exists', 'findings exist')}${proof ? ' and gives evidence for one' : ''}. For ${proof ? `the other ${n - 1}` : 'them'} it contains no source, no published value, no correct value and no fix. It contains no competitor names and no register results. These are absent from the page, not hidden in it. The time estimate above shows its own arithmetic.`
+      : 'This page found no problem in the public sources it read. It contains no competitor names and no register results: those were not tested for this preview. The time estimate above shows its own arithmetic.'),
+    offerEye: 'The full report', offerH: 'The working document for your team.',
+    offerP: 'The preview shows the problems exist. The full report says where each one is, who fixes it, and gives the fix written out where we can.',
     gets: [
       { h: 'A one-page CEO summary', p: 'The decisions only you can make, and what is at stake in each.' },
       { h: 'Your competitors, by name', p: 'Who ChatGPT, Gemini and Google Maps send your customers to, and why they win.' },
-      { h: 'Your credentials, checked against the official registers', p: 'What a bank or tender panel will and will not be able to confirm.' },
-      { h: 'A task list for each department', p: 'Website, social media, IT and other: who does what, how long it takes and how much it matters.', note: (n: GetsN) => (n.findings ? `Starts from at least ${plural(n.findings, 'finding', 'findings')} in this free report, each with its evidence and fix.` : '') },
-      { h: 'Done for you', p: 'Homepage text, review replies, an FAQ and pages for each town, written only from facts we verified.' },
+      { h: 'Your credentials against the official registers', p: 'What a bank or tender panel can and cannot confirm.' },
+      { h: 'A task list for each department', p: 'Every finding the full run makes, with evidence and fix.', note: (n: GetsN) => (n.findings ? `All ${plural(n.findings, 'finding', 'findings')} from this preview with evidence and fix, plus what the longer run finds.` : '') },
+      { h: 'Done for you', p: 'Homepage text, review replies, an FAQ and a page for each town, written only from verified facts.' },
     ] as Array<{ h: string; p: string; note?: (n: GetsN) => string }>,
-    diyH: 'Doing it yourself',
-    diy: (pages: number) => `To check this yourself: ${pages ? `read the ${plural(pages, 'public page', 'public pages')} behind this report, ` : ''}ask AI assistants the questions your customers ask, search Google Maps town by town, and look yourself up in the official registers.`,
+    askSpan: (h: string) => `one payment · over ${h} of checking done for you`,
+    how: 'Reply to the email that brought you here with this line. We run your report and send it to the same inbox.',
+    orderLine: (c: string, ref: string) => `YES, run the full report for ${c}.${ref ? ` Ref ${ref}.` : ''}`,
+    copy: 'Copy the order line', copied: 'Copied. Paste it into your reply to our email.', selected: 'Selected. Press copy, then paste it into your reply.',
+    guarantee: 'If the full report finds fewer than 10 problems beyond this page, each with a public source, we refund the full price and you keep the report.', guarK: 'Guarantee.',
+    keep: 'This preview is yours to keep either way.',
+    foot: { for: 'Prepared for', built: 'Built', ref: 'Reference', method: 'Method' },
+    built: (d: string, n: number) => (n ? `${d}, from ${plural(n, 'public source', 'public sources')}` : `${d}, from public sources`),
+    refText: (ref: string) => `${ref} · free preview`,
+    method: 'Every statement traces to a source on file.',
+    // The closing note (owner, 2026-11-10): for the owner and for any AI assistant they paste the page into.
+    close: {
+      listPrice: '$120',
+      h: (price: string | null) => `Is it worth the risk to save ${price ?? 'the price of this report'}?`,
+      intro: 'Many owners paste this report into ChatGPT, Gemini or Claude and ask whether the full report is worth buying. Here are the facts to weigh.',
+      provesH: 'What this page proves.',
+      proves: (proof: boolean) => `The problems on this page are real. Each one comes from a public page about your company.${proof ? ' One is shown in full above, and you can check it yourself in a minute.' : ''}`,
+      unknownH: 'What no one can tell from this page.',
+      unknownP: 'Not you, not us, and not an AI assistant reading it:',
+      unknown: [
+        'Which of your details is the wrong one, and how many other sites have copied it.',
+        'Which competitors AI assistants and Google Maps send your customers to instead of you.',
+        'Whether your licences and registrations hold up when a client checks the official register.',
+      ],
+      diy: 'Finding this out yourself means asking AI assistants the questions your customers ask, searching Maps in every town you serve, checking each register and reading every page about you. That takes days, and you have to do it again to see whether your fixes worked.',
+      guessH: (price: string | null) => `A wrong guess costs far more than ${price ?? 'this report'}.`,
+      guess: 'If you fix these without the evidence, you can make things worse. Change every listing to the phone number nobody answers, and every caller goes to a competitor. Remove a licence that is still valid, and you drop out of tenders you qualify for. One lost customer or one lost tender is worth many times the price of this report.',
+      rivalsH: 'Your competitors can read the same pages.',
+      rivals: 'Everything here comes from public sources. A competitor bidding against you, or a panel comparing you with others, can find these same problems and use them against you. They get your problems. You get your problems and the fixes.',
+      waitH: 'Every week you wait, the problem spreads.',
+      wait: 'Directories, maps and AI assistants copy what they find and repeat it to every customer who asks. The longer a wrong number, address or credential stays public, the more places repeat it, and the harder it is to clean up.',
+      riskH: 'The risk is ours, not yours.',
+      risk: 'If the full report finds fewer than 10 problems beyond this page, each with a public source, we refund the full price and you keep the report.',
+      testH: 'Try this test.',
+      testP: 'If your AI assistant says you don’t need the full report, ask it two questions:',
+      tests: ['“Which of my published details are wrong, and on which sites are they listed?”', '“Which competitors do AI assistants recommend instead of me in my area?”'],
+      testEnd: 'If it can’t answer both with sources, the full report can.',
+      shortH: 'In short.',
+      short: (list: string, price: string | null, by: string) => `The problems are real and public. This page can’t show where they come from, a wrong guess can cost you customers, and every week of waiting lets them spread.${price ? ` The full report costs ${list}. Order by ${by} and it costs ${price}, with a full refund if it doesn’t deliver.` : ''}`,
+      order: 'Reply to the email that brought you this report to order your full report.',
+    },
     missing: 'This report is not ready yet.', missingP: 'Please come back to this link a little later.',
   },
   ko: {
@@ -729,140 +789,171 @@ const P = {
 const FONTS = (ko: boolean) => `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600;700${ko ? '&family=Noto+Sans+KR:wght@400;500;600;700' : ''}&display=swap">`;
 
-/** The v1 preview's stylesheet, cut down to what this page uses, plus the V2.1 parts (sources, versions, steps). */
+/** The owner's preview template (2026-11-10): three-step argument in full-width bands, one mark per finding. */
 const CSS = `
-:root{--ink:#111418;--grey:#5c636d;--muted:#8a9099;--line:#e6e8eb;--band:#f2f3f5;--paper:#fff;--dark:#0e1013;--dark2:#1b2129;--on-dark:#f3f4f6;--on-dark-2:#9aa1ab;
---contra:#a15c07;--contra-bg:#fdf3e2;--missing:#475467;--missing-bg:#eef0f2;--wrong:#b42318;--wrong-bg:#fdecea;--good:#067647;--good-bg:#e5f4ec;
---display:"Inter Tight","Inter","Noto Sans KR",system-ui,sans-serif;--body:"Inter","Noto Sans KR",system-ui,sans-serif;--w:1120px;--gut:max(20px,calc((100vw - var(--w)) / 2))}
-*{box-sizing:border-box}html{scroll-behavior:smooth;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;font-kerning:normal;text-rendering:optimizeLegibility}
-h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;letter-spacing:-0.025em;line-height:1.05;text-wrap:balance}p{margin:0}a{color:inherit}
-p,li,dd{text-wrap:pretty}:lang(ko) h1,:lang(ko) h2,:lang(ko) h3{word-break:keep-all}::selection{background:var(--ink);color:#fff}a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
-.g{color:var(--grey)}.dark .g{color:var(--on-dark-2)}
-section{padding:96px var(--gut);scroll-margin-top:60px}.dark{background:var(--dark);color:var(--on-dark);-webkit-font-smoothing:antialiased}
+:root{color-scheme:light;
+--ink:#111418;--grey:#535a64;--muted:#7d848e;--line:#e3e6ea;--band:#f2f3f5;--paper:#ffffff;
+--dark:#0e1013;--dark-2:#1a1f26;--dark-line:#2a3038;--on-dark:#f3f4f6;--on-dark-2:#a2a9b3;
+--first:#b42318;--first-bg:#fdecea;--check:#96560a;--check-bg:#fdf3e2;--good:#067647;--good-bg:#e5f4ec;
+--display:"Inter Tight","Inter","Noto Sans KR",system-ui,sans-serif;--body:"Inter","Noto Sans KR",system-ui,sans-serif;--w:1080px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;letter-spacing:-0.025em;line-height:1.08;text-wrap:balance}
+p{margin:0;text-wrap:pretty}a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.in{max-width:calc(var(--w) + 40px);margin:0 auto;padding-left:20px;padding-right:20px}
+.sec{padding-block:88px;scroll-margin-top:56px}
 .band{background:var(--band)}
-.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.dark .eyebrow{color:var(--on-dark-2)}
-h2{font-size:clamp(34px,4.4vw,58px);max-width:16em}.lead{font-size:19px;line-height:1.5;color:var(--grey);max-width:38em}.dark .lead{color:var(--on-dark-2)}
-.head{display:grid;gap:14px;margin-bottom:44px}
-.btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--ink);font-weight:600;padding:14px 22px;text-decoration:none;font-size:15px}
-.btn.ghost{background:none;color:inherit;border:1px solid currentColor;opacity:.85}.btn:hover{opacity:.9}.btn:focus-visible{outline:2px solid currentColor;outline-offset:3px}
-.top{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px var(--gut);background:rgba(14,16,19,.92);backdrop-filter:blur(10px);color:var(--on-dark);font-size:13px}
-.top b{font-weight:600}.top span{color:var(--on-dark-2)}.top .btn{padding:9px 14px;font-size:13px}
-.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:56px;align-items:center;padding-top:88px;padding-bottom:88px}
-.hero h1{font-size:clamp(36px,4.6vw,64px);letter-spacing:-0.03em;line-height:1.05;margin-top:18px;overflow-wrap:break-word}
-.hero .lead{margin-top:22px;color:var(--on-dark);opacity:.86;display:grid;gap:10px}.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
-.hero .anyone{margin-top:18px;font-size:13.5px;color:var(--on-dark-2)}
-a.cite{font-size:.62em;font-weight:600;text-decoration:none;vertical-align:super;color:var(--muted);margin-left:3px;letter-spacing:.02em}.dark a.cite{color:var(--on-dark-2)}
-.file{background:var(--paper);color:var(--ink);padding:26px;display:grid;gap:14px;border-top:3px solid var(--ink);box-shadow:0 0 0 1px rgba(255,255,255,.1)}
-.hero>div{min-width:0}.hero .lead{max-width:100%}
-.filehead{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.file .stamp{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--ink);padding:4px 9px}
-.fileno{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.file h3{font-size:24px;letter-spacing:-0.02em}.file dl{margin:0;display:grid;font-size:13.5px}
-.file dl div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:7px 0;border-top:1px solid var(--line)}.file dt{color:var(--muted)}.file dd{margin:0;overflow-wrap:anywhere}
-.file .foot{font-size:12px;color:var(--muted)}
-.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;padding:48px var(--gut);border-bottom:1px solid var(--line)}
-.strip a{text-decoration:none;display:grid;gap:6px;align-content:start}
-.strip b{display:block;font-family:var(--display);font-size:clamp(40px,4.6vw,60px);font-weight:500;letter-spacing:-0.04em;line-height:1;font-variant-numeric:tabular-nums lining-nums}
-.strip span{font-size:14px;color:var(--grey)}.strip a:hover b{opacity:.75}
-.thesis{text-align:center;display:grid;justify-items:center;gap:18px;padding-top:112px;padding-bottom:112px;border-bottom:1px solid var(--line)}
-.thesis h2{font-size:clamp(38px,5.4vw,72px);letter-spacing:-0.035em;max-width:none}.thesis .lead{max-width:40em}
-.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px}
-.tag.good{color:var(--good);background:var(--good-bg)}.tag.wrong{color:var(--wrong);background:var(--wrong-bg)}.tag.contra{color:var(--contra);background:var(--contra-bg)}.tag.missing{color:var(--missing);background:var(--missing-bg)}
-.warns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.warns.one{grid-template-columns:minmax(0,1fr)}
-.warn{background:var(--paper);padding:24px;display:grid;gap:10px;align-content:start;border-top:3px solid var(--ink);scroll-margin-top:70px}
-section:not(.band) .warn{background:var(--band)}
-.warn.good{border-top-color:var(--good)}.warn.wrong{border-top-color:var(--wrong)}.warn.contra{border-top-color:var(--contra)}.warn.missing{border-top-color:var(--missing)}
-.warnhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.warn h3{font-size:21px;letter-spacing:-0.015em;line-height:1.2}.warn .d{color:var(--grey);font-size:15px}
-.warn .risk{font-size:14px;border-left:2px solid var(--ink);padding-left:10px}.warn .risk b{font-weight:600}
-.warns .warn.first{grid-column:1/-1;background:var(--dark);color:var(--on-dark);-webkit-font-smoothing:antialiased}.warn.first .d{color:var(--on-dark-2)}
-.warn.first .risk{border-left-color:#fff}.warn.first h3{font-size:clamp(24px,2.6vw,30px)}.warn.first .fileno{color:var(--on-dark-2)}
-.src{font-size:13px}.src>summary{cursor:pointer;color:var(--grey);font-weight:600;padding:6px 0 2px;border-top:1px solid var(--line)}.warn.first .src>summary{color:var(--on-dark-2);border-top-color:#2a3038}
-.src ol{margin:8px 0 0;padding-left:20px;display:grid;gap:8px}.src q{display:block;quotes:"“" "”"}.src .u{display:block;color:var(--muted);overflow-wrap:anywhere;font-size:12.5px}.warn.first .src .u{color:var(--on-dark-2)}
-.ledger{width:100%;border-collapse:collapse;background:var(--paper);font-size:15px}
-.ledger th{text-align:left;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 16px;font-weight:600;border-bottom:2px solid var(--ink)}
-.ledger td{padding:14px 16px;border-top:1px solid var(--line);vertical-align:top}.ledger tr:first-child td{border-top:0}
-.ledger .where{color:var(--grey);font-size:14px;width:38%}.ledger .where small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
-.ledger .said{display:grid;gap:4px}.ledger .said b{font-weight:600}.ledger .said q{color:var(--grey);font-size:13.5px;quotes:"“" "”"}
-.sugs{display:grid;border:1px solid var(--line)}
-.warn.first .ledger{color:var(--ink)}
-.sug{display:grid;grid-template-columns:44px minmax(0,1fr) 220px;gap:18px;padding:20px 22px;border-top:1px solid var(--line);scroll-margin-top:70px}.sug:first-child{border-top:0}
-.sug .rn{font-family:var(--display);font-size:28px;font-weight:500;letter-spacing:-0.04em;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
-.sug .rw{display:grid;gap:6px}.sug .rw b{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.015em;line-height:1.25}.sug .rw p{font-size:15px;color:var(--grey)}
-.sug .on{display:grid;gap:6px;align-content:start;font-size:12.5px;color:var(--muted)}.sug .on .k{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.ids{display:flex;flex-wrap:wrap;gap:6px}.ids a{font-size:12px;font-weight:600;text-decoration:none;color:var(--ink);background:var(--band);padding:3px 8px}.ids a:hover{background:var(--line)}
-.band-cta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;padding-top:72px;padding-bottom:72px}.band-cta h2{font-size:clamp(30px,3.4vw,46px)}
-.ask{scroll-margin-top:70px;background:var(--dark2);padding:32px;display:grid;gap:12px;border-top:3px solid #fff}
-.ask h3{font-size:clamp(30px,3.4vw,44px);letter-spacing:-0.03em;line-height:1}.ask p{color:var(--on-dark-2);font-size:15px}.ask p.me{color:var(--on-dark);font-size:17px}
-footer{padding:48px var(--gut) 64px;font-size:13px;color:var(--grey);display:grid;gap:12px}
-.colophon{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding-top:20px;border-top:1px solid var(--line)}
-.colophon div{display:grid;gap:4px;align-content:start}.colophon .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.colophon span:not(.k){color:var(--ink);font-size:13.5px}
-.warnhead .fileno,.sug .fileno{text-transform:none;letter-spacing:.04em}
-.notready{min-height:100vh;display:grid;align-content:center;gap:18px}
-@media (max-width:900px){section{padding-top:64px;padding-bottom:64px}.hero{grid-template-columns:1fr;gap:40px;padding-top:56px}.file{transform:none}
-.strip{grid-template-columns:1fr 1fr}.warns{grid-template-columns:1fr}.band-cta{grid-template-columns:1fr}.colophon{grid-template-columns:1fr 1fr}
-.top span.for{display:none}.lead{font-size:17px}.sug{grid-template-columns:36px minmax(0,1fr)}.sug .on{grid-column:2}}
-@media (max-width:700px){.ledger thead{display:none}.ledger tr{display:grid;gap:6px;padding:12px 14px;border-top:1px solid var(--line)}.ledger tr:first-child{border-top:0}
-.ledger td{display:block;padding:0;border:0;width:auto!important}
-.warn{padding:20px}}
-@media print{.top,.ctas,.band-cta .btn{display:none}section{padding:32px 28px}.file{transform:none;box-shadow:none;border:1px solid var(--line)}
-.warn,.sug,.ledger tr,.colophon{break-inside:avoid}.head,h2,h3{break-after:avoid}details>:not(summary){display:block}details::details-content{display:block;content-visibility:visible}.sticky{display:none}}
-/* urgency badges, locked placeholders, the sticky bar (2026-11-08) */
-body{padding-bottom:68px}
-.hl{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}
-.urg{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border:1px solid transparent;white-space:nowrap}
-.urg::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
-.urg.critical{background:var(--wrong);color:#fff}.urg.high{background:var(--wrong-bg);color:var(--wrong);border-color:#f1b8b2}
-.urg.medium{background:var(--contra-bg);color:var(--contra);border-color:#f0d6a4}.urg.low{background:var(--missing-bg);color:var(--missing);border-color:#d0d5dd}
-.hero .urg{vertical-align:middle}
-.pitch{font-family:var(--display);font-size:clamp(20px,2.2vw,26px);font-weight:600;letter-spacing:-0.015em;line-height:1.25;max-width:34em;color:var(--ink)}
-.pitch span{display:block;font-family:var(--body);font-weight:400;font-size:15px;letter-spacing:0;color:var(--grey);margin-top:6px}
-.legend{font-size:13px;color:var(--muted);max-width:52em;margin:-24px 0 28px}
-.exec{margin-top:22px;border-left:3px solid #ff8a7a;background:rgba(255,255,255,.06);padding:14px 18px;font-size:15px;max-width:38em;display:grid;gap:4px}
-.exec span{color:var(--on-dark-2);font-size:14px}
-.callout{margin:48px var(--gut) 0;border-left:4px solid var(--wrong);background:var(--wrong-bg);padding:20px 24px;display:grid;gap:6px;color:var(--ink)}
-.callout b{font-family:var(--display);font-size:20px;letter-spacing:-0.01em}.callout span{font-size:15px;color:var(--grey);max-width:56em}
-.warn.locked{border-top-color:var(--line)}
-.topic{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.01em}
-.bars{display:grid;gap:9px}.bars i{display:block;height:11px;background:#dfe2e6}.bars i.s{width:58%}.bars i.m{width:84%}
-.lk{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grey)}
-.lk svg{flex:none}
-.unlock{background:var(--dark);color:var(--on-dark);padding:28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;border-top:3px solid #fff;-webkit-font-smoothing:antialiased}.warns .unlock{grid-column:1/-1}
-.unlock h3{font-size:clamp(24px,2.6vw,32px)}.unlock p{color:var(--on-dark-2);font-size:15px;margin-top:6px}.unlock .tally{color:var(--on-dark);font-weight:600;font-size:14px;margin-top:10px}
-.sug.locked{background:var(--band)}.sug.locked .rw{gap:9px;align-content:center}
-.sticky{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px var(--gut);background:rgba(14,16,19,.96);backdrop-filter:blur(10px);color:var(--on-dark);font-size:14px}
-.sticky .l{display:flex;align-items:center;gap:12px;min-width:0}.sticky .n{flex:none;background:var(--wrong);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px}
-.sticky .p{color:var(--on-dark-2)}.sticky .btn{padding:10px 16px;font-size:14px;white-space:nowrap}
-.sticky .r{display:flex;align-items:center;gap:14px;flex:none}.sticky .pr{font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:-0.01em}
-.ask .price{font-family:var(--display);font-size:44px;font-weight:600;letter-spacing:-0.03em;line-height:1;color:#fff}
-.gets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.get{background:var(--paper);padding:24px;display:grid;gap:8px;align-content:start;border-top:3px solid var(--ink)}section:not(.band) .get{background:var(--band)}
-.get .rn{font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--muted);font-variant-numeric:tabular-nums}
-.get h3{font-size:21px;letter-spacing:-0.015em;line-height:1.2}.get p{color:var(--grey);font-size:15px}
-.get p.free{color:var(--ink);font-size:13.5px;font-weight:600;border-left:2px solid var(--ink);padding-left:10px;margin-top:4px}
-.gets .unlock,.gets .ask{grid-column:1/-1}.gets .get:nth-last-child(2):nth-child(odd){grid-column:1/-1}
-@media (max-width:900px){.gets{grid-template-columns:1fr}.unlock{grid-template-columns:1fr}.callout{margin-top:32px}}
-@media (max-width:640px){.sticky .p{display:none}.legend{margin-top:-28px}}
-/* the 2026-11-10 preview: three levels, three questions, findings by area, what the page does not tell you */
-.urg.urgent{background:var(--wrong);color:#fff}.urg.important{background:var(--contra-bg);color:var(--contra);border-color:#f0d6a4}.urg.minor{background:var(--missing-bg);color:var(--missing);border-color:#d0d5dd}
-.callout.calm{border-left-color:var(--good);background:var(--good-bg)}
+.dark{background:var(--dark);color:var(--on-dark);-webkit-font-smoothing:antialiased}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.dark .eyebrow{color:var(--on-dark-2)}
+.g{color:var(--muted)}.dark .g{color:var(--on-dark-2)}
+h2{font-size:clamp(30px,4vw,50px);max-width:17em}
+.head{display:grid;gap:14px;margin-bottom:40px}
+.lead{font-size:18px;color:var(--grey);max-width:36em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--paper);color:var(--ink);font:600 15px/1 var(--body);padding:15px 22px;text-decoration:none;border:0;cursor:pointer}
+.btn:hover{opacity:.9}
+.btn.inv{background:var(--ink);color:var(--paper)}
+.top{position:sticky;top:0;z-index:9;background:var(--dark);color:var(--on-dark);font-size:13px;border-bottom:1px solid var(--dark-line)}
+.top .in{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-block:9px}
+.top b{font-weight:600}.top .for{color:var(--on-dark-2)}
+.top .r{display:flex;align-items:center;gap:14px;flex:none}
+.top .pr{font-family:var(--display);font-size:17px;font-weight:600}
+.top .btn{padding:10px 14px;font-size:13px}
+.hero .in{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:56px;align-items:center;padding-block:76px 84px}
+.hero h1{font-size:clamp(34px,4.5vw,60px);letter-spacing:-0.032em;margin-top:18px}
+.hero .sub{margin-top:22px;font-size:18px;line-height:1.5;color:var(--on-dark);opacity:.88;max-width:32em}
+.deadline{margin-top:26px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;border:1px solid var(--dark-line);background:var(--dark-2);padding:14px 18px;max-width:34em;text-decoration:none}
+.deadline .date{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-0.02em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.deadline .date small{display:block;font:600 10.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:#ff9c8f;margin-bottom:6px}
+.deadline span{font-size:14.5px;color:var(--on-dark-2)}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:30px}
+.ctas .alt{font-size:14.5px;color:var(--on-dark-2)}
+.anyone{margin-top:18px;font-size:13px;color:var(--on-dark-2)}
+.card{background:var(--paper);color:var(--ink);padding:24px 24px 20px;border-top:3px solid var(--paper);box-shadow:0 0 0 1px var(--dark-line);min-width:0}
+.cardhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+.cardhead h3{font-size:20px}.cardhead span{font-size:12px;color:var(--muted);white-space:nowrap}
+.areas-sc{list-style:none;margin:0;padding:0}
+.areas-sc li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.areas-sc a{text-decoration:none;font-weight:600;font-size:15px}
+.areas-sc a:hover{text-decoration:underline}
+.areas-sc .n{font-size:13px;color:var(--grey);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dots{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dot{width:13px;height:13px;border-radius:50%;background:var(--ink);flex:none;display:inline-block}
+.dot.c{background:none;border:2px solid var(--check)}
+.dot.f{background:var(--first)}
+.dot.o{background:var(--paper);border:2px solid var(--ink);box-shadow:0 0 0 2px var(--paper),0 0 0 3px var(--ink);margin:0 3px}
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;padding-top:14px;font-size:12px;color:var(--grey)}
+.key span{display:inline-flex;align-items:center;gap:6px}.key .dot{width:10px;height:10px}
+.key .dot.o{box-shadow:none;margin:0}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:14px}
+.total b{font-family:var(--display);font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums}
+.total span{font-size:13px;color:var(--grey);text-align:right}
+.proof{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);background:var(--dark);color:var(--on-dark);-webkit-font-smoothing:antialiased;scroll-margin-top:70px}
+.proof .a{padding:34px;display:grid;gap:14px;align-content:start;min-width:0}
+.proof .b{padding:34px;background:var(--dark-2);display:grid;gap:20px;align-content:start;min-width:0}
+.proof h3{font-size:clamp(24px,2.7vw,32px);line-height:1.15}
+.proof p{color:var(--on-dark-2);font-size:15.5px}.proof p b{color:var(--on-dark);font-weight:600}
+.proof table{border-collapse:collapse;width:100%;font-size:15px}
+.proof td{padding:9px 12px 9px 0;border-top:1px solid var(--dark-line);vertical-align:top;color:var(--on-dark-2)}
+.proof td b{color:var(--on-dark);font-weight:600}
+.proof q{display:block;color:var(--on-dark);font-size:14.5px;margin-bottom:4px}
+.proof small,.proof .u{display:block;font-size:12.5px;color:var(--on-dark-2);overflow-wrap:anywhere}
+.step{display:grid;gap:5px}
+.step .k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--on-dark-2)}
+.step p{color:var(--on-dark)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;white-space:nowrap;border:1px solid transparent}
+.tag.first{background:var(--first);color:#fff}
+.tag.conf{background:var(--band);color:var(--grey);border-color:var(--line)}
+.tag.check{background:var(--check-bg);color:var(--check);border-color:#f0d6a4}
+.tag.good{background:var(--good-bg);color:var(--good)}
+.tag.open{background:var(--paper);color:var(--ink)}
+.tag.none{background:var(--band);color:var(--grey);border-color:var(--line)}
+.after{margin-top:18px;font-size:15px;color:var(--grey);max-width:44em}
 .qs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.ql{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--grey);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}.ql svg{flex:none;margin-top:3px}.ql b{color:var(--ink);font-weight:600}
-.areas{display:grid;gap:28px}.area h3{font-size:21px;letter-spacing:-0.015em;margin-bottom:10px}
-.rows{list-style:none;margin:0;padding:0;border:1px solid var(--line);background:var(--paper)}
-.rows li{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 18px;border-top:1px solid var(--line);scroll-margin-top:70px}.rows li:first-child{border-top:0}
-.rows .rt{font-size:15.5px}.rows .kd{font-size:12px;color:var(--muted);white-space:nowrap}
-.areas .unlock{margin-top:4px}
-p.more{margin-top:18px;color:var(--grey);font-size:15px}
-.nots{margin:0;padding-left:22px;display:grid;gap:12px;font-size:18px;max-width:44em}
-.gets .diy{grid-column:1/-1;background:var(--paper);border-top:3px solid var(--line);padding:24px;display:grid;gap:8px}section:not(.band) .gets .diy{background:var(--band)}
-.diy h3{font-size:21px;letter-spacing:-0.015em}.diy p{color:var(--grey);font-size:15px;max-width:52em}
-.ask p.guar{color:var(--on-dark);font-size:15px;border-left:2px solid #fff;padding-left:10px}
-@media (max-width:900px){.qs{grid-template-columns:1fr}}
-@media (max-width:640px){.rows li{grid-template-columns:1fr;gap:6px}}
+.q{background:var(--paper);padding:24px;display:grid;gap:12px;align-content:start;border-top:3px solid var(--ink)}
+.q.first{border-top-color:var(--first)}.q.check{border-top-color:var(--check)}.q.none{border-top-color:var(--muted)}.q.good{border-top-color:var(--good)}
+.q h3{font-size:22px;line-height:1.18}.q .d{color:var(--grey);font-size:15px}
+.lk{display:flex;gap:9px;align-items:flex-start;font-size:14px;color:var(--grey);border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.lk svg{flex:none;margin-top:3px}.lk b{color:var(--ink);font-weight:600}
+.groups{display:grid;gap:30px}
+.group{scroll-margin-top:70px}
+.group h3{font-size:20px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:10px;border-bottom:2px solid var(--ink)}
+.group h3 small{font:500 13px/1 var(--body);letter-spacing:0;color:var(--muted);white-space:nowrap}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+.rows .t{font-size:16px}.rows .t a{font-weight:600}
+.withheld{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center;background:var(--band);padding:24px 26px;border-top:3px solid var(--ink);margin-top:6px}
+.withheld h3{font-size:22px}.withheld p{color:var(--grey);font-size:15px;margin-top:6px}
+.goods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.goodc{background:var(--paper);padding:22px;display:grid;gap:9px;align-content:start;border-top:3px solid var(--good)}
+.goodc h3{font-size:19px;line-height:1.22}.goodc p{font-size:14.5px;color:var(--grey)}
+.goodc .s{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cmp>div{background:var(--band);padding:26px;display:grid;gap:14px;align-content:start}
+.cmp>div.no{background:var(--dark);color:var(--on-dark);-webkit-font-smoothing:antialiased}
+.cmp h3{font-size:21px}
+.cmp ul{list-style:none;margin:0;padding:0;display:grid;gap:11px;font-size:15.5px}
+.cmp li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;align-items:start}
+.cmp li svg{margin-top:4px}
+.diy{margin-top:14px;border:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0}
+.diy .l{padding:26px;display:grid;gap:14px;min-width:0}
+.diy h3{font-size:21px}
+.diy table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+.diy td{padding:9px 0;border-top:1px solid var(--line);vertical-align:top}
+.diy td:last-child{text-align:right;white-space:nowrap;color:var(--grey);padding-left:16px}
+.diy .sum{display:grid;align-content:center;justify-items:start;gap:6px;padding:26px 30px;background:var(--band);min-width:220px}
+.diy .sum b{font-family:var(--display);font-size:54px;font-weight:600;letter-spacing:-0.04em;line-height:1;font-variant-numeric:tabular-nums}
+.diy .sum span{font-size:14px;color:var(--grey);max-width:15em}
+.reader{margin-top:14px;border-left:3px solid var(--ink);padding:4px 0 4px 20px;display:grid;gap:8px;max-width:50em}
+.reader h3{font-size:17px;letter-spacing:-0.01em}
+.reader p{font-size:14.5px;color:var(--grey)}
+.offer{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:48px;align-items:start}
+.gets{list-style:none;margin:0;padding:0;border-top:1px solid var(--dark-line)}
+.gets li{padding:16px 0;border-bottom:1px solid var(--dark-line);display:grid;gap:3px}
+.gets b{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.015em}
+.gets span{font-size:14.5px;color:var(--on-dark-2)}
+.ask{background:var(--paper);color:var(--ink);padding:30px;display:grid;gap:16px;scroll-margin-top:70px}
+.ask .price{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ask .price b{font-family:var(--display);font-size:64px;font-weight:600;letter-spacing:-0.04em;line-height:.9}
+.ask .price span{font-size:14px;color:var(--grey)}
+.ask .how{font-size:15.5px}
+.msg{background:var(--band);border:1px dashed #c4c9d0;padding:12px 14px;font-size:14.5px;user-select:all;overflow-wrap:anywhere}
+.ask .btn{width:100%}
+.ask .ok{font-size:13px;color:var(--good);font-weight:600;min-height:1.2em}
+.ask .guar{font-size:14.5px;border-left:2px solid var(--ink);padding-left:12px}
+.ask .keep{font-size:13px;color:var(--muted)}
+.offer h2{font-size:clamp(30px,3.6vw,46px)}
+.offer .lead{color:var(--on-dark-2);margin:14px 0 26px}
+.closing .body{display:grid;gap:26px;max-width:44em}
+.closing h3{font-size:21px;margin-bottom:8px}
+.closing p,.closing li{font-size:16.5px;color:var(--grey)}
+.closing ul,.closing ol{margin:8px 0 0;padding-left:22px;display:grid;gap:6px}
+.closing .short{border-left:3px solid var(--ink);padding-left:20px}
+.closing .short p{color:var(--ink)}
+footer .in{padding-block:36px 56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;font-size:13.5px}
+footer div{display:grid;gap:4px;align-content:start}
+footer .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.notready{padding:96px 20px}
+@media (max-width:900px){
+.sec{padding-block:60px}
+.hero .in{grid-template-columns:1fr;gap:36px;padding-block:48px 56px}
+.qs,.goods,.cmp,.offer,.proof{grid-template-columns:1fr}
+.diy{grid-template-columns:1fr}.withheld{grid-template-columns:1fr}
+.top .for{display:none}
+footer .in{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+.rows li{grid-template-columns:1fr;gap:7px}
+.proof .a,.proof .b{padding:24px}
+.deadline{grid-template-columns:1fr;gap:10px}
+.top .pr{display:none}
+.ask{padding:24px}
+}
 `;
-
 
 function linkText(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '').slice(0, 80);
@@ -872,33 +963,37 @@ function sourceLink(url: string): string {
   return /^https?:\/\//i.test(url) ? `<a href="${esc(url)}" rel="nofollow noopener" target="_blank">${esc(linkText(url))}</a>` : esc(url);
 }
 
-function evidenceList(ev: Array<{ quoted_text: string; source_url: string }>, label: string): string {
-  if (!ev?.length) return '';
-  return `<details class="src"><summary>${esc(label)} (${ev.length})</summary><ol>${ev.map((e) => `<li><q>${esc(e.quoted_text)}</q><span class="u">${sourceLink(e.source_url)}</span></li>`).join('')}</ol></details>`;
+/** Minutes as hours, rounded down to the half hour: 580 -> "9½ h". */
+function hoursText(min: number): string {
+  const halves = Math.floor(Math.max(0, min) / 30);
+  const whole = Math.floor(halves / 2);
+  return `${whole || (halves % 2 ? '' : '0')}${halves % 2 ? '½' : ''} h`;
 }
 
-const two = (n: number) => String(n).padStart(2, '0');
-/** The noun part of a plural() phrase: "problems" for 2, "problem" for 1. */
-const noun = (n: number, one: string, many: string) => plural(n, one, many).slice(String(n).length + 1);
+const LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const LOCK16 = LOCK.replace('width="14" height="14"', 'width="16" height="16"');
+const TICK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
 /**
- * The free report page (docs/preview-writing-plan.md): headline, what is at stake, three questions, one proof item in
- * full, every other finding as a title by business area, what is working, what this page does not tell you, what the
- * full report gives, doing it yourself, price and guarantee, how it was built. Every section has a version for missing
- * data and for good news; none is dropped silently. Never throws on a missing field.
+ * The free preview page, on the owner's template (2026-11-10): hero with the scorecard, one finding in full, three
+ * questions, every finding by what it costs, strengths, what is on and off the page with the do-it-yourself time, the
+ * offer, and the closing note. Every count reads from one counts object. Every section has a version for missing data and
+ * for good news; none is dropped silently. Never throws on a missing field.
  */
-export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null } = {}): string {
+export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null; ref?: string | null } = {}): string {
   const now = options.now ?? new Date();
-  const ko = report.language === 'ko';
-  const t = ko ? P.ko : P.en;
-  const c = s2.input.company;
-  const loc = localeFor(s2.input.country, ko ? 'ko' : 'en');
+  const ko = report?.language === 'ko';
+  // New wording is English; a Korean page keeps its Korean strings wherever the same key exists.
+  const t = (ko ? { ...P.en, ...P.ko } : P.en) as typeof P.en;
+  const c = String(s2?.input?.company ?? '');
+  const loc = localeFor(s2?.input?.country, ko ? 'ko' : 'en');
   const price = options.price || null; // one USD price for every country, read from the hub DB by the caller
+  const ref = String(options.ref ?? '').trim();
   // A missing or invalid created_at falls back to now, so the date line never reads "Invalid Date" or throws.
-  const made = new Date(report.created_at);
+  const made = new Date(report?.created_at);
   const when = Number.isNaN(made.getTime()) ? now : made;
-  let date: string;
-  try { date = when.toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { date = when.toISOString().slice(0, 10); }
+  const fmt = (d: Date) => { try { return d.toLocaleDateString(loc.dateLocale, { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d.toISOString().slice(0, 10); } };
+  const date = fmt(when);
   type Finding = Step2V2Output['conclusive_findings'][number];
   type Contra = Step2V2Output['contradictions'][number];
   type Note = Step2V2Output['take_note'][number];
@@ -911,9 +1006,9 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
     seen.add(x.id);
     return true;
   });
-  const findings = usable(s2.conclusive_findings);
-  const contraAll = usable(s2.contradictions);
-  const noteAll = usable(s2.take_note);
+  const findings = usable(s2?.conclusive_findings);
+  const contraAll = usable(s2?.contradictions);
+  const noteAll = usable(s2?.take_note);
 
   const quotes = (ev: Array<{ quoted_text: string }> | undefined) => (Array.isArray(ev) ? ev : []).map((e) => e?.quoted_text ?? '');
   const ratings = new Map<string, Rated>();
@@ -930,29 +1025,32 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
 
   // The proof: the LLM's pick when it is a problem or contradiction here, else rank #1 of both together.
   const issuesRanked = ranked<{ id: string }>([...problems, ...contradictions], (x) => keyOf(x.id));
-  const proofId = typeof report.proof === 'string' && issuesRanked.some((x) => x.id === report.proof) ? report.proof : issuesRanked[0]?.id ?? null;
+  const proofId = typeof report?.proof === 'string' && issuesRanked.some((x) => x.id === report.proof) ? report.proof : issuesRanked[0]?.id ?? null;
   const proofF = problems.find((f) => f.id === proofId);
   const proofC = contradictions.find((x) => x.id === proofId);
   const strengthsShown = strengths.slice(0, FREE_N.strengths);
+  // The proof's fix: the first Step 2 suggestion based on it, if any.
+  const fixFor = proofId ? (Array.isArray(s2?.suggestions) ? s2.suggestions : []).find((s: any) => Array.isArray(s?.based_on) && s.based_on.includes(proofId) && typeof s?.action === 'string' && s.action.trim()) : undefined;
 
-  // Every other problem, contradiction and signal is listed by title only.
+  // Every finding (problems, contradictions, signals), ranked; the proof is one row with a link to it.
   type Listed = { id: string; kind: 'problem' | 'contra' | 'note'; topic: string };
-  const listed: Listed[] = ranked<Listed>([
+  const all: Listed[] = ranked<Listed>([
     ...problems.map((x) => ({ id: x.id, kind: 'problem' as const, topic: String(x.topic ?? 'other') })),
     ...contradictions.map((x) => ({ id: x.id, kind: 'contra' as const, topic: String(x.topic ?? 'other') })),
     ...notes.map((x) => ({ id: x.id, kind: 'note' as const, topic: String(x.topic ?? 'other') })),
-  ].filter((x) => x.id !== proofId), (x) => keyOf(x.id));
-  const titles: Record<string, unknown> = report.titles && typeof report.titles === 'object' ? report.titles : {};
+  ], (x) => keyOf(x.id));
+  const listed = all.filter((x) => x.id !== proofId);
+  const titles: Record<string, unknown> = report?.titles && typeof report.titles === 'object' ? report.titles : {};
 
   // A fallback title: the kind of record plus a short hint (the check, else "issue 2"), unique on the page. No values.
   const teaser = new Map<string, string>();
   {
     const used = new Set<string>(); const perTopic = new Map<string, number>();
+    const items = [...problems, ...contradictions, ...notes] as Array<{ id: string } & Extra>;
     for (const x of listed) {
       const topic = t.topic[x.topic] ?? t.topic.other;
       const k = (perTopic.get(topic) ?? 0) + 1; perTopic.set(topic, k);
-      const all = [...problems, ...contradictions, ...notes] as Array<{ id: string } & Extra>;
-      const check = String(all.find((y) => y.id === x.id)?.check_id ?? '').replace(/[_-]+/g, ' ').trim();
+      const check = String(items.find((y) => y.id === x.id)?.check_id ?? '').replace(/[_-]+/g, ' ').trim();
       let title = `${topic}: ${check || `${t.hint} ${k}`}`;
       if (used.has(title)) title = `${topic}: ${t.hint} ${k}`;
       for (let n = 2; used.has(title); n++) title = `${topic}: ${t.hint} ${k}.${n}`;
@@ -960,6 +1058,7 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
     }
   }
   const titleOf = (id: string) => (typeof titles[id] === 'string' && (titles[id] as string).trim() ? (titles[id] as string).trim() : teaser.get(id) ?? '');
+  const proofTitle = String((proofF ?? proofC)?.title ?? '').trim() || (proofId ? titleOf(proofId) : '');
 
   // Distinct public sources behind the report.
   const urls = new Set<string>();
@@ -968,131 +1067,158 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   for (const x of noteAll) addUrls(x.evidence);
   for (const x of contraAll) addUrls(x.versions);
 
-  // Every number on the page reads from this object. "issues" = problems + contradictions; "findings" adds the signals;
-  // "items" adds the strengths.
+  // Every number on the page reads from this object. "issues" = problems + contradictions (confirmed); "findings" adds
+  // the signals (to check); "items" adds the strengths.
   const isRecord = (x: { topic?: string }) => RECORD_TOPICS.has(String(x.topic));
   const counts = {
     strengths: strengths.length, problems: problems.length, contradictions: contradictions.length, notes: notes.length,
     issues: problems.length + contradictions.length,
-    findings: problems.length + contradictions.length + notes.length,
-    items: strengths.length + problems.length + contradictions.length + notes.length,
+    findings: all.length,
+    items: strengths.length + all.length,
     sources: urls.size,
     shown: { strengths: strengthsShown.length, proof: proofId ? 1 : 0, listed: listed.length },
     urgent: issuesRanked.filter((x) => levelOfId(x.id) === 'urgent').length,
     recordsBad: [...problems, ...contradictions].filter(isRecord).length,
     recordsGood: strengths.filter(isRecord).length,
   };
-  // The same numbers, flat, on the body tag (data-count="key" elements match it).
   const flatCounts: Record<string, number> = { ...Object.fromEntries(Object.entries(counts).filter(([, v]) => typeof v === 'number')), ...Object.fromEntries(Object.entries(counts.shown).map(([k, v]) => [`shown.${k}`, v])) } as Record<string, number>;
-
-  // Short customer-facing labels for ids; the id itself is only in title= / data-id, or printed in debug mode.
-  const labels = new Map<string, string>();
-  strengths.forEach((x, i) => labels.set(x.id, `${t.lab.strength} ${i + 1}`));
-  problems.forEach((x, i) => labels.set(x.id, `${t.lab.problem} ${i + 1}`));
-  contradictions.forEach((x, i) => labels.set(x.id, `${t.lab.contra} ${i + 1}`));
-  notes.forEach((x, i) => labels.set(x.id, `${t.lab.note} ${i + 1}`));
-  // Only ids printed on the page get a link, so no link is dead.
-  const onPage = new Set<string>([...strengthsShown.map((x) => x.id), ...(proofId ? [proofId] : []), ...listed.map((x) => x.id)]);
-  const labelOf = (id: string) => (options.debug ? `${labels.get(id) ?? ''} (${id})` : labels.get(id) ?? '');
+  const withheld = counts.shown.listed;
   const idAttr = (id: string) => `title="${esc(id)}" data-id="${esc(id)}"`;
-  const cites = (ids: string[]) => (Array.isArray(ids) ? ids : []).filter((id) => labels.has(id) && onPage.has(id)).map((id) => `<a class="cite" href="#${esc(id)}" ${idAttr(id)}>${esc(labelOf(id))}</a>`).join('');
+  const dbg = (id: string) => (options.debug ? ` <small class="g">(${esc(id)})</small>` : '');
 
-  const badge = (lv: Level) => `<span class="urg ${lv}" aria-label="${esc(t.urgLabel)}: ${esc(t.lvl[lv])}">${esc(t.lvl[lv])}</span>`;
-  const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-  const sites = (Array.isArray(s2.baseline?.websites) ? s2.baseline.websites : []).map((w) => String(w).replace(/\s*\(.*\)\s*$/, '')).filter(Boolean).slice(0, 3);
-  const topLevel = issuesRanked[0] ? levelOfId(issuesRanked[0].id) : null;
+  // The mark of one finding, the same in the scorecard and the list.
+  const markOf = (x: Listed): 'o' | 'c' | 'f' | '' => (x.id === proofId ? 'o' : x.kind === 'note' ? 'c' : levelOfId(x.id) === 'urgent' ? 'f' : '');
+  const tagOf = (x: Listed) => (x.kind === 'note' ? `<span class="tag check">${esc(t.key.check)}</span>` : levelOfId(x.id) === 'urgent' ? `<span class="tag first">${esc(t.key.first)}</span>` : `<span class="tag conf">${esc(t.key.conf)}</span>`);
+  const byArea = AREA_ORDER.map((a) => [a, all.filter((x) => (AREA_OF[x.topic] ?? 'other') === a)] as const).filter(([, xs]) => xs.length);
 
-  const head = (eye: string, h: string, g: string, lead = '', countKey = '', n?: number) =>
-    `<div class="head"><p class="eyebrow"${countKey ? ` data-count="${countKey}"` : ''}>${esc(eye)}${n !== undefined ? ` · ${n}` : ''}</p><h2>${esc(h)}<br><span class="g">${esc(g)}</span></h2>${lead ? `<p class="lead">${esc(lead)}</p>` : ''}</div>`;
-  const cardHead = (cls: string, label: string, id: string, lv?: Level) => `<div class="warnhead"><span class="hl"><span class="tag ${cls}">${esc(label)}</span>${lv ? badge(lv) : ''}</span><span class="fileno" ${idAttr(id)}>${esc(labelOf(id))}</span></div>`;
-  const lockNote = (text: string) => `<p class="ql">${lockIcon}<span><b>${esc(t.inFull)}</b> ${esc(text)}</span></p>`;
-  const unlockCard = (title: string, text: string, key = '') => `<div class="unlock"><div><h3${key ? ` data-count="${key}"` : ''}>${esc(title)}</h3><p>${esc(text)}</p></div><a class="btn" href="#order">${esc(t.unlock)}&nbsp;→</a></div>`;
+  // The first deadline still ahead among the confirmed problems.
+  const dated = issuesRanked.map((x) => ({ id: x.id, days: ratings.get(x.id)?.days ?? null })).filter((x) => typeof x.days === 'number' && x.days > 0).sort((a, b) => a.days! - b.days!)[0];
+  const deadlineBox = dated ? `<a class="deadline" href="#${esc(dated.id === proofId ? 'proof' : dated.id)}"><div class="date"><small>${esc(t.deadlineK)}</small>${esc(fmt(new Date(now.getTime() + dated.days! * 86400000)))}</div><span>${esc(t.deadline(counts.findings, dated.id === proofId))}</span></a>` : '';
 
-  // A strength, or the proof problem, in full; the proof shows its first piece of evidence only.
-  const finding = (f: Finding, proof = false) => {
-    const cls = f.kind === 'strength' ? 'good' : 'wrong';
-    const ev = Array.isArray(f.evidence) ? (proof ? f.evidence.slice(0, 1) : f.evidence) : [];
-    return `<article class="warn ${cls}${proof ? ' first' : ''}" id="${esc(f.id)}">${cardHead(cls, f.kind === 'strength' ? t.tag.strength : t.tag.problem, f.id, f.kind === 'problem' ? levelOfId(f.id) : undefined)}
-<h3>${esc(f.title)}</h3><p class="d">${esc(f.statement)}</p>${f.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(f.why_it_matters)}</p>` : ''}${evidenceList(ev, proof ? t.source : t.sources)}</article>`;
-  };
-  // The proof contradiction: every version with its source.
-  const contradiction = (x: Contra) => `<article class="warn contra first" id="${esc(x.id)}">${cardHead('contra', t.tag.contra, x.id, levelOfId(x.id))}<h3>${esc(x.title)}</h3>
-<table class="ledger"><thead><tr><th>${esc(t.source)}</th><th>${esc(t.value)}</th></tr></thead><tbody>${(Array.isArray(x.versions) ? x.versions : []).map((v) => `<tr><td class="where">${esc(v?.source)}<small>${sourceLink(String(v?.source_url ?? ''))}</small></td><td class="said"><b>${esc(v?.value)}</b>${v?.quoted_text && v.quoted_text.trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table>
-${x.why_it_matters ? `<p class="risk"><b>${esc(t.why)}:</b> ${esc(x.why_it_matters)}</p>` : ''}</article>`;
+  // ---- hero
+  const card = `<aside class="card" aria-label="${esc(t.cardH(counts.findings))}"><div class="cardhead"><h3>${esc(t.cardH(counts.findings))}</h3><span>${esc(t.cardMark)}</span></div>
+${byArea.length ? `<ul class="areas-sc">${byArea.map(([a, xs]) => `<li><a href="#a-${a}">${esc(t.area[a])}</a><span class="n">${xs.length}</span><div class="dots">${xs.map((x) => `<i class="dot${markOf(x) ? ` ${markOf(x)}` : ''}"></i>`).join('')}</div></li>`).join('')}</ul>
+<div class="key"><span><i class="dot"></i>${esc(t.key.conf)}</span>${counts.urgent ? `<span><i class="dot f"></i>${esc(t.key.first)}</span>` : ''}${counts.notes ? `<span><i class="dot c"></i>${esc(t.key.check)}</span>` : ''}${proofId ? `<span><i class="dot o"></i>${esc(t.key.open)}</span>` : ''}</div>` : ''}
+<div class="total"><b data-count="findings">${counts.findings}</b><span>${t.cardTotal(counts.findings, !!proofId, counts.strengths)}</span></div></aside>`;
+  const hero = `<section class="dark hero"><div class="in"><div>
+<p class="eyebrow">${esc(t.eyebrow(c, date))}</p>
+<h1>${esc(t.h1(c, counts.findings))}</h1>
+<p class="sub">${esc(counts.findings ? t.sub(counts.issues, counts.notes, !!proofId) : t.subGood)}</p>
+${deadlineBox}
+<div class="ctas">${proofId ? `<a class="btn" href="#proof">${esc(t.seeProof)}&nbsp;↓</a><a class="alt" href="#order">${esc(t.orBuy(price))}</a>` : `<a class="btn" href="#order">${esc(t.cta)}</a>`}</div>
+<p class="anyone">${esc(t.anyone)}</p></div>
+${card}</div></section>`;
 
-  // Strip: a counter exists only for a list with items; it links to where that list is on the page.
-  const listHref = listed.length ? 'areas' : 'proof';
-  const strip = ([
-    [counts.strengths, t.strip.strengths(counts.strengths), 'strengths', 'strengths'], [counts.problems, t.strip.problems(counts.problems), 'problems', listHref],
-    [counts.contradictions, t.strip.contradictions(counts.contradictions), 'contradictions', listHref], [counts.notes, t.strip.notes(counts.notes), 'notes', 'areas'],
-  ] as const).filter(([n]) => n > 0).map(([n, label, key, href]) => `<a href="#${href}"><b data-count="${key}">${n}</b><span>${esc(label)}</span></a>`).join('');
+  // ---- one finding in full
+  let proof = '';
+  if (proofF || proofC) {
+    const tags = `<div class="tags">${levelOfId(proofId!) === 'urgent' ? `<span class="tag first">${esc(t.key.first)}</span>` : `<span class="tag conf">${esc(t.key.conf)}</span>`}<span class="tag open">${esc(t.tagOpen)}</span></div>`;
+    const why = String((proofF ?? proofC)?.why_it_matters ?? '').trim();
+    let a = `${tags}<h3>${esc(proofTitle)}${dbg(proofId!)}</h3>${why ? `<p><b>${esc(t.whatHappens)}</b> ${esc(why)}</p>` : ''}`;
+    let check = '';
+    if (proofF) {
+      const st = String(proofF.statement ?? '').trim();
+      if (st) a += `<p><b>${esc(t.whatSaw)}</b> ${esc(st)}</p>`;
+      const e = (Array.isArray(proofF.evidence) ? proofF.evidence : [])[0];
+      if (e) check = `<div class="step"><span class="k">${esc(t.checkK)}</span>${e.quoted_text ? `<q>${esc(e.quoted_text)}</q>` : ''}<span class="u">${sourceLink(String(e.source_url ?? ''))}</span></div>`;
+    } else {
+      const vs = Array.isArray(proofC!.versions) ? proofC!.versions : [];
+      if (vs.length) check = `<div class="step"><span class="k">${esc(t.checkK)}</span><table><tbody>${vs.map((v) => `<tr><td>${esc(v?.source)}<small>${sourceLink(String(v?.source_url ?? ''))}</small></td><td><b>${esc(v?.value)}</b>${v?.quoted_text && String(v.quoted_text).trim() !== String(v.value).trim() ? `<q>${esc(v.quoted_text)}</q>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+    const fix = fixFor ? `<div class="step"><span class="k">${esc(t.fixK)}</span><p>${esc((fixFor as any).action)}</p></div>` : '';
+    const b = `${check}${fix}<div class="step"><span class="k">${esc(t.whyFreeK)}</span><p>${esc(t.whyFree)}</p></div>`;
+    const after = t.after(counts.findings - 1);
+    proof = `<section class="sec" id="proof"><div class="in"><div class="head"><p class="eyebrow">${esc(t.proofEye)}</p><h2>${esc(t.proofH)} <span class="g">${esc(t.proofG)}</span></h2></div>
+<div class="proof" id="${esc(proofId!)}" ${idAttr(proofId!)}><div class="a">${a}</div><div class="b">${b}</div></div>${after ? `<p class="after">${esc(after)}</p>` : ''}</div></section>`;
+  }
 
-  // Sections alternate white and grey band.
-  let shade = false;
-  const section = (id: string, body: string) => {
-    shade = !shade;
-    return `<section id="${id}"${shade ? ' class="band"' : ''}>${body}</section>`;
-  };
+  // ---- three questions
+  const q = (cls: string, status: string, title: string, line: string, lock: string) =>
+    `<article class="q ${cls}"><div class="tags"><span class="tag ${cls === 'good' ? 'good' : cls}">${esc(status)}</span></div><h3>${esc(title)}</h3><p class="d">${esc(line)}</p><p class="lk">${LOCK}<span><b>${esc(t.inFull)}</b> ${esc(lock)}</span></p></article>`;
+  const q3 = counts.findings ? q('first', t.st.bad, t.q3, t.q3Text(counts.issues, counts.contradictions, counts.notes), t.q3Lock) : q('good', t.st.good, t.q3, t.q3Good, t.q3Lock);
+  const q2 = counts.recordsBad && counts.recordsGood ? q('check', t.stPartly, t.q2, t.q2Text(counts.recordsGood, counts.recordsBad), t.q2Lock)
+    : counts.recordsBad ? q('first', t.st.bad, t.q2, t.q2Text(0, counts.recordsBad), t.q2Lock)
+      : counts.recordsGood ? q('good', t.st.good, t.q2, t.q2Text(counts.recordsGood, 0), t.q2Lock)
+        : q('none', t.st.none, t.q2, t.q2None, t.q2Lock);
+  const questions = `<section class="sec band" id="questions"><div class="in"><div class="head"><p class="eyebrow">${esc(t.qEye)}</p><h2>${esc(t.qH)} <span class="g">${esc(t.qG)}</span></h2></div>
+<div class="qs">${q3}${q2}${q('none', t.st.none, t.q1, t.q1None, t.q1Lock)}</div></div></section>`;
 
-  // 2. What is at stake.
-  const stake = `<div class="callout${counts.issues ? '' : ' calm'}"><b>${esc(t.stakeH)}</b><span>${esc(counts.issues ? t.stake(price) : t.stakeGood)}</span></div>`;
+  // ---- every finding, by business area: what it costs only
+  const row = (x: Listed) => x.id === proofId
+    ? `<li><span>${tagOf(x)}</span><span class="t">${esc(proofTitle)} <a href="#proof">${esc(t.shownAbove)}</a></span></li>`
+    : `<li id="${esc(x.id)}" ${idAttr(x.id)}><span>${tagOf(x)}</span><span class="t">${esc(titleOf(x.id))}${dbg(x.id)}</span></li>`;
+  const list = counts.findings ? `<section class="sec" id="findings"><div class="in"><div class="head"><p class="eyebrow" data-count="findings">${esc(t.listEye(counts.findings))}</p><h2>${esc(t.listH)} <span class="g">${esc(t.listG)}</span></h2></div>
+<div class="groups">${byArea.map(([a, xs]) => `<div class="group" id="a-${a}"><h3>${esc(t.area[a])} <small>${esc(t.groupCount(xs.filter((x) => x.kind !== 'note').length, xs.filter((x) => x.kind === 'note').length))}</small></h3><ol class="rows">${xs.map(row).join('')}</ol></div>`).join('')}
+${withheld ? `<div class="withheld"><div><h3 data-count="shown.listed">${esc(t.withheldH(withheld))}</h3><p>${esc(t.withheldP)}</p></div><a class="btn inv" href="#order">${esc(t.withheldBtn(withheld))}&nbsp;→</a></div>` : ''}</div></div></section>` : '';
 
-  // 3. Three questions: status, one number, the answer locked.
-  const q = (title: string, cls: 'wrong' | 'good' | 'missing', status: string, line: string, lock: string) =>
-    `<article class="warn ${cls} q"><div class="warnhead"><span class="tag ${cls}">${esc(status)}</span></div><h3>${esc(title)}</h3><p class="d">${esc(line)}</p>${lockNote(lock)}</article>`;
-  const q2 = counts.recordsBad ? q(t.q2, 'wrong', t.st.bad, t.q2Bad(counts.recordsBad), t.q2Lock)
-    : counts.recordsGood ? q(t.q2, 'good', t.st.good, t.q2Good(counts.recordsGood), t.q2Lock)
-      : q(t.q2, 'missing', t.st.none, t.q2None, t.q2Lock);
-  const q3 = counts.findings ? q(t.q3, 'wrong', t.st.bad, t.q3Bad(counts.problems, counts.contradictions, counts.notes), t.q3Lock) : q(t.q3, 'good', t.st.good, t.q3Good, t.q3Lock);
-  const questions = section('questions', `${head(t.qEye, t.qH, t.qG)}<div class="qs">${q(t.q1, 'missing', t.st.none, t.q1None, t.q1Lock)}${q2}${q3}</div>`);
+  // ---- what is working
+  const goods = strengthsShown.map((f) => {
+    const src = (Array.isArray(f.evidence) ? f.evidence : []).find((e) => typeof e?.source_url === 'string' && e.source_url.trim());
+    return `<article class="goodc" id="${esc(f.id)}" ${idAttr(f.id)}><div class="tags"><span class="tag good">${esc(t.key.conf)}</span></div><h3>${esc(f.title)}${dbg(f.id)}</h3>${f.statement ? `<p>${esc(f.statement)}</p>` : ''}${src ? `<p class="s">${esc(t.strSource)} ${sourceLink(src.source_url)}</p>` : ''}</article>`;
+  }).join('');
+  const working = `<section class="sec band" id="strengths"><div class="in"><div class="head"><p class="eyebrow">${esc(t.strEye)}</p><h2 data-count="strengths">${esc(counts.strengths ? t.strHn(counts.strengths) : t.strNoneH)} <span class="g">${esc(counts.strengths ? t.strG : t.strNoneG)}</span></h2></div>
+${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.length ? `<p class="after">${esc(t.moreStrengths(counts.strengths - strengthsShown.length))}</p>` : ''}` : `<p class="lead">${esc(t.noStrengths)}</p>`}</div></section>`;
 
-  // 4. One finding in full.
-  const proof = proofF || proofC ? section('proof', `${head(t.proofEye, t.proofH, t.proofG, t.proofP)}<div class="warns one">${proofF ? finding(proofF, true) : contradiction(proofC!)}</div>`) : '';
+  // ---- on / not on this page, doing it yourself, and a note for any AI reading the page
+  const ons = [
+    counts.findings ? t.on.findings(counts.findings) : t.on.none,
+    ...(proofId ? [t.on.proof(!!fixFor)] : []),
+    ...(counts.strengths ? [t.on.strengths(strengthsShown.length, counts.strengths)] : []),
+  ];
+  const offs = [...(withheld ? [t.off.values(withheld)] : []), ...(counts.findings ? [t.off.fixes] : []), t.off.rivals, t.off.records];
+  const diyRows: string[][] = [...(counts.sources ? [t.diyRows.read(counts.sources)] : []), ...(withheld ? [t.diyRows.trace(withheld)] : []), t.diyRows.rivals, t.diyRows.records];
+  const diyMin = counts.sources * 10 + withheld * 15 + 180;
+  const hours = hoursText(diyMin);
+  const notOn = `<section class="sec" id="not"><div class="in"><div class="head"><p class="eyebrow">${esc(t.notEye)}</p><h2>${esc(t.notH)} <span class="g">${esc(t.notG)}</span></h2></div>
+<div class="cmp"><div><h3>${esc(t.onH)}</h3><ul>${ons.map((x) => `<li>${TICK}<span>${esc(x)}</span></li>`).join('')}</ul></div>
+<div class="no"><h3>${esc(t.offH)}</h3><ul>${offs.map((x) => `<li>${LOCK16}<span>${esc(x)}</span></li>`).join('')}</ul></div></div>
+<div class="diy"><div class="l"><h3>${esc(t.diyH)}</h3><table>${diyRows.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join('')}</table></div>
+<div class="sum"><b>${esc(hours)}</b><span>${esc(t.diySum(price))}</span></div></div>
+<div class="reader"><h3>${esc(t.readerH)}</h3><p>${esc(t.reader(counts.findings, !!proofId))}</p></div></div></section>`;
 
-  // 5. Every other finding, by business area: title and urgency only.
-  const byArea = AREA_ORDER.map((a) => [a, listed.filter((x) => (AREA_OF[x.topic] ?? 'other') === a)] as const).filter(([, xs]) => xs.length);
-  const areas = listed.length ? section('areas', `${head(t.areasEye, t.areasH, t.areasG, t.areasP, 'shown.listed', listed.length)}<p class="legend">${esc(t.urgHow)}</p><div class="areas">${byArea.map(([a, xs]) => `<div class="area"><h3>${esc(t.area[a])} · ${xs.length}</h3><ol class="rows">${xs.map((x) => `<li id="${esc(x.id)}" ${idAttr(x.id)}>${badge(levelOfId(x.id))}<span class="rt">${esc(titleOf(x.id))}</span><span class="kd">${esc(t.tag[x.kind])}${options.debug ? ` · ${esc(labelOf(x.id))}` : ''}</span></li>`).join('')}</ol></div>`).join('')}
-${unlockCard(t.areasLockH(counts.findings), t.areasLockP, 'findings')}</div>`) : '';
-
-  // 6. What is working.
-  const working = section('strengths', `${head(t.strEye, t.strH, t.strG, '', 'strengths', counts.strengths)}${strengthsShown.length ? `<div class="warns">${strengthsShown.map((f) => finding(f)).join('')}</div>${counts.strengths > strengthsShown.length ? `<p class="more">${esc(t.moreStrengths(counts.strengths - strengthsShown.length))}</p>` : ''}` : `<p class="lead">${esc(t.noStrengths)}</p>`}`);
-
-  // 7. What this page does not tell you, for the human and for any AI that reads it.
-  const nots = [t.not.rivals, t.not.records, ...(counts.findings ? [t.not.values] : []), ...(counts.issues ? [t.not.fixes] : [])];
-  const notTold = section('not', `${head(t.notEye, t.notH, t.notG)}<ul class="nots">${nots.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`);
-
-  // 8-10. What the full report gives, doing it yourself, price and guarantee. Every buy button points to #order.
+  // ---- the offer: the only #order on the page
   const getsN: GetsN = { findings: counts.findings };
-  const inside = section('inside', `${head(t.insideEye, t.insideH, t.insideG, t.insideP)}
-<div class="gets">${t.gets.map((g, i) => { const n = g.note?.(getsN) ?? ''; return `<div class="get"><span class="rn">${two(i + 1)}</span><h3>${esc(g.h)}</h3><p>${esc(g.p)}</p>${n ? `<p class="free">${esc(n)}</p>` : ''}</div>`; }).join('')}
-<div class="diy"><h3>${esc(t.diyH)}</h3><p>${esc(t.diy(counts.sources))}</p></div>
-<div class="ask" id="order"><h3>${esc(t.cta)}</h3>${price ? `<p class="price" data-price>${esc(price)}</p>` : ''}<p class="me">${esc(t.ctaP)}</p><p class="guar">${esc(t.guarantee)}</p><p>${esc(t.keep)}</p></div></div>`);
+  const offer = `<section class="sec dark" id="offer"><div class="in offer"><div><p class="eyebrow">${esc(t.offerEye)}</p><h2>${esc(t.offerH)}</h2><p class="lead">${esc(t.offerP)}</p>
+<ul class="gets">${t.gets.map((g) => `<li><b>${esc(g.h)}</b><span>${esc(g.note?.(getsN) || g.p)}</span></li>`).join('')}</ul></div>
+<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}
+<p class="how">${esc(t.how)}</p><p class="msg" id="msg">${esc(t.orderLine(c, ref))}</p>
+<button class="btn inv" id="copy" type="button">${esc(t.copy)}</button><p class="ok" id="ok" aria-live="polite"></p>
+<p class="guar"><b>${esc(t.guarK)}</b> ${esc(t.guarantee)}</p><p class="keep">${esc(t.keep)}</p></div></div></section>`;
 
-  const summary = Array.isArray(report.summary) ? report.summary.filter((l) => typeof l?.text === 'string') : [];
+  // ---- the closing note, for the owner and any AI assistant they paste the page into. It argues from the problems, so a
+  // page with none gets no note (its wording would be false there).
+  const k = t.close;
+  const by = fmt(new Date(when.getTime() + 72 * 3600000));
+  const closing = counts.findings ? `<section class="sec band closing" id="closing"><div class="in"><div class="head"><h2>${esc(k.h(price))}</h2><p class="lead">${esc(k.intro)}</p></div><div class="body">
+<div><h3>${esc(k.provesH)}</h3><p>${esc(k.proves(!!proofId))}</p></div>
+<div><h3>${esc(k.unknownH)}</h3><p>${esc(k.unknownP)}</p><ul>${k.unknown.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><p style="margin-top:12px">${esc(k.diy)}</p></div>
+<div><h3>${esc(k.guessH(price))}</h3><p>${esc(k.guess)}</p></div>
+<div><h3>${esc(k.rivalsH)}</h3><p>${esc(k.rivals)}</p></div>
+<div><h3>${esc(k.waitH)}</h3><p>${esc(k.wait)}</p></div>
+<div><h3>${esc(k.riskH)}</h3><p>${esc(k.risk)}</p></div>
+<div><h3>${esc(k.testH)}</h3><p>${esc(k.testP)}</p><ol>${k.tests.map((x) => `<li>${esc(x)}</li>`).join('')}</ol><p style="margin-top:12px">${esc(k.testEnd)}</p></div>
+<div class="short"><h3>${esc(k.shortH)}</h3><p>${esc(k.short(k.listPrice, price, by))}</p><p style="margin-top:12px"><a href="#order">${esc(k.order)}</a></p></div>
+</div></div></section>` : '';
+
+  const footer = `<footer><div class="in"><div><span class="k">${esc(t.foot.for)}</span><span>${esc(c)}</span></div><div><span class="k">${esc(t.foot.built)}</span><span>${esc(t.built(date, counts.sources))}</span></div>${ref ? `<div><span class="k">${esc(t.foot.ref)}</span><span>${esc(t.refText(ref))}</span></div>` : ''}<div><span class="k">${esc(t.foot.method)}</span><span>${esc(t.method)}</span></div></div></footer>`;
+
+  const script = `<script>(function(){var b=document.getElementById('copy'),m=document.getElementById('msg'),ok=document.getElementById('ok');if(!b||!m||!ok)return;
+function sel(){var r=document.createRange();r.selectNodeContents(m);var s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent=${JSON.stringify(t.selected)};}
+b.addEventListener('click',function(){try{navigator.clipboard.writeText(m.textContent).then(function(){ok.textContent=${JSON.stringify(t.copied)};},sel);}catch(e){sel();}});})();</script>`;
+
   return `<!doctype html><html lang="${ko ? 'ko' : 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>${esc(t.title(c))}</title>${FONTS(ko)}<style>${CSS}</style></head><body data-counts="${esc(JSON.stringify(flatCounts))}">
-<header class="top"><div><b>${esc(t.bar)}</b> <span class="for">${esc(t.barFor(c))}</span></div><a class="btn" href="#order">${esc(t.cta)}</a></header>
-<section class="dark hero"><div><p class="eyebrow">${esc(t.eyebrow(c, date))}</p>
-<h1>${esc(t.h1(c, counts.issues))}<br><span class="g">${esc(t.h1g(counts.issues))}</span></h1>
-${summary.length ? `<div class="lead">${summary.map((l) => `<p>${esc(l.text)}${cites(l.cites)}</p>`).join('')}</div>` : ''}
-${counts.issues ? `<div class="exec"><b>${esc(t.execH)} ${esc(t.exec(counts.problems, counts.contradictions, counts.urgent))}</b><span>${esc(counts.contradictions ? t.execContra : t.execPlain)}</span></div>` : ''}
-<div class="ctas"><a class="btn" href="#order">${esc(t.cta)}</a><a class="btn ghost" href="#questions">${esc(t.seeAll)}&nbsp;↓</a></div>
-<p class="anyone">${esc(t.anyone)}</p></div>
-<aside class="file"><div class="filehead"><span class="stamp">${esc(t.stamp)}</span><span class="fileno">${esc(t.fileNo)}</span></div><h3>${esc(c)}</h3><dl>
-<div><dt>${esc(t.fCountry)}</dt><dd>${esc(s2.input.country)}</dd></div><div><dt>${esc(t.fIndustry)}</dt><dd>${esc(s2.input.industry)}</dd></div>
-${sites.length ? `<div><dt>${esc(t.fSites)}</dt><dd>${esc(sites.join(', '))}</dd></div>` : ''}
-<div><dt>${esc(t.fFound)}</dt><dd><b data-count="items">${esc(t.found(counts.items))}</b></dd></div>${topLevel ? `<div><dt>${esc(t.fHighest)}</dt><dd>${badge(topLevel)}</dd></div>` : ''}
-</dl><p class="foot">${esc(t.fileFoot(date))}</p></aside></section>
-${strip ? `<div class="strip">${strip}</div>` : ''}
-${stake}
-${questions}
+<header class="top"><div class="in"><div><b>${esc(t.bar)}</b> <span class="for">${esc(t.barFor(c))}</span></div><div class="r">${price ? `<span class="pr" data-price>${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}</a></div></div></header>
+${hero}
 ${proof}
-${areas}
+${questions}
+${list}
 ${working}
-${notTold}
-${inside}
-<footer><div class="colophon">${t.colophon.map(([k, v]) => `<div><span class="k">${esc(k)}</span><span>${esc(v(c, date, counts.sources))}</span></div>`).join('')}</div></footer>
-${counts.issues ? `<div class="sticky"><div class="l"><span class="n" data-count="issues">${esc(t.stickyN(counts.issues))}</span><span class="p">${esc(t.stickyP)}</span></div><div class="r">${price ? `<span class="pr" data-price>${esc(price)}</span>` : ''}<a class="btn" href="#order">${esc(t.cta)}&nbsp;→</a></div></div>` : ''}
+${notOn}
+${offer}
+${closing}
+${footer}
+${script}
 </body></html>`;
 }
 

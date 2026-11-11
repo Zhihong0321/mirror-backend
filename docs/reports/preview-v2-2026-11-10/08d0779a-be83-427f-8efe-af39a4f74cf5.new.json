@@ -1,0 +1,193 @@
+{
+ "report": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.883Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 68,
+  "step2_run_id": "d8954e8d-8bb9-4e56-99b0-4635568e3d1e",
+  "kind": "report",
+  "status": "ok",
+  "error": null,
+  "summary": [
+   {
+    "text": "Your company phone and website differ across the public pages buyers check, so a customer can reach a line your own site never prints.",
+    "cites": [
+     "c2",
+     "c4"
+    ]
+   },
+   {
+    "text": "The domain behind your published email expires on 2026-12-04 and has no transfer lock, so quotes and tender mail can stop arriving.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "Your rating of 4.7 from 32 reviews is a real asset, and none of your newest reviews carries an owner reply.",
+    "cites": [
+     "f11",
+     "f6"
+    ]
+   }
+  ],
+  "titles": {
+   "f1": "The domain behind your published email is unlocked and can lapse, taking quotes with it.",
+   "f2": "Anyone can forge email from the address on your site, so a client can be fooled by an invoice.",
+   "f3": "The domain you call canonical can be used to forge supplier or director emails.",
+   "f4": "A Google check flags your robots file as invalid, so directories can outrank your own site.",
+   "f5": "The phone field on your LinkedIn page is broken, so a recruiter or buyer cannot call you.",
+   "f6": "None of your newest Google reviews has an owner reply, so a bad rating sits unanswered.",
+   "f7": "Your enquiry site is missing its security headers, so browsers and scanners flag it to visitors.",
+   "f8": "AI assistants cannot tell who wrote your site or when, so they quote competitors instead.",
+   "f9": "A contractor profile under your registration number shows a placeholder phone and no projects.",
+   "c1": "Your head office unit number differs across three public pages, so a courier can reach the wrong door.",
+   "c2": "Your head office phone differs between sources, so a customer may call a line your site never prints.",
+   "c3": "Your contact email differs between your two site families, so prospects write to two mailboxes.",
+   "c4": "Three websites are presented as yours, so search engines and buyers split your enquiries.",
+   "c5": "An employer profile names a different legal entity, so a candidate or a bank sees another company.",
+   "c6": "Your headcount differs across three public pages, which invites questions in tender and credit checks.",
+   "c7": "Your branch list differs between your site and directories, so a customer cannot find the nearest office.",
+   "c8": "Your contractor grade differs between your site and a directory, so a tender panel sees a weaker record.",
+   "c9": "Your completed project count differs across three pages, which weakens the biggest number you own.",
+   "n1": "A poor rating under a name that matches one of your own engineers is worth checking.",
+   "n2": "Some of your top reviews share one date, which a careful buyer may read as arranged.",
+   "n3": "Your branch number sits one digit from your head office line — worth checking it is not a typo.",
+   "n4": "A directory lists you as small installations only, which may undercut your commercial work.",
+   "n5": "Your calculator's accuracy claim sits against your own site's caveat — worth checking the wording.",
+   "n6": "One site promises a fast installation window and the other a longer one — worth checking which applies.",
+   "n7": "Your mobile site scores well below desktop, which may cost you enquiries from phones.",
+   "n8": "A turnover figure is in circulation from an earlier year, worth checking before a bank sees it.",
+   "n9": "A glowing review carries a name that matches someone on your team — worth checking.",
+   "n10": "Lifetime energy generated is published as two different totals, worth checking which is current.",
+   "n11": "Two tools disagree on whether your robots file is valid, so worth checking which one is right."
+  },
+  "proof": "f1",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 44363,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 6610,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 5237,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 7013,
+      "prompt_tokens": 7013,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 13623
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 44702
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"Your company phone and website differ across the public pages buyers check, so a customer can reach a line your own site never prints.\",\n      \"cites\": [\"c2\", \"c4\"]\n    },\n    {\n      \"text\": \"The domain behind your published email expires on 2026-12-04 and has no transfer lock, so quotes and tender mail can stop arriving.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your rating of 4.7 from 32 reviews is a real asset, and none of your newest reviews carries an owner reply.\",\n      \"cites\": [\"f11\", \"f6\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your phone, email and website differ across the pages buyers check\",\n      \"cites\": [\"c2\", \"c3\", \"c4\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your company is described differently on different public pages — a different website, a different phone number, a different office list — depending on which one a buyer opens.\",\n        \"cites\": [\"c2\", \"c4\", \"c7\"]\n      },\n      {\n        \"text\": \"The domain behind the email address on your site expires on 2026-12-04 and is not locked against transfer, so a quote or a tender sent to that mailbox can stop arriving.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"A tender panel that checks your contractor registration finds a profile with a placeholder phone number and no project record.\",\n        \"cites\": [\"f9\", \"c8\"]\n      }\n    ]\n  },\n  \"titles\": [\n    { \"id\": \"f1\", \"text\": \"The domain behind your published email is unlocked and can lapse, taking quotes with it.\" },\n    { \"id\": \"f2\", \"text\": \"Anyone can forge email from the address on your site, so a client can be fooled by an invoice.\" },\n    { \"id\": \"f3\", \"text\": \"The domain you call canonical can be used to forge supplier or director emails.\" },\n    { \"id\": \"f4\", \"text\": \"A Google check flags your robots file as invalid, so directories can outrank your own site.\" },\n    { \"id\": \"f5\", \"text\": \"The phone field on your LinkedIn page is broken, so a recruiter or buyer cannot call you.\" },\n    { \"id\": \"f6\", \"text\": \"None of your newest Google reviews has an owner reply, so a bad rating sits unanswered.\" },\n    { \"id\": \"f7\", \"text\": \"Your enquiry site is missing its security headers, so browsers and scanners flag it to visitors.\" },\n    { \"id\": \"f8\", \"text\": \"AI assistants cannot tell who wrote your site or when, so they quote competitors instead.\" },\n    { \"id\": \"f9\", \"text\": \"A contractor profile under your registration number shows a placeholder phone and no projects.\" },\n    { \"id\": \"c1\", \"text\": \"Your head office unit number differs across three public pages, so a courier can reach the wrong door.\" },\n    { \"id\": \"c2\", \"text\": \"Your head office phone differs between sources, so a customer may call a line your site never prints.\" },\n    { \"id\": \"c3\", \"text\": \"Your contact email differs between your two site families, so prospects write to two mailboxes.\" },\n    { \"id\": \"c4\", \"text\": \"Three websites are presented as yours, so search engines and buyers split your enquiries.\" },\n    { \"id\": \"c5\", \"text\": \"An employer profile names a different legal entity, so a candidate or a bank sees another company.\" },\n    { \"id\": \"c6\", \"text\": \"Your headcount differs across three public pages, which invites questions in tender and credit checks.\" },\n    { \"id\": \"c7\", \"text\": \"Your branch list differs between your site and directories, so a customer cannot find the nearest office.\" },\n    { \"id\": \"c8\", \"text\": \"Your contractor grade differs between your site and a directory, so a tender panel sees a weaker record.\" },\n    { \"id\": \"c9\", \"text\": \"Your completed project count differs across three pages, which weakens the biggest number you own.\" },\n    { \"id\": \"n1\", \"text\": \"A poor rating under a name that matches one of your own engineers is worth checking.\" },\n    { \"id\": \"n2\", \"text\": \"Some of your top reviews share one date, which a careful buyer may read as arranged.\" },\n    { \"id\": \"n3\", \"text\": \"Your branch number sits one digit from your head office line — worth checking it is not a typo.\" },\n    { \"id\": \"n4\", \"text\": \"A directory lists you as small installations only, which may undercut your commercial work.\" },\n    { \"id\": \"n5\", \"text\": \"Your calculator's accuracy claim sits against your own site's caveat — worth checking the wording.\" },\n    { \"id\": \"n6\", \"text\": \"One site promises a fast installation window and the other a longer one — worth checking which applies.\" },\n    { \"id\": \"n7\", \"text\": \"Your mobile site scores well below desktop, which may cost you enquiries from phones.\" },\n    { \"id\": \"n8\", \"text\": \"A turnover figure is in circulation from an earlier year, worth checking before a bank sees it.\" },\n    { \"id\": \"n9\", \"text\": \"A glowing review carries a name that matches someone on your team — worth checking.\" },\n    { \"id\": \"n10\", \"text\": \"Lifetime energy generated is published as two different totals, worth checking which is current.\" },\n    { \"id\": \"n11\", \"text\": \"Two tools disagree on whether your robots file is valid, so worth checking which one is right.\" }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"Anyone can confirm the expiry and lock status of the domain behind your printed email in a minute, and if it lapses the mailbox your quotes come from dies, while every other finding stays exactly as it is.\"\n  }\n}"
+ },
+ "email": {
+  "version": "2.1",
+  "stage": 3,
+  "created_at": "2026-11-10T04:26:17.883Z",
+  "company": "Eternalgy Sdn Bhd",
+  "language": "en",
+  "step2_row_id": 68,
+  "step2_run_id": "d8954e8d-8bb9-4e56-99b0-4635568e3d1e",
+  "kind": "email",
+  "status": "ok",
+  "error": null,
+  "subject": {
+   "text": "Your phone, email and website differ across the pages buyers check",
+   "cites": [
+    "c2",
+    "c3",
+    "c4"
+   ]
+  },
+  "body": [
+   {
+    "text": "Your company is described differently on different public pages — a different website, a different phone number, a different office list — depending on which one a buyer opens.",
+    "cites": [
+     "c2",
+     "c4",
+     "c7"
+    ]
+   },
+   {
+    "text": "The domain behind the email address on your site expires on 2026-12-04 and is not locked against transfer, so a quote or a tender sent to that mailbox can stop arriving.",
+    "cites": [
+     "f1"
+    ]
+   },
+   {
+    "text": "A tender panel that checks your contractor registration finds a profile with a placeholder phone number and no project record.",
+    "cites": [
+     "f9",
+     "c8"
+    ]
+   }
+  ],
+  "report_url": "https://example.invalid/v21/r/08d0779a-be83-427f-8efe-af39a4f74cf5",
+  "text": "Subject: Your phone, email and website differ across the pages buyers check\n\nHello Eternalgy Sdn Bhd team,\n\nYour company is described differently on different public pages — a different website, a different phone number, a different office list — depending on which one a buyer opens.\n\nThe domain behind the email address on your site expires on 2026-12-04 and is not locked against transfer, so a quote or a tender sent to that mailbox can stop arriving.\n\nA tender panel that checks your contractor registration finds a profile with a placeholder phone number and no project record.\n\nThis free report shows what is wrong, not where it is or how to fix it. The full report gives every source and every fix, and goes deeper across 7 research areas: contact and reachability; how the internet understands you; reviews, discussion and news; credibility and official records; digital assets; website speed and quality; social media. Reply to this email to get your full report.\n\nYour free report: https://example.invalid/v21/r/08d0779a-be83-427f-8efe-af39a4f74cf5\n\nThe Eternalgy team",
+  "rejected": [],
+  "meta": {
+   "prompt": "step3-v4",
+   "lane": "Vectide plan 1",
+   "model": "deepseek-v4.1-flash-1017",
+   "attempts": [
+    {
+     "lane": "Vectide plan 1",
+     "model": "deepseek-v4.1-flash-1017",
+     "ms": 44363,
+     "finish_reason": "stop",
+     "usage": {
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "completion_tokens": 6610,
+      "completion_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 5237,
+       "rejected_prediction_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 7013,
+      "prompt_tokens": 7013,
+      "prompt_tokens_details": {
+       "accepted_prediction_tokens": 0,
+       "audio_tokens": 0,
+       "cached_tokens": 0,
+       "reasoning_tokens": 0,
+       "rejected_prediction_tokens": 0
+      },
+      "total_tokens": 13623
+     },
+     "won": true
+    }
+   ],
+   "duration_ms": 44702
+  },
+  "llm_raw": "{\n  \"summary\": [\n    {\n      \"text\": \"Your company phone and website differ across the public pages buyers check, so a customer can reach a line your own site never prints.\",\n      \"cites\": [\"c2\", \"c4\"]\n    },\n    {\n      \"text\": \"The domain behind your published email expires on 2026-12-04 and has no transfer lock, so quotes and tender mail can stop arriving.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your rating of 4.7 from 32 reviews is a real asset, and none of your newest reviews carries an owner reply.\",\n      \"cites\": [\"f11\", \"f6\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your phone, email and website differ across the pages buyers check\",\n      \"cites\": [\"c2\", \"c3\", \"c4\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your company is described differently on different public pages — a different website, a different phone number, a different office list — depending on which one a buyer opens.\",\n        \"cites\": [\"c2\", \"c4\", \"c7\"]\n      },\n      {\n        \"text\": \"The domain behind the email address on your site expires on 2026-12-04 and is not locked against transfer, so a quote or a tender sent to that mailbox can stop arriving.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"A tender panel that checks your contractor registration finds a profile with a placeholder phone number and no project record.\",\n        \"cites\": [\"f9\", \"c8\"]\n      }\n    ]\n  },\n  \"titles\": [\n    { \"id\": \"f1\", \"text\": \"The domain behind your published email is unlocked and can lapse, taking quotes with it.\" },\n    { \"id\": \"f2\", \"text\": \"Anyone can forge email from the address on your site, so a client can be fooled by an invoice.\" },\n    { \"id\": \"f3\", \"text\": \"The domain you call canonical can be used to forge supplier or director emails.\" },\n    { \"id\": \"f4\", \"text\": \"A Google check flags your robots file as invalid, so directories can outrank your own site.\" },\n    { \"id\": \"f5\", \"text\": \"The phone field on your LinkedIn page is broken, so a recruiter or buyer cannot call you.\" },\n    { \"id\": \"f6\", \"text\": \"None of your newest Google reviews has an owner reply, so a bad rating sits unanswered.\" },\n    { \"id\": \"f7\", \"text\": \"Your enquiry site is missing its security headers, so browsers and scanners flag it to visitors.\" },\n    { \"id\": \"f8\", \"text\": \"AI assistants cannot tell who wrote your site or when, so they quote competitors instead.\" },\n    { \"id\": \"f9\", \"text\": \"A contractor profile under your registration number shows a placeholder phone and no projects.\" },\n    { \"id\": \"c1\", \"text\": \"Your head office unit number differs across three public pages, so a courier can reach the wrong door.\" },\n    { \"id\": \"c2\", \"text\": \"Your head office phone differs between sources, so a customer may call a line your site never prints.\" },\n    { \"id\": \"c3\", \"text\": \"Your contact email differs between your two site families, so prospects write to two mailboxes.\" },\n    { \"id\": \"c4\", \"text\": \"Three websites are presented as yours, so search engines and buyers split your enquiries.\" },\n    { \"id\": \"c5\", \"text\": \"An employer profile names a different legal entity, so a candidate or a bank sees another company.\" },\n    { \"id\": \"c6\", \"text\": \"Your headcount differs across three public pages, which invites questions in tender and credit checks.\" },\n    { \"id\": \"c7\", \"text\": \"Your branch list differs between your site and directories, so a customer cannot find the nearest office.\" },\n    { \"id\": \"c8\", \"text\": \"Your contractor grade differs between your site and a directory, so a tender panel sees a weaker record.\" },\n    { \"id\": \"c9\", \"text\": \"Your completed project count differs across three pages, which weakens the biggest number you own.\" },\n    { \"id\": \"n1\", \"text\": \"A poor rating under a name that matches one of your own engineers is worth checking.\" },\n    { \"id\": \"n2\", \"text\": \"Some of your top reviews share one date, which a careful buyer may read as arranged.\" },\n    { \"id\": \"n3\", \"text\": \"Your branch number sits one digit from your head office line — worth checking it is not a typo.\" },\n    { \"id\": \"n4\", \"text\": \"A directory lists you as small installations only, which may undercut your commercial work.\" },\n    { \"id\": \"n5\", \"text\": \"Your calculator's accuracy claim sits against your own site's caveat — worth checking the wording.\" },\n    { \"id\": \"n6\", \"text\": \"One site promises a fast installation window and the other a longer one — worth checking which applies.\" },\n    { \"id\": \"n7\", \"text\": \"Your mobile site scores well below desktop, which may cost you enquiries from phones.\" },\n    { \"id\": \"n8\", \"text\": \"A turnover figure is in circulation from an earlier year, worth checking before a bank sees it.\" },\n    { \"id\": \"n9\", \"text\": \"A glowing review carries a name that matches someone on your team — worth checking.\" },\n    { \"id\": \"n10\", \"text\": \"Lifetime energy generated is published as two different totals, worth checking which is current.\" },\n    { \"id\": \"n11\", \"text\": \"Two tools disagree on whether your robots file is valid, so worth checking which one is right.\" }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"Anyone can confirm the expiry and lock status of the domain behind your printed email in a minute, and if it lapses the mailbox your quotes come from dies, while every other finding stays exactly as it is.\"\n  }\n}"
+ }
+}
