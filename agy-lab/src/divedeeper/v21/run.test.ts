@@ -72,15 +72,15 @@ test('a run saves each failed try before waiting, and partial is a completed lan
   assert.ok(f.row.finished_at);
 }));
 
-test('three failed attempts leave an incomplete run with the lane reason', async () => switchedOn(async () => {
+test('three failed attempts: the writing stages still run, the report is built, the run is labelled incomplete with the reason', async () => switchedOn(async () => {
   const f = await fixture(['failed', 'failed', 'failed']);
   await executeRun('run', f.runtime);
   assert.equal(f.attempts.length, 3);
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
-  assert.deepEqual(f.started, ['H-maps', 'G-search', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand']);
-  assert.equal(f.savedAll.length, 14);
-  assert.equal(f.row.report_html, null);
+  assert.deepEqual(f.started, ['H-maps', 'G-search', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
+  assert.equal(f.savedAll.length, 14 + writing.length);
+  assert.ok(f.row.report_html, 'a lane failing never stops the report');
 }));
 
 test('recovery restores a successful lane and its plan without another Maps call', async () => switchedOn(async () => {

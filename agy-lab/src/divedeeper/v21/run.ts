@@ -89,15 +89,16 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
       }
     };
     for (const stage of V21_DEEPER_LANES) await Promise.all(stage.map(([section, lane]) => one(section, lane)));
-    for (const [section, lane] of V21_DEEPER_WRITING) {
-      if (failures.length) break;
-      await one(section, lane);
-    }
+    // A lane that failed all its tries never stops the report (owner's rule): the writing stages still run on what the
+    // other lanes found, the report is built, and the run is labelled 'incomplete' with every failure named.
+    for (const [section, lane] of V21_DEEPER_WRITING) await one(section, lane);
+    const html = runtime.buildReport(dive, Object.fromEntries(kept));
     if (failures.length) {
-      await say('incomplete', failures.join('; '), { status: 'incomplete', error: failures.join('; '), finished_at: new Date().toISOString() });
+      await say('incomplete', `Report built without: ${failures.join('; ')}`, {
+        status: 'incomplete', error: failures.join('; '), report_html: html, finished_at: new Date().toISOString(),
+      });
       return;
     }
-    const html = runtime.buildReport(dive, Object.fromEntries(kept));
     await say('done', 'Report ready: every lane and writing stage finished', {
       status: 'done', error: null, report_html: html, finished_at: new Date().toISOString(),
     });

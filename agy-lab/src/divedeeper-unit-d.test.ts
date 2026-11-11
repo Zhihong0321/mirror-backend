@@ -83,7 +83,7 @@ test('writing stages run one at a time after durable lanes, then the complete re
   assert.ok(f.restores.includes('W-speed'));
 });
 
-test('each writing stage stops later stages after three failures; resume skips everything already saved', async (t) => {
+test('a writing stage failing three times never stops the report: later stages still run, the report is built and labelled incomplete; resume skips everything already saved', async (t) => {
   on(t);
   for (const [index, name] of writing.entries()) {
     const f = await runtimeFixture(allNames.filter((n) => !writing.includes(n)).concat(writing.slice(0, index)));
@@ -91,13 +91,14 @@ test('each writing stage stops later stages after three failures; resume skips e
     f.runtime.runLane = async (section, suffix) => { const name = `${section}-${suffix}`; f.events.push(`ran ${name}`); return lane(name, 'failed'); };
     await executeRun('run', f.runtime);
     assert.equal(f.row.status, 'incomplete', name);
-    assert.equal(f.row.report_html, null);
-    assert.deepEqual(f.events, [
+    assert.ok(f.row.report_html && f.row.report_html !== 'stale HTML');
+    assert.deepEqual(f.events.slice(0, 8), [
       `ran ${name}`, `saved ${name} failed`, 'wait 60000',
       `ran ${name}`, `saved ${name} failed`, 'wait 180000',
       `ran ${name}`, `saved ${name} failed`,
     ]);
-    assert.equal(f.reports.length, 0);
+    for (const later of writing.slice(index + 1)) assert.ok(f.events.includes(`ran ${later}`), `${later} still runs`);
+    assert.equal(f.reports.length, 1);
     assert.match(f.row.error!, new RegExp(name));
     const resumed = await runtimeFixture(allNames.filter((n) => !writing.slice(index).includes(n)));
     await executeRun('run', resumed.runtime);
