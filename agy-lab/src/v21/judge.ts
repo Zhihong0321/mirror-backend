@@ -14,21 +14,24 @@ export const DEAD_CALL_MS = 1_800_000;
 /** A call still silent after this long is not killed: the same request is also fired on the next lane. */
 export const RACE_AFTER_MS = 180_000;
 
-/** Room for the model's reasoning plus the JSON answer (8192 cut a real answer off mid-JSON). */
-export const MAX_TOKENS = 16_384;
+// No max_tokens is sent: each model answers up to its own limit (2026-11-11 probe: every working lane gave 58k-90k
+// tokens in full). A cap here cut real answers off and lost them.
 
 export type Lane = { label: string; url: string; key: string; model: string };
-export type LaneAttempt = { lane: string; model: string; ms: number; finish_reason?: string; usage?: unknown; error?: string; won?: boolean };
+export type LaneAttempt = { lane: string; model: string; ms: number; finish_reason?: string; usage?: unknown; error?: string; won?: boolean; cut_off?: boolean };
 
 /**
  * Ask the lanes until one gives a valid answer. A failed call starts the next lane at once; a call that is only slow
  * is never killed: after raceAfterMs the next lane is fired too and the first valid answer wins (the others are aborted).
  * Every call is recorded in attempts.
+ *
+ * A cut-off answer is never thrown away: it is closed at its last whole item and kept. If no lane gives a full answer,
+ * the longest kept one is returned, labelled cut_off (on the result and on its attempt).
  */
 export async function askLanes(
   messages: ChatMessage[],
-  options: { lanes?: Lane[]; deadCallMs?: number; raceAfterMs?: number; maxTokens?: number; accept?: (text: string) => void } = {},
-): Promise<{ text: string; lane: string; model: string; attempts: LaneAttempt[] }> {
+  options: { lanes?: Lane[]; deadCallMs?: number; raceAfterMs?: number; accept?: (text: string) => void } = {},
+): Promise<{ text: string; lane: string; model: string; attempts: LaneAttempt[]; cut_off?: boolean }> {
   const lanes: Lane[] = options.lanes ?? ((await getLlmLanes()) as Lane[]);
   const deadMs = options.deadCallMs ?? DEAD_CALL_MS;
   const raceMs = options.raceAfterMs ?? RACE_AFTER_MS;
@@ -45,6 +48,8 @@ export async function askLanes(
     let next = 0;
     let done = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    // The best cut-off answer so far (closed at its last whole item), used only if no lane gives a full answer.
+    let kept: { text: string; lane: string; model: string; at: number } | null = null;
 
     const armRace = () => {
       clearTimeout(timer);
@@ -61,7 +66,10 @@ export async function askLanes(
       else if (!running.size) {
         done = true;
         clearTimeout(timer);
-        reject(fail());
+        if (kept) {
+          attempts[kept.at] = { ...attempts[kept.at]!, won: true, cut_off: true };
+          resolve({ text: kept.text, lane: kept.lane, model: kept.model, attempts, cut_off: true });
+        } else reject(fail());
       }
     };
 
@@ -77,7 +85,6 @@ export async function askLanes(
             model: lane.model,
             messages,
             temperature: 0.1,
-            max_tokens: options.maxTokens ?? MAX_TOKENS,
             response_format: { type: 'json_object' },
           }),
           signal: AbortSignal.any([ctl.signal, AbortSignal.timeout(deadMs)]),
@@ -90,8 +97,14 @@ export async function askLanes(
         const meta = { finish_reason: finish, usage: data?.usage };
         try {
           if (typeof text !== 'string' || !text.trim()) throw new Error('empty answer');
-          // A cut-off or unreadable answer is this lane failing: the next lane gets the call.
-          if (finish === 'length') throw new Error(`answer cut off at the token limit (${text.length} chars)`);
+          // A cut-off answer: its whole items are kept, and the next lane is asked for a full answer.
+          if (finish === 'length') {
+            const closed = closeCutJson(text);
+            let usable = false;
+            if (closed) { try { options.accept?.(closed); usable = true; } catch { /* nothing whole in it */ } }
+            if (usable && (!kept || closed!.length > kept.text.length)) kept = { text: closed!, lane: lane.label, model: lane.model, at: attempts.length };
+            throw new Error(`answer cut off at the model's limit (${text.length} chars)${usable ? '; its whole items are kept in case no lane answers in full' : ''}`);
+          }
           options.accept?.(text);
         } catch (err: any) {
           settleCall(i, { ...base(), ...meta, error: err.message });
@@ -123,6 +136,36 @@ export async function askLanes(
     }
     launch();
   });
+}
+
+/**
+ * A cut-off JSON answer closed at its last whole value: an unfinished item at the end is dropped, everything before
+ * it is kept. Null when not one whole value came back.
+ */
+export function closeCutJson(text: string): string | null {
+  const s = String(text ?? '').trim().replace(/^```(?:json)?\s*/i, '');
+  const start = s.indexOf('{');
+  if (start < 0) return null;
+  const open: string[] = [];
+  let inStr = false, esc = false, cut = -1, cutOpen: string[] = [];
+  for (let i = start; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    else if (c === '{') open.push('}');
+    else if (c === '[') open.push(']');
+    else if (c === '}' || c === ']') {
+      open.pop();
+      if (!open.length) return s.slice(start, i + 1); // it was whole after all
+      cut = i + 1; cutOpen = [...open];
+    } else if (c === ',') { cut = i; cutOpen = [...open]; }
+  }
+  return cut < 0 ? null : s.slice(start, cut) + cutOpen.reverse().join('');
 }
 
 /** The JSON object in the answer (a ```json fence is allowed). */

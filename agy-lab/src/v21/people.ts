@@ -22,7 +22,7 @@ export type Step1_6_PeopleOutput = {
   brand: string[];
   calls: PeopleCall[];
   mentions: Mention[];
-  reads: Array<{ call: string; ms: number; lane?: string; error?: string }>;
+  reads: Array<{ call: string; ms: number; lane?: string; error?: string; cut_off?: boolean }>;
   not_searched: { names: string[]; contacts: string[] };
   log: string[];
 };
@@ -115,7 +115,8 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
       const t = Date.now();
       try {
         const r = await askLanes([{ role: 'user', content: prompt }] as any, { accept: (txt) => { if (!Array.isArray(json(txt).items)) throw new Error('no items JSON'); } });
-        out.reads.push({ call: call.id, ms: Date.now() - t, lane: r.lane });
+        out.reads.push({ call: call.id, ms: Date.now() - t, lane: r.lane, ...(r.cut_off ? { cut_off: true } : {}) });
+        if (r.cut_off) log(`reading ${call.id}: answer cut off; its whole items are kept, the unfinished last one is lost`);
         for (const it of json(r.text).items ?? []) {
           if (!it || (!clean(it.name, 1) && !clean(it.contact, 1))) continue;
           const n = Number(it.hit);

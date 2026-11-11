@@ -375,7 +375,7 @@ export async function writeStep3(
 
   let answer: Awaited<ReturnType<typeof askLanes>> | null = null;
   try {
-    answer = await askLanes(messages, { lanes: options.lanes, deadCallMs: options.deadCallMs, maxTokens: 8192, accept: (text) => void parseAnswer(text) });
+    answer = await askLanes(messages, { lanes: options.lanes, deadCallMs: options.deadCallMs, accept: (text) => void parseAnswer(text) });
     const llm = parseAnswer(answer.text);
     const meta = { prompt: STEP3_PROMPT, lane: answer.lane, model: answer.model, attempts: answer.attempts, duration_ms: Date.now() - t0 };
 
@@ -467,7 +467,7 @@ async function refineStep3(
   ];
   let answer: Awaited<ReturnType<typeof askLanes>> | null = null;
   try {
-    answer = await askLanes(messages, { lanes: options.lanes, deadCallMs: options.deadCallMs, maxTokens: 8192, accept: (text) => void parseAnswer(text) });
+    answer = await askLanes(messages, { lanes: options.lanes, deadCallMs: options.deadCallMs, accept: (text) => void parseAnswer(text) });
     const llm = parseAnswer(answer.text);
     const rejected: Rejected[] = [];
     const check = (raw: any, part: string): Line | null => {

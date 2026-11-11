@@ -17,9 +17,6 @@ import type { DroppedNamesake } from './analyse.ts';
 export const RULES_V2_PROMPT = 'rules-v2.1';
 export const RULES_V2_RECHECK_PROMPT = 'rules-v2-recheck';
 
-/** Four lists with quotes need more room than v1's findings: reasoning plus the JSON answer. */
-const MAX_TOKENS_V2 = 32_768;
-
 export const TOPICS = [
   'contact', 'identity', 'website', 'email', 'reviews', 'scale', 'licence', 'awards', 'registration', 'reputation', 'other',
 ] as const;
@@ -425,7 +422,7 @@ export async function judgeV2(tidy: TidyData, options: { lanes?: Lane[]; deadCal
   };
   let answer: Awaited<ReturnType<typeof askLanes>> | null = null;
   try {
-    answer = await askLanes(messages, { ...options, maxTokens: MAX_TOKENS_V2, accept: (text) => void parseAnswer(text) });
+    answer = await askLanes(messages, { ...options, accept: (text) => void parseAnswer(text) });
     const llm = parseAnswer(answer.text);
     const checked = checkV2(llm, tidy);
     const b = llm?.baseline_summary ?? {};
@@ -535,7 +532,7 @@ export async function recheckV2(tidy: TidyData, judge: Step2V2Output, options: {
     { role: 'user', content: render(tidy) + '\n' + renderAnswer(judge) + '\n\nCheck the answer now. Return the JSON object only.' },
   ];
   try {
-    const answer = await askLanes(messages, { ...options, maxTokens: MAX_TOKENS_V2, accept: (text) => void parseAnswer(text) });
+    const answer = await askLanes(messages, { ...options, accept: (text) => void parseAnswer(text) });
     const applied = applyRecheckV2(judge, parseAnswer(answer.text), tidy);
     const { dropped_namesakes, rejected, ...lists } = applied.lists;
     return {
