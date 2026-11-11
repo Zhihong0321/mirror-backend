@@ -5,7 +5,7 @@
 import type { ChatMessage } from './cloud.ts';
 import { tidySystemPrompt } from './analyse-prompt.ts';
 import { checkJudgement, type RejectedFinding } from './check-findings.ts';
-import { askLanes, type Lane, type LaneAttempt } from './judge.ts';
+import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import { renderTidy, type TidyData } from './tidy.ts';
 import type { AnalysisFinding, Step2AnalysisOutput } from './analyse.ts';
 
@@ -121,8 +121,9 @@ export async function recheckTidy(
     { role: 'system', content: tidySystemPrompt(tidy.input, isKorean) + recheckInstructions(isKorean) },
     { role: 'user', content: renderTidy(tidy) + '\n' + renderFindings(judge.findings) + '\n\nCheck the report now. Return the JSON object only.' },
   ];
+  let answer: Awaited<ReturnType<typeof askLanes>> | null = null;
   try {
-    const answer = await askLanes(messages, { ...options, accept: (text) => void parseObject(text) });
+    answer = await askLanes(messages, { ...options, accept: (text) => void parseObject(text) });
     const applied = applyRecheck(judge, parseObject(answer.text), tidy);
     return {
       result: {
@@ -143,16 +144,13 @@ export async function recheckTidy(
         status: 'failed',
         error: `Recheck failed: ${err?.message ?? err}`,
         reviews: [], removed: [], added: [], rejected: [],
-        meta: meta(err?.attempts ?? []),
-        llm_raw: null,
+        meta: answer ? meta(answer.attempts, answer.lane, answer.model) : meta(err?.attempts ?? []),
+        llm_raw: answer?.text ?? null, // the checker's answer is kept even when applying it failed
       },
       findings: judge.findings, // the judge's report stands
     };
   }
 }
 
-function parseObject(text: string): any {
-  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-  if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) throw new Error(`answer is not a JSON object (length ${text.length})`);
-  return JSON.parse(cleaned);
-}
+/** Same reader as Step 2: text around the JSON object is set aside, never a reason to throw the answer away. */
+const parseObject = (text: string): any => parseAnswer(text);

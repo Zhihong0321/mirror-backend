@@ -101,7 +101,6 @@ const AUDIT_SURE_CHECK: Record<string, string> = {
 };
 
 const PAGE_MAX = 15_000;
-const SNIPPET_MAX = 700;
 const MENTION_BEFORE = 120;
 const MENTION_AFTER = 450;
 const MENTIONS_MAX = 6;
@@ -262,7 +261,13 @@ function findMentions(pageText: string, terms: string[], before = MENTION_BEFORE
     if (last && s[0] <= last[1]) last[1] = Math.max(last[1], s[1]);
     else merged.push([...s]);
   }
-  return merged.slice(0, max).map(([a, b]) => (a > 0 ? '…' : '') + flat.slice(a, b).trim() + (b < flat.length ? '…' : ''));
+  // Passages holding more of the name come first (the company's own entry before a lone generic word), then page
+  // order. Over the limit, the rest are counted on the page, never cut silently.
+  const held = (s: [number, number]) => { const t = lower.slice(s[0], s[1]); return terms.filter((x) => t.includes(x)).length; };
+  const ranked = merged.map((s, i) => ({ s, i, n: held(s) })).sort((x, y) => y.n - x.n || x.i - y.i);
+  const shown = ranked.slice(0, max).sort((x, y) => x.i - y.i).map(({ s: [a, b] }) => (a > 0 ? '…' : '') + flat.slice(a, b).trim() + (b < flat.length ? '…' : ''));
+  if (ranked.length > max) shown.push(`(${ranked.length - max} more passages hold only part of the name; not shown here)`);
+  return shown;
 }
 
 export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_AssetsOutput | null): TidyData {
@@ -270,9 +275,13 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
   const domain = (cp.official_site?.domain || domainOf(input.website || '')).toLowerCase();
   const terms = nameTerms(input.company);
   const couldNotCheck: TidyData['could_not_check'] = [];
+  const noSite = cp.official_site?.not_confirmed || cp.skipped;
+  if (noSite) couldNotCheck.push({ target: 'Official website', reason: String(noSite) });
+  for (const e of cp.search_errors || []) couldNotCheck.push({ target: 'Web search', reason: `failed, so its results are missing: ${e}` });
 
   // ---- Official pages: remove the menu/footer lines repeated across pages, keep them once.
   const pages = (cp.official_site?.pages || []).filter((p) => p.markdown);
+  for (const p of pages) if (p.status === 'blocked') couldNotCheck.push({ target: `Official page ${p.url}`, reason: 'the reader flagged it as a possible block page (it mentions captcha, Cloudflare or similar); its text is kept and may be partly a block notice' });
   const linesByPage = pages.map((p) => pageLines(p.markdown));
   const seenIn = new Map<string, number>();
   for (const lines of linesByPage) for (const l of new Set(lines)) seenIn.set(l, (seenIn.get(l) || 0) + 1);
@@ -341,7 +350,7 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
 
   for (const d of cp.third_party_discoveries || []) {
     if (!d.url) continue;
-    const snippets = (d.snippets || []).map((s) => cleanText(s).slice(0, SNIPPET_MAX)).filter(Boolean);
+    const snippets = (d.snippets || []).map((s) => cleanText(s)).filter(Boolean);
     if (onDomain(d.url, domain)) {
       if (officialUrls.has(d.url.replace(/\/$/, ''))) continue;
       const prev = otherOwn.find((o) => o.url === d.url);
@@ -439,8 +448,8 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
       const line = (r: (typeof d.reviews)[number]) =>
         // The reviewer's name is not given to Step 2 (privacy, PL9): only how many reviews they have written.
         `${r.date?.slice(0, 10) ?? '?'} | ${r.rating ?? '?'}★ | ${r.author_reviews != null ? `reviewer has written ${r.author_reviews} ${r.author_reviews === 1 ? 'review' : 'reviews'} | ` : ''}` +
-        `${r.text ? cleanText(r.text).slice(0, 600) : '(rating only, no text)'}` +
-        `${r.owner_reply ? ` | OWNER REPLY: ${cleanText(r.owner_reply).slice(0, 400)}` : ''}`;
+        `${r.text ? cleanText(r.text) : '(rating only, no text)'}` +
+        `${r.owner_reply ? ` | OWNER REPLY: ${cleanText(r.owner_reply)}` : ''}`;
       evidence.push({
         id: `E${++n}`,
         kind: 'google_maps',
@@ -541,7 +550,7 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
       page_chars: pageText.length,
       name_terms: terms,
       mentions: pageText ? findMentions(pageText, terms) : [],
-      hits: (p.snippets || []).map((s) => cleanText(s).slice(0, SNIPPET_MAX)).filter(Boolean),
+      hits: (p.snippets || []).map((s) => cleanText(s)).filter(Boolean),
     });
   }
 

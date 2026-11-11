@@ -168,11 +168,16 @@ export function closeCutJson(text: string): string | null {
   return cut < 0 ? null : s.slice(start, cut) + cutOpen.reverse().join('');
 }
 
-/** The JSON object in the answer (a ```json fence is allowed). */
+/**
+ * The JSON object in the answer. Text the model wrote around it ("Here is the JSON:", a ```json fence, a closing
+ * note) is set aside, never a reason to throw the answer away. Throws only when there is no JSON object in it at all.
+ */
 export function parseAnswer(text: string): any {
-  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-  if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) throw new Error(`answer is not a JSON object (length ${text.length})`);
-  return JSON.parse(cleaned);
+  const s = String(text ?? '');
+  const a = s.indexOf('{');
+  const b = s.lastIndexOf('}');
+  if (a < 0 || b < a) throw new Error(`answer is not a JSON object, none in it (length ${s.length})`);
+  return JSON.parse(s.slice(a, b + 1));
 }
 
 export async function judgeTidy(

@@ -42,7 +42,9 @@ export async function readWebPage(url: string, maxChars = MAX_PAGE_CHARS): Promi
   try {
     const { content, truncated } = await workerFetch(url);
     if (!content) return { url, markdown: '', status: 'empty', method: 'worker' };
-    if (isBlocked(content)) return { url, markdown: content.slice(0, 500), status: 'blocked', method: 'worker' };
+    // A page that looks like a block page is labelled 'blocked' but kept whole: a real short page that only mentions
+    // "reCAPTCHA" or "Cloudflare" must not lose its phone and address.
+    if (isBlocked(content)) return { url, markdown: content.slice(0, maxChars), truncated: truncated || content.length > maxChars, status: 'blocked', method: 'worker' };
     return { url, markdown: content.slice(0, maxChars), truncated: truncated || content.length > maxChars, status: 'ok', method: 'worker' };
   } catch (err: any) {
     return { url, markdown: '', status: 'error', error: `worker: ${err.message}`, method: 'failed' };

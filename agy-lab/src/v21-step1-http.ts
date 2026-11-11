@@ -65,27 +65,37 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
     runStep1Research(input, (msg) => run.log.push(msg))
       .then(async ({ checkpointPath, data }) => {
         Object.assign(run, { status: 'done', checkpointPath, checkpoint: data });
+        // Only the checkpoint itself is needed downstream: a failed log row or link is recorded and never stops the report.
         try {
           await store.addRaw(id, 1, 'checkpoint', id, data);
-          // Company UID where still empty: from the official domain Step 1 confirmed, else one of its own.
-          try {
-            await store.linkCompany(id, (data as any).official_site?.domain);
-          } catch (err: any) {
-            run.log.push(`company link: ${err?.message ?? err}`);
-          }
-          await store.addRaw(id, 1, 'log', id, run.log);
-          await store.setStatus(id, 1, (data as any).skipped ? 'skipped' : 'done');
-
-          // Trigger Step 1.5 (technical audit: PageSpeed + Domain ownership & security) automatically in background
-          try {
-            const rep: any = await store.getReport(id);
-            if (rep) void runStep1_5(rep, data, id);
-          } catch (err: any) {
-            console.error(`[v21 step1 auto step1.5] ${id}: ${err?.message ?? err}`);
-          }
         } catch (err: any) {
           run.store_error = err?.message ?? String(err);
           void store.setStatus(id, 1, 'failed', `raw data not stored: ${run.store_error}`).catch(() => {});
+          return;
+        }
+        // Company UID where still empty: from the official domain Step 1 confirmed, else one of its own.
+        try {
+          await store.linkCompany(id, (data as any).official_site?.domain);
+        } catch (err: any) {
+          run.log.push(`company link: ${err?.message ?? err}`);
+        }
+        try {
+          await store.addRaw(id, 1, 'log', id, run.log);
+        } catch (err: any) {
+          console.error(`[v21 step1] ${id}: log row not stored: ${err?.message ?? err}`);
+        }
+        try {
+          await store.setStatus(id, 1, 'done');
+        } catch (err: any) {
+          console.error(`[v21 step1] ${id}: status not set: ${err?.message ?? err}`);
+        }
+
+        // Trigger Step 1.5 (technical audit: PageSpeed + Domain ownership & security) automatically in background
+        try {
+          const rep: any = await store.getReport(id);
+          if (rep) void runStep1_5(rep, data, id);
+        } catch (err: any) {
+          console.error(`[v21 step1 auto step1.5] ${id}: ${err?.message ?? err}`);
         }
       })
       .catch(async (err: Error) => {

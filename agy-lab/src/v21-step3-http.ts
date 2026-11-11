@@ -94,7 +94,7 @@ function refuse(row: { payload: any } | null): string | null {
   if (!row) return 'report has no Step 2 result';
   const p = row.payload ?? {};
   if (p.rules !== 'v2') return 'the Step 2 result is rules v1; Step 3 reads rules v2 only (POST /api/v21/step2 {rules:"v2"})';
-  if (p.status !== 'analyzed') return `the Step 2 result is ${p.status}: ${p.error ?? p.skip_reason ?? 'no reason given'}`;
+  // A failed or skipped Step 2 is still written up (its report says what could not be checked); it never stops the report.
   return null;
 }
 
@@ -108,9 +108,9 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
   };
   try {
     // The newest written report. Rows an earlier pre-send gate marked 'blocked' are complete reports too.
-    const ok = await store.latestRaw(m[1]!, 'report', undefined, 'ok');
-    const old = await store.latestRaw(m[1]!, 'report', undefined, 'blocked');
-    const row = ok && old ? (old.id > ok.id ? old : ok) : (ok ?? old);
+    // A row whose writing call failed is served too: the page is drawn by code from the Step 2 items.
+    const rows = await Promise.all(['ok', 'blocked', 'failed'].map((s) => store.latestRaw(m[1]!, 'report', undefined, s)));
+    const row = rows.filter(Boolean).sort((a: any, b: any) => b.id - a.id)[0] ?? null;
     const s2 = row ? await store.rawById(m[1]!, Number(row.payload.step2_row_id)) : null;
     if (!row || !s2) return send(404, missingPage()), true;
     return send(200, reportPage(row.payload, s2.payload, { price: await fullReportPrice() })), true;

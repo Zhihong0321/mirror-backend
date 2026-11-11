@@ -29,7 +29,10 @@ export type Step1_6_PeopleOutput = {
 
 const MAX_NAMES = 8;
 const MAX_ROUNDS = 3;
-const MAX_OWN_PDFS = 3;
+/** No text is cut: a long page is read in pieces of PIECE chars, about PROMPT_CHARS per LLM read. */
+const FULL = 1_000_000;
+const PIECE = 6_000;
+const PROMPT_CHARS = 24_000;
 const clean = (v: unknown, n: number) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
 const hostLabel = (u: string) => { try { return new URL(/^https?:/.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').split('.')[0] ?? ''; } catch { return ''; } };
 
@@ -79,9 +82,9 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
   };
   const exaWeb = (q: string) => async () => {
     const r = await exa.request('search', { query: q, type: 'auto', numResults: 10, userLocation: 'MY', contents: { highlights: { maxCharacters: 900 } } });
-    return { usd: Number(r?.costDollars?.total ?? 0), hits: (Array.isArray(r?.results) ? r.results : []).map((x: any) => ({ url: String(x?.url ?? ''), title: clean(x?.title, 160), text: clean([...(Array.isArray(x?.highlights) ? x.highlights : []), x?.text ?? ''].join(' … '), 2000) })) };
+    return { usd: Number(r?.costDollars?.total ?? 0), hits: (Array.isArray(r?.results) ? r.results : []).map((x: any) => ({ url: String(x?.url ?? ''), title: clean(x?.title, 160), text: clean([...(Array.isArray(x?.highlights) ? x.highlights : []), x?.text ?? ''].join(' … '), FULL) })) };
   };
-  const tavilyQ = (q: string) => async () => ({ hits: (await tavily.search(q, { maxResults: 10, depth: 'advanced' })).map((h) => ({ url: h.url, title: h.title, text: clean(h.content, 2000) })) });
+  const tavilyQ = (q: string) => async () => ({ hits: (await tavily.search(q, { maxResults: 10, depth: 'advanced' })).map((h) => ({ url: h.url, title: h.title, text: clean(h.content, FULL) })) });
   /** Free worker reads of the company's own files that list people: llms.txt and PDFs the site links to. */
   const ownSite = async () => {
     let origin = '';
@@ -90,27 +93,36 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
     const links = new Set<string>([origin + '/llms.txt']);
     for (const p of checkpoint?.official_site?.pages ?? []) {
       for (const m of String(p?.markdown ?? '').matchAll(/\]\(([^)\s]+\.pdf)\)/gi)) {
-        try { const u = new URL(m[1]!, origin); if (u.origin === origin && links.size < MAX_OWN_PDFS + 1) links.add(u.href); } catch { /* not a URL */ }
+        try { const u = new URL(m[1]!, origin); if (u.origin === origin) links.add(u.href); } catch { /* not a URL */ }
       }
     }
     const hits: Hit[] = []; const failed: string[] = [];
     for (const url of links) {
       const r = await readWebPage(url).catch((e) => ({ status: 'error', markdown: '', error: String(e?.message ?? e) }) as any);
-      if (r?.status === 'ok' && r.markdown) hits.push({ url, title: url.split('/').pop() ?? url, text: clean(r.markdown, 30000) });
+      if (r?.status === 'ok' && r.markdown) hits.push({ url, title: url.split('/').pop() ?? url, text: clean(r.markdown, FULL) });
       else failed.push(`${url}: ${clean(r?.error ?? r?.status, 120)}`);
     }
     if (failed.length) log(`own-site reads not done: ${failed.join(' | ')}`);
     return { hits };
   };
 
-  /** Read names and contacts out of one call's hits (8 at a time), on the V2.1 lanes. No judging. Only hits that carry
-   *  the brand word are read: the rest cost LLM time and, in the Eternalgy test, gave nothing new. */
+  /** Read names and contacts out of every hit of one call, on the V2.1 lanes. No judging, nothing skipped, nothing cut:
+   *  each hit's whole text is split into pieces of PIECE chars, and pieces are read about PROMPT_CHARS at a time. */
   const read = async (call: PeopleCall) => {
-    const toRead = call.hits.map((h, idx) => ({ h, n: idx + 1 })).filter(({ h }) => call.tool === 'step1-pages' || call.tool === 'own-site' || carriesBrand(h, brand));
-    const size = call.tool === 'own-site' ? 1 : 8;
-    for (let i = 0; i < toRead.length; i += size) {
-      const part = toRead.slice(i, i + size);
-      const block = part.map(({ h, n }) => `[${n}] ${h.title} | ${h.url}\n    ${clean(h.text, call.tool === 'own-site' ? 30000 : 3000)}`).join('\n');
+    const pieces: Array<{ n: number; h: Hit; text: string; part: string }> = [];
+    call.hits.forEach((h, idx) => {
+      const text = clean(h.text, FULL);
+      const count = Math.max(1, Math.ceil(text.length / PIECE));
+      for (let k = 0; k < count; k++) pieces.push({ n: idx + 1, h, text: text.slice(k * PIECE, (k + 1) * PIECE), part: count > 1 ? ` (part ${k + 1} of ${count})` : '' });
+    });
+    const batches: Array<typeof pieces> = [];
+    for (const p of pieces) {
+      const last = batches[batches.length - 1];
+      if (last && last.reduce((s, x) => s + x.text.length, 0) + p.text.length <= PROMPT_CHARS) last.push(p);
+      else batches.push([p]);
+    }
+    for (const part of batches) {
+      const block = part.map(({ h, n, text, part: pp }) => `[${n}] ${h.title} | ${h.url}${pp}\n    ${text}`).join('\n');
       const prompt = `Results (each starts with [n]):\n${block}\n\nList every PERSON named in these results and every PHONE NUMBER or EMAIL ADDRESS in them, with the hit number, the person's role as written, and the exact words. A person and their contact on the same line go in one item. Copy; do not judge or leave out.\n\nAnswer ONLY JSON: {"items": [{"hit": 1, "name": "", "role": "", "contact": "", "quote": ""}]}`;
       const t = Date.now();
       try {
@@ -120,7 +132,7 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
         for (const it of json(r.text).items ?? []) {
           if (!it || (!clean(it.name, 1) && !clean(it.contact, 1))) continue;
           const n = Number(it.hit);
-          out.mentions.push({ call: call.id, hit: Number.isFinite(n) ? n : 0, url: call.hits[n - 1]?.url ?? '', name: clean(it.name, 120), role: clean(it.role, 160), contact: clean(it.contact, 120), quote: clean(it.quote, 300) });
+          out.mentions.push({ call: call.id, hit: Number.isFinite(n) ? n : 0, url: call.hits[n - 1]?.url ?? '', name: clean(it.name, FULL), role: clean(it.role, FULL), contact: clean(it.contact, FULL), quote: clean(it.quote, FULL) });
         }
       } catch (e) {
         out.reads.push({ call: call.id, ms: Date.now() - t, error: clean((e as Error)?.message ?? e, 300) });
@@ -150,8 +162,8 @@ export async function runStep1_6People(checkpoint: any, say: (m: string) => void
   try {
     // Round 0: what Step 1 already read (site pages and outside pages). No search cost.
     const step1Hits: Hit[] = [
-      ...(checkpoint?.official_site?.pages ?? []).map((p: any) => ({ url: String(p?.url ?? ''), title: clean(p?.label, 80), text: clean(p?.markdown, 15000) })),
-      ...(checkpoint?.third_party_pages ?? []).map((p: any) => ({ url: String(p?.url ?? ''), title: clean(p?.title, 160), text: clean(p?.markdown ?? p?.text ?? p?.content, 4000) })),
+      ...(checkpoint?.official_site?.pages ?? []).map((p: any) => ({ url: String(p?.url ?? ''), title: clean(p?.label, 80), text: clean(p?.markdown, FULL) })),
+      ...(checkpoint?.third_party_pages ?? []).map((p: any) => ({ url: String(p?.url ?? ''), title: clean(p?.title, 160), text: clean(p?.markdown ?? p?.text ?? p?.content, FULL) })),
     ].filter((h) => h.text);
     out.calls.push({ id: 'S1', round: 0, tool: 'step1-pages', query: '(pages Step 1 read)', why: 'seed', hits: step1Hits, ms: 0 });
     await run('O1', 0, 'own-site', '(llms.txt and linked PDFs on the official site, free worker read)', 'own files that list people', ownSite);

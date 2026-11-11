@@ -39,19 +39,14 @@ function failedOutput(report: any, error: string): Step2AnalysisOutput {
 }
 
 /** The whole run. Never throws: a failure is stored as a 'result' row with status failed. */
-async function runStep2(report: any, checkpoint: any, runId: string, recheck: boolean, rules: 'v1' | 'v2' = 'v1'): Promise<void> {
+async function runStep2(report: any, checkpoint: any, runId: string, recheck: boolean, rules: 'v1' | 'v2' = 'v2'): Promise<void> {
   const id: string = report.report_id;
   try {
-    if (checkpoint?.skipped) {
-      const out = { ...failedOutput(report, ''), status: 'skipped' as const, error: null, skip_reason: String(checkpoint.skipped) };
-      await store.addRaw(id, 2, 'result', runId, out, 'skipped');
-      await store.setStatus(id, 2, 'skipped');
-      return;
-    }
+    // An old row whose Step 1 found no official site (checkpoint.skipped) is judged on what it has; tidy labels it.
 
     // Step 1.5 digital assets / PageSpeed technical findings: load existing or run on demand
     let assets = (await store.latestRaw(id, 'assets'))?.payload ?? null;
-    if (!assets && !checkpoint?.skipped) {
+    if (!assets) {
       try {
         console.log(`[v21 step2] ${id}: Step 1.5 assets not found, running on-demand...`);
         assets = await runStep1_5(report, checkpoint, runId);
@@ -121,7 +116,8 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       const runId = crypto.randomUUID();
       await store.setStatus(reportId, 2, 'running');
       const recheck = b.recheck === undefined ? true : Boolean(b.recheck);
-      const rules = b.rules === 'v2' ? 'v2' : 'v1';
+      // v2 by default: Step 3 reads v2 only, so a v1 result could never become a report. v1 only when asked for.
+      const rules = b.rules === 'v1' ? 'v1' : 'v2';
       void runStep2(report, cp.payload, runId, recheck, rules);
       return json(res, 202, { report_id: reportId, run_id: runId, recheck, rules }), true;
     }

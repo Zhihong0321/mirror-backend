@@ -62,8 +62,12 @@ export type RawResearchCheckpoint = {
   stage: 1;
   created_at: string;
   input: ResearchInput;
-  /** Set when no official site was confirmed: the company is skipped and nothing else is gathered. */
+  /** Old rows only (before 2026-11-11): no official site was confirmed and nothing else was gathered. */
   skipped?: string;
+  /** Searches that failed (spent keys, service down): recorded, so a failure is never read as 'no results'. */
+  search_errors?: string[];
+  /** Set when the checkpoint file could not be written to disk; the data itself is kept and stored in the database. */
+  save_error?: string;
   catalog: {
     country: string;
     industry: string;
@@ -77,6 +81,8 @@ export type RawResearchCheckpoint = {
     /** Every candidate the gate tried and what it returned, kept even when one passes (a given site that fails is itself evidence). */
     tried: string[];
     pages: OfficialPageData[];
+    /** Set when no candidate was confirmed as the official site: research still runs, the report is labelled. */
+    not_confirmed?: string;
   };
   third_party_discoveries: Array<{
     url: string;
@@ -316,9 +322,14 @@ export async function runStep1Research(
   if (local) log(`Searching in the local language (${local.lang}) as "${searchName}"`);
 
   const discoveries: RawResearchCheckpoint['third_party_discoveries'] = [];
+  const searchErrors: string[] = [];
   const search = async (query: string, count = 8) => {
     const opts = local ? { count, country: local.code, lang: local.lang } : { count };
-    const hits = await braveSearch(query, opts).catch(() => [] as BraveHit[]);
+    const hits = await braveSearch(query, opts).catch((e) => {
+      searchErrors.push(`Brave "${query}": ${e?.message ?? e}`);
+      log(`Brave search failed for "${query}": ${e?.message ?? e}`);
+      return [] as BraveHit[];
+    });
     for (const h of hits) discoveries.push({ url: h.url, title: h.title, snippets: h.snippets, source: 'brave', query });
     return hits;
   };
@@ -327,7 +338,11 @@ export async function runStep1Research(
   const tavilyQuery = local ? `${searchName} ${local.site}` : `${company} ${country} official website`;
   const [, tavilyHits] = await Promise.all([
     search(local ? `"${searchName}"` : `"${company}" ${country}`),
-    tavilySearch(tavilyQuery, { max_results: 6 }).catch(() => [] as TavilyHit[]),
+    tavilySearch(tavilyQuery, { max_results: 6 }).catch((e) => {
+      searchErrors.push(`Tavily "${tavilyQuery}": ${e?.message ?? e}`);
+      log(`Tavily search failed for "${tavilyQuery}": ${e?.message ?? e}`);
+      return [] as TavilyHit[];
+    }),
   ]);
   for (const h of tavilyHits) {
     discoveries.push({ url: h.url, title: h.title, snippets: [h.content], source: 'tavily', query: tavilyQuery });
@@ -345,7 +360,7 @@ export async function runStep1Research(
   const candidates = [...new Set([
     ...(input.website ? [cleanDomain(input.website)] : []),
     ...discoveries.map((d) => cleanDomain(d.url)).filter((d) => brandToken && mainLabel(d).includes(brandToken)),
-  ].filter(Boolean))].slice(0, 4);
+  ].filter(Boolean))];
 
   let officialDomain = '';
   let officialUrl = '';
@@ -399,7 +414,8 @@ export async function runStep1Research(
         tried.push(`${url} (linked from the splash page): ${page.status}${page.status === 'ok' && !carriesName ? ', company name not on page' : ''}`);
       }
     }
-    if (page.status === 'ok' && carriesName) {
+    // A page labelled 'blocked' (it mentions captcha, Cloudflare...) still counts when it carries the name.
+    if ((page.status === 'ok' || page.status === 'blocked') && carriesName) {
       officialDomain = domain;
       officialUrl = url;
       homeMarkdown = page.markdown;
@@ -423,20 +439,20 @@ export async function runStep1Research(
     official_site: { domain: officialDomain, resolved_url: officialUrl, tried, pages: [] },
     third_party_discoveries: discoveries,
     probes: [],
+    search_errors: searchErrors,
   };
 
+  // No official site confirmed: research still runs on everything else, and the report is labelled (never stopped).
   if (!officialDomain) {
-    checkpoint.skipped = `No official site confirmed. Tried: ${tried.join('; ') || 'no candidates'}`;
-    log(`Skipped: ${checkpoint.skipped}`);
-    return saveCheckpoint(checkpoint, company, log);
-  }
-  log(`Official site confirmed: ${officialUrl}`);
+    checkpoint.official_site.not_confirmed = `No official site confirmed. Tried: ${tried.join('; ') || 'no candidates'}`;
+    log(`${checkpoint.official_site.not_confirmed}. Research goes on without it.`);
+  } else log(`Official site confirmed: ${officialUrl}`);
 
   // 3. Read the official site: home, then its own about and contact links. A page identical to one read is dropped.
   const pages = checkpoint.official_site.pages;
-  pages.push({ url: officialUrl, label: 'home', status: homeStatus, charCount: homeMarkdown.length, markdown: homeMarkdown, method: homeMethod });
+  if (officialDomain) pages.push({ url: officialUrl, label: 'home', status: homeStatus, charCount: homeMarkdown.length, markdown: homeMarkdown, method: homeMethod });
   const discoveryUrls = discoveries.map((d) => d.url);
-  for (const [url, label] of aboutContactLinks(homeMarkdown, officialDomain, discoveryUrls)) {
+  for (const [url, label] of officialDomain ? aboutContactLinks(homeMarkdown, officialDomain, discoveryUrls) : []) {
     log(`Reading [${label}] ${url}`);
     const page = await readWebPage(url);
     if (page.status === 'ok' && pages.some((p) => p.markdown === page.markdown)) {
@@ -489,7 +505,7 @@ export async function runStep1Research(
   const handlers: Map<string, HandlerEntry> =
     siteLookupOn() && checklist ? await loadHandlers(checklist.countryCode) : new Map();
   if (siteLookupOn()) log(`Site lookup on: ${handlers.size} handlers for ${checklist?.countryCode ?? country}`);
-  const probed = new Set<string>();
+  const probed = new Map<string, number>();
   for (const p of prompts) {
     let lookup: SiteLookupResult | undefined;
     const probe = (fields: Pick<ProbeResult, 'query' | 'evidence_urls' | 'snippets' | 'page' | 'not_run'>) =>
@@ -548,10 +564,11 @@ export async function runStep1Research(
       }
       const url = raw.replace(/\{company\}/g, encodeURIComponent(searchName));
       if (probed.has(url)) {
-        log(`Probe #${p.rank} [${p.category}]: same address as an earlier probe, not read again`);
+        log(`Probe #${p.rank} [${p.category}]: same address as probe #${probed.get(url)}, not read again`);
+        probe({ query: url, evidence_urls: [url], snippets: [], not_run: `same address as probe #${probed.get(url)}; its page is there` });
         continue;
       }
-      probed.add(url);
+      probed.set(url, p.rank);
       log(`Probe #${p.rank} [${p.category}]: reading ${url}`);
       // A list is read whole: a cut list cannot show that a name is absent.
       const page = await readWebPage(url, 1_000_000);
@@ -597,11 +614,15 @@ function saveCheckpoint(
 ): { checkpointPath: string; data: RawResearchCheckpoint } {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const runFolder = path.join(runsDir, `${timestamp}_${slugify(company)}`);
-  fs.mkdirSync(runFolder, { recursive: true });
-
   const checkpointPath = path.join(runFolder, 'step1_research.json');
-  fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2), 'utf8');
-
-  log(`Step 1 Complete! Checkpoint saved to:\n${checkpointPath}`);
+  // A disk that cannot be written never loses the research: the error is recorded and the data goes on to the database.
+  try {
+    fs.mkdirSync(runFolder, { recursive: true });
+    fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2), 'utf8');
+    log(`Step 1 Complete! Checkpoint saved to:\n${checkpointPath}`);
+  } catch (e: any) {
+    checkpoint.save_error = `checkpoint file not written (${checkpointPath}): ${e?.message ?? e}`;
+    log(`Step 1 Complete! ${checkpoint.save_error}`);
+  }
   return { checkpointPath, data: checkpoint };
 }

@@ -89,7 +89,8 @@ export type TechnicalFinding = {
     | 'domain-lock'
     | 'ownership-mismatch'
     | 'email-spoofing'
-    | 'tls-expiry';
+    | 'tls-expiry'
+    | 'tls-invalid';
   source?: string;
   domain?: string;
   strategy?: 'mobile' | 'desktop';
@@ -461,7 +462,7 @@ export async function runStep1_5Assets(
   // 1. Digital Assets: Domains, WHOIS, DNS, Email Defense, TLS
   // -------------------------------------------------------------
   const domainMap = extractCandidateDomains(checkpoint);
-  const domainList = [...domainMap.keys()].slice(0, 5); // limit to top 5 relevant domains
+  const domainList = [...domainMap.keys()]; // every domain found: none is cut
   log(`[Step 1.5] Auditing ${domainList.length} domains: ${domainList.join(', ')}`);
 
   const auditedDomains: AuditedDomain[] = await Promise.all(
@@ -548,6 +549,24 @@ export async function runStep1_5Assets(
           detail: `Certificate issued by ${tlsInfo.issuer ?? 'unknown'} expires on ${tlsInfo.expires_at}. Browsers will flag the site with security warnings upon expiration.`,
           severity: 'high',
           check: 'tls-expiry',
+          domain,
+          source: `https://${domain}`,
+        });
+      } else if (tlsInfo && tlsInfo.days_remaining !== undefined && tlsInfo.days_remaining < 0) {
+        addFinding({
+          title: `SSL/TLS certificate for ${domain} expired ${-tlsInfo.days_remaining} days ago`,
+          detail: `Certificate issued by ${tlsInfo.issuer ?? 'unknown'} expired on ${tlsInfo.expires_at}. Browsers show a security warning on the site.`,
+          severity: 'high',
+          check: 'tls-expiry',
+          domain,
+          source: `https://${domain}`,
+        });
+      } else if (tlsInfo && tlsInfo.days_remaining !== undefined && tlsInfo.valid === false) {
+        addFinding({
+          title: `SSL/TLS certificate for ${domain} is not trusted by browsers`,
+          detail: `The certificate (issuer ${tlsInfo.issuer ?? 'unknown'}, valid to ${tlsInfo.expires_at}) did not pass the standard check: self-signed, wrong host name or an incomplete chain. Browsers may show a security warning.`,
+          severity: 'high',
+          check: 'tls-invalid',
           domain,
           source: `https://${domain}`,
         });
@@ -697,6 +716,18 @@ export async function runStep1_5Assets(
                 evidence_url: link(psi.strategy),
               });
             }
+            const otherFlags = psi.flags.filter((f) => f.category !== 'seo');
+            if (otherFlags.length > 0 && psi.strategy === 'mobile') {
+              addFinding({
+                title: `Homepage on ${psi.site} fails ${otherFlags.length} accessibility or best-practice checks`,
+                detail: otherFlags.map((f) => `${f.title} (${f.category})`).join('; ') + '.',
+                severity: 'low',
+                check: 'psi-quality',
+                domain: psi.site,
+                source: link(psi.strategy),
+                evidence_url: link(psi.strategy),
+              });
+            }
           }
         }
       }
@@ -711,9 +742,7 @@ export async function runStep1_5Assets(
   // 3. Google Maps reviews of the company's own profile (Scraper.Tech; the worker reads at most ~10, so not the worker)
   // -------------------------------------------------------------
   const google_reviews: GoogleReviewsBlock = { status: 'not_run', max: REVIEWS_MAX };
-  if (checkpoint.skipped) {
-    google_reviews.reason = `Research skipped: ${checkpoint.skipped}`;
-  } else {
+  {
     const pick = pickMapsProfile(checkpoint);
     if (!pick.profile) {
       google_reviews.reason = pick.reason;

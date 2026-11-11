@@ -531,8 +531,9 @@ export async function recheckV2(tidy: TidyData, judge: Step2V2Output, options: {
     { role: 'system', content: rulesV2SystemPrompt(tidy.input, isKorean) + recheckInstructions(isKorean) },
     { role: 'user', content: render(tidy) + '\n' + renderAnswer(judge) + '\n\nCheck the answer now. Return the JSON object only.' },
   ];
+  let answer: Awaited<ReturnType<typeof askLanes>> | null = null;
   try {
-    const answer = await askLanes(messages, { ...options, accept: (text) => void parseAnswer(text) });
+    answer = await askLanes(messages, { ...options, accept: (text) => void parseAnswer(text) });
     const applied = applyRecheckV2(judge, parseAnswer(answer.text), tidy);
     const { dropped_namesakes, rejected, ...lists } = applied.lists;
     return {
@@ -545,7 +546,7 @@ export async function recheckV2(tidy: TidyData, judge: Step2V2Output, options: {
       },
     };
   } catch (err: any) {
-    // The analyst's answer stands.
-    return { ...judge, recheck: { status: 'failed', error: `Recheck failed: ${err?.message ?? err}`, reviews: [], removed: [], added: [], rejected: [], meta: meta(err?.attempts ?? []), llm_raw: null } };
+    // The analyst's answer stands; the checker's answer is kept even when applying it failed.
+    return { ...judge, recheck: { status: 'failed', error: `Recheck failed: ${err?.message ?? err}`, reviews: [], removed: [], added: [], rejected: [], meta: answer ? meta(answer.attempts, answer.lane, answer.model) : meta(err?.attempts ?? []), llm_raw: answer?.text ?? null } };
   }
 }

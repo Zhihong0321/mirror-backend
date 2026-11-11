@@ -75,7 +75,7 @@ export type Step3Report = Step3Common & {
   /** The one item shown in full, as the LLM picked it. Missing or unknown -> the top-ranked item. */
   proof?: string | null;
 };
-export type Step3Email = Step3Common & { kind: 'email'; subject: Line | null; body: Line[]; report_url: string; text: string };
+export type Step3Email = Step3Common & { kind: 'email'; subject: Line | null; body: Line[]; report_url: string; text: string; /** Set when the check rejected the subject or every body paragraph and the model's own words were kept. */ unchecked?: string };
 
 // ---------------------------------------------------------------- the owner's fixed wording
 
@@ -418,10 +418,17 @@ export async function writeStep3(
       ...common, kind: 'report', status: 'ok', error: null, summary: checkSummaryValues(final.summary, s2, proof, rRejected), titles, proof, rejected: rRejected, meta, llm_raw: answer.text,
       ...(refine ? { refine } : {}),
     };
-    const emailError = !final.subject ? 'the subject was rejected' : !final.body.length ? 'every body paragraph was rejected' : null;
+    // A rejected subject or body never blanks the email: the model's own words are used and labelled unchecked.
+    const rawLine = (x: any): Line | null => {
+      const text = typeof x === 'string' ? x : typeof x?.text === 'string' ? x.text : '';
+      return text.trim() ? { text: text.trim(), cites: Array.isArray(x?.cites) ? x.cites.map(String) : [] } : null;
+    };
+    const unchecked = !final.subject ? 'the subject failed the check; the subject the model wrote is used' : !final.body.length ? 'every body paragraph failed the check; the paragraphs the model wrote are used' : null;
+    const subject = final.subject ?? rawLine(llm?.email?.subject);
+    const body = final.body.length ? final.body : ((Array.isArray(llm?.email?.body) ? llm.email.body : []).map(rawLine).filter(Boolean) as Line[]);
     const email: Step3Email = {
-      ...common, kind: 'email', status: emailError ? 'failed' : 'ok', error: emailError, subject: final.subject, body: final.body,
-      report_url: reportUrl, text: emailError ? '' : emailText(s2.input.company, ko, final.subject, final.body, reportUrl),
+      ...common, kind: 'email', status: 'ok', error: null, subject, body, ...(unchecked ? { unchecked } : {}),
+      report_url: reportUrl, text: emailText(s2.input.company, ko, subject, body, reportUrl),
       rejected: eRejected, meta, llm_raw: answer.text,
       ...(refine ? { refine } : {}),
     };
@@ -432,7 +439,8 @@ export async function writeStep3(
     const failed = { ...common, status: 'failed' as const, error, rejected: [], meta, llm_raw: answer?.text ?? null };
     return {
       report: { ...failed, kind: 'report', summary: [] },
-      email: { ...failed, kind: 'email', subject: null, body: [], report_url: reportUrl, text: '' },
+      // The email still goes out with the greeting and the report link; the failure is on the row.
+      email: { ...failed, kind: 'email', subject: null, body: [], report_url: reportUrl, text: emailText(s2?.input?.company ?? '', ko, null, [], reportUrl) },
     };
   }
 }
