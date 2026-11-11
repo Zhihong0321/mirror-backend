@@ -14,6 +14,7 @@ import crypto from 'node:crypto';
 import { runStep1Research, type ResearchInput } from './v21/research.ts';
 import { runStep1_5 } from './v21-step1-5-http.ts';
 import { chainStep2And3 } from './v21-step2-http.ts';
+import { runStep1_6 } from './v21-step1-6-http.ts';
 import { baseUrl } from './v21-step3-http.ts';
 import * as store from './v21-store.ts';
 
@@ -96,8 +97,15 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
         // Trigger Step 1.5 (technical audit: PageSpeed + Domain ownership & security) automatically in background
         try {
           const rep: any = await store.getReport(id);
-          // The hub chain: when Step 1.5 ends (done or failed), Step 2 and then Step 3 run. Nothing stops it.
-          if (rep) void runStep1_5(rep, data, id).catch((e: any) => console.error(`[v21 chain] ${id}: Step 1.5: ${e?.message ?? e}`)).then(() => chainStep2And3(id, base));
+          // The hub chain: Step 1.5 (assets) and Step 1.6 (people) run side by side on the checkpoint; when both have
+          // ended (done or failed), Step 2 and then Step 3 run. Nothing stops it: a failure is stored on the report.
+          if (rep) {
+            const logErr = (step: string) => (e: any) => console.error(`[v21 chain] ${id}: Step ${step}: ${e?.message ?? e}`);
+            void Promise.all([
+              runStep1_5(rep, data, id).catch(logErr('1.5')),
+              runStep1_6(id, data, crypto.randomUUID()).catch(logErr('1.6')),
+            ]).then(() => chainStep2And3(id, base));
+          }
         } catch (err: any) {
           console.error(`[v21 step1 auto step1.5] ${id}: ${err?.message ?? err}`);
         }

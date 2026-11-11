@@ -1,5 +1,5 @@
-// V2.1 Step 1.6 on the hub: people and contacts linked to the company (src/v21/people.ts). On demand only:
-// nothing calls it from Step 1, 2 or 3 yet.
+// V2.1 Step 1.6 on the hub: people and contacts linked to the company (src/v21/people.ts). Part of every run since
+// 2026-11-11: Step 1 starts it beside Step 1.5, and Step 2 reads its newest 'people' row. Also on demand:
 //
 //   POST /api/v21/step1.6             { report_id } -> 202 { report_id, run_id, status: 'running' }
 //   GET  /api/v21/step1.6/{report_id} ?run_id=      -> { report_id, status, run_id, result }

@@ -4,6 +4,7 @@
 // and gets an id (E1, E2, R1...) that Step 2 cites.
 import type { RawResearchCheckpoint } from './research.ts';
 import type { Step1_5_AssetsOutput } from './assets.ts';
+import type { Step1_6_PeopleOutput } from './people.ts';
 import { startsWithCurrency } from '../report-rules/index.ts';
 
 export type TidyEvidence = {
@@ -270,7 +271,7 @@ function findMentions(pageText: string, terms: string[], before = MENTION_BEFORE
   return shown;
 }
 
-export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_AssetsOutput | null): TidyData {
+export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_AssetsOutput | null, people?: Step1_6_PeopleOutput | null): TidyData {
   const input = cp.input;
   const domain = (cp.official_site?.domain || domainOf(input.website || '')).toLowerCase();
   const terms = nameTerms(input.company);
@@ -566,6 +567,48 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
       if (data[k]) ownLinkedin[k] = cleanText(String(data[k]));
     }
     if (!ownLinkedin.linkedin_url) ownLinkedin.linkedin_url = li.url;
+  }
+
+  // ---- People and contacts (Step 1.6): one item per source page, every person and contact read from it with the
+  // exact words. Gathering only; Step 2 judges who is linked to the company. A missing or failed step is "could not
+  // check" and never stops the report.
+  if (!people) couldNotCheck.push({ target: 'People and contacts (Step 1.6)', reason: 'people step: did not run for this report' });
+  else {
+    if (people.status !== 'done') couldNotCheck.push({ target: 'People and contacts (Step 1.6)', reason: `people step: ${people.status}${people.error ? ` (${people.error})` : ''}; what it found before that is below` });
+    const calls = Array.isArray(people.calls) ? people.calls : [];
+    const bySource = new Map<string, { url: string; title: string; how: string; lines: string[] }>();
+    for (const m of Array.isArray(people.mentions) ? people.mentions : []) {
+      if (!m) continue;
+      const call = calls.find((c) => c?.id === m.call);
+      const hit = call?.hits?.[Number(m.hit) - 1];
+      const url = String(m.url || hit?.url || '');
+      const key = `${call?.id ?? m.call}|${url}`;
+      let s = bySource.get(key);
+      if (!s) {
+        s = { url, title: cleanText(String(hit?.title ?? '')), how: call ? `${call.tool}${call.query ? `: ${call.query}` : ''}` : String(m.call ?? ''), lines: [] };
+        bySource.set(key, s);
+      }
+      const who = [m.name, m.role, m.contact].map((x) => cleanText(String(x ?? ''))).filter(Boolean).join(' | ');
+      const quote = cleanText(String(m.quote ?? ''));
+      s.lines.push(`- ${who}${quote ? `: "${quote}"` : ''}`);
+    }
+    for (const s of bySource.values()) {
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: 'People search (Step 1.6)',
+        url: s.url,
+        title: s.title ? `People and contacts named on: ${s.title}` : 'People and contacts named on this page',
+        query: s.how,
+        check_id: 'people',
+        text: s.lines.join('\n'),
+      });
+    }
+    const notSearched = people.not_searched?.names ?? [];
+    if (notSearched.length) couldNotCheck.push({ target: 'People and contacts (Step 1.6)', reason: `${notSearched.length} names were found but not searched one by one (round limit): ${notSearched.slice(0, 50).join(', ')}${notSearched.length > 50 ? ` and ${notSearched.length - 50} more` : ''}` });
+    for (const r of Array.isArray(people.reads) ? people.reads : []) {
+      if (r?.error) couldNotCheck.push({ target: `People step read ${r.call}`, reason: `names in this batch were not read: ${r.error}` });
+    }
   }
 
   return {

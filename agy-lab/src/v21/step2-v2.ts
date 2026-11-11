@@ -67,6 +67,9 @@ export type Note = {
 
 export type Rejected = { list: string; item: Record<string, unknown>; reasons: string[] };
 
+/** A person or contact directly associated with the company (owner, 2026-11-11), as the quotes give them. */
+export type Person = { id: string; name: string; role: string; contact: string; how_linked: string; evidence: Evidence[] };
+
 export type Lists = {
   conclusive_findings: ConclusiveFinding[];
   contradictions: Contradiction[];
@@ -91,6 +94,8 @@ export type Step2V2Output = Lists & {
   meta: { prompt: string; lane: string | null; model: string | null; attempts: LaneAttempt[] };
   llm_raw: string | null;
   recheck?: RecheckV2;
+  /** Every person and contact directly associated with the company (the free preview shows them half hidden). */
+  people?: Person[];
 };
 
 export type RecheckV2 = {
@@ -119,11 +124,12 @@ D. REGISTER CHECKS (R1, R2...): register or list pages read whole by plain code,
 E. TECHNICAL AUDIT summary: the same audit results as in C, listed together.
 F. COULD NOT CHECK: sources that were not checked. Say nothing about them.
 
-WHAT TO RETURN: four lists.
+WHAT TO RETURN: five lists.
 1. "conclusive_findings": facts the evidence proves on its own. kind "problem": a risk to the business that a customer, bank, Google or attacker would meet (a domain about to expire, email anyone can forge, reviews never answered, a broken or wrong field on a listing, a slow phone site, a page that fails Google's checks). kind "strength": an outside source confirms something good (an award organiser lists them, a register shows their registration number, a strong rating). A strength is only what an OUTSIDE item shows; the company praising itself is not one.
 2. "contradictions": the same fact given differently by different sources. Sources include the company's own sites and pages against each other (a customer opening one site sees a different phone than on the other), its LinkedIn, Google Maps, directories and registers. Facts: legal name, registration number, phone, email, address, website, the list of offices or branches, staff numbers, founding date, number of sites or projects, capacity, revenue, licences and their dates. Give every version once, each with its quote.
 3. "suggestions": what the owner can do, concrete and short, each based on one or more of your conclusive_findings or contradictions ids. No sales talk.
 4. "take_note": signals worth knowing that the evidence does not prove: a reviewer with the same name as a staff member, many reviews on one day, a big claim no outside source repeats, a figure that may be out of date. Say why it is not conclusive.
+5. "people": every person and every phone number or email address directly associated with this company: its owners, directors, founders, staff, agents and representatives, and the company's own phone numbers and emails. Read them from every item: the official pages, LINKEDIN, and the outside items, including the "People search (Step 1.6)" items, which list the people and contacts read from each page with the exact words. One entry per person, with their phone or email in the same entry when the quote gives it; one entry per company phone or email not tied to a person. List everyone you can tie to this company; do not leave anyone out to keep the list short. Rule 1 applies: list a person or contact only when the quote ties them to this company (named on its own site or LinkedIn, or the quote names the company); a person with the same name at another company is not listed.
 
 RULES
 1. Identity before anything. For every outside item you use, decide if it is this company. Identity needs one of: an official domain, a phone or address on the official site, the registration number, or the same name + same city + same line of business. A similar name alone is not identity. Items that are another company go in "dropped_namesakes" (only ones that could be confused with the client). Never cite a dropped item.
@@ -140,7 +146,7 @@ RULES
 12. Whose words. Each cited passage is "first" (the company wrote or submitted it: its own sites and LinkedIn, a listing, an award entry or press release it supplied) or "independent" (a register, bureau, regulator, news outlet or another party that did not take its words from the company). Set "party" on every evidence entry. Call something independent, third-party or verified only when an independent passage backs it.
 13. Ownership. A domain item in section C says "ownership: owned | used_by | unknown". Say "your domain" and give fixes like "Renew" or "Set DMARC" only when it is owned. For used_by or unknown, word it neutrally ("the domain X") and give the fix as "if you control it, ...".
 14. Wording. Each why_it_matters is written for its own item, from its own facts; never reuse a stock sentence across items. No internal words in any text: worker, input, pipeline, benchmark, "the data", "review item", or the names of tools used as nouns. Write as to the owner reading a report, not as an analyst reading a file.
-15. People. Never write a private person's name (a reviewer, an employee, a consultant) or a personal phone number in any field. Say "a reviewer". A signal that rests on matching a person's name to a reviewer or staff list is a take_note with "identity_signal": true; every other note has "identity_signal": false.
+15. People. In the first four lists, never write a private person's name (a reviewer, an employee, a consultant) or a personal phone number in any field; names and contacts belong only in the "people" list. Say "a reviewer". A signal that rests on matching a person's name to a reviewer or staff list is a take_note with "identity_signal": true; every other note has "identity_signal": false.
 16. Every item has a "topic". Every place name, person name and figure in an item must appear in its cited quotes. State dates exactly as the quote gives them ("expires on 2026-12-05"); never compute "in N days", "N years old" or any other derived figure, code computes those. For a count of reviews, quote the line that gives the count.
 17. Public-record checks (the "global:" items in section C). Read each one that has records and ask what a customer, bank or tender panel would conclude from it: how long the domain and its certificates have existed (state the dates as quoted), whether the site's certificate is valid and when it expires, who sends and hosts the company's email and how strict the SPF is, how long the Internet Archive has captured the site, whether the company runs an active YouTube channel and how recently it posted. Use them like the technical audit (rule 7): measured by code, conclusive as given. Say what they show, good or bad: a long-standing domain, a valid certificate or an active channel is a "strength" when the record itself shows it; a certificate that is expired or about to expire, or email set-up that anyone can forge, is a "problem". Several public-record checks that show the same kind of thing may be one finding with several quotes. An item that says nothing was found is rule 5: not an item. "party": the certificate logs and the Internet Archive are "independent"; DNS records, the TLS certificate and the YouTube feed are the company's own set-up, so "first". Do not skip these items because they are not about reviews or registers.
 18. Language: ${isKorean ? 'this is a South Korean company. Write title, statement, value, why_it_matters, action, why, note and reasons in Korean. Quotes stay exactly as in the input.' : 'write in English. Quotes stay exactly as in the input.'}
@@ -160,6 +166,7 @@ OUTPUT: one JSON object only, this shape:
   ],
   "suggestions": [ { "id": "s1", "action": "what to do", "why": "one line", "based_on": ["f1", "c2"] } ],
   "take_note": [ { "id": "n1", "topic": "...", "title": "one line", "note": "what was seen", "evidence": [ { "evidence_id": "E5", "quoted_text": "exact copy", "party": "first | independent" } ], "why_not_conclusive": "...", "identity_signal": false } ],
+  "people": [ { "name": "as the quote gives it, or empty for a company contact", "role": "as written", "contact": "phone or email as written, or empty", "how_linked": "what in the quote ties this person or contact to this company", "evidence": [ { "evidence_id": "E9", "quoted_text": "exact copy", "party": "first | independent" } ] } ],
   "dropped_namesakes": [ { "evidence_id": "E7", "name": "...", "url": "...", "snippet": "short exact copy", "reason_dropped": "..." } ]
 }`;
 }
@@ -268,7 +275,7 @@ function techFacts(evidence: Evidence[], items: Map<string, Cited>, tidy: TidyDa
 
 /** The analyst's (or the checker's) answer, checked against the input. Pure. Ids are renumbered f1.., c1.., s1.., n1..
  *  in order; a suggestion's based_on follows the renumbering, and loses any id that was not kept. */
-export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: DroppedNamesake[]; rejected: Rejected[] } {
+export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: DroppedNamesake[]; rejected: Rejected[]; people: Person[] } {
   const items = citableV2(tidy);
   const rejected: Rejected[] = [];
   const officialHosts = [
@@ -400,7 +407,20 @@ export function checkV2(llm: any, tidy: TidyData): Lists & { dropped_namesakes: 
     suggestions.push({ id: `s${suggestions.length + 1}`, topic: topics[0], topics, action: str(s.action), why: str(s.why), based_on: ids });
   }
 
-  return { conclusive_findings, contradictions, suggestions, take_note, dropped_namesakes, rejected };
+  // People: an entry is kept with every quote that is in its cited item; a quote that is not there is recorded and
+  // only that quote goes. An entry with no quote left is recorded in rejected, never silently lost.
+  const people: Person[] = [];
+  for (const p of Array.isArray(llm?.people) ? llm.people : []) {
+    if (!p || typeof p !== 'object') continue;
+    const reasons: string[] = [];
+    if (!str(p.name) && !str(p.contact)) reasons.push('no name and no contact');
+    const evidence = ev(p.evidence, droppedIds, reasons);
+    if (!evidence.length) { rejected.push({ list: 'people', item: p, reasons: reasons.length ? reasons : ['no quote left'] }); continue; }
+    if (reasons.length) rejected.push({ list: 'people (quotes only)', item: p, reasons });
+    people.push({ id: `p${people.length + 1}`, name: str(p.name), role: str(p.role), contact: str(p.contact), how_linked: str(p.how_linked), evidence });
+  }
+
+  return { conclusive_findings, contradictions, suggestions, take_note, dropped_namesakes, rejected, people };
 }
 
 // ---------------------------------------------------------------- judge
@@ -438,7 +458,7 @@ export async function judgeV2(tidy: TidyData, options: { lanes?: Lane[]; deadCal
       llm_raw: answer.text,
     };
   } catch (err: any) {
-    const empty = { conclusive_findings: [], contradictions: [], suggestions: [], take_note: [], dropped_namesakes: [], rejected: [] };
+    const empty = { conclusive_findings: [], contradictions: [], suggestions: [], take_note: [], dropped_namesakes: [], rejected: [], people: [] };
     const attempts: LaneAttempt[] = answer?.attempts ?? err?.attempts ?? [];
     return {
       ...base, status: 'failed', error: `LLM analysis failed: ${err?.message ?? err}`, baseline: {}, ...empty,
@@ -506,7 +526,8 @@ export function applyRecheckV2(judge: Step2V2Output, answer: any, tidy: TidyData
     }
   }
   const checked = checkV2({ ...candidate, dropped_namesakes: judge.dropped_namesakes }, tidy);
-  return { lists: checked, reviews, removed, added: added.filter(Boolean), rejected: checked.rejected };
+  // The checker reviews the four lists only: the analyst's people list goes through as it is.
+  return { lists: { ...checked, people: judge.people ?? [] }, reviews, removed, added: added.filter(Boolean), rejected: checked.rejected };
 }
 
 function renderAnswer(judge: Step2V2Output): string {

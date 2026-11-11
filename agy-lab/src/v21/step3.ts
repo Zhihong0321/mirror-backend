@@ -627,6 +627,11 @@ const P = {
     strEye: 'What is working', strHn: (n: number) => `${plural(n, 'strength', 'strengths')} the sources confirm.`, strG: 'Protect these.',
     strNoneH: 'What is working.', strNoneG: 'Nothing confirmed yet.',
     strSource: 'Source:',
+    pplEye: 'People and contacts', pplH: 'All people and contacts associated with your brand directly.', pplG: 'Do you know all of them? Are they all legit?',
+    pplCols: ['Name', 'Role', 'Contact', 'Where it is published'],
+    pplHidden: 'Names and contacts are half hidden here; the full report shows them in full, each with its source.',
+    pplNone: 'The public sources we read named no person or contact tied to your brand.',
+    pplNotRun: (why: string) => `The people search did not complete for this preview (${why}).`,
     moreStrengths: (n: number) => `${plural(n, 'more strength is', 'more strengths are')} confirmed and listed in the full report.`,
     noStrengths: 'This preview found no outside source confirming a strength yet. The full report checks registers, awards and reviews for them.',
     notEye: 'Read this before deciding', notH: 'What this page holds,', notG: 'and what it leaves out.',
@@ -708,6 +713,11 @@ const P = {
     missing: 'This report is not ready yet.', missingP: 'Please come back to this link a little later.',
   },
   ko: {
+    pplEye: '사람과 연락처', pplH: '브랜드와 직접 연결된 모든 사람과 연락처.', pplG: '모두 아는 사람인가요? 모두 정상인가요?',
+    pplCols: ['이름', '직책', '연락처', '게시된 곳'],
+    pplHidden: '이름과 연락처는 여기서 절반만 보입니다. 전체 보고서에는 출처와 함께 모두 나옵니다.',
+    pplNone: '확인한 공개 출처에서 브랜드와 연결된 사람이나 연락처를 찾지 못했습니다.',
+    pplNotRun: (why: string) => `이번 미리보기에서는 사람 검색이 끝나지 않았습니다 (${why}).`,
     title: (c: string) => `${c}: 공개 인터넷이 말하는 것`,
     bar: '온라인 평판 보고서', barFor: (c: string) => `· ${c} 귀중`,
     eyebrow: (c: string, d: string) => `무료 보고서 · ${c} 귀중 · ${d}`,
@@ -890,6 +900,7 @@ h2{font-size:clamp(30px,4vw,50px);max-width:17em}
 .withheld{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center;background:var(--band);padding:24px 26px;border-top:3px solid var(--ink);margin-top:6px}
 .withheld h3{font-size:22px}.withheld p{color:var(--grey);font-size:15px;margin-top:6px}
 .goods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ppl{overflow-x:auto}.ppl table{border-collapse:collapse;width:100%;font-size:14.5px}.ppl th{text-align:left;font-size:12.5px;color:var(--muted);font-weight:600;padding:0 14px 8px 0}.ppl td{padding:11px 14px 11px 0;border-top:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 .goodc{background:var(--paper);padding:22px;display:grid;gap:9px;align-content:start;border-top:3px solid var(--good)}
 .goodc h3{font-size:19px;line-height:1.22}.goodc p{font-size:14.5px;color:var(--grey)}
 .goodc .s{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
@@ -981,6 +992,39 @@ const TICK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke
  * offer, and the closing note. Every count reads from one counts object. Every section has a version for missing data and
  * for good news; none is dropped silently. Never throws on a missing field.
  */
+/**
+ * Half of a name hidden, for the free preview (owner, 2026-11-11): the first letter of every word shows, then letters
+ * from the last word until half the letters show. "GAN ZHI HONG" -> "G?? Z?? HON?".
+ */
+export function maskName(name: string): string {
+  const words = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '';
+  const total = words.reduce((s, w) => s + [...w].length, 0);
+  const show = words.map((w) => Math.min(1, [...w].length));
+  let shown = show.reduce((a, b) => a + b, 0);
+  for (let i = words.length - 1; i >= 0 && shown < Math.ceil(total / 2); i--) {
+    while (show[i]! < [...words[i]!].length && shown < Math.ceil(total / 2)) { show[i]!++; shown++; }
+  }
+  return words.map((w, i) => [...w].map((ch, k) => (k < show[i]! ? ch : '?')).join('')).join(' ');
+}
+
+/**
+ * Half of a contact hidden, for the free preview: a phone keeps its first 3 and last 2 digits ("011??????99"); an email
+ * keeps the first half of the part before @ and its domain; anything else is masked like a name.
+ */
+export function maskContact(contact: string): string {
+  return String(contact ?? '').split(/\s*[,;/]\s*/).filter(Boolean).map((c) => {
+    if (/@/.test(c)) {
+      const [local, domain] = [c.slice(0, c.indexOf('@')), c.slice(c.indexOf('@') + 1)];
+      const keep = Math.ceil([...local].length / 2);
+      return [...local].map((ch, k) => (k < keep ? ch : '?')).join('') + '@' + domain;
+    }
+    const digits = c.replace(/[^0-9]/g, '');
+    if (digits.length >= 6) return (c.trim().startsWith('+') ? '+' : '') + digits.slice(0, 3) + '?'.repeat(digits.length - 5) + digits.slice(-2);
+    return maskName(c);
+  }).join(', ');
+}
+
 export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null; ref?: string | null } = {}): string {
   const now = options.now ?? new Date();
   const ko = report?.language === 'ko';
@@ -1152,6 +1196,16 @@ ${card}</div></section>`;
 <div class="groups">${byArea.map(([a, xs]) => `<div class="group" id="a-${a}"><h3>${esc(t.area[a])} <small>${esc(t.groupCount(xs.filter((x) => x.kind !== 'note').length, xs.filter((x) => x.kind === 'note').length))}</small></h3><ol class="rows">${xs.map(row).join('')}</ol></div>`).join('')}
 ${withheld ? `<div class="withheld"><div><h3 data-count="shown.listed">${esc(t.withheldH(withheld))}</h3><p>${esc(t.withheldP)}</p></div><a class="btn inv" href="#order">${esc(t.withheldBtn(withheld))}&nbsp;→</a></div>` : ''}</div></div></section>` : '';
 
+  // ---- people and contacts tied to the brand (Step 2's people list), every one listed, half hidden by code
+  const people: any[] = Array.isArray((s2 as any)?.people) ? (s2 as any).people : [];
+  const pplWhy = (Array.isArray(s2?.could_not_check) ? s2.could_not_check : []).find((x: any) => /People and contacts/.test(String(x?.target ?? '')) && /did not run|failed|partial/.test(String(x?.reason ?? '')));
+  const pplRow = (p: any) => {
+    const src = (Array.isArray(p?.evidence) ? p.evidence : []).find((e: any) => typeof e?.source_url === 'string' && e.source_url.trim());
+    return `<tr><td>${esc(maskName(String(p?.name ?? ''))) || '—'}</td><td>${esc(String(p?.role ?? '')) || '—'}</td><td>${esc(maskContact(String(p?.contact ?? ''))) || '—'}</td><td>${src ? sourceLink(src.source_url) : '—'}</td></tr>`;
+  };
+  const peopleSec = `<section class="sec" id="people"><div class="in"><div class="head"><p class="eyebrow">${esc(t.pplEye)}</p><h2 data-count="people">${esc(t.pplH)} <span class="g">${esc(t.pplG)}</span></h2></div>
+${people.length ? `<div class="ppl"><table><thead><tr>${t.pplCols.map((h: string) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${people.map(pplRow).join('')}</tbody></table></div><p class="after">${esc(t.pplHidden)}</p>` : `<p class="lead">${esc(pplWhy ? t.pplNotRun(String(pplWhy.reason)) : t.pplNone)}</p>`}</div></section>`;
+
   // ---- what is working
   const goods = strengthsShown.map((f) => {
     const src = (Array.isArray(f.evidence) ? f.evidence : []).find((e) => typeof e?.source_url === 'string' && e.source_url.trim());
@@ -1214,6 +1268,7 @@ ${hero}
 ${proof}
 ${questions}
 ${list}
+${peopleSec}
 ${working}
 ${notOn}
 ${offer}

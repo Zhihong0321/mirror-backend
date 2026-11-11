@@ -73,7 +73,10 @@ async function runStep2(report: any, checkpoint: any, runId: string, recheck: bo
       }
     }
 
-    const tidy = tidyCheckpoint(checkpoint, assets);
+    // Step 1.6 people and contacts: the newest row (a run cut short leaves its last round). None -> labelled by tidy.
+    let people: any = null;
+    try { people = (await store.latestRaw(id, 'people'))?.payload ?? null; } catch (e: any) { console.warn(`[v21 step2] ${id}: people row not read: ${e?.message ?? e}`); }
+    const tidy = tidyCheckpoint(checkpoint, assets, people);
     await store.addRaw(id, 2, 'tidy', runId, tidy);
 
     // Rules v2 (step2-v2.ts): four lists for Step 3. Behind the switch until proven; v1 below is unchanged.
