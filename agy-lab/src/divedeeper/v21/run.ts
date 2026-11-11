@@ -6,11 +6,22 @@ import { buildReport } from '../report-html.ts';
 import { speedLane } from './speed.ts';
 import * as store from './store.ts';
 
+// Each lane starts as soon as the lanes it reads have finished (done, partial or failed), not when a whole stage has.
+// On 2026-11-11 fixed stages held contacts, assets and brand (2 minutes of work) 44 minutes behind the ChatGPT questions,
+// which none of them read. The third item is what the lane reads; a lane must come after everything it reads.
+// H-web and C-merged read H-maps (its trade and town plan, its listings); G-recommend reuses G-search's company profile.
 export const V21_DEEPER_LANES = [
-  [['H', 'maps'], ['G', 'search'], ['K', 'credibility'], ['N', 'news']],
-  // G-recommend waits for G-search: it reuses that lane's company profile (trade, town), so both ask about the same thing.
-  [['H', 'web'], ['D', 'registry'], ['C', 'merged'], ['G', 'recommend']],
-  [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']],
+  ['H', 'maps', []],
+  ['G', 'search', []],
+  ['K', 'credibility', []],
+  ['N', 'news', []],
+  ['D', 'registry', []],
+  ['H', 'web', ['H-maps']],
+  ['C', 'merged', ['H-maps']],
+  ['G', 'recommend', ['G-search']],
+  ['R', 'contacts', ['C-merged', 'H-maps']],
+  ['A', 'assets', ['C-merged']],
+  ['B', 'brand', ['C-merged', 'G-search', 'H-web']],
 ] as const;
 // S1-recheck looks again at what the judging lanes found, before anything is written about it; S6-check looks again at what was written.
 export const V21_DEEPER_WRITING = [['S1', 'recheck'], ['S2', 'consult'], ['S3', 'editor'], ['S4', 'analysis'], ['S5', 'plan'], ['S6', 'check']] as const;
@@ -88,7 +99,11 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
         else await sleep(waits[attempt - 1]);
       }
     };
-    for (const stage of V21_DEEPER_LANES) await Promise.all(stage.map(([section, lane]) => one(section, lane)));
+    const finished = new Map<string, Promise<void>>();
+    for (const [section, lane, after] of V21_DEEPER_LANES) {
+      finished.set(`${section}-${lane}`, Promise.all(after.map((name) => finished.get(name))).then(() => one(section, lane)));
+    }
+    await Promise.all(finished.values());
     // A lane that failed all its tries never stops the report (owner's rule): the writing stages still run on what the
     // other lanes found, the report is built, and the run is labelled 'incomplete' with every failure named.
     for (const [section, lane] of V21_DEEPER_WRITING) await one(section, lane);

@@ -78,7 +78,7 @@ test('three failed attempts: the writing stages still run, the report is built, 
   assert.equal(f.attempts.length, 3);
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
-  assert.deepEqual(f.started, ['H-maps', 'G-search', 'K-credibility', 'N-news', 'H-maps', 'H-maps', 'H-web', 'D-registry', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
+  assert.deepEqual(f.started, ['H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry', 'H-maps', 'G-recommend', 'H-maps', 'H-web', 'C-merged', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
   assert.equal(f.savedAll.length, 14 + writing.length);
   assert.ok(f.row.report_html, 'a lane failing never stops the report');
 }));
@@ -91,7 +91,7 @@ test('recovery restores a successful lane and its plan without another Maps call
   assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
   assert.deepEqual(f.events, ['staged']);
   assert.equal(f.row.status, 'done');
-  assert.deepEqual(f.started, ['G-search', 'K-credibility', 'N-news', 'H-web', 'D-registry', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
+  assert.deepEqual(f.started, ['G-search', 'K-credibility', 'N-news', 'D-registry', 'H-web', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
 }));
 
 test('recovery retries a failed lane while keeping its saved trade and town plan', async () => switchedOn(async () => {
@@ -136,61 +136,57 @@ test('an adapter rejection fails the run without staging a dive or running a lan
   assert.deepEqual(f.events, []);
 }));
 
-test('stages start their lanes together and save every lane before starting the next stage', async () => switchedOn(async () => {
-  assert.deepEqual(V21_DEEPER_LANES, [[['H', 'maps'], ['G', 'search'], ['K', 'credibility'], ['N', 'news']], [['H', 'web'], ['D', 'registry'], ['C', 'merged'], ['G', 'recommend']], [['R', 'contacts'], ['A', 'assets'], ['B', 'brand']]]);
+test('each lane starts when the lanes it reads are done: a slow ChatGPT lane holds back nothing that does not read it', async () => switchedOn(async () => {
+  const names = V21_DEEPER_LANES.map(([section, lane]) => `${section}-${lane}`);
+  // Every lane comes after everything it reads.
+  V21_DEEPER_LANES.forEach(([, , after], i) => { for (const n of after) assert.ok(names.indexOf(n) > -1 && names.indexOf(n) < i, `${names[i]} after ${n}`); });
   const f = await fixture([]);
   const started: string[] = [];
-  const finish = new Map<string, () => void>();
   const saved: string[] = [];
-  const stages = V21_DEEPER_LANES.map((s) => s.map(([section, lane]) => `${section}-${lane}`));
-  const gate = () => {
-    let open!: () => void;
-    const ready = new Promise<void>((resolve) => { open = resolve; });
-    return { ready, open };
-  };
-  const starts = new Map(stages.flat().map((name) => [name, gate()]));
-  const firstTwoSaved = gate();
+  const finish = new Map<string, () => void>();
+  const startedGate = new Map<string, () => void>();
+  const startedNow = (name: string) => new Promise<void>((resolve) => { if (started.includes(name)) resolve(); else startedGate.set(name, resolve); });
   f.runtime.runLane = async (section, lane) => {
     const name = `${section}-${lane}`;
-    if (section.startsWith('S')) return { ...result('done'), section, lane };
+    if (section.startsWith('S')) {
+      // The writing steps start only after every lane is saved.
+      assert.ok(names.every((n) => saved.includes(n)), `${name} waited for every lane`);
+      return { ...result('done'), section, lane };
+    }
+    const reads = V21_DEEPER_LANES.find(([s, l]) => s === section && l === lane)![2];
+    assert.ok(reads.every((n) => saved.includes(n)), `${name} starts after what it reads is saved`);
     started.push(name);
-    if (stages[1].includes(name)) assert.deepEqual(saved.filter((lane) => lane !== 'W-speed').sort(), [...stages[0]].sort());
-    if (stages[2].includes(name)) assert.ok(stages[1].every((lane) => saved.includes(lane)));
-    const done = new Promise<void>((resolve) => finish.set(name, resolve));
-    starts.get(name)!.open();
-    await done;
+    startedGate.get(name)?.();
+    await new Promise<void>((resolve) => finish.set(name, resolve));
     return { ...result('done'), section, lane };
   };
-  f.runtime.store.saveLane = async (_row, lane) => {
-    saved.push(`${lane.section}-${lane.lane}`);
-    if (saved.filter((name) => name !== 'W-speed').length === 2) firstTwoSaved.open();
-  };
+  f.runtime.store.saveLane = async (_row, lane) => { saved.push(`${lane.section}-${lane.lane}`); };
   const running = executeRun('run', f.runtime);
-  await Promise.all(stages[0].map((name) => starts.get(name)!.ready));
-  assert.deepEqual(started, stages[0]);
+  for (const n of ['H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry']) await startedNow(n);
+  assert.deepEqual(started.sort(), ['D-registry', 'G-search', 'H-maps', 'K-credibility', 'N-news']);
   finish.get('G-search')!();
+  await startedNow('G-recommend');
   finish.get('H-maps')!();
-  await firstTwoSaved.ready;
-  assert.equal(started.length, 4, 'second stage waits for the last first-stage lane');
-  finish.get('K-credibility')!();
-  finish.get('N-news')!();
-  await Promise.all(stages[1].map((name) => starts.get(name)!.ready));
-  assert.deepEqual(started.slice(4), stages[1]);
-  finish.get('H-web')!();
-  finish.get('D-registry')!();
-  // Contacts, assets and brand must still wait for C-merged's crawl and G-recommend.
-  assert.equal(started.length, 8);
+  await startedNow('C-merged');
+  await startedNow('H-web');
   finish.get('C-merged')!();
+  await startedNow('R-contacts');
+  await startedNow('A-assets');
+  finish.get('H-web')!();
+  await startedNow('B-brand');
+  // G-recommend (ChatGPT) is still asking; contacts, assets and brand did not wait for it.
+  for (const n of ['R-contacts', 'A-assets', 'B-brand']) finish.get(n)!();
+  for (const n of ['K-credibility', 'N-news', 'D-registry']) finish.get(n)!();
+  await new Promise((r) => setTimeout(r, 20));
+  assert.ok(!saved.includes('S1-recheck') && !started.some((n) => n.startsWith('S')));
+  assert.equal(saved.includes('G-recommend'), false);
   finish.get('G-recommend')!();
-  await Promise.all(stages[2].map((name) => starts.get(name)!.ready));
-  assert.deepEqual(started.slice(8), stages[2]);
-  for (const name of stages[2]) finish.get(name)!();
   await running;
   assert.equal(f.row.status, 'done');
 }));
 
 test('resume restores all completed stages and runs no lane again', async () => switchedOn(async () => {
-  const saved: Lane[] = [...V21_DEEPER_LANES.flat(), ['W', 'speed'], ...V21_DEEPER_WRITING].map(([section, lane], i) => ({
+  const saved: Lane[] = [...V21_DEEPER_LANES.map(([s, l]) => [s, l]), ['W', 'speed'], ...V21_DEEPER_WRITING].map(([section, lane], i) => ({
     id: i + 1, run_id: 'run', report_id: 'report', lane: `${section}-${lane}`, status: 'done' as const,
     payload: { ...result('done'), section, lane }, created_at: '',
   }));

@@ -19,7 +19,7 @@ import { run as analyse } from './divedeeper/sections/S4-analysis.ts';
 import { run as plan } from './divedeeper/sections/S5-plan.ts';
 import { handle } from './v21-deeper-http.ts';
 
-const allNames = [...V21_DEEPER_LANES.flat(), ['W', 'speed'], ...V21_DEEPER_WRITING].map(([s, l]) => `${s}-${l}`);
+const allNames = [...V21_DEEPER_LANES.map(([s, l]) => [s, l]), ['W', 'speed'], ...V21_DEEPER_WRITING].map(([s, l]) => `${s}-${l}`);
 const writing = V21_DEEPER_WRITING.map(([s, l]) => `${s}-${l}`);
 function lane(name: string, status: LaneResult['status'] = 'done'): LaneResult {
   const [section, lane] = name.split('-');
