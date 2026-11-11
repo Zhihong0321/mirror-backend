@@ -20,6 +20,9 @@ import { skipPeople } from '../site-handlers.ts';
 /** Malaysian phones in research text. A whole number only: no digit right before or after (an SSM number or a
  *  glued "200200-300300" dropdown is not a phone), and the digits are counted, so a spaced "+603 - 7831 8770"
  *  is not cut to "7831 877". */
+/** A Facebook address (facebook.com, m.facebook.com, fb.com, fb.watch). */
+export const isFacebook = (u: string) => { try { return /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/i.test(new URL(u).hostname); } catch { return false; } };
+
 export const RESEARCH_PHONE_RE = /(?<![\d+])(?:\+?6?0\s?1\d(?:[\s-]{0,3}\d){7,8}|\+?6?0\s?[3-9](?:[\s-]{0,3}\d){7,8}|1[38]00[\s-]?\d{2}[\s-]?\d{4})(?!\d)/g;
 
 const FREE_MAIL = /@(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|aol|proton|protonmail|qq|163|126)\./i;
@@ -133,7 +136,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
       if (p.kind === 'email') p.web = web;
       else for (const q of phones.filter((q) => q.key === p.key)) q.web = web;
     }));
-    const urls = [...new Set([...uniqPhones, ...emails].flatMap((p) => (p.web ?? []).filter((w) => !w.own).map((w) => w.url)))];
+    // Facebook pages come back behind a login wall with no readable text: they are not read (owner, 2026-11-11).
+    const found = [...new Set([...uniqPhones, ...emails].flatMap((p) => (p.web ?? []).filter((w) => !w.own).map((w) => w.url)))];
+    const urls = found.filter((u) => !isFacebook(u));
+    if (urls.length < found.length) ctx.log(`${found.length - urls.length} Facebook address(es) not read: Facebook pages are skipped`);
     if (urls.length > 15) ctx.warn(`${urls.length} contact evidence URLs; reading the first 15`);
     const text = new Map<string, string>();
     await Promise.all(urls.slice(0, 15).map(async (url) => {

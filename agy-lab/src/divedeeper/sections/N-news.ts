@@ -15,6 +15,9 @@ import { lookupCompany, skipPeople, type HandlerResult } from '../site-handlers.
 
 const KEY_ROLE = /director|founder|owner|shareholder|chief executive|ceo|managing|chairman|partner|principal|proprietor|pengarah|president/i;
 const SKIP_HOST = /(^|\.)(google\.[a-z.]+|linkedin\.com|jobstreet\.com|hiredly\.com|maukerja\.my|indeed\.com|glassdoor\.com)$/;
+const FACEBOOK = /(^|\.)(facebook\.com|fb\.com|fb\.watch)$/i;
+/** The search results read and judged: the top 50 is enough for an SME, which most news never mentions (owner, 2026-11-11). */
+const NEWS_READ = 50;
 const SOCIAL = /(^|\.)(facebook|instagram|tiktok|youtube|x|twitter|threads|xiaohongshu)\.com$/;
 
 type Hit = { url: string; title: string; text: string; date: string | null; via: string[]; person: string | null; forum?: boolean; handlerText?: string };
@@ -41,7 +44,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     try { return decodeURIComponent(new URL(u).pathname).toLowerCase().split('/').filter(Boolean).slice(0, 2).some((seg) => seg.includes(N.brand)); } catch { return false; }
   };
   const keep = (via: string, x: { url: string; title?: string; text?: string; date?: string | null }, person: string | null) => {
-    if (!x.url || N.own(x.url) || ownSocial(x.url) || SKIP_HOST.test(N.hostOf(x.url))) return;
+    // Facebook pages come back behind a login wall with no readable text: not read (owner, 2026-11-11).
+    if (!x.url || N.own(x.url) || ownSocial(x.url) || SKIP_HOST.test(N.hostOf(x.url)) || FACEBOOK.test(N.hostOf(x.url))) return;
     const text = String(x.text ?? '');
     const all = `${x.title ?? ''} ${text}`;
     const named = N.mentions(all) || (person ? all.toLowerCase().includes(person.toLowerCase()) : false);
@@ -64,7 +68,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     short.toLowerCase() !== N.bare.toLowerCase() ? exaNews(`"${short}" Malaysia`) : Promise.resolve(),
     braveQ(`"${short}" news OR berita OR akhbar`),
     braveQ(`"${short}" complaint OR scam OR review OR aduan OR penipuan OR kecewa`),
-    braveQ(`"${short}" site:lowyat.net OR site:reddit.com OR site:facebook.com`),
+    braveQ(`"${short}" site:lowyat.net OR site:reddit.com`),
     ...people.map((p: any) => braveQ(`"${p.name}" "${short}"`, p.name)),
     ...people.map((p: any) => exaNews(`${p.name} ${short}`, p.name)),
   ]);
@@ -90,23 +94,29 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     // Dates and titles rank addresses only; no search snippet becomes evidence.
     const date = (h: Hit) => Date.parse(h.date ?? '') || 0;
     const ranked = [...hits.values()].sort((a, b) => Number(!!b.forum) - Number(!!a.forum) || Number(N.mentions(b.title)) - Number(N.mentions(a.title)) || date(b) - date(a) || a.url.localeCompare(b.url));
-    unread += Math.max(0, ranked.length - 20);
-    if (ranked.length > 20) ctx.warn(`news page cap: ${ranked.length - 20} addresses not read`);
-    list = [];
-    for (const h of ranked.slice(0, 20)) {
+    // The top NEWS_READ results are read and judged, all of them; results ranked below are left out by design,
+    // so they do not count as unread. A page that cannot be read still does.
+    if (ranked.length > NEWS_READ) ctx.log(`news: reading the top ${NEWS_READ} of ${ranked.length} search results`);
+    const top = ranked.slice(0, NEWS_READ);
+    const readOne = async (h: Hit): Promise<Hit | null> => {
       try {
         const p = await ctx.read(h.url);
         if (p.status < 200 || p.status >= 300 || !p.text) throw new Error(p.error || `HTTP ${p.status}, no readable text`);
         h.text = [p.text, h.handlerText].filter(Boolean).join('\n');
         // The judge resolves namesakes, including short brands and punctuation in legal names.
-        list.push(h);
+        return h;
       } catch (err) {
         unread++;
         ctx.warn(`news page ${h.url}: can't check automatically: ${String(err)}`);
         // Handler records are already worker evidence, even if the linked thread cannot be read.
-        if (h.forum && h.handlerText) { h.text = h.handlerText; list.push(h); }
+        if (h.forum && h.handlerText) { h.text = h.handlerText; return h; }
+        return null;
       }
-    }
+    };
+    // Five reads at a time, kept in rank order.
+    const got: (Hit | null)[] = [];
+    for (let i = 0; i < top.length; i += 5) got.push(...await Promise.all(top.slice(i, i + 5).map(readOne)));
+    list = got.filter((h): h is Hit => h !== null);
     if (ctx.meter.exa.failed + ctx.meter.brave.failed > failedBefore) unread++;
   }
   ctx.log(`${list.length} pages name the company or its people`);
@@ -161,5 +171,5 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const talk = judged.filter((x) => ['forum', 'social'].includes(x.kind) && x.about === 'company');
   if (!talk.length && judged.length && !unjudged) add({ title: 'Nobody discusses you on forums or social media that we could find', detail: 'No Lowyat, Reddit or public Facebook thread names you. Word of mouth is happening offline, which helps no one searching.', severity: 'low', source: null, check: 'news-discussion' });
 
-  return { findings, notes: { people, items: judged, pages_found: list.length, unjudged, ...(ctx.v21 ? { lowyat, pages_read: Math.min(hits.size, 20) } : {}), counts: { news: independent.length, press: news.length - independent.length, negative: neg.length, discussion: talk.length, latest_news: latest } } };
+  return { findings, notes: { people, items: judged, pages_found: list.length, unjudged, ...(ctx.v21 ? { lowyat, pages_read: Math.min(hits.size, NEWS_READ) } : {}), counts: { news: independent.length, press: news.length - independent.length, negative: neg.length, discussion: talk.length, latest_news: latest } } };
 }

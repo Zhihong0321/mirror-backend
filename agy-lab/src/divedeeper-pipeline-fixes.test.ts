@@ -76,3 +76,9 @@ test('the cover counts what was read: every AI answer from both AI lanes, and th
   assert.equal(R.pages_tested, 15);
   assert.equal(resolve({ result: { identity: {} } }, {}).pages_tested, null);
 });
+
+test('contact evidence: Facebook addresses are recognised and skipped', async () => {
+  const { isFacebook } = await import('./divedeeper/sections/R-contacts.ts');
+  for (const u of ['https://www.facebook.com/250657781749452', 'https://m.facebook.com/x', 'https://fb.com/acme', 'https://fb.watch/abc']) assert.equal(isFacebook(u), true, u);
+  for (const u of ['https://www.crunchbase.com/organization/x', 'https://notfacebook.com/', 'not a url']) assert.equal(isFacebook(u), false, u);
+});

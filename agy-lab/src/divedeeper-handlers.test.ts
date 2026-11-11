@@ -91,7 +91,7 @@ test('K never calls a Step 1 handler again, including empty and failed checks', 
   assert.ok(out.findings.some((f) => /CAN'T CHECK AUTOMATICALLY/.test(f.title)));
 });
 
-test('N reads at most twenty unique addresses, ranks recent relevant pages, adds Lowyat and validates quotes against worker text', async () => {
+test('N reads every address up to fifty, ranks recent relevant pages, adds Lowyat and validates quotes against worker text', async () => {
   const d = dive(), ctx = context(), reads: string[] = [], queries: string[] = [];
   d.v21.lookups[LOWYAT] = answer(LOWYAT, 'found', { records: [{ url: 'https://forum.lowyat.net/topic/1', title: 'Acme dispute', record: 'WORKER FORUM RECORD' }] });
   const rows = Array.from({ length: 25 }, (_, i) => ({ url: `https://news.test/${i + 1}`, title: `Search title for Acme page ${i + 1}`, text: 'EXA POISON',
@@ -108,15 +108,15 @@ test('N reads at most twenty unique addresses, ranks recent relevant pages, adds
     })) });
   };
   const out = await news(ctx, d);
-  assert.equal(reads.length, 20);
-  assert.equal(new Set(reads).size, 20);
+  assert.equal(reads.length, 26);
+  assert.equal(new Set(reads).size, 26);
   assert.deepEqual(reads.slice(0, 3), ['https://forum.lowyat.net/topic/1', 'https://news.test/25', 'https://news.test/24']);
   assert.ok(queries.some((q) => q.includes('Known Person')));
   const items = out.notes.items as any[];
   assert.equal(items.find((x) => x.url === 'https://forum.lowyat.net/topic/1').kind, 'forum');
   assert.equal(items.find((x) => x.url === 'https://news.test/25').quote, '', 'a search title cannot pass the quote check');
   assert.ok(items.some((x) => x.quote === 'Worker quote for Acme.'));
-  assert.equal(out.notes.unjudged, 6);
+  assert.equal(out.notes.unjudged, 0, 'every result up to fifty is read: none left unjudged');
   assert.deepEqual(out.notes.people, out.notes.people.length && typeof out.notes.people[0] === 'string' ? ['Known Person'] : [{ name: 'Known Person', role: 'Director' }]);
   hasPeopleWarning(ctx.warnings);
 });
@@ -270,4 +270,20 @@ test('legacy D uses the claim cache and its register POST form, without a handle
       if (value === undefined) delete process.env[name!]; else process.env[name!] = value;
     }
   }
+});
+
+test('N reads the top fifty results only, never a Facebook page, and does not count the rest as unread', async () => {
+  const d = dive(), ctx = context(), reads: string[] = [], queries: string[] = [];
+  const rows = Array.from({ length: 60 }, (_, i) => ({ url: `https://news.test/${i + 1}`, title: `Acme page ${i + 1}`, publishedDate: `2026-09-${String((i % 28) + 1).padStart(2, '0')}` }));
+  ctx.exa = async (q) => { queries.push(q); return rows; };
+  ctx.brave = async (q) => { queries.push(q); return [{ url: 'https://www.facebook.com/acme/posts/1', title: 'Acme on Facebook' }, { url: 'https://m.facebook.com/story.php?id=2', title: 'Acme' }]; };
+  ctx.lookup = async (id) => answer(id, 'not_found');
+  ctx.read = async (url) => { reads.push(url); return { url, finalUrl: url, status: 200, text: `Acme: page ${url}`, via: 'test-worker' }; };
+  ctx.llm = async () => JSON.stringify({ items: [] });
+  const out = await news(ctx, d);
+  assert.equal(reads.length, 50);
+  assert.ok(!reads.some((u) => /facebook\.com/.test(u)), 'Facebook pages are not read');
+  assert.ok(!queries.some((q) => /site:facebook\.com/.test(q)), 'no search aimed at Facebook');
+  assert.equal(out.notes.unjudged, 0);
+  assert.ok(!ctx.warnings.some((w) => /news page cap/.test(w)));
 });
