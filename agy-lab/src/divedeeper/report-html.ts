@@ -626,7 +626,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     const cs = R.records.checks;
     if (!cs.length) return '';
     return `<table class="band"><thead><tr><th>Record</th><th>What it shows</th><th>Result</th></tr></thead><tbody>${cs.map((c: any) => {
-      const [cls, lbl] = c.id === 'gov' && c.result === 'found' ? ['good', 'On record'] : CHECK_PILL[c.result] ?? CHECK_PILL.not_checked;
+      const [cls, lbl] = (c.id === 'gov' || c.id === 'tenders') && c.result === 'found' ? ['good', 'On record'] : CHECK_PILL[c.result] ?? CHECK_PILL.not_checked;
       return `<tr><td><b>${esc(c.label)}</b>${c.where ? `<br><span class="muted small">${esc(c.where)}</span>` : ''}</td><td class="small">${esc(typeset(cleanText(clip(String(c.detail ?? ''), 220))))}</td><td><span class="pill ${cls}">${esc(lbl)}</span>${seeIt(c.source)}</td></tr>`;
     }).join('')}</tbody></table>`;
   }
@@ -906,7 +906,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     <h1>How customers, Google and AI<br><span class="g">see, reach and check your business.</span></h1>
     ${coverShot ? `<div><div class="phone"><img src="data:image/jpeg;base64,${coverShot.img}" alt="${esc(name)} homepage on a phone"></div><p class="phone-cap">${esc(hostOf(coverShot.url))} on a phone</p></div>` : ''}
   </div>
-  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(pl(R.reviews.total, 'review', 'reviews'))} read · ` : ''}${R.ai.answers ? `${esc(pl(R.ai.answers, 'AI answer', 'AI answers'))} read · ` : ''}every page of your sites tested</div></div>
+  <div class="cover-bot"><div><b>Prepared for ${esc(name)}</b>${esc([R.identity.ssm ? `SSM${NB}${R.identity.ssm}` : '', R.identity.domains.join(', ')].filter(Boolean).join(' · '))}</div><div><b>Checked ${esc(checkedOn)}</b>${R.reviews.total ? `${esc(pl(R.reviews.total, 'review', 'reviews'))} read · ` : ''}${esc([R.ai.answers ? `${pl(R.ai.answers, 'AI answer', 'AI answers')} read` : '', R.pages_tested ? `${pl(R.pages_tested, 'page', 'pages')} of your sites tested` : ''].filter(Boolean).join(' · '))}</div></div>
 </section>
 
 <nav class="chapnav" aria-label="Sections"><a href="#glance">At a glance</a>${stories.length ? '<a href="#stories">Fix first</a>' : ''}${chapters.map((id) => `<a href="#ch-${id}">${esc(CHAPTER_EYEBROW[id])}</a>`).join('')}${hasRec ? '<a href="#ai-recommend">AI recommends you?</a>' : ''}<a href="#analysis">Full analysis</a><a href="#stranger">Trust</a><a href="#plan">Action plan</a><a href="#ready">Ready to use</a><a href="#appendix">Checklist</a></nav>

@@ -121,9 +121,9 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `"homepage": {"headline": "under 12 words: what, where, proof", "subheadline": "1 sentence", "proof_points": ["4 short trust lines using ONLY register-CONFIRMED items"], "cta": "button text", ` +
     `"sections": [{"title": "", "body": "2-4 sentences of ready-to-paste copy"}] (4-6 sections, in page order)},\n` +
     `"pages_to_add": [{"slug": "/solar-installation-johor-bahru style", "title": "", "why": "1 sentence", "outline": ["3-5 bullet points"]}] (4-6 pages, service x town pages first),\n` +
-    `"pages_to_fix": [{"page": "", "problem": "", "fix": ""}] (the most important 6-10 only),\n` +
+    `"pages_to_fix": [{"page": "", "problem": "", "fix": ""}] (the most important 6-10 only; each problem says exactly what its finding says: which page or language version shows which value, never swapped),\n` +
     `"one_site_or_two": "1-2 sentences: should they keep two sites or merge, and why",\n` +
-    `"faq": [{"q": "", "a": ""}] (7 questions a customer looking for this kind of business would ask, each answered in 2-3 sentences from the facts only: who they are, where they work, what they do, their registrations, how to contact them, how a project works)}\n` +
+    `"faq": [{"q": "", "a": ""}] (7 questions a customer looking for this kind of business would ask, each answered in 2-3 sentences from the facts only: who we are, where we work, what we do, our registrations, how to contact us, how a project works. The FAQ is published on the company's own website: answer as the company ("we", "our"), never "they" or "their team", and state the company's own facts, such as its registration number, instead of telling readers to ask for them)}\n` +
     `Use only facts listed above; never invent numbers, awards or registrations. British English.`,
   'website plan');
   if (!site) ctx.warn('website plan did not parse');
@@ -164,7 +164,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   let faqOut: any = Array.isArray(site?.faq) && site.faq.length ? { faq: site.faq } : null;
   faqOut ??= await askJson(ctx, 
     `Write the FAQ section for the website of ${name} (${id.industry}; HQ ${id.address}). Use ONLY these facts and say nothing they do not support:\n${facts}${regRule}\n` +
-    `Write 7 questions a customer looking for this kind of business would ask, with 2–3 sentence answers. Include who they are, where they work, what they do, their registrations, how to contact them, and how a project works.\n` +
+    `Write 7 questions a customer looking for this kind of business would ask, with 2–3 sentence answers. Include who we are, where we work, what we do, our registrations, how to contact us, and how a project works. ` +
+    `The FAQ is published on the company's own website: answer as the company ("we", "our"), never "they" or "their team", and state the company's own facts, such as its registration number, instead of telling readers to ask for them.\n` +
     `Return JSON only: {"faq": [{"q": "", "a": ""}]}. British English.`,
   'FAQ');
   if (!faqOut) ctx.warn('FAQ did not parse');

@@ -91,15 +91,15 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     if (l.address) put('address', l.address, l.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), `Google Maps: ${l.name}${l.closed ? ' (marked closed)' : ''}`, 'maps');
   }
   const factText = (r.facts ?? []).map((f: any) => f.fact).join('\n');
-  for (const m of factText.matchAll(RESEARCH_PHONE_RE)) put('phone', m[0].trim(), normPhone(m[0]), 'background research', 'research');
+  for (const m of factText.matchAll(RESEARCH_PHONE_RE)) put('phone', m[0].trim(), normPhone(m[0]), 'other public pages we read', 'research');
   for (const [, list] of Object.entries(C.emails ?? {}) as [string, string[]][]) for (const e of list) put('email', e.toLowerCase(), e.toLowerCase(), 'your website', 'site');
-  for (const m of factText.matchAll(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi)) put('email', m[0].toLowerCase(), m[0].toLowerCase(), 'background research', 'research');
-  if (N.address) put('address', N.address, N.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'background research', 'research');
+  for (const m of factText.matchAll(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi)) put('email', m[0].toLowerCase(), m[0].toLowerCase(), 'other public pages we read', 'research');
+  if (N.address) put('address', N.address, N.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'other public pages we read', 'research');
   if (ctx.v21) {
     const baseline = dive.v21?.baseline ?? {};
-    for (const ph of baseline.phones ?? []) put('phone', ph, normPhone(ph), 'Step 2 baseline', 'research');
-    for (const e of baseline.emails ?? []) put('email', e.toLowerCase(), e.toLowerCase(), 'Step 2 baseline', 'research');
-    for (const a of baseline.addresses ?? []) put('address', a, a.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'Step 2 baseline', 'research');
+    for (const ph of baseline.phones ?? []) put('phone', ph, normPhone(ph), 'other public pages we read', 'research');
+    for (const e of baseline.emails ?? []) put('email', e.toLowerCase(), e.toLowerCase(), 'other public pages we read', 'research');
+    for (const a of baseline.addresses ?? []) put('address', a, a.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'other public pages we read', 'research');
   }
   for (const w of C.waStatus ?? []) {
     const key = normPhone(w.number);

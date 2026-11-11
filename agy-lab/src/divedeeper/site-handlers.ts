@@ -7,6 +7,17 @@ export type HandlerResult = {
   records: unknown[]; source_url: string; excerpt: string; reason: string;
 };
 const checks = new WeakMap<object, Map<string, Promise<HandlerResult>>>();
+/** The same legal name with the legal form spelt the other way ("Sdn Bhd" <-> "Sdn. Bhd.", "Bhd" <-> "Bhd."),
+ *  or '' when the name has no legal form to respell. */
+export function otherLegalForm(legal: string): string {
+  const s = String(legal ?? '').trim();
+  const m = s.match(/\b(sdn\.?\s*bhd\.?|bhd\.?|berhad)\s*$/i);
+  if (!m) return '';
+  const form = m[1];
+  const dotted = /\./.test(form);
+  const alt = /^sdn/i.test(form) ? (dotted ? 'Sdn Bhd' : 'Sdn. Bhd.') : /^bhd/i.test(form) ? (dotted ? 'Bhd' : 'Bhd.') : '';
+  return alt ? `${s.slice(0, m.index).trimEnd()} ${alt}` : '';
+}
 /** A "not found" answer that is really the source turning the search away. */
 const REFUSED = /not[_ -]?logged[_ -]?in|login[_ -]?required|log ?in to (?:continue|search|view)|sign[_ -]?in required|please (?:log|sign) ?in|captcha|access denied|unauthori[sz]ed|forbidden|rate[_ -]?limit|too many requests/i;
 
@@ -45,7 +56,11 @@ export async function lookupCompany(ctx: Ctx, dive: any, handler: string): Promi
       catch (err) { return result(handler, { error: err instanceof Error ? err.message : String(err) }); }
     };
     const first = await ask(N.legal);
-    if (first.status !== 'not_found' || spec.legalOnly || !N.short || N.short.toLowerCase() === N.legal.toLowerCase()) return first;
+    if (first.status !== 'not_found') return first;
+    // A register's search matches text: "Eternalgy Sdn Bhd" finds nothing where it lists "ETERNALGY SDN. BHD.".
+    // Ask once more with the other spelling of the legal form; the handler still accepts only the full legal name.
+    if (spec.legalOnly) { const alt = otherLegalForm(N.legal); return alt ? ask(alt) : first; }
+    if (!N.short || N.short.toLowerCase() === N.legal.toLowerCase()) return first;
     return ask(N.short);
   })());
   return report(ctx, await cache.get(handler)!);

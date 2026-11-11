@@ -226,7 +226,10 @@ test('shared checks deduplicate calls across lanes and respect legal-name-only q
   await Promise.all([lookupCompany(ctx, d, K_IDS[5]), lookupCompany(ctx, d, K_IDS[5])]);
   await lookupCompany(ctx, d, K_IDS[5]);
   await lookupCompany(ctx, d, 'MY-ssmsearch.com/w1');
-  assert.deepEqual(calls, [[K_IDS[5], LEGAL], [K_IDS[5], 'Acme'], ['MY-ssmsearch.com/w1', LEGAL]]);
+  // A legal-name-only question never falls back to the brand name; it may retry the legal name with the other
+  // spelling of its legal form ("Sdn Bhd" <-> "Sdn. Bhd."), which registers that match text need.
+  assert.deepEqual(calls, [[K_IDS[5], LEGAL], [K_IDS[5], 'Acme'], ['MY-ssmsearch.com/w1', LEGAL], ['MY-ssmsearch.com/w1', 'Acme Logistics Sdn. Bhd.']]);
+  assert.ok(!calls.some(([id, k]) => id === 'MY-ssmsearch.com/w1' && k === 'Acme'));
 });
 
 test('legacy K and N retain snippet evidence and person searches and never call a handler', async () => {

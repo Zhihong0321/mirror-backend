@@ -18,6 +18,7 @@ export function promptOf(name: string, evidence: string, facts: string, list: St
     `For EACH statement decide:\n- "supported": every number, name, date and claim in it appears in the evidence or follows directly from it. Advice ("do X") is supported when the finding it responds to is in the evidence. Plain-word rewording of a finding is fine.\n` +
     `- "unsupported": it states a number, name, date or claim that the evidence does not contain, or it contradicts the evidence.\n` +
     `A statement calling something independent, third-party or verified by someone is supported only if the findings it rests on come from an independent source (party is 'independent', or the finding is a register, government or RDAP result); if they are only the company's own pages, listings or entries it submitted, mark it unsupported.\n` +
+    `A statement that one thing causes or changes another ("X drops your rank", "if X stays, Y falls") is supported only if a finding shows that link, not just both facts; otherwise name the missing link. ` +
     `Use "unsupported" only when you can name the part that is missing or wrong in one short sentence. When unsure, say "supported". Do not rewrite anything.\n\n` +
     `MEASURED FACTS (settled):\n${facts}\n\nFINDINGS (the evidence), as part | severity | finding | detail | party:\n${evidence}\n\n` +
     `STATEMENTS, as id | kind | text:\n${list.map((s) => `${s.id} | ${s.kind} | ${clip(s.text, 600)}`).join('\n')}\n\n` +

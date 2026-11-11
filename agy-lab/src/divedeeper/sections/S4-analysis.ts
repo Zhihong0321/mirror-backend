@@ -58,7 +58,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const mismatchesIn = (dive?.result?.contradictions ?? []).slice(0, 14).map((c: string) => `- ${c.replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim()}`).join('\n');
 
   const an = await askJson(ctx,
-    `You are the senior consultant signing an online presence audit for the owner of ${name} (${R.identity.industry}). We researched six parts of the business (${THEME_HELP}). Write the full analysis that reads across all six. Plain British English, warm but direct, no hype, no jargon, every claim backed by the facts below. Speak to the owner as "you".\n\n` +
+    `You are the senior consultant signing an online presence audit for the owner of ${name} (${R.identity.industry}). We researched six parts of the business (${THEME_HELP}). Write the full analysis that reads across all six. Plain British English, warm but direct, no hype, no jargon, every claim backed by the facts below. Speak to the owner as "you". ` +
+    `Never say one finding causes another (for example that page wording lowers a Maps rank) unless a fact below says so: two findings side by side are not a cause. Never state a count, a total or a "none" (such as "no unanswered bad reviews") that is not in the facts below.\n\n` +
     `Measured facts (settled; where an official register is given it is the truth):\n${JSON.stringify(factsOf(R))}\n\n` +
     `Urgent and needs-work items by part:\n${THEMES.map((t) => `## ${t}\n${urgent(t) || '(none)'}`).join('\n')}\n\n` +
     `Good news and notes by part:\n${THEMES.map((t) => `## ${t}\n${good(t) || '(none)'}`).join('\n')}\n\n` +

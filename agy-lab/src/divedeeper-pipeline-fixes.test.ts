@@ -55,3 +55,24 @@ test('risk checks that could not run are not counted as failed', () => {
   const R = resolve({ result: { identity: {} } }, { 'K-credibility': { notes: { checks }, findings: [] } });
   assert.deepEqual(R.records.risky.map((c: any) => c.id), ['bnm', 'fca', 'sc', 'court']);
 });
+
+test('a legal-name-only register search is retried with the other spelling of the legal form', async () => {
+  const { otherLegalForm } = await import('./divedeeper/site-handlers.ts');
+  assert.equal(otherLegalForm('Eternalgy Sdn Bhd'), 'Eternalgy Sdn. Bhd.');
+  assert.equal(otherLegalForm('Verdant Solar Sdn. Bhd.'), 'Verdant Solar Sdn Bhd');
+  assert.equal(otherLegalForm('Solarvest Holdings Bhd'), 'Solarvest Holdings Bhd.');
+  assert.equal(otherLegalForm('Acme Trading'), '');
+  assert.equal(otherLegalForm('Pekat Group Berhad'), '');
+});
+
+test('the cover counts what was read: every AI answer from both AI lanes, and the site pages the crawl read', () => {
+  const L = {
+    'G-search': { notes: { answers: [{ id: 'a', sample: 0 }, { id: 'b', sample: 0 }] } },
+    'G-recommend': { notes: { assistants: ['Gemini'], answers: [{ kind: 'find', assistant: 'Gemini' }, { kind: 'rate', assistant: 'Gemini' }, { kind: 'pick', assistant: 'Gemini' }] } },
+    'C-merged': { notes: { pages_crawled: 15 }, findings: [] },
+  };
+  const R = resolve({ result: { identity: {} } }, L);
+  assert.equal(R.ai.answers, 5);
+  assert.equal(R.pages_tested, 15);
+  assert.equal(resolve({ result: { identity: {} } }, {}).pages_tested, null);
+});

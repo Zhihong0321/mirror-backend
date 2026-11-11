@@ -50,6 +50,10 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   if ((s2.ai?.actions ?? []).length) ready.ai = 'the plan for getting recommended by AI assistants';
   if (s2.jsonld) ready.jsonld = 'the business details for Google and AI, ready to paste';
 
+  // Our finding ids and draft keys are not words for the owner: "(F1,F10,F12)" and "using fixes draft" are cut.
+  const noIds = (s: unknown) => String(s ?? '').replace(/\s*\(\s*F\d+(?:\s*[,;/&]\s*F\d+)*\s*\)/g, '')
+    .replace(/\b(?:using|from|with|see|via) (?:the )?(homepage|pages|fixes|replies|ask|faq|ai|jsonld) drafts?\b/gi, (_m, k: string) => `using ${ready[k.toLowerCase()] ?? 'the drafts below'}`)
+    .replace(/\s{2,}/g, ' ').trim();
   const got = todo.length ? await askJson(ctx,
     `You are compiling the action plan of an online presence audit for the owner of ${R.name} (${R.identity.industry}). Turn the findings below into a task list the owner can hand out, one list per department.\n` +
     `Departments:\n${DEPTS.map((d) => `- ${d.id}: ${d.title} (${d.covers}); done by ${d.who.toLowerCase()}`).join('\n')}\n\n` +
@@ -62,7 +66,8 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     `"when": "week (do this week) | month (this month) | quarter (within 3 months)", "effort": "a short estimate like 1 hour or 2 days", "impact": "high | medium | low", ` +
     `"theme": "the part it comes from: one of ${AREAS.map((a) => a.id).join(', ')}", "ready": "the key of the draft that does it, or null", "items": ["the F-ids this task closes"]}]}\n` +
     `Rules: one task may close several findings that need the same work; group them. Every urgent finding must be in a task. Each task has one department: the one whose people do the work. ` +
-    `Order each department's tasks by when, then by impact. Use only what the findings say; never invent numbers. British English.`,
+    `Order each department's tasks by when, then by impact. Use only what the findings say; never invent numbers. British English. ` +
+    `The owner reads task, why and how: never write the F-ids or a draft's key there (they go only in "items" and "ready"); name a draft by its title, e.g. "the homepage, rewritten".`,
   'action plan') : null;
   if (todo.length && !got) ctx.warn('action plan did not parse; the plan is built from the findings themselves');
 
@@ -71,7 +76,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const first = items.length ? ref.get(items[0])! : null;
     return {
       dept: DEPTS.some((d) => d.id === t.dept) ? t.dept : first ? deptOf(first) : 'other',
-      task: t.task.trim(), why: String(t.why ?? '').trim(), how: String(t.how ?? '').trim(),
+      task: noIds(t.task), why: noIds(t.why), how: noIds(t.how),
       when: WHEN.includes(t.when) ? t.when : 'month', effort: String(t.effort ?? '').trim(), impact: IMPACT.includes(t.impact) ? t.impact : 'medium',
       theme: AREAS.some((a) => a.id === t.theme) ? t.theme : first?.area ?? null,
       ready: typeof t.ready === 'string' && ready[t.ready] ? t.ready : null,

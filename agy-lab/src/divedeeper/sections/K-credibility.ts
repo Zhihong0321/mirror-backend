@@ -32,6 +32,9 @@ const HANDLERS = [
   ['MY-ransomlook.io/w1', 'security', 'Ransomware leak listings'],
 ] as const;
 
+/** A handler's reason in customer words: no "tier 4:" or "no_data:" prefixes. */
+const plainReason = (s: string) => String(s ?? '').replace(/^\s*(?:tier\s*\d\s*:\s*|no_data\s*:\s*)+/i, '').trim();
+
 const LAW = ['kehakiman.gov.my', 'commonlii.org', 'cljlaw.com', 'lawnet.com', 'elaw.my', 'mlj.com.my', 'lexology.com', 'insolvensi.gov.my', 'mdi.gov.my'];
 const KEY_ROLE = /director|founder|owner|shareholder|chief executive|ceo|managing|chairman|pengarah/i;
 
@@ -180,21 +183,24 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     ] as const) checks.push({ id, label, where: '', result: 'not_checked', detail: why, source: null });
 
   } else {
+    // Customer words: the register's address, not the handler id; "no record found", not handler talk. A tender
+    // search is not a risk check: nothing found is "Nothing found", not "Clear".
+    const hostOf = (u: string) => { try { return new URL(u).host.replace(/^www\./, ''); } catch { return ''; } };
     for (const { group, label, out } of handlerResults) checks.push({
-      id: group, label, where: out.handler,
-      result: out.status === 'couldnt_check' || failed.has(group) ? 'could_not_check' : out.status === 'found' ? 'found' : 'clear',
-      detail: out.status === 'couldnt_check' ? `can't check automatically: ${out.reason}` : failed.has(group) ? "can't check automatically: handler records could not be classified" : out.status === 'not_found' ? 'not found by this handler' : judged.filter((x) => x.group === group).map((x) => x.outcome).join(' ') || 'candidate records returned; no confirmed match to this company',
+      id: group, label, where: hostOf(out.source_url) || (HANDLERS.find((h) => h[1] === group)?.[0] ?? '').replace(/^[A-Z]{2}-|\/w\d+$/g, ''),
+      result: out.status === 'couldnt_check' || failed.has(group) ? 'could_not_check' : out.status === 'found' ? 'found' : group === 'tenders' ? 'none' : 'clear',
+      detail: out.status === 'couldnt_check' ? `can't check automatically: ${plainReason(out.reason)}` : failed.has(group) ? "can't check automatically: the records found could not be classified" : out.status === 'not_found' ? 'no record found' : judged.filter((x) => x.group === group).map((x) => x.outcome).join(' ') || 'candidate records returned; no confirmed match to this company',
       source: out.source_url || null,
     });
     checks.push({ id: 'gov', label: 'Named on government websites', where: '.gov.my', result: failed.has('gov') ? 'could_not_check' : of(['government']).length ? 'found' : 'clear', detail: failed.has('gov') ? "can't check automatically: not all government pages could be read or classified" : of(['government']).map((x) => x.outcome).join(' ') || 'no government page names it', source: of(['government'])[0]?.url ?? null });
     for (const [id, label, detail] of [
-      ['insolvency', 'Insolvency (MDI e-Insolvensi)', 'tier 4: needs user registration and a paid FPX search'],
-      ['trademark', 'MyIPO trademarks', 'tier 4: needs an authenticated MyIPO account'],
-      ['ssm', 'SSM company documents', 'tier 4: paid documents and authentication'],
-      ['ctos', 'CTOS / Experian credit reports', 'tier 4: paid reports and company consent'],
+      ['insolvency', 'Insolvency (MDI e-Insolvensi)', 'needs user registration and a paid FPX search'],
+      ['trademark', 'MyIPO trademarks', 'needs an authenticated MyIPO account'],
+      ['ssm', 'SSM company documents', 'paid documents and authentication'],
+      ['ctos', 'CTOS / Experian credit reports', 'paid reports and company consent'],
     ]) checks.push({ id, label, where: '', result: 'not_checked', detail: `can't check automatically: ${detail}`, source: null });
     const privateCompany = /sdn\.?\s*bhd\.?\s*$/i.test(N.legal);
-    checks.push({ id: 'bursa', label: 'Bursa Malaysia', where: 'bursamalaysia.com', result: 'not_checked', detail: privateCompany ? 'skipped: Sdn Bhd companies are private; Bursa lists public companies' : "can't check automatically: Bursa is a tier 4 source", source: null });
+    checks.push({ id: 'bursa', label: 'Bursa Malaysia', where: 'bursamalaysia.com', result: 'not_checked', detail: privateCompany ? 'skipped: Sdn Bhd companies are private; Bursa lists public companies' : "can't check automatically: Bursa's records need a login", source: null });
     for (const c of checks.filter((c) => c.result === 'not_checked' || c.result === 'could_not_check')) add({ title: `${c.detail.startsWith('skipped:') ? 'SKIPPED' : "CAN'T CHECK AUTOMATICALLY"}: ${c.label}`, detail: c.detail, severity: 'low', source: c.source, check: `cred-${c.id}` });
   }
 
