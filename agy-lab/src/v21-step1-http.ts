@@ -13,6 +13,8 @@ import type http from 'node:http';
 import crypto from 'node:crypto';
 import { runStep1Research, type ResearchInput } from './v21/research.ts';
 import { runStep1_5 } from './v21-step1-5-http.ts';
+import { chainStep2And3 } from './v21-step2-http.ts';
+import { baseUrl } from './v21-step3-http.ts';
 import * as store from './v21-store.ts';
 
 type Ctx = {
@@ -43,6 +45,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
   if (p !== PATH && !p.startsWith(PATH + '/')) return false;
 
   if (req.method === 'POST' && p === PATH) {
+    const base = baseUrl(req); // the hub address, for the report link Step 3 writes
     const b = await readJson(req);
     const str = (k: string) => (typeof b[k] === 'string' ? (b[k] as string).trim() : '');
     const input: ResearchInput = { company: str('company'), country: str('country'), industry: str('industry') };
@@ -93,7 +96,8 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
         // Trigger Step 1.5 (technical audit: PageSpeed + Domain ownership & security) automatically in background
         try {
           const rep: any = await store.getReport(id);
-          if (rep) void runStep1_5(rep, data, id);
+          // The hub chain: when Step 1.5 ends (done or failed), Step 2 and then Step 3 run. Nothing stops it.
+          if (rep) void runStep1_5(rep, data, id).catch((e: any) => console.error(`[v21 chain] ${id}: Step 1.5: ${e?.message ?? e}`)).then(() => chainStep2And3(id, base));
         } catch (err: any) {
           console.error(`[v21 step1 auto step1.5] ${id}: ${err?.message ?? err}`);
         }

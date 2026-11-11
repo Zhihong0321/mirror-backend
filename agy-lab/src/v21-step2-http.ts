@@ -16,6 +16,7 @@ import { recheckTidy } from './v21/recheck.ts';
 import { judgeV2, recheckV2 } from './v21/step2-v2.ts';
 import type { Step2AnalysisOutput } from './v21/analyse.ts';
 import { runStep1_5 } from './v21-step1-5-http.ts';
+import { startStep3 } from './v21-step3-http.ts';
 import * as store from './v21-store.ts';
 
 type Ctx = {
@@ -36,6 +37,23 @@ function failedOutput(report: any, error: string): Step2AnalysisOutput {
     findings: [], dropped_namesakes: [], could_not_check: [],
     stats: { findings_count: 0, dropped_namesakes_count: 0, could_not_check_count: 0, llm_calls: 0, duration_ms: 0 },
   } as Step2AnalysisOutput;
+}
+
+/**
+ * The hub chain (owner, 2026-11-11): when Step 1.5 ends, Step 2 runs, and when Step 2 ends, Step 3 runs, whatever
+ * each outcome. No check stops it; a failure is stored on the report and the next step still starts. Never throws.
+ */
+export async function chainStep2And3(reportId: string, base: string): Promise<void> {
+  try {
+    const report: any = await store.getReport(reportId);
+    const cp = await store.latestRaw(reportId, 'checkpoint');
+    const runId = crypto.randomUUID();
+    await store.setStatus(reportId, 2, 'running');
+    await runStep2(report ?? { report_id: reportId }, cp?.payload ?? null, runId, true, 'v2');
+  } catch (err: any) {
+    console.error(`[v21 chain] ${reportId}: Step 2: ${err?.message ?? err}`);
+  }
+  await startStep3(reportId, base);
 }
 
 /** The whole run. Never throws: a failure is stored as a 'result' row with status failed. */

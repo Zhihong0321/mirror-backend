@@ -55,7 +55,22 @@ const BAD_IDS_ANSWER = JSON.stringify({
   email: { subject: { text: 'Your domain expires soon', cites: ['f404'] }, body: [{ text: 'Google shows 4.7 stars from 32 reviews.', cites: ['f9'] }] },
 });
 
-function baseUrl(req: http.IncomingMessage): string {
+/**
+ * The hub chain (owner, 2026-11-11): Step 3 starts when Step 2 ends, whatever Step 2's outcome. No check stops it:
+ * a missing or failed Step 2 result is written up as it is, and a failure is stored on the report. Never throws.
+ */
+export async function startStep3(reportId: string, base: string): Promise<void> {
+  try {
+    const s2row = await store.latestRaw(reportId, 'result');
+    const runId = crypto.randomUUID();
+    await store.setStatus(reportId, 3, 'running');
+    await runStep3(reportId, s2row as any, runId, `${base}/v21/r/${reportId}`);
+  } catch (err: any) {
+    console.error(`[v21 chain] ${reportId}: Step 3 start: ${err?.message ?? err}`);
+  }
+}
+
+export function baseUrl(req: http.IncomingMessage): string {
   const host = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '').split(',')[0]!.trim();
   const proto = String(req.headers['x-forwarded-proto'] ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https')).split(',')[0]!.trim();
   return `${proto}://${host}`;
