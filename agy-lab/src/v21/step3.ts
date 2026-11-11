@@ -26,6 +26,20 @@ import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import type { Step2V2Output } from './step2-v2.ts';
 import { renderTidy, type TidyData } from './tidy.ts';
 import { daysToImpact, localeFor, plural, rankKey, severity, type Urgency } from '../report-rules/index.ts';
+import { readFileSync } from 'node:fs';
+
+/** A sample report page (src/v21/samples) as a data URI, read once. An unreadable file gives '' and that picture is
+ *  left out, so a missing image never stops the page. */
+const samplePics = new Map<string, string>();
+function samplePic(name: string): string {
+  if (!samplePics.has(name)) {
+    let uri = '';
+    try { uri = `data:image/jpeg;base64,${readFileSync(new URL(`./samples/${name}`, import.meta.url)).toString('base64')}`; }
+    catch (err: any) { console.error(`[v21 step3] sample picture ${name}: ${err?.message ?? err}`); }
+    samplePics.set(name, uri);
+  }
+  return samplePics.get(name)!;
+}
 
 export const STEP3_PROMPT = 'step3-v4';
 export const STEP3_REFINE_PROMPT = 'step3-refine-v3';
@@ -695,6 +709,11 @@ const P = {
     askSpan: (h: string) => `one payment · over ${h} of checking done for you`,
     // What one payment buys (owner, 2026-11-11).
     // The two full reports, as a timeline (owner, 2026-11-11).
+    shots: [
+      { file: 'full-report.jpg', alt: 'The first page of a sample full report' },
+      { file: 'ads-report.jpg', alt: 'A page of ad cards from a sample Social Media Ads report' },
+    ],
+    shotsCap: 'Sample pages: the full report, and the monthly Social Media Ads report.',
     steps: [
       { when: 'Now', h: 'Uncover the problems', p: 'The full report: every problem, where it is, and the fix.' },
       { when: 'Within 60 days', h: 'Check the fixes are live', p: 'A second full report checks whether each fix now shows online.' },
@@ -968,7 +987,12 @@ h2{font-size:clamp(30px,4vw,50px);max-width:17em}
 .ask .price b{font-family:var(--display);font-size:64px;font-weight:600;letter-spacing:-0.04em;line-height:.9}
 .ask .price span{font-size:14px;color:var(--grey)}
 .buy{display:grid;gap:0;min-width:0}
-.tl{list-style:none;margin:15px 0 28px;padding:0;display:grid;grid-template-columns:1fr 1fr}
+.shots{position:relative;aspect-ratio:16/10;margin:0 0 8px}
+.shots img{position:absolute;display:block;object-fit:cover;object-position:top;border:1px solid rgba(255,255,255,.3);box-shadow:0 16px 36px -16px rgba(0,0,0,.8)}
+.shots .s0{left:0;top:0;width:60%;height:94%;z-index:2}
+.shots .s1{right:0;top:10%;width:50%;height:90%;z-index:1}
+.shotcap{font-size:12.5px;color:var(--on-dark-2);margin:0}
+.tl{list-style:none;margin:36px 0 28px;padding:0;display:grid;grid-template-columns:1fr 1fr}
 .tl li{position:relative;border-top:2px solid var(--dark-line);padding:22px 20px 0 0;display:grid;gap:4px;align-content:start}
 .tl .n{position:absolute;top:-15px;left:0;width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;font-size:13px;font-weight:700}
 .tl .w{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--on-dark-2)}
@@ -1290,6 +1314,9 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
 <div class="across"><h3>${esc(t.partsAfterH)}</h3><ul>${t.partsAfter.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div></div></section>`;
 
   // ---- the two full reports as a timeline: uncover now, re-check within 60 days
+  // ---- sample pages, flat and straight: the full report in front, the ads report behind. A missing file is left out.
+  const pics = t.shots.map((x, i) => { const src = samplePic(x.file); return src ? `<img class="s${i}" src="${src}" alt="${esc(x.alt)}" loading="lazy">` : ''; }).join('');
+  const shots = pics ? `<div class="shots">${pics}</div><p class="shotcap">${esc(t.shotsCap)}</p>` : '';
   const steps = `<ol class="tl">${t.steps.map((x, i) => `<li><span class="n">${i + 1}</span><p class="w">${esc(x.when)}</p><h3>${esc(x.h)}</h3><p>${esc(x.p)}</p></li>`).join('')}</ol>`;
   const bundle = !price ? '' : `<div class="bundle"><b>${esc(t.bundleH)}</b><ol>${t.bundle.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
 
@@ -1297,7 +1324,7 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
   const getsN: GetsN = { findings: counts.findings };
   const offer = `<section class="sec dark" id="offer"><div class="in offer"><div><p class="eyebrow">${esc(t.offerEye)}</p><h2>${esc(t.offerH)}</h2><p class="lead">${esc(t.offerP)}</p>
 <ul class="gets">${t.gets.map((g) => `<li><b>${esc(g.h)}</b><span>${esc(g.note?.(getsN) || g.p)}</span></li>`).join('')}</ul></div>
-<div class="buy">${steps}<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}${bundle}
+<div class="buy">${shots}${steps}<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}${bundle}
 <p class="how">${esc(t.how)}</p><p class="msg" id="msg">${esc(t.orderLine(c, ref))}</p>
 <button class="btn inv" id="copy" type="button">${esc(t.copy)}</button><p class="ok" id="ok" aria-live="polite"></p>
 <p class="guar"><b>${esc(t.guarK)}</b> ${esc(t.guarantee)}</p><p class="keep">${esc(t.keep)}</p></div></div></div></section>`;
