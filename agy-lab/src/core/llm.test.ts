@@ -287,3 +287,31 @@ test('a lane that keeps the stream open with keep-alive lines but no answer fail
     clearInterval(pinger);
   }
 });
+
+test('exactModel: only lanes with that exact model (provider prefix ignored); the family when none has it', () => {
+  const lanes = [
+    { url: 'https://a.example/v1', key: 'a', model: 'deepseek-v4.1-flash-1017', label: 'A' },
+    { url: 'https://b.example/v1', key: 'b', model: 'deepseek-ai/deepseek-v4.1-flash-1017', label: 'B' },
+    { url: 'https://c.example/v1', key: 'c', model: 'free/deepseek-v4.1-flash', label: 'C' },
+    { url: 'https://d.example/v1', key: 'd', model: 'YL-DeepSeek-V4.1-Flash', label: 'D' },
+  ];
+  assert.deepEqual(lanesFor('deepseek-v4.1-flash-1017', lanes, true).map((l) => l.label), ['A', 'B']);
+  assert.deepEqual(lanesFor('deepseek-v4.1-flash-1017', lanes).map((l) => l.label), ['A', 'B', 'C', 'D']);
+  // No exact lane: the call still goes to the family, never to nothing.
+  assert.deepEqual(lanesFor('deepseek-v9', lanes, true).map((l) => l.label), ['A', 'B', 'C', 'D']);
+});
+
+test('reasoningEffort is sent as reasoning_effort; left out when not asked', async () => {
+  resetForTests();
+  setLanesForTests([{ url: 'https://a.example/v1', key: 'a', model: 'deepseek-v4.1-flash-1017', label: 'A' }]);
+  const bodies: Record<string, unknown>[] = [];
+  const fetchImpl = (async (_url: string, init: RequestInit) => {
+    bodies.push(JSON.parse(String(init.body)));
+    return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: 'ok' } }] }));
+  }) as unknown as typeof fetch;
+  await chat('x', { step: 's', model: 'deepseek-v4.1-flash-1017', exactModel: true, reasoningEffort: 'max', fetchImpl, fallback: false });
+  await chat('x', { step: 's', fetchImpl, fallback: false });
+  assert.equal(bodies[0].reasoning_effort, 'max');
+  assert.ok(!('reasoning_effort' in bodies[1]));
+  resetForTests();
+});

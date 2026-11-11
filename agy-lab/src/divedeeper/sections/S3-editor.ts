@@ -8,7 +8,7 @@
 //   2. takes proof screenshots of the worst website problems, with the problem outlined.
 // The verdict, the stories and the rest of the analysis are S4's (sections/S4-analysis.ts).
 // Every step falls back: no LLM answer keeps the lane's own wording, no browser means no shots.
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES, resolve, type Item } from '../editor.ts';
 import { takeShots, type ShotAsk } from '../shots.ts';
 import { takeWorkerShots } from '../v21/shots.ts';
@@ -19,7 +19,7 @@ const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : 
 
 async function askJson(ctx: Ctx, prompt: string, label: string, attempts = 2): Promise<any> {
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    const got = ctx.parseJson(await ctx.llm(prompt, { label }));
+    const got = ctx.parseJson(await ctx.llm(prompt, { ...WRITE_LLM, label }));
     if (got) return got;
     ctx.warn(`${label} did not parse (attempt ${attempt})`);
   }

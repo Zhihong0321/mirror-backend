@@ -41,6 +41,8 @@ export function configure(h: Hooks): void { hooks = { ...hooks, ...h }; }
 const VAULT = process.env.VAULT_PATH ?? 'D:/Tools/my-vault/vault.json';
 const LAB = (process.env.LAB_URL ?? 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
 export const DEFAULT_MODEL = process.env.DD_LLM_MODEL ?? 'deepseek-v4.1-flash-1017';
+/** The review and write-up steps (S1-S6, owner 2026-11-11): exactly DeepSeek V4.1 Flash 1017, at maximum reasoning. */
+export const WRITE_LLM = { model: 'deepseek-v4.1-flash-1017', exactModel: true, reasoningEffort: 'max' } as const;
 
 // Every LLM, Maps, Exa, Brave and PageSpeed call goes through the app's core
 // (core/README.md), which picks the keys and lanes: on the hub, those saved on
@@ -225,13 +227,13 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
   }
 
   /** One chat call through the app's LLM router (core/llm.ts); '' when every lane and MiniMax failed. */
-  async function llm(prompt: string, opts: { model?: string; system?: string; temperature?: number; label?: string } = {}): Promise<string> {
+  async function llm(prompt: string, opts: { model?: string; system?: string; temperature?: number; label?: string; exactModel?: boolean; reasoningEffort?: string } = {}): Promise<string> {
     const model = opts.model ?? DEFAULT_MODEL;
     meter.llm.calls++;
     meter.llm.byModel[model] = (meter.llm.byModel[model] ?? 0) + 1;
     meter.llm.promptChars += prompt.length + (opts.system?.length ?? 0);
     try {
-      const out = await track(`llm ${model}`, core.llm.chat(prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, log: meter.calls }));
+      const out = await track(`llm ${model}`, core.llm.chat(prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, exactModel: opts.exactModel, reasoningEffort: opts.reasoningEffort, log: meter.calls }));
       meter.llm.answerChars += out.answer.length;
       meter.llm.tokensIn += out.tokensIn;
       meter.llm.tokensOut += out.tokensOut;

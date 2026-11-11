@@ -7,7 +7,7 @@
 //
 // It only removes or lowers. A reply that does not parse changes nothing; a call the content filter refuses is split in half.
 // If it condemns more than 40% of what it was asked, it is not believed (check.ts tooMany) and its verdicts are ignored.
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES, resolve, type Item } from '../editor.ts';
 import { isJudged, tooMany, VERDICTS, type Verdict } from '../check.ts';
 
@@ -38,7 +38,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   const askBatch = async (entries: [string, Item][]): Promise<void> => {
     if (!entries.length) return;
-    const got = ctx.parseJson<any>(await ctx.llm(promptOf(dive, R.name, entries, register), { label: 'recheck findings' }));
+    const got = ctx.parseJson<any>(await ctx.llm(promptOf(dive, R.name, entries, register), { ...WRITE_LLM, label: 'recheck findings' }));
     if (!got || !Array.isArray(got.verdicts)) {
       // Not JSON, or refused by the content filter over one finding: read each half on its own.
       if (entries.length > 1) {

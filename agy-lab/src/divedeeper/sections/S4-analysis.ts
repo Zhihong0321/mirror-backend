@@ -8,7 +8,7 @@
 // assessment of each part, the threads that run through several parts, what to build on, the risks,
 // the opportunities, and the few things a stranger would notice do not add up.
 // No answer keeps the report's built-in wording for every block.
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { AREAS, STAGE1_LANES, resolve, type Item } from '../editor.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
@@ -17,7 +17,7 @@ const THEME_HELP = 'contact = contact and reachability, understanding = how the 
 
 async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const got = ctx.parseJson(await ctx.llm(prompt, { label }));
+    const got = ctx.parseJson(await ctx.llm(prompt, { ...WRITE_LLM, label }));
     if (got) return got;
     ctx.warn(`${label} did not parse (attempt ${attempt})`);
   }

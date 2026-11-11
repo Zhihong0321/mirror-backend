@@ -208,8 +208,14 @@ export function laneName(c: LlmConfig): string {
 const family = (model: string) => model.toLowerCase().split('/').pop() ?? '';
 const isDeepseek = (model: string) => family(model).includes('deepseek');
 
-/** The lanes that serve a model: any deepseek lane for a deepseek model, else lanes with that exact model. */
-export function lanesFor(model = 'deepseek', all: LlmConfig[] = pool()): LlmConfig[] {
+/** The lanes that serve a model: any deepseek lane for a deepseek model, else lanes with that exact model.
+ *  exact: only lanes with this exact model name (a provider prefix like "deepseek-ai/" is ignored); when no
+ *  lane has it, the usual family match is used, so the call is still answered. */
+export function lanesFor(model = 'deepseek', all: LlmConfig[] = pool(), exact = false): LlmConfig[] {
+  if (exact) {
+    const same = all.filter((c) => family(c.model) === family(model));
+    if (same.length) return same;
+  }
   return all.filter((c) => (isDeepseek(model) ? isDeepseek(c.model) : family(c.model) === family(model)));
 }
 
@@ -252,7 +258,7 @@ function give(c: LlmConfig): void {
 // ---------------------------------------------------------------- one request to one lane
 
 type Message = { role: 'system' | 'user'; content: string };
-type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number };
+type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number; reasoningEffort?: string };
 type Answer = { answer: string; tokensIn: number; tokensOut: number };
 
 /** A chunk that carries part of the answer: content or reasoning text, the finish, the usage, or a
@@ -281,6 +287,7 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
         stream: true,
         stream_options: { include_usage: true },
         ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+        ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
       }),
       signal: opts.timeoutMs ? AbortSignal.any([guard.signal, AbortSignal.timeout(opts.timeoutMs)]) : guard.signal,
     });
@@ -378,6 +385,10 @@ export type ChatOpts = {
   timeoutMs?: number;
   /** Give up on a lane whose answer stops arriving for this long (default IDLE_MS). */
   idleMs?: number;
+  /** Only lanes with exactly this model (see lanesFor); other lanes of the family only when none has it. */
+  exactModel?: boolean;
+  /** Sent to the lane as reasoning_effort, e.g. 'max' (DeepSeek V4.1 on Vectide and Hive honours it). */
+  reasoningEffort?: string;
   /** Every attempt is pushed here as an ApiCall. */
   log?: ApiCall[];
   /** MiniMax as the last resort; on unless false. */
@@ -399,7 +410,7 @@ export async function chat(prompt: string, opts: ChatOpts): Promise<ChatAnswer> 
   const minimaxOn = opts.fallback !== false && Boolean(pi.config().apiKey);
   const errors: string[] = [];
   for (let r = 0; r <= WAITS.length; r++) {
-    const lanes = lanesFor(opts.model ?? 'deepseek');
+    const lanes = lanesFor(opts.model ?? 'deepseek', pool(), opts.exactModel === true);
     if (!lanes.length && !minimaxOn) throw fail('not_configured', `no lane serves ${opts.model ?? 'deepseek'}: add one on /workers`);
     if (lanes.length) {
       try {

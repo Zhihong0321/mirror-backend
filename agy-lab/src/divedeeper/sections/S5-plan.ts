@@ -8,7 +8,7 @@
 // draft that does it for them. Code then checks the list is complete: every urgent or needs-work
 // finding no task covers is listed under its department, so nothing found drops off the plan.
 // No LLM answer builds the plan in code from the findings themselves.
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { AREAS, DEPTS, STAGE1_LANES, deptOf, resolve, type Dept, type Item } from '../editor.ts';
 
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + ' …' : s);
@@ -17,7 +17,7 @@ const IMPACT = ['high', 'medium', 'low'] as const;
 
 async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const got = ctx.parseJson(await ctx.llm(prompt, { label }));
+    const got = ctx.parseJson(await ctx.llm(prompt, { ...WRITE_LLM, label }));
     if (got) return got;
     ctx.warn(`${label} did not parse (attempt ${attempt})`);
   }

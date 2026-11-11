@@ -5,7 +5,7 @@
 // supported or unsupported. check.ts applyCheck() takes the unsupported ones out when the report is built (and a withdrawn task puts
 // its findings back under its department). It only removes: a reply that does not parse changes nothing, a call the content filter
 // refuses is split in half, and a check that condemns more than 40% of the statements is not believed.
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES, resolve } from '../editor.ts';
 import { statements, tooMany, type Statement } from '../check.ts';
 import { factsOf } from './S4-analysis.ts';
@@ -40,7 +40,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
 
   const askBatch = async (batch: Statement[]): Promise<void> => {
     if (!batch.length) return;
-    const got = ctx.parseJson<any>(await ctx.llm(promptOf(R.name, evidence, facts, batch), { label: 'check statements' }));
+    const got = ctx.parseJson<any>(await ctx.llm(promptOf(R.name, evidence, facts, batch), { ...WRITE_LLM, label: 'check statements' }));
     if (!got || !Array.isArray(got.checks)) {
       if (batch.length > 1) {
         ctx.warn(`check of ${batch.length} statements did not parse; asking again as two calls`);
