@@ -257,8 +257,9 @@ export function normPhone(raw: string): string {
   return '';
 }
 const fmtPhone = (d: string) => d.startsWith('601') ? `0${d.slice(2, 4)}-${d.slice(4)}` : `0${d.slice(2)}`;
-const PHONE_RE = /(?:\+?\s?6?0)[\s-]?(?:1\d[\s-]?\d{3,4}[\s-]?\d{4}|[3-9][\s-]?\d{3,4}[\s-]?\d{4})(?![\d-]*[A-Z])/g;
-const phonesIn = (text: string) => [...new Set([...text.matchAll(PHONE_RE)].map((m) => normPhone(m[0])).filter(Boolean))];
+// No digit right before or after: a 12-digit SSM number (201501019046) must not yield a phone (01501019046).
+const PHONE_RE = /(?<![\d+])(?:\+?\s?6?0)[\s-]?(?:1\d[\s-]?\d{3,4}[\s-]?\d{4}|[3-9][\s-]?\d{3,4}[\s-]?\d{4})(?!\d)(?![\d-]*[A-Z])/g;
+export const phonesIn = (text: string) => [...new Set([...text.matchAll(PHONE_RE)].map((m) => normPhone(m[0])).filter(Boolean))];
 
 function sslCert(host: string): Promise<{ host: string; ok: boolean; error?: string; validTo?: string; daysLeft?: number; issuer?: string }> {
   return new Promise((resolve) => {
@@ -371,6 +372,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const titles = new Map<string, string[]>();
   type Agg = { pages: number; noTitle: string[]; longTitle: string[]; shortTitle: string[]; noDesc: string[]; longDesc: string[]; shortDesc: string[]; noViewport: string[]; zoomOff: string[]; slowFirst: CPage[]; mixed: string[]; junkAlt: number; imgs: number };
   const agg = new Map<string, Agg>();
+  const noHead: string[] = [];
   for (const p of crawled) {
     const u = p.finalUrl;
     const path_ = (() => { try { return new URL(u).pathname; } catch { return u; } })();
@@ -379,7 +381,11 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const x: Agg = agg.get(p.site) ?? { pages: 0, noTitle: [], longTitle: [], shortTitle: [], noDesc: [], longDesc: [], shortDesc: [], noViewport: [], zoomOff: [], slowFirst: [], mixed: [], junkAlt: 0, imgs: 0 };
     agg.set(p.site, x);
     x.pages++;
-    if (!audited) {
+    // The V2.1 worker returns the page body without its <head>: no head means the title, description and
+    // viewport were not seen, never that they are missing. Those checks are recorded as not run for the page.
+    const headSeen = /<head[\s>]|<meta\b|<title[\s>]/i.test(p.html);
+    if (!headSeen) noHead.push(path_);
+    if (!audited && headSeen) {
       const title = decode(p.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '');
       const desc = decode(metaContent(p.html, 'description') ?? '');
       const viewport = metaContent(p.html, 'viewport');
@@ -400,6 +406,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     const ph = own.match(/\b(coming soon|under construction|lorem ipsum|dolor sit amet|sample page|page not found)\b/i);
     if (ph && own.length < 400) add('placeholder', { title: `Placeholder page: ${path_} shows only "${ph[1]}"`, detail: `The page's own content is ${own.length} characters, mostly "${ph[0]}". Visitors who click through find nothing.`, severity: 'medium', source: u, evidence: ph[0] });
   }
+  if (noHead.length && !audited) ctx.warn(`page title, description and mobile viewport not checked on ${noHead.length} page(s): the page reader returned the body without its <head>`);
   // Slow pages: fetch once more; slow only if slow twice.
   for (const [site, x] of agg) {
     const slow: string[] = [];

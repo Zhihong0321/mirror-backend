@@ -76,7 +76,9 @@ export async function loadV21Dive(reportId: string, reader?: Reader) {
     .filter((p: any) => p?.lookup?.handler)
     .map((p: any) => [p.lookup.handler, p.lookup]));
   const legal = strings(baseline.legal_names);
-  const legalName = clean(legal[0] ?? '') || String(report.company);
+  // A registration number printed beside the name ("... Sdn. Bhd. 201501019046 (1144381-A)") is not part of it;
+  // it is read into registration_numbers below. Left in, it breaks register searches and the report's title.
+  const legalName = clean(legal[0] ?? '').replace(/\b(?:\d{5,7}-[A-Z]|(?:19|20)\d{10})\b/gi, ' ').replace(/\s+/g, ' ').trim() || String(report.company);
   const aliases = unique(strings(baseline.brand_names).map(clean)).filter((x) => x.toLowerCase() !== legalName.toLowerCase());
   const registrations = unique([...legal, ...strings(baseline.claimed_numbers)].flatMap((x) =>
     [...x.matchAll(/\b(?:\d{5,7}-[A-Z]|(?:19|20)\d{10})\b/gi)].map((m) => m[0].toUpperCase())));

@@ -160,7 +160,7 @@ test('PL19 + PL22 + PL24: counts read from one object; 0, 1 and 2 read correctly
 test('PL20: price and dates follow the buyer\'s country; a currency with no price shows none', () => {
   const us = visible(buildReportParts({ ...diveOf(SG), country: 'United States' }, {}).html);
   const sg = visible(buildReportParts(diveOf(SG), {}).html);
-  assert.ok(us.includes('$39') && us.includes('$59'));
+  assert.ok(us.includes('$59') && !us.includes('$39'), 'competitor audit priced; the 60-day re-check is included, no price');
   assert.ok(!sg.includes('$39') && !sg.includes('$59'));
 });
 

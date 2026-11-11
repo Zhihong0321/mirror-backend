@@ -23,6 +23,14 @@ function fixture() {
   return { report, raw, reader };
 }
 
+test('a registration number printed beside the legal name is not part of it', async () => {
+  const { reader, raw } = fixture();
+  raw.result!.payload.baseline.legal_names = ['Verdant Solar Sdn. Bhd. 201501019046 (1144381-A)'];
+  const { dive } = await loadV21Dive('report', reader);
+  assert.equal(dive.result.identity.legal_name, 'Verdant Solar Sdn. Bhd.');
+  assert.ok(dive.result.identity.registration_numbers.includes('201501019046'));
+});
+
 test('adapter cleans notes, extracts SSM numbers, keeps brand domains and preserves own Maps rows', async () => {
   const { reader, raw } = fixture();
   const { dive, rows } = await loadV21Dive('report', reader);

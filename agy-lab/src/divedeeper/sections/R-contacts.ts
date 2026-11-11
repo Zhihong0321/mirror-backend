@@ -17,6 +17,11 @@ import { readLane, nameOf, type Ctx, type Finding } from '../lib.ts';
 import { savedDomain } from '../asset-reuse.ts';
 import { skipPeople } from '../site-handlers.ts';
 
+/** Malaysian phones in research text. A whole number only: no digit right before or after (an SSM number or a
+ *  glued "200200-300300" dropdown is not a phone), and the digits are counted, so a spaced "+603 - 7831 8770"
+ *  is not cut to "7831 877". */
+export const RESEARCH_PHONE_RE = /(?<![\d+])(?:\+?6?0\s?1\d(?:[\s-]{0,3}\d){7,8}|\+?6?0\s?[3-9](?:[\s-]{0,3}\d){7,8}|1[38]00[\s-]?\d{2}[\s-]?\d{4})(?!\d)/g;
+
 const FREE_MAIL = /@(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|aol|proton|protonmail|qq|163|126)\./i;
 const ROLE_BOX = /^(info|sales|enquir(y|ies)|inquir(y|ies)|admin|hr|support|contact|marketing|accounts?|office|hello|cs|service|customerservice|orders?|billing|finance|careers?|jobs|recruit(ment)?|general|enquiry|mail|team|project|projects|purchas(e|ing)|procurement|export|import|quotation|quote|booking|reservations?|help|noreply|no-reply|webmaster)\d*$/i;
 
@@ -86,7 +91,7 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
     if (l.address) put('address', l.address, l.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), `Google Maps: ${l.name}${l.closed ? ' (marked closed)' : ''}`, 'maps');
   }
   const factText = (r.facts ?? []).map((f: any) => f.fact).join('\n');
-  for (const m of factText.matchAll(/\+?6?0\s?1\d[\d\s-]{7,11}\d|\+?6?0\s?[3-9][\d\s-]{6,10}\d|\b1[38]00[\s-]?\d{2}[\s-]?\d{4}\b/g)) put('phone', m[0].trim(), normPhone(m[0]), 'background research', 'research');
+  for (const m of factText.matchAll(RESEARCH_PHONE_RE)) put('phone', m[0].trim(), normPhone(m[0]), 'background research', 'research');
   for (const [, list] of Object.entries(C.emails ?? {}) as [string, string[]][]) for (const e of list) put('email', e.toLowerCase(), e.toLowerCase(), 'your website', 'site');
   for (const m of factText.matchAll(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi)) put('email', m[0].toLowerCase(), m[0].toLowerCase(), 'background research', 'research');
   if (N.address) put('address', N.address, N.address.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), 'background research', 'research');

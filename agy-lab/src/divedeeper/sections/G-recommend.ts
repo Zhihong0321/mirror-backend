@@ -232,7 +232,12 @@ export async function run(ctx: Ctx, dive: any, deps: Deps = {}): Promise<{ findi
     notes: {
       assistants: ASSISTANTS.filter((a) => raw[a].size), repeat: REPEAT, profile, keys, asks: list, answers,
       errors: { [CHATGPT]: c.errors, [GEMINI]: g.errors },
-      method: `ChatGPT: web ChatGPT, default model, each prompt in a new unpersonalized temporary chat (no memory, no custom instructions). Gemini: Gemini on the cloud Antigravity hub, which searches the web. Each prompt asked ${REPEAT === 1 ? 'once' : `${REPEAT} times`} per assistant.`,
+      // Describes only the assistants that answered: a ChatGPT that gave nothing is not described as asked.
+      method: [
+        raw[CHATGPT].size ? 'ChatGPT: web ChatGPT, default model, each prompt in a new unpersonalized temporary chat (no memory, no custom instructions).' : '',
+        raw[GEMINI].size ? 'Gemini: Gemini on the cloud Antigravity hub, which searches the web.' : '',
+        `Each prompt asked ${REPEAT === 1 ? 'once' : `${REPEAT} times`} per assistant.`,
+      ].filter(Boolean).join(' '),
       limit: 'What the assistants said, not a check of whether it is right. Answers change between runs and between customers.',
     },
   };

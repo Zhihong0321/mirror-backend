@@ -136,8 +136,9 @@ test('the report is a working tool: real tick boxes, copy buttons, no repeated f
   const tables = html.match(/<table class="band items">[\s\S]*?<\/table>/g) ?? [];
   for (const t of tables) assert.ok(t.split(same).length - 1 <= 1, 'repeated filler in one table');
   assert.ok(html.includes(same), 'first occurrence kept');
-  // The 30-day card names no price or address of its own; the leak strip counts, it does not estimate.
-  assert.ok(html.includes('Verify your fixes in 30 days') && html.includes('reply to the email that sent you this report'));
+  // The 60-day re-check card (included in the order) names no price or address of its own; the leak strip counts, it does not estimate.
+  assert.ok(html.includes('Your second report, within 60 days') && html.includes('reply to the email that sent you this report'));
+  assert.ok(!/30-day re-audit/.test(html), 'no paid 30-day re-audit beside the included 60-day re-check');
   assert.ok(/id="plan"[\s\S]*class="followup"[\s\S]*id="ready"/.test(html), 'card closes the plan');
   assert.ok(html.includes('Where customers can slip away') && /leads? the wrong way/.test(html));
   const leak = html.match(/<div class="leak">[\s\S]*?<\/div>/)?.[0] ?? '';

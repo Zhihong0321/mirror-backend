@@ -9,7 +9,7 @@
 // rewritten homepage copy, the FAQ for an AI-visibility plan built against those competitors, and
 // review-reply drafts. The business JSON-LD is built in code from the dive's facts. The analysis
 // and the action plan read across everything afterwards (S4-analysis, S5-plan).
-import { readLane, type Ctx, type Finding } from '../lib.ts';
+import { readLane, WRITE_LLM, type Ctx, type Finding } from '../lib.ts';
 import { STAGE1_LANES } from '../editor.ts';
 import { savedReviews } from '../v21/reviews.ts';
 
@@ -21,7 +21,7 @@ const brief = (out: any, n = 30) => (out?.findings ?? []).slice(0, n).map((f: Fi
 /** One LLM call parsed as JSON, asked a second time if the first answer does not parse. */
 async function askJson(ctx: Ctx, prompt: string, label: string): Promise<any> {
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const got = ctx.parseJson(await ctx.llm(prompt, { label }));
+    const got = ctx.parseJson(await ctx.llm(prompt, { ...WRITE_LLM, label }));
     if (got) return got;
     ctx.warn(`${label} did not parse (attempt ${attempt})`);
   }
@@ -188,11 +188,15 @@ export async function run(ctx: Ctx, dive: any): Promise<{ findings: Finding[]; n
   const sameAs = [...new Set(hw.filter((x: any) => x.class === 'own' && /facebook|instagram|linkedin|tiktok|youtube/.test(host(x.url))).map((x: any) => x.url.split('?')[0].replace(/\/(mentions|posts)\/?$/, '/')))];
   const addr = String(id.address ?? '');
   const postcode = addr.match(/\b\d{5}\b/)?.[0];
+  // The town and state follow the postcode ("47301 Petaling Jaya, Selangor"); they were dropped before.
+  const [locality, region] = (postcode ? addr.split(postcode).slice(1).join(postcode) : '').split(',').map((x) => x.trim()).filter(Boolean);
+  // Schema.org wants the number as dialled from abroad: "03-7831 8770" -> "+60 3-7831 8770".
+  const phone = ourListing?.phone ? String(ourListing.phone).trim().replace(/^0(?=\d)/, '+60 ') : undefined;
   const jsonld = {
     '@context': 'https://schema.org', '@type': 'LocalBusiness', name, legalName: name,
     url: ownSites[0]?.url ?? (id.official_domains?.[0] ? `https://${id.official_domains[0]}/` : undefined),
-    telephone: ourListing?.phone ?? undefined,
-    address: { '@type': 'PostalAddress', streetAddress: addr.split(postcode ?? '§')[0].replace(/,\s*$/, ''), postalCode: postcode, addressCountry: 'MY' },
+    telephone: phone,
+    address: { '@type': 'PostalAddress', streetAddress: addr.split(postcode ?? '§')[0].replace(/,\s*$/, ''), addressLocality: locality || undefined, addressRegion: region || undefined, postalCode: postcode, addressCountry: 'MY' },
     areaServed: plan.areas ?? [], sameAs,
     identifier: (id.registration_numbers ?? []).filter((x: string) => /^\d{12}$/.test(x)).map((x: string) => ({ '@type': 'PropertyValue', propertyID: 'SSM', value: x })),
   };

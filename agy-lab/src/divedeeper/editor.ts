@@ -58,6 +58,8 @@ const token = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim()
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
 const SEV_LEVEL: Record<string, number> = { high: 3, medium: 2, low: 1, info: 1 };
+/** True when G-recommend asked the "who would you name" questions and got answers: its count is the report's one AI count. */
+const recommendAnswered = (L: Record<string, any>) => (L['G-recommend']?.notes?.answers ?? []).some((a: any) => a?.kind === 'find');
 /** Every finding in the report, with a stable key (lane#index) the editor's plain titles hang on, best first (PL11, PL13). */
 export function items(L: Record<string, any>, country = ''): Item[] {
   const out: Item[] = [];
@@ -72,6 +74,9 @@ export function items(L: Record<string, any>, country = ''): Item[] {
     if (/^(rollup|domain-rollup)$/.test(String(f.kind ?? ''))) return;
     // Inventory and summary lines feed the part's table and headline number, not the finding list.
     if (/^(inventory|contact-summary|cred-summary)$/.test(String(f.check ?? ''))) return;
+    // One measure of "does AI name you": G-recommend's, when it has answers. G-search's own count asked other
+    // questions and gave a second number ("4 of 6" beside "8 of 8"); it stays in G-search's notes.
+    if (lane === 'G-search' && f.check === 'ai-share' && recommendAnswered(L)) return;
     const printed = `${f.title ?? ''} ${f.detail ?? ''}`;
     const area = lane === 'C-merged' ? partOfCheck(f.check) : AREAS.find((a) => a.lanes.includes(lane))!.id;
     // The register showing better than the claim (G7 where the site says G3) is a fix, not an alarm.
@@ -79,7 +84,10 @@ export function items(L: Record<string, any>, country = ''): Item[] {
     const base = rechecked[key]?.verdict === 'weak' && (first === 'high' || first === 'medium') ? 'low' : first;
     // PL11: time to impact. The dated expiry (or the nearest date in the text of an expiry finding) moves the severity.
     const dated = f.expires_at ? daysToImpact([String(f.expires_at)], now, { includePast: true }) : null;
-    const days = dated !== null ? dated : /expir|renew|deadline/i.test(`${printed} ${f.check ?? ''}`) ? daysToImpact([String(f.title ?? ''), String(f.detail ?? '')], now, { includePast: true }) : null;
+    // A copy finding about a date printed on a page ("the NOVA quota dates have expired") is outdated text, not
+    // the company's own deadline: only an expiry check's own text is read for a date.
+    const copy = f.check === 'llm' || f.type === 'outdated';
+    const days = dated !== null ? dated : !copy && /expir|renew|deadline/i.test(`${printed} ${f.check ?? ''}`) ? daysToImpact([String(f.title ?? ''), String(f.detail ?? '')], now, { includePast: true }) : null;
     const u = urgency({ recordLevel: SEV_LEVEL[base] ?? 1, confidence: f.confidence ?? 'high', days });
     const severity = base === 'info' && u === 'low' ? 'info' : u;
     out.push({ key, lane, area, severity, title: String(f.title ?? ''), detail: String(f.detail ?? ''), source: f.source ?? null, check: f.check, raw: f, days, rank: rankKey(u, days), ownership: f.ownership });
@@ -226,6 +234,10 @@ export function resolve(dive: any, L: Record<string, any>) {
     const pos = xs.filter((a) => a.named && a.position).map((a) => Number(a.position));
     return { assistant: w, named: xs.filter((a) => a.named).length, of: xs.length, best: pos.length ? Math.min(...pos) : null, avg: mean(pos) };
   });
+  // The report's one "AI names you" count: G-recommend's when it answered, else G-search's.
+  const recOf = recFind.reduce((n, f) => n + f.of, 0);
+  const aiOf = recOf || tradeAnswers;
+  const aiNamed = recOf ? recFind.reduce((n, f) => n + f.named, 0) : namedUs;
   const recByAsk = grAsks.filter((q) => q.kind === 'find').map((q) => ({
     q: String(q.text).replace(/ Please check the web for current information\.$/, ''),
     rows: grWho.map((w) => {
@@ -311,7 +323,9 @@ export function resolve(dive: any, L: Record<string, any>) {
 
   // ---- part 4: official records ----
   const checks: any[] = L['K-credibility']?.notes?.checks ?? [];
-  const risky = checks.filter((c) => ['bnm', 'sc', 'court', 'insolvency'].includes(c.id));
+  // The risk checks that ran and gave an answer. A check that could not run is listed in the table as
+  // "Not checked"; counting it here made "3 of 4 clear" read as one failed check.
+  const risky = checks.filter((c) => ['bnm', 'fca', 'bnm-consumer', 'sc', 'court', 'disciplinary', 'security', 'insolvency'].includes(c.id) && (c.result === 'clear' || c.result === 'found'));
 
   // ---- part 5: digital assets ----
   const assetRows: any[] = L['A-assets']?.notes?.domains ?? [];
@@ -328,8 +342,9 @@ export function resolve(dive: any, L: Record<string, any>) {
   const regCheckable = credentials.filter((c: any) => !/can't check/.test(c.verdict)).length;
   const metric: Record<Area, string | null> = {
     // Until the judge has spoken, every point is "unclear": count what was traced, not "0 reach you".
-    contact: contact.total ? (contact.judged ? `${contact.ok} of ${plural(contact.total, 'contact point', 'contact points')} ${contact.total === 1 ? 'reaches' : 'reach'} you` : `${plural(contact.total, 'contact point', 'contact points')} traced`) : null,
-    understanding: brandView.score != null ? `Understood ${brandView.score} out of 100` : tradeAnswers ? `Recommended in ${namedUs} of ${plural(tradeAnswers, 'AI answer', 'AI answers')}` : null,
+    // "current", not "reach you": the points are judged from where they are published; none is dialled.
+    contact: contact.total ? (contact.judged ? `${contact.ok} of ${plural(contact.total, 'contact point', 'contact points')} current` :`${plural(contact.total, 'contact point', 'contact points')} traced`) : null,
+    understanding: brandView.score != null ? `Understood ${brandView.score} out of 100` : aiOf ? `Recommended in ${aiNamed} of ${plural(aiOf, 'AI answer', 'AI answers')}` : null,
     voice: totalReviews ? `${replied} of ${plural(totalReviews, 'review', 'reviews')} answered${news.counts ? ` · ${plural(news.counts.news, 'news article', 'news articles')}` : ''}` : news.counts ? `${plural(news.counts.news, 'news article', 'news articles')}, ${plural(news.counts.negative, 'negative mention', 'negative mentions')}` : null,
     credibility: risky.length ? `${risky.filter((c) => c.result === 'clear').length} of ${plural(risky.length, 'risk check', 'risk checks')} clear${regCheckable ? ` · ${regOk} of ${plural(regCheckable, 'claim', 'claims')} confirmed` : ''}` : regCheckable ? `${regOk} of ${plural(regCheckable, 'checkable claim', 'checkable claims')} confirmed` : null,
     assets: assetRows.length ? `${plural(assetRows.length, 'domain', 'domains')} · ${assetIssues} at risk` : null,
@@ -346,7 +361,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     identity: { legal_name: name, ssm: (id.registration_numbers ?? []).find((x: string) => /^\d{12}$/.test(x)) ?? (id.registration_numbers ?? [])[0] ?? null, address: id.address ?? null, domains: id.official_domains ?? [], industry: id.industry ?? null, summary: id.summary ?? null },
     reviews: { total: totalReviews, replied, listings: perListing.map((x) => ({ name: x.name, rating: x.listed_rating, count: x.listed_reviews, replied: x.replied, pulled: x.pulled })), unanswered_low: unansweredLow, monthly, bursts, cross_reviewers: crossReviewers, praise: [...praise.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5), good_quotes: goodQuotes },
     maps: { listings: listings.map((x) => ({ name: x.name, rating: x.rating, reviews: x.reviews, phone: x.phone })), by_area: byArea, no_listing_in: noListingIn, our: ourListing ? { name: ourListing.name, rating: ourListing.rating, reviews: ourListing.reviews } : null, web_line: webShown?.title ?? null },
-    ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: tradeAnswers, named_us: namedUs, trade_question: tradeQuestion },
+    ai: { assistant: gs?.assistant ?? null, answers: gsAnswers.length, asked_on: L['G-search']?.ran_at ?? null, runs: gs?.runs ?? null, repeat: gs?.repeat ?? null, said, compare, rivals, share: shareOfVoice, trade_answers: aiOf, named_us: aiNamed, from_recommend: recOf > 0, trade_question: tradeQuestion },
     rec,
     credentials: { cidb_grade: cidbGrade, cidb_detail: cidb?.detail ?? null, list: credentials, undersells },
     website: { issues: site.filter((x) => (x.severity === 'high' || x.severity === 'critical') || x.severity === 'medium').length, high: site.filter((x) => (x.severity === 'high' || x.severity === 'critical')).length, copy_errors: copyErrors, phones },

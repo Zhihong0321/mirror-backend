@@ -23,7 +23,7 @@ import { lookupCompany, handlerText, skipPeople, type HandlerResult } from '../s
 
 const HANDLERS = [
   ['MY-bnm.gov.my/w1', 'bnm', 'BNM alerts and enforcement'],
-  ['MY-bnm.gov.my/w2', 'fca', 'FCA unauthorised companies'],
+  ['MY-bnm.gov.my/w2', 'fca', 'BNM Financial Consumer Alert list'],
   ['MY-bnm.gov.my/w3', 'bnm-consumer', 'BNM consumer and fraud alerts'],
   ['MY-sc.com.my/w2', 'sc', 'SC Capital Markets licence / registered person and alerts'],
   ['MY-kehakiman.gov.my/w1', 'court', 'Published court judgments'],

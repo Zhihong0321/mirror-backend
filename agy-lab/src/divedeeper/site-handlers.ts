@@ -7,14 +7,20 @@ export type HandlerResult = {
   records: unknown[]; source_url: string; excerpt: string; reason: string;
 };
 const checks = new WeakMap<object, Map<string, Promise<HandlerResult>>>();
+/** A "not found" answer that is really the source turning the search away. */
+const REFUSED = /not[_ -]?logged[_ -]?in|login[_ -]?required|log ?in to (?:continue|search|view)|sign[_ -]?in required|please (?:log|sign) ?in|captcha|access denied|unauthori[sz]ed|forbidden|rate[_ -]?limit|too many requests/i;
 
-function result(handler: string, raw: any): HandlerResult {
+export function result(handler: string, raw: any): HandlerResult {
   const out: HandlerResult = { handler, status: 'couldnt_check', records: Array.isArray(raw?.records) ? raw.records : [],
     source_url: String(raw?.source_url ?? ''), excerpt: String(raw?.excerpt ?? ''), reason: '' };
   if (raw?.error || raw?.job_status === 'failed' || !['found', 'not_found'].includes(raw?.status)) {
     out.reason = String(raw?.error || raw?.reason || (raw?.job_status === 'failed' ? 'handler job failed' : `handler returned ${raw?.status ?? 'no result'}`));
   } else if (raw.status === 'found' && !out.records.length && !out.excerpt) {
     out.reason = 'handler reported a match without readable records';
+  } else if (raw.status === 'not_found' && REFUSED.test(`${out.excerpt} ${raw.reason ?? ''}`)) {
+    // The source refused the search (e.g. SSM's {"is_not_logged_in":true,"total":0}): nothing was searched,
+    // so the claim could not be checked. It is never "not found".
+    out.reason = `the source refused the search: ${out.excerpt.slice(0, 160) || String(raw.reason ?? '')}`;
   } else {
     out.status = raw.status;
     out.reason = String(raw.reason ?? '');

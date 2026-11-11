@@ -271,7 +271,7 @@ export async function run(ctx: Ctx, dive: any, deps: { hub?: Hub; profile?: Prof
       title: `An AI assistant with web search names you in ${named} of ${trade.length} answers`,
       detail: `${top.length ? `Companies they name instead: ${top.join(', ')}.` : 'It named no company.'} Asked ${[...tradeText.values()].map((t) => `"${t}"`).join(' and ')}, ${REPEAT} times each, on ${day(now)}.`,
       severity: named === 0 ? 'high' : named < trade.length ? 'medium' : 'info',
-      source: null, checked_at: now, evidence: trade.map((a) => `${a.id}#${a.sample}: ${a.answer}`).join('\n'),
+      source: null, checked_at: now, check: 'ai-share', evidence: trade.map((a) => `${a.id}#${a.sample}: ${a.answer}`).join('\n'),
     });
   }
   const rivals = new Map<string, { name: string; n: number }>();

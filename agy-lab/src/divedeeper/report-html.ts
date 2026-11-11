@@ -71,10 +71,11 @@ export const PART_OPENERS: Record<string, { q: [string, string]; body: (t: { tra
     body: () => 'Google runs its own test on every page it lists: how fast it shows on a phone and a computer, whether everyone can use it, whether it follows good practice, and whether Google can read it. A slow phone page loses visitors before it finishes loading, and Google counts speed when it decides who to show first. We ran Google’s own test, PageSpeed Insights, on your official homepages, and read what real Chrome visitors experienced over the last 28 days.',
   },
 };
-/** The follow-up offer closing the action plan: a 30-day re-audit and the same audit on a competitor.
+/** The follow-up offer closing the action plan: the second report within 60 days (included) and the same audit on a competitor.
  *  With no booking email the card tells the reader to reply to the email that sent the report. */
 // Prices per currency; a buyer whose currency has none sees no price (nothing is converted or invented).
-export const FOLLOW_UP = { email: '', reauditPrices: { USD: '$39' } as Record<string, string>, competitorPrices: { USD: '$59' } as Record<string, string> };
+// The 60-day re-check is part of the $89 order (owner, 2026-11-11), so it carries no price of its own.
+export const FOLLOW_UP = { email: '', competitorPrices: { USD: '$59' } as Record<string, string> };
 export const CHAPTER_ORDER = ['contact', 'understanding', 'voice', 'credibility', 'assets', 'speed'] as const;
 export const CHAPTER_EYEBROW: Record<string, string> = {
   contact: 'Contact and reachability', understanding: 'How the internet understands you', voice: 'Reviews, discussion and news', credibility: 'Credibility and official records', assets: 'Digital assets', speed: 'Website speed and quality',
@@ -256,7 +257,7 @@ a:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 .quotes cite::before { content:"— "; }
 .colophon { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; border-top:1px solid var(--ink); padding-top:10px; margin-top:10px; font-size:11.5px; } .colophon p:not(.lbl) { color:var(--ink); }
 .method { max-width:62em; }
-/* copy buttons (screen only), the "where customers slip away" strip, the 30-day re-audit card */
+/* copy buttons (screen only), the "where customers slip away" strip, the 60-day re-check card */
 .copy { font:inherit; font-size:11px; font-weight:600; color:var(--ink); background:var(--paper); border:1px solid #cfd3d8; border-radius:3px; padding:4px 10px; cursor:pointer; align-self:flex-start; justify-self:start; white-space:nowrap; }
 .copyblock { display:grid; gap:10px; } .reply .copy { margin-bottom:6px; }
 .copy:hover { border-color:var(--ink); } .copy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; } .copy[data-done] { background:var(--ink); border-color:var(--ink); color:#fff; }
@@ -553,7 +554,8 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
 
   /** Who AI assistants name when a customer asks for a recommendation, and you. */
   function aiVoice(): string {
-    if (!R.ai.trade_answers) return '';
+    // When G-recommend answered, its page carries the one "who AI names" board; G-search's would be a second count.
+    if (!R.ai.trade_answers || R.ai.from_recommend) return '';
     const max = Math.max(...R.ai.share.map((s) => s.n), R.ai.named_us, 1);
     const row = (n: string, c: number, me = false) => `<tr class="${me ? 'me' : ''}"><td>${esc(n)}</td><td class="barc"><span class="bar"><i style="width:${((c / max) * 100).toFixed(1)}%"></i></span></td><td class="num">${c} of ${R.ai.trade_answers}</td></tr>`;
     return `<figure class="chart"><table class="board"><thead><tr><th>Business named</th><th colspan="2">How often</th></tr></thead><tbody>${R.ai.share.map((s) => row(s.name, s.n)).join('')}${row('You', R.ai.named_us, true)}</tbody></table>
@@ -583,7 +585,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
 
   // ---------- part visuals ----------
   const KIND: Record<string, string> = { phone: 'Phone', whatsapp: 'WhatsApp', email: 'Email', address: 'Address' };
-  const CONTACT_PILL: Record<string, [string, string]> = { current: ['good', 'Reaches you'], outdated: ['fix', 'Out of date'], someone_else: ['urgent', 'Someone else’s'], personal: ['fix', 'A staff member’s own'], broken: ['urgent', 'Does not work'], unclear: ['info', 'Unclear'] };
+  const CONTACT_PILL: Record<string, [string, string]> = { current: ['good', 'Current'], outdated: ['fix', 'Out of date'], someone_else: ['urgent', 'Someone else’s'], personal: ['fix', 'A staff member’s own'], broken: ['urgent', 'Does not work'], unclear: ['info', 'Unclear'] };
   const CONTACT_ORDER = ['broken', 'someone_else', 'personal', 'outdated', 'unclear', 'current'];
   const placeOf = (w: string) => w.replace(/^your website: https?:\/\/(www\.)?/, 'your site: ').replace(/\s*\([^)]*\)$/, '').replace(/\/$/, '');
   /** Every contact point, where it is published and where it really leads. */
@@ -609,7 +611,9 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   const SENT: Record<string, [string, string]> = { positive: ['good', 'Positive'], neutral: ['info', 'Neutral'], negative: ['urgent', 'Negative'] };
   /** News, forum and social mentions of the company and its people, the negative ones first. */
   function newsTable(): string {
-    const list = [...R.news.items].sort((a: any, b: any) => Number(b.sentiment === 'negative') - Number(a.sentiment === 'negative') || String(b.date).localeCompare(String(a.date))).slice(0, 10);
+    // News, forums and social media only: a directory or profile page (Tracxn, a search tool's place page) is
+    // not something said about the company. Those pages stay in the lane's notes.
+    const list = [...R.news.items].filter((x: any) => !['directory', 'other'].includes(String(x.kind))).sort((a: any, b: any) => Number(b.sentiment === 'negative') - Number(a.sentiment === 'negative') || String(b.date).localeCompare(String(a.date))).slice(0, 10);
     if (!list.length) return R.news.counts ? '<p class="note">No news story, forum thread or public post about you or your key people turned up.</p>' : '';
     return `<table class="band"><thead><tr><th>When</th><th>What is said</th><th></th></tr></thead><tbody>${list.map((x: any) => {
       const [c, l] = SENT[x.sentiment] ?? SENT.neutral;
@@ -726,7 +730,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   const okClaims = R.credentials.list.filter((c: any) => c.verdict === 'verified' || c.direction === 'undersell').length;
   const checkable = R.credentials.list.filter((c: any) => !/can't check/.test(c.verdict)).length;
   const big: [string, string, string][] = ([
-    areaOf('contact')?.ran && R.contact.judged ? ['contact', `${R.contact.ok}/${R.contact.total}`, 'contact details that reach you'] : null,
+    areaOf('contact')?.ran && R.contact.judged ? ['contact', `${R.contact.ok}/${R.contact.total}`, 'contact details that are current'] : null,
     areaOf('understanding')?.ran && R.brand_view.score != null ? ['understanding', `${R.brand_view.score}`, 'out of 100: how well the internet understands you'] : areaOf('understanding')?.ran && R.ai.trade_answers ? ['understanding', `${R.ai.named_us}/${R.ai.trade_answers}`, 'AI answers that recommend you'] : null,
     areaOf('voice')?.ran && R.reviews.total ? ['voice', `${R.reviews.replied}/${R.reviews.total}`, 'Google reviews with a reply from you'] : null,
     areaOf('credibility')?.ran && R.records.risky.length ? ['credibility', `${R.records.risky.filter((c: any) => c.result === 'clear').length}/${R.records.risky.length}`, 'public risk checks clear'] : areaOf('credibility')?.ran && checkable ? ['credibility', `${okClaims}/${checkable}`, 'claims the official registers confirm'] : null,
@@ -789,7 +793,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     // Who the assistants named instead, as a board with your row at the bottom.
     const max = Math.max(1, ...rec.share.map((s: any) => s.total), named);
     const bar = (n: number) => `<span class="bar"><i style="width:${((n / max) * 100).toFixed(1)}%"></i></span>`;
-    const board = rec.share.length || named ? `<figure class="chart"><table class="board"><thead><tr><th>Business named</th>${who.map((w) => `<th class="num">${esc(w)}</th>`).join('')}<th colspan="2">Across both</th></tr></thead><tbody>
+    const board = rec.share.length || named ? `<figure class="chart"><table class="board"><thead><tr><th>Business named</th>${who.map((w) => `<th class="num">${esc(w)}</th>`).join('')}<th colspan="2">${who.length > 1 ? 'Across both' : 'In total'}</th></tr></thead><tbody>
       ${rec.share.map((s: any) => `<tr><td>${esc(s.name)}</td>${who.map((w) => `<td class="num">${s.by[w] ?? 0}</td>`).join('')}<td class="barc">${bar(s.total)}</td><td class="num">${s.total} of ${of}</td></tr>`).join('')}
       <tr class="me"><td>You</td>${rec.find.map((f: any) => `<td class="num">${f.named}</td>`).join('')}<td class="barc">${bar(named)}</td><td class="num">${named} of ${of}</td></tr></tbody></table>
       <figcaption>Every company the assistants named in their answers to the ${rec.by_ask.length} questions above, counted once per answer.</figcaption></figure>` : '';
@@ -800,7 +804,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
       <tr class="me"><td>You</td>${who.map((w) => `<td class="num">${score(rec.rating.you[w])}</td>`).join('')}</tr>
       ${rec.rating.rivals.map((r: any) => `<tr><td>${esc(r.name)}</td>${who.map((w) => `<td class="num">${score(r.by[w])}</td>`).join('')}</tr>`).join('')}</tbody></table>
       <p class="note">A customer asks: “${esc(typeset(rateQ))}” The assistant chose the competitors itself. Scores are the average of ${plural(rec.repeat ?? 1, 'answer', 'answers')} from each assistant.</p>
-      ${rec.rating.why.slice(0, 2).map((x: any) => `<p class="small"><b>${esc(x.assistant)}:</b> ${esc(typeset(cleanText(String(x.summary))))}</p>`).join('')}` : '<p class="note">Neither assistant gave you a score out of 10 when asked.</p>';
+      ${rec.rating.why.slice(0, 2).map((x: any) => `<p class="small"><b>${esc(x.assistant)}:</b> ${esc(typeset(cleanText(String(x.summary))))}</p>`).join('')}` : `<p class="note">${esc(who.length > 1 ? 'Neither assistant gave' : `${who[0]} did not give`)} you a score out of 10 when asked.</p>`;
     const pickQ = (rec.asks.find((q: any) => q.kind === 'pick')?.text ?? '').replace(/ Please check the web for current information\.$/, '');
     const verdict = (p: any) => (!p.of ? 'Not asked' : p.yes === p.of ? 'Recommends you' : p.yes ? `Recommends you in ${p.yes} of ${p.of}` : 'Picks another company');
     const picks = rec.pick.some((p: any) => p.of) ? `<p class="lead" style="font-size:14px">A customer asks: “${esc(typeset(pickQ))}”</p><div class="pair">${rec.pick.map((p: any, i: number) => `<div class="panel ${i === 0 ? 'dark' : 'light'}"><p class="lbl">${esc(p.assistant)}</p><p class="big" style="font-family:var(--display);font-weight:600;font-size:20px">${esc(verdict(p))}</p>${p.others.length ? `<p class="small"><b>Would pick instead:</b> ${esc(p.others.join(', '))}</p>` : ''}${p.summary ? `<p class="small">${esc(typeset(cleanText(String(p.summary))))}</p>` : ''}</div>`).join('')}</div>` : '';
@@ -811,7 +815,7 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
     return `<section class="page" id="ai-recommend">
   <p class="eyebrow">AI assistants · ${esc(who.join(' and '))}</p>
   <h2 class="display">${twoTone('How AI sees you, rates you,', 'and whether it recommends you over your competitors.')}</h2>
-  <div class="opener"><p class="lead">More and more customers ask ChatGPT or Gemini who to hire instead of searching. They do not type your name: they ask for a ${esc(trade)} in ${esc(town)}, and call the names the assistant gives. We asked both assistants the questions a customer asks, as a stranger with no history, and recorded who they named, how they scored you, and whether they would send the customer to you or to a competitor.</p>
+  <div class="opener"><p class="lead">More and more customers ask ChatGPT or Gemini who to hire instead of searching. They do not type your name: they ask for a ${esc(trade)} in ${esc(town)}, and call the names the assistant gives. We asked ${esc(who.length > 1 ? 'both assistants' : who[0])} the questions a customer asks, as a stranger with no history, and recorded who they named, how they scored you, and whether they would send the customer to you or to a competitor.</p>
     <div class="aside"><p class="lbl">Named without your name</p><p class="big">${esc(`${named} of ${of} answers`)}</p><span class="pill ${cls}">${esc(lbl)}</span><p class="checked">Checked ${esc(dateOf(rec.asked_on) || checkedOn)}</p></div></div>
   <h3 class="sub">Does AI name you when a customer does not?</h3>
   <p class="body">${rec.find.filter((f: any) => f.of).map((f: any) => `${esc(f.assistant)} named you in ${f.named} of ${f.of} answers${f.best ? `, at best in place ${f.best}` : ''}`).join('. ')}.</p>
@@ -875,13 +879,14 @@ export function buildReportParts(dive: any, lanes: Record<string, any>, opts: { 
   ${foot(`Part ${n} · Action plan`)}
 </section>`;
   }
-  /** After the plan: check in 30 days that the fixes took, and the same audit for a competitor. No price or address is invented; see FOLLOW_UP. */
+  /** After the plan: the second report (within 60 days, included in the order) checks the fixes took; and the same
+   *  audit for a competitor. No price or address is invented; see FOLLOW_UP. */
   function followUp(): string {
     const f = FOLLOW_UP;
     const price = (p: string | undefined) => (p ? ` (${esc(p)})` : '');
-    const book = f.email ? `<a href="mailto:${esc(f.email)}?subject=${encodeURIComponent(`Re-audit: ${name}`)}">Book the 30-day re-audit →</a>` : 'To book it, reply to the email that sent you this report.';
-    return `<div class="followup"><p class="lbl">Next step · Check that the fixes worked</p><h3>Verify your fixes in 30 days</h3>
-    <p>Directories, search engines and AI assistants pick up changes at different speeds, so a fix made today does not show up everywhere on the same day. When your team has finished the tasks above, order a <b>30-day re-audit${price(f.reauditPrices[loc.currency])}</b>: we run the same checks again and show which problems are gone and which are still live.</p>
+    const book = f.email ? `<a href="mailto:${esc(f.email)}?subject=${encodeURIComponent(`Re-check: ${name}`)}">Book your 60-day re-check →</a>` : 'To book it, reply to the email that sent you this report.';
+    return `<div class="followup"><p class="lbl">Next step · Check that the fixes worked</p><h3>Your second report, within 60 days</h3>
+    <p>Directories, search engines and AI assistants pick up changes at different speeds, so a fix made today does not show up everywhere on the same day. Your order includes <b>a second full report within 60 days</b>: when your team has finished the tasks above, we run the same checks again and show which problems are gone and which are still live.</p>
     <p>${book} Want to see where a competitor stands? We can run this audit on them${price(f.competitorPrices[loc.currency])}.</p></div>`;
   }
 
