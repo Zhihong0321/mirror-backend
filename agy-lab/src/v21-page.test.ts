@@ -109,13 +109,13 @@ test('every number on the page reads from one counts object', () => {
   // problems 4, contradictions 3, notes 2, strengths 4 => issues 7, findings 9; record issues f1 + c1 = 2, record strengths s1 + s4 = 2.
   const html = reportPage(report({ proof: 'f1' }), big(), { now: NOW, price: '$59' });
   const t = text(html);
-  assert.match(t, /People who look up Beispiel GmbH run into 9 things you would want changed\./);
+  assert.match(t, /People who look up Beispiel GmbH run into at least 9 things you would want changed\./);
   assert.match(t, /7 are confirmed by public sources\. 2 are signals we could not confirm\. One is shown in full/);
-  assert.match(t, /Where the 9 sit/);
+  assert.match(t, /Where the 9 found so far sit/);
   assert.match(t, /1 shown in full · 8 by what they cost you/);
   assert.match(t, /7 confirmed problems\. In 3 of them, public sources state different facts/);
   assert.match(t, /2 records confirmed by an outside source\. 2 records that banks and tender panels check have problems/);
-  assert.match(t, /All 9 findings/);
+  assert.match(t, /The 9 findings from this free check/);
   assert.match(t, /8 of these have three things missing here/);
   assert.match(t, /The other 8 findings were found the same way/);
   // 4 problem + 4 strength + 2 note sources, 6 contradiction versions = 16 distinct pages; 16×10 + 8×15 + 180 = 460 min.
@@ -210,10 +210,10 @@ test('counts 0, 1 and 2 read correctly through the plural helper', () => {
     contradictions: Array.from({ length: c }, (_, i) => contra(`c${i + 1}`, 'registration')),
     take_note: Array.from({ length: n }, (_, i) => note(`n${i + 1}`, 'reviews')),
   }), { now: NOW }));
-  assert.match(page(1, 0, 0), /run into 1 thing you would want changed\./);
+  assert.match(page(1, 0, 0), /run into at least 1 thing you would want changed\./);
   assert.match(page(1, 0, 0), /1 is confirmed by public sources\./);
   const one = page(1, 1, 1);
-  assert.match(one, /run into 3 things/);
+  assert.match(one, /run into at least 3 things/);
   assert.match(one, /1 is a signal we could not confirm/);
   assert.match(page(1, 0, 1), /1 of these has three things missing here/);
   assert.ok(!/\b1 (problems|things|findings|signals|records|strengths)\b/.test(one));
