@@ -128,7 +128,9 @@ export async function handlePublic(req: http.IncomingMessage, res: http.ServerRe
     const row = rows.filter(Boolean).sort((a: any, b: any) => b.id - a.id)[0] ?? null;
     const s2 = row ? await store.rawById(m[1]!, Number(row.payload.step2_row_id)) : null;
     if (!row || !s2) return send(404, missingPage()), true;
-    return send(200, reportPage(row.payload, s2.payload, { price: await fullReportPrice(), ref: m[1]!.slice(0, 8).toUpperCase() })), true;
+    // The order button goes to the public site's order page for this report (owner, 2026-11-12).
+    const site = (process.env.ORDER_SITE_URL ?? 'https://mirrormirror.cloud').trim().replace(/\/+$/, '');
+    return send(200, reportPage(row.payload, s2.payload, { price: await fullReportPrice(), ref: m[1]!.slice(0, 8).toUpperCase(), orderUrl: `${site}/order?report=${m[1]}` })), true;
   } catch (err: any) {
     console.error(`[v21 step3] page ${m[1]}: ${err?.message ?? err}`);
     return send(503, missingPage()), true;

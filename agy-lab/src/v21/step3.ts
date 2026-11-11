@@ -727,6 +727,8 @@ const P = {
     how:'Reply to the email that brought you here with this line. We run your report and send it to the same inbox.',
     orderLine: (c: string, ref: string) => `YES, run the full report for ${c}.${ref ? ` Ref ${ref}.` : ''}`,
     copy: 'Copy the order line', copied: 'Copied. Paste it into your reply to our email.', selected: 'Selected. Press copy, then paste it into your reply.',
+    // When the page is given the site's order link (reportPage options.orderUrl), a button replaces the reply-to-email order line.
+    orderHow: 'Order your full report on our site. We start it as soon as you have paid.', orderBtn: 'Order your full report',
     guarantee: 'If the full report finds fewer than 10 problems beyond this page, each with a public source, we refund the full price and you keep the report.', guarK: 'Guarantee.',
     keep: 'This preview is yours to keep either way.',
     foot: { for: 'Prepared for', built: 'Built', ref: 'Reference', method: 'Method' },
@@ -763,6 +765,7 @@ const P = {
       shortH: 'In short.',
       short: (list: string, price: string | null, by: string) => `The problems are real and public. This page can’t show where they come from, a wrong guess can cost you customers, and every week of waiting lets them spread.${price ? ` The full report costs ${list}. Order by ${by} and it costs ${price}, with a full refund if it doesn’t deliver.` : ''}`,
       order: 'Reply to the email that brought you this report to order your full report.',
+      orderLink: 'Order your full report.',
     },
     missing: 'This report is not ready yet.', missingP: 'Please come back to this link a little later.',
   },
@@ -1102,7 +1105,7 @@ export function maskContact(contact: string): string {
   }).join(', ');
 }
 
-export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null; ref?: string | null } = {}): string {
+export function reportPage(report: Step3Report, s2: Step2V2Output, options: { debug?: boolean; now?: Date; price?: string | null; ref?: string | null; orderUrl?: string | null } = {}): string {
   const now = options.now ?? new Date();
   const ko = report?.language === 'ko';
   // New wording is English; a Korean page keeps its Korean strings wherever the same key exists.
@@ -1111,6 +1114,8 @@ export function reportPage(report: Step3Report, s2: Step2V2Output, options: { de
   const loc = localeFor(s2?.input?.country, ko ? 'ko' : 'en');
   const price = options.price || null; // one USD price for every country, read from the hub DB by the caller
   const ref = String(options.ref ?? '').trim();
+  // The site's order page for this report. Only an http(s) link counts; anything else keeps the reply-to-email order line.
+  const orderUrl = /^https?:\/\//i.test(String(options.orderUrl ?? '')) ? String(options.orderUrl) : null;
   // A missing or invalid created_at falls back to now, so the date line never reads "Invalid Date" or throws.
   const made = new Date(report?.created_at);
   const when = Number.isNaN(made.getTime()) ? now : made;
@@ -1325,8 +1330,10 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
   const offer = `<section class="sec dark" id="offer"><div class="in offer"><div><p class="eyebrow">${esc(t.offerEye)}</p><h2>${esc(t.offerH)}</h2><p class="lead">${esc(t.offerP)}</p>
 <ul class="gets">${t.gets.map((g) => `<li><b>${esc(g.h)}</b><span>${esc(g.note?.(getsN) || g.p)}</span></li>`).join('')}</ul></div>
 <div class="buy">${shots}${steps}<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}${bundle}
-<p class="how">${esc(t.how)}</p><p class="msg" id="msg">${esc(t.orderLine(c, ref))}</p>
-<button class="btn inv" id="copy" type="button">${esc(t.copy)}</button><p class="ok" id="ok" aria-live="polite"></p>
+${orderUrl
+    ? `<p class="how">${esc(t.orderHow)}</p><a class="btn inv" id="orderbtn" href="${esc(orderUrl)}" target="_blank" rel="noopener">${esc(t.orderBtn)}</a>`
+    : `<p class="how">${esc(t.how)}</p><p class="msg" id="msg">${esc(t.orderLine(c, ref))}</p>
+<button class="btn inv" id="copy" type="button">${esc(t.copy)}</button><p class="ok" id="ok" aria-live="polite"></p>`}
 <p class="guar"><b>${esc(t.guarK)}</b> ${esc(t.guarantee)}</p><p class="keep">${esc(t.keep)}</p></div></div></div></section>`;
 
   // ---- the closing note, for the owner and any AI assistant they paste the page into. It argues from the problems, so a
@@ -1341,7 +1348,7 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
 <div><h3>${esc(k.waitH)}</h3><p>${esc(k.wait)}</p></div>
 <div><h3>${esc(k.riskH)}</h3><p>${esc(k.risk)}</p></div>
 <div><h3>${esc(k.testH)}</h3><p>${esc(k.testP)}</p><ol>${k.tests.map((x) => `<li>${esc(x)}</li>`).join('')}</ol><p style="margin-top:12px">${esc(k.testEnd)}</p></div>
-<div class="short"><h3>${esc(k.shortH)}</h3><p>${esc(k.short(k.listPrice, price, by))}</p><p style="margin-top:12px"><a href="#order">${esc(k.order)}</a></p></div>
+<div class="short"><h3>${esc(k.shortH)}</h3><p>${esc(k.short(k.listPrice, price, by))}</p><p style="margin-top:12px">${orderUrl ? `<a href="${esc(orderUrl)}" target="_blank" rel="noopener">${esc(k.orderLink)}</a>` : `<a href="#order">${esc(k.order)}</a>`}</p></div>
 </div></div></section>` : '';
 
   const footer = `<footer><div class="in"><div><span class="k">${esc(t.foot.for)}</span><span>${esc(c)}</span></div><div><span class="k">${esc(t.foot.built)}</span><span>${esc(t.built(date, counts.sources))}</span></div>${ref ? `<div><span class="k">${esc(t.foot.ref)}</span><span>${esc(t.refText(ref))}</span></div>` : ''}<div><span class="k">${esc(t.foot.method)}</span><span>${esc(t.method)}</span></div></div></footer>`;

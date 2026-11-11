@@ -152,6 +152,22 @@ test('one buy target with price, guarantee and the order line; every buy link po
   assert.match(text(reportPage(report(), s2, { now: NOW })), /YES, run the full report for Beispiel GmbH\.\s/);
 });
 
+test('with an order link, the buy target is a button to the site order page; without one (or a bad one), the reply-to-email line stays', () => {
+  const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website'), finding('f2', 'problem', 'contact')] });
+  const url = 'https://mirrormirror.cloud/order?report=1ed41496-0000-4000-8000-000000000000';
+  const html = reportPage(report(), s2, { now: NOW, price: '$59', orderUrl: url });
+  assert.equal((html.match(/id="order"/g) ?? []).length, 1);
+  assert.ok(html.includes(`<a class="btn inv" id="orderbtn" href="${url}"`));
+  assert.ok(html.includes(`<a href="${url}" target="_blank" rel="noopener">Order your full report.</a>`));
+  assert.ok(!/Reply to the email|YES, run the full report|id="copy"/.test(html));
+  assert.deepEqual(deadLinks(html), []);
+  for (const bad of [undefined, null, '', 'javascript:alert(1)', '/order?report=x']) {
+    const h = reportPage(report(), s2, { now: NOW, price: '$59', orderUrl: bad as any });
+    assert.match(text(h), /YES, run the full report for Beispiel GmbH\./);
+    assert.ok(!h.includes('id="orderbtn"'));
+  }
+});
+
 test('closing note: list price, 72-hour price and date; proof line only with a proof; none on a page with no findings', () => {
   const s2 = make('Malaysia', { conclusive_findings: [finding('f1', 'problem', 'website')] });
   const t = text(reportPage(report(), s2, { now: NOW, price: '$59' }));
