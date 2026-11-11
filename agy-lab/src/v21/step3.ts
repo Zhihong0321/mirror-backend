@@ -26,6 +26,20 @@ import { askLanes, parseAnswer, type Lane, type LaneAttempt } from './judge.ts';
 import type { Step2V2Output } from './step2-v2.ts';
 import { renderTidy, type TidyData } from './tidy.ts';
 import { daysToImpact, localeFor, plural, rankKey, severity, type Urgency } from '../report-rules/index.ts';
+import { readFileSync } from 'node:fs';
+
+/** A sample report page (src/v21/samples) as a data URI, read once. An unreadable file gives '' and the page draws a
+ *  plain sheet in its place, so a missing image never stops the page. */
+const samplePics = new Map<string, string>();
+function samplePic(name: string): string {
+  if (!samplePics.has(name)) {
+    let uri = '';
+    try { uri = `data:image/jpeg;base64,${readFileSync(new URL(`./samples/${name}`, import.meta.url)).toString('base64')}`; }
+    catch (err: any) { console.error(`[v21 step3] sample picture ${name}: ${err?.message ?? err}`); }
+    samplePics.set(name, uri);
+  }
+  return samplePics.get(name)!;
+}
 
 export const STEP3_PROMPT = 'step3-v4';
 export const STEP3_REFINE_PROMPT = 'step3-refine-v3';
@@ -693,7 +707,20 @@ const P = {
       { h: 'Done for you', p: 'Homepage text, review replies, an FAQ and a page for each town, written only from verified facts.' },
     ] as Array<{ h: string; p: string; note?: (n: GetsN) => string }>,
     askSpan: (h: string) => `one payment · over ${h} of checking done for you`,
-    how: 'Reply to the email that brought you here with this line. We run your report and send it to the same inbox.',
+    // What one payment buys (owner, 2026-11-11).
+    fan: [
+      { tag: 'Now', alt: 'The first page of a sample full report' },
+      { tag: 'Within 60 days', alt: 'The same report again, run within 60 days to check progress', stamp: 'Re-check' },
+      { tag: 'Monthly', alt: 'A page of ad cards from a sample Social Media Ads report' },
+    ],
+    fanCap: 'Sample pages from real reports. Your ads report covers your own industry.',
+    bundleH: 'One payment, three reports:',
+    bundle: [
+      'Your full report, now.',
+      'A second full report within 60 days, to check your progress.',
+      'A Social Media Ads report for your core industry, monthly edition (worth $39).',
+    ],
+    how:'Reply to the email that brought you here with this line. We run your report and send it to the same inbox.',
     orderLine: (c: string, ref: string) => `YES, run the full report for ${c}.${ref ? ` Ref ${ref}.` : ''}`,
     copy: 'Copy the order line', copied: 'Copied. Paste it into your reply to our email.', selected: 'Selected. Press copy, then paste it into your reply.',
     guarantee: 'If the full report finds fewer than 10 problems beyond this page, each with a public source, we refund the full price and you keep the report.', guarK: 'Guarantee.',
@@ -955,6 +982,19 @@ h2{font-size:clamp(30px,4vw,50px);max-width:17em}
 .ask .price{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .ask .price b{font-family:var(--display);font-size:64px;font-weight:600;letter-spacing:-0.04em;line-height:.9}
 .ask .price span{font-size:14px;color:var(--grey)}
+.buy{display:grid;gap:0;min-width:0}
+.fan{position:relative;aspect-ratio:16/10;margin:0 0 6px}
+.fd{position:absolute;top:6%;width:42%;aspect-ratio:4/5;margin:0;background:#fff;border:1px solid rgba(255,255,255,.35);box-shadow:0 18px 40px -18px rgba(0,0,0,.7);overflow:hidden}
+.fd img,.fd .blank{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.fd .blank{background:repeating-linear-gradient(#fff 0 14px,#e6e8eb 14px 18px)}
+.fd0{left:1%;transform:rotate(-5deg);z-index:3}.fd1{left:29%;top:2%;transform:rotate(1deg);z-index:2}.fd2{left:57%;transform:rotate(6deg);z-index:1}
+.fd figcaption{position:absolute;left:8px;bottom:8px;background:#fff;color:var(--ink);font-size:12px;font-weight:600;padding:4px 8px;box-shadow:0 0 0 1px var(--ink)}
+.fd1 figcaption,.fd2 figcaption{left:auto;right:8px}
+.fd .stamp{position:absolute;right:8px;top:38%;transform:rotate(-8deg);border:2px solid #b42318;color:#b42318;background:rgba(255,255,255,.92);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px}
+.fancap{font-size:12.5px;color:var(--on-dark-2);margin:0 0 14px}
+.ask .bundle{background:var(--band);padding:14px 16px;display:grid;gap:8px;font-size:15px}
+.ask .bundle b{font-family:var(--display);font-weight:600;font-size:16px}
+.ask .bundle ol{margin:0;padding-left:20px;display:grid;gap:5px}
 .ask .how{font-size:15.5px}
 .msg{background:var(--band);border:1px dashed #c4c9d0;padding:12px 14px;font-size:14.5px;user-select:all;overflow-wrap:anywhere}
 .ask .btn{width:100%}
@@ -983,6 +1023,8 @@ footer .k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppe
 .across{grid-column:1/-1;background:var(--paper);padding:24px;display:grid;gap:12px;border-top:3px solid var(--line)}
 .across h3{font-size:21px}
 @media (max-width:900px){
+.fd figcaption{font-size:11px;padding:3px 6px;bottom:6px}.fd0 figcaption{left:6px}.fd1 figcaption,.fd2 figcaption{right:6px}
+.fd .stamp{font-size:9.5px;padding:2px 5px;right:5px;letter-spacing:.04em}
 .sec{padding-block:60px}
 .hero .in{grid-template-columns:1fr;gap:36px;padding-block:48px 56px}
 .qs,.goods,.cmp,.offer,.proof{grid-template-columns:1fr}
@@ -1268,14 +1310,26 @@ ${goods ? `<div class="goods">${goods}</div>${counts.strengths > strengthsShown.
 <div class="parts">${t.parts.map((p, i) => `<div class="part"><p class="pn">${esc(t.partN(i + 1))} · ${esc(p.n)}</p><h3>${esc(p.q)}</h3><ul>${p.know.map((k) => `<li>${esc(k)}</li>`).join('')}</ul><p class="res">${esc(t.partRes)} <b>${esc(p.res)}</b></p></div>`).join('')}
 <div class="across"><h3>${esc(t.partsAfterH)}</h3><ul>${t.partsAfter.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div></div></section>`;
 
+  // ---- what one payment buys, drawn as three fanned report pages (back to front: ads, 60-day check, report now).
+  // A missing sample image leaves a plain page in its place; the order box never depends on it.
+  const shots = [samplePic('full-report.jpg'), samplePic('full-report.jpg'), samplePic('ads-report.jpg')];
+  const fanDoc = (i: number) => {
+    const f = t.fan[i];
+    const pic = shots[i] ? `<img src="${shots[i]}" alt="${esc(f.alt)}" loading="lazy">` : '<span class="blank" aria-hidden="true"></span>';
+    return `<figure class="fd fd${i}">${pic}${f.stamp ? `<span class="stamp">${esc(f.stamp)}</span>` : ''}<figcaption>${esc(f.tag)}</figcaption></figure>`;
+  };
+  const fan = `<div class="fan">${[2, 1, 0].map(fanDoc).join('')}</div><p class="fancap">${esc(t.fanCap)}</p>`;
+  // With no price set the page names no money at all, so the bundle (it carries "worth $39") goes with the price.
+  const bundle = !price ? '' : `<div class="bundle"><b>${esc(t.bundleH)}</b><ol>${t.bundle.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
+
   // ---- the offer: the only #order on the page
   const getsN: GetsN = { findings: counts.findings };
   const offer = `<section class="sec dark" id="offer"><div class="in offer"><div><p class="eyebrow">${esc(t.offerEye)}</p><h2>${esc(t.offerH)}</h2><p class="lead">${esc(t.offerP)}</p>
 <ul class="gets">${t.gets.map((g) => `<li><b>${esc(g.h)}</b><span>${esc(g.note?.(getsN) || g.p)}</span></li>`).join('')}</ul></div>
-<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}
+<div class="buy">${fan}<div class="ask" id="order">${price ? `<div class="price"><b data-price>${esc(price)}</b><span>${esc(t.askSpan(hours))}</span></div>` : ''}${bundle}
 <p class="how">${esc(t.how)}</p><p class="msg" id="msg">${esc(t.orderLine(c, ref))}</p>
 <button class="btn inv" id="copy" type="button">${esc(t.copy)}</button><p class="ok" id="ok" aria-live="polite"></p>
-<p class="guar"><b>${esc(t.guarK)}</b> ${esc(t.guarantee)}</p><p class="keep">${esc(t.keep)}</p></div></div></section>`;
+<p class="guar"><b>${esc(t.guarK)}</b> ${esc(t.guarantee)}</p><p class="keep">${esc(t.keep)}</p></div></div></div></section>`;
 
   // ---- the closing note, for the owner and any AI assistant they paste the page into. It argues from the problems, so a
   // page with none gets no note (its wording would be false there).
