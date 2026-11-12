@@ -635,9 +635,11 @@ const P = {
     topic: { contact: 'Contact details', identity: 'Company identity', website: 'Website', email: 'Email', reviews: 'Reviews', scale: 'Company size', licence: 'Licences', awards: 'Awards', registration: 'Registration', reputation: 'Reputation', other: 'Other' } as Record<string, string>,
     hint: 'issue',
     shownAbove: 'Shown in full above',
-    withheldH: (n: number) => `${n === 1 ? '1 of these has' : `${n} of these have`} three things missing here`,
-    withheldP: 'Where it is published. What each source says, and which is right. The fix, and who on your team does it.',
-    withheldBtn: (n: number) => (n === 1 ? 'Get it in full' : `Get all ${n} in full`),
+    // Two scans, two totals (owner, 2026-11-12): the count of this free Preview Scan must never read as the size of the
+    // Full Report. The Full Scan goes deeper and its total is not known until that run ends, so it is shown as "??".
+    withheldH: (n: number) => [`${plural(n, 'finding', 'findings')}: Preview Scan (this page)`, '?? findings: Full Scan (the Full Report)'],
+    withheldP: (listed: number) => `${listed} Preview Scan ${listed === 1 ? 'finding is' : 'findings are'} listed above by title only. For each one, the Full Report adds where it is published, what each source says and which is correct, and the fix with the person on your team who owns it. The Full Scan also researches areas this Preview Scan did not test, so its total is not yet known and is expected to be higher. It is confirmed when the full run completes.`,
+    withheldBtn: 'Order the Full Report',
     strEye: 'What is working', strHn: (n: number) => `${plural(n, 'strength', 'strengths')} the sources confirm.`, strG: 'Protect these.',
     strNoneH: 'What is working.', strNoneG: 'Nothing confirmed yet.',
     strSource: 'Source:',
@@ -1276,7 +1278,7 @@ ${card}</div></section>`;
     : `<li id="${esc(x.id)}" ${idAttr(x.id)}><span>${tagOf(x)}</span><span class="t">${esc(titleOf(x.id))}${dbg(x.id)}</span></li>`;
   const list = counts.findings ? `<section class="sec" id="findings"><div class="in"><div class="head"><p class="eyebrow" data-count="findings">${esc(t.listEye(counts.findings))}</p><h2>${esc(t.listH)} <span class="g">${esc(t.listG)}</span></h2></div>
 <div class="groups">${byArea.map(([a, xs]) => `<div class="group" id="a-${a}"><h3>${esc(t.area[a])} <small>${esc(t.groupCount(xs.filter((x) => x.kind !== 'note').length, xs.filter((x) => x.kind === 'note').length))}</small></h3><ol class="rows">${xs.map(row).join('')}</ol></div>`).join('')}
-${withheld ? `<div class="withheld"><div><h3 data-count="shown.listed">${esc(t.withheldH(withheld))}</h3><p>${esc(t.withheldP)}</p></div><a class="btn inv" href="#order">${esc(t.withheldBtn(withheld))}&nbsp;→</a></div>` : ''}</div></div></section>` : '';
+${withheld ? `<div class="withheld"><div><h3 data-count="findings">${t.withheldH(counts.findings).map(esc).join('<br>')}</h3><p>${esc(t.withheldP(withheld))}</p></div><a class="btn inv" href="#order">${esc(t.withheldBtn)}&nbsp;→</a></div>` : ''}</div></div></section>` : '';
 
   // ---- people and contacts tied to the brand (Step 2's people list), every one listed, half hidden by code
   const people: any[] = Array.isArray((s2 as any)?.people) ? (s2 as any).people : [];

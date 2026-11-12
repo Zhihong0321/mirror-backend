@@ -116,7 +116,10 @@ test('every number on the page reads from one counts object', () => {
   assert.match(t, /7 confirmed problems\. In 3 of them, public sources state different facts/);
   assert.match(t, /2 records confirmed by an outside source\. 2 records that banks and tender panels check have problems/);
   assert.match(t, /The 9 findings from this free check/);
-  assert.match(t, /8 of these have three things missing here/);
+  assert.match(t, /9 findings: Preview Scan \(this page\)/);
+  assert.match(t, /\?\? findings: Full Scan \(the Full Report\)/);
+  assert.match(t, /8 Preview Scan findings are listed above by title only/);
+  assert.doesNotMatch(t, /Get all \d+ in full|three things missing/);
   assert.match(t, /The other 8 findings were found the same way/);
   // 4 problem + 4 strength + 2 note sources, 6 contradiction versions = 16 distinct pages; 16×10 + 8×15 + 180 = 460 min.
   assert.match(t, /16 × 10 min/);
@@ -231,7 +234,9 @@ test('counts 0, 1 and 2 read correctly through the plural helper', () => {
   const one = page(1, 1, 1);
   assert.match(one, /run into at least 3 things/);
   assert.match(one, /1 is a signal we could not confirm/);
-  assert.match(page(1, 0, 1), /1 of these has three things missing here/);
+  assert.match(page(1, 0, 1), /2 findings: Preview Scan \(this page\)/);
+  assert.match(page(1, 0, 1), /1 Preview Scan finding is listed above by title only/);
+  assert.match(page(1, 0, 1), /\?\? findings: Full Scan/);
   assert.ok(!/\b1 (problems|things|findings|signals|records|strengths)\b/.test(one));
   assert.ok(!/\b0 (problems|things|findings|signals|records)\b/.test(page(0, 0, 1)));
 });
