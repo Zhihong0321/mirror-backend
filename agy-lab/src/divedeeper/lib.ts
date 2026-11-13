@@ -18,6 +18,7 @@ import tls from 'node:tls';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as core from '../core/index.ts';
+import { hedgedChat } from './hedge.ts';
 import * as jobs from '../jobs.ts';
 import * as pagefetch from '../pagefetch.ts';
 import { startCall, type ApiCall, type ApiName } from '../cost.ts';
@@ -233,7 +234,8 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
     meter.llm.byModel[model] = (meter.llm.byModel[model] ?? 0) + 1;
     meter.llm.promptChars += prompt.length + (opts.system?.length ?? 0);
     try {
-      const out = await track(`llm ${model}`, core.llm.chat(prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, exactModel: opts.exactModel, reasoningEffort: opts.reasoningEffort, log: meter.calls }));
+      // A slow call is raced by a second one, never killed (hedge.ts); one that never answers is given up, not waited on for ever.
+      const out = await track(`llm ${model}`, hedgedChat(core.llm.chat, prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, exactModel: opts.exactModel, reasoningEffort: opts.reasoningEffort, log: meter.calls }, { note: (m) => warn(m) }));
       meter.llm.answerChars += out.answer.length;
       meter.llm.tokensIn += out.tokensIn;
       meter.llm.tokensOut += out.tokensOut;

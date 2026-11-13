@@ -25,6 +25,8 @@ export const V21_DEEPER_LANES = [
 ] as const;
 // S1-recheck looks again at what the judging lanes found, before anything is written about it; S6-check looks again at what was written.
 export const V21_DEEPER_WRITING = [['S1', 'recheck'], ['S2', 'consult'], ['S3', 'editor'], ['S4', 'analysis'], ['S5', 'plan'], ['S6', 'check']] as const;
+/** The most one writing stage (S1-S6) may take. Its LLM calls are raced and given up at 8 minutes (hedge.ts); this is the net under that. */
+export const WRITING_LIMIT_MS = 25 * 60_000;
 export const waiting: string[] = [];
 export let active: string | null = null;
 const waits = [60_000, 180_000];
@@ -90,7 +92,9 @@ export async function executeRun(id: string, runtime: Runtime = live): Promise<v
       for (let attempt = 1; attempt <= 3; attempt++) {
         // No lane time limit (owner's wait rule): a slow LLM answer is waited for, never cut and restarted. A call that
         // will never answer still fails by itself in the LLM router's idle check. 2^31-1 ms is setTimeout's maximum.
-        const result = await runLane(section, lane, key, dive, 2_147_483_647, { worker: 'myworker' });
+        // The writing stages are LLM calls and code only (the slowest took 4 minutes); anything that still has not finished in
+        // WRITING_LIMIT_MS is given up, named in the log, and the report is built without it (labelled 'incomplete').
+        const result = await runLane(section, lane, key, dive, section.startsWith('S') ? WRITING_LIMIT_MS : 2_147_483_647, { worker: 'myworker' });
         // Every try is immutable and durable before this lane's next try can start.
         await store.saveLane(row, result);
         await say(name, `${name} try ${attempt}: ${result.status}${result.failure ? ': ' + result.failure : ''}`);

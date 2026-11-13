@@ -258,7 +258,7 @@ function give(c: LlmConfig): void {
 // ---------------------------------------------------------------- one request to one lane
 
 type Message = { role: 'system' | 'user'; content: string };
-type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number; reasoningEffort?: string };
+type CallOpts = { temperature?: number; maxTokens?: number; timeoutMs?: number; idleMs?: number; reasoningEffort?: string; signal?: AbortSignal };
 type Answer = { answer: string; tokensIn: number; tokensOut: number };
 
 /** A chunk that carries part of the answer: content or reasoning text, the finish, the usage, or a
@@ -275,6 +275,11 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
   const idleMs = opts.idleMs ?? IDLE_MS;
   const guard = idleGuard(idleMs);
   const silent = () => fail('timeout', `${c.model} sent no answer for ${Math.round(idleMs / 1000)}s`);
+  // A caller that raced several calls cancels the losers through opts.signal (divedeeper/hedge.ts).
+  const cancelled = () => fail('aborted', `${c.model} call cancelled: another call answered first`);
+  const onOuterAbort = () => guard.cancel(opts.signal?.reason);
+  if (opts.signal?.aborted) { guard.done(); throw cancelled(); }
+  opts.signal?.addEventListener('abort', onOuterAbort, { once: true });
   let res: Response;
   try {
     res = await fetchImpl(c.url + '/chat/completions', {
@@ -293,6 +298,8 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
     });
   } catch (cause) {
     guard.done();
+    opts.signal?.removeEventListener('abort', onOuterAbort);
+    if (opts.signal?.aborted) throw cancelled();
     if (guard.idled) throw silent();
     const name = (cause as Error).name;
     if (name === 'TimeoutError' || name === 'AbortError') throw fail('timeout', `${c.model} gave no answer within ${Math.round((opts.timeoutMs ?? 0) / 1000)}s`);
@@ -303,11 +310,13 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
     guard.touch();
     raw = await readText(res, guard, answerProgress);
   } catch (cause) {
+    if (opts.signal?.aborted) throw cancelled();
     if (guard.idled) throw silent();
     const name = (cause as Error).name;
     throw fail(name === 'TimeoutError' || name === 'AbortError' ? 'timeout' : 'failed', `${c.model} answer cut off: ${(cause as Error).message}`);
   } finally {
     guard.done();
+    opts.signal?.removeEventListener('abort', onOuterAbort);
   }
   if (res.status === 429) throw fail('rate_limit', `${c.model} rate limit: 429 ${raw.slice(0, 300)}`);
   if (!res.ok) throw fail('failed', `${c.model} answered HTTP ${res.status}: ${raw.slice(0, 300)}`);
@@ -347,6 +356,8 @@ async function round(step: string, messages: Message[], lanes: LlmConfig[], opts
   while (left.length) {
     const c = await take(left);
     left.splice(left.indexOf(c), 1);
+    // A cancelled call that was waiting for a free slot must not start a request now.
+    if (opts.signal?.aborted) { give(c); throw fail('aborted', 'call cancelled: another call answered first'); }
     const call = startCall('llm', step, { model: c.model, provider: laneName(c) });
     const used = { tokensIn: 0, tokensOut: 0 };
     try {
@@ -355,6 +366,7 @@ async function round(step: string, messages: Message[], lanes: LlmConfig[], opts
       return { answer, ...used, lane: c };
     } catch (err) {
       last = err as Error;
+      if ((err as { code?: string }).code === 'aborted') throw err;
       if ((err as { code?: string }).code === 'rate_limit') rest(c);
       const on = evidenceActive();
       if (log || on) kept(call, { ok: false, ...(used.tokensIn || used.tokensOut ? used : {}), note: on ? String((err as any)?.message ?? err).slice(0, 200) : (err as Error).message.slice(0, 200) }, log, err, messages);
@@ -391,6 +403,8 @@ export type ChatOpts = {
   reasoningEffort?: string;
   /** Every attempt is pushed here as an ApiCall. */
   log?: ApiCall[];
+  /** Cancels this call (its request, its waits, its retries) when another call for the same task already answered. */
+  signal?: AbortSignal;
   /** MiniMax as the last resort; on unless false. */
   fallback?: boolean;
   fetchImpl?: FetchImpl;
@@ -417,9 +431,11 @@ export async function chat(prompt: string, opts: ChatOpts): Promise<ChatAnswer> 
         const out = await round(opts.step, messages, lanes, opts, fetchImpl, opts.log);
         return { answer: out.answer, model: out.lane.model, lane: laneName(out.lane), ms: Date.now() - started, tokensIn: out.tokensIn, tokensOut: out.tokensOut };
       } catch (err) {
+        if ((err as { code?: string }).code === 'aborted') throw err;
         errors.push((err as Error).message.slice(0, 200));
       }
     }
+    if (opts.signal?.aborted) throw fail('aborted', 'call cancelled: another call answered first');
     if (minimaxOn && (r >= MINIMAX_FROM_ROUND || !lanes.length)) {
       try {
         const out = await minimax(prompt, opts);

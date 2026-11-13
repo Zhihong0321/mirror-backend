@@ -7,7 +7,7 @@
 /** No byte for this long, headers included, and the request is given up. */
 export const IDLE_MS = 120_000;
 
-export type IdleGuard = { signal: AbortSignal; touch: () => void; done: () => void; readonly idled: boolean };
+export type IdleGuard = { signal: AbortSignal; touch: () => void; done: () => void; /** Cancel the request from outside (another call already answered); not an idle timeout. */ cancel: (reason?: unknown) => void; readonly idled: boolean };
 
 /** An abort signal that fires when touch() has not been called for `idleMs`. */
 export function idleGuard(idleMs = IDLE_MS): IdleGuard {
@@ -19,6 +19,7 @@ export function idleGuard(idleMs = IDLE_MS): IdleGuard {
     signal: ctl.signal,
     touch: () => { if (idled) return; clearTimeout(timer); timer = setTimeout(fire, idleMs); },
     done: () => clearTimeout(timer),
+    cancel: (reason) => { clearTimeout(timer); if (!ctl.signal.aborted) ctl.abort(reason ?? new Error('cancelled')); },
     get idled() { return idled; },
   };
 }
