@@ -43,7 +43,9 @@ const VAULT = process.env.VAULT_PATH ?? 'D:/Tools/my-vault/vault.json';
 const LAB = (process.env.LAB_URL ?? 'https://ee-auto.up.railway.app').replace(/\/+$/, '');
 export const DEFAULT_MODEL = process.env.DD_LLM_MODEL ?? 'deepseek-v4.1-flash-1017';
 /** The review and write-up steps (S1-S6, owner 2026-11-11): exactly DeepSeek V4.1 Flash 1017, at maximum reasoning. */
-export const WRITE_LLM = { model: 'deepseek-v4.1-flash-1017', exactModel: true, reasoningEffort: 'max' } as const;
+export const WRITE_LLM = { model: process.env.DD_WRITE_MODEL?.trim() || 'deepseek-v4.1-flash-1017', exactModel: true, reasoningEffort: process.env.DD_WRITE_EFFORT?.trim() || 'max' } as const;
+/** DD_LLM_FALLBACK=off: a deeper-dive call is answered by its lane or fails; MiniMax never stands in (a single-provider test, owner 2026-11-13). */
+const NO_FALLBACK = (process.env.DD_LLM_FALLBACK ?? '').trim().toLowerCase() === 'off';
 
 // Every LLM, Maps, Exa, Brave and PageSpeed call goes through the app's core
 // (core/README.md), which picks the keys and lanes: on the hub, those saved on
@@ -235,7 +237,7 @@ export function makeCtx(diveId: string, section: string, lane: string, opts?: { 
     meter.llm.promptChars += prompt.length + (opts.system?.length ?? 0);
     try {
       // A slow call is raced by a second one, never killed (hedge.ts); one that never answers is given up, not waited on for ever.
-      const out = await track(`llm ${model}`, hedgedChat(core.llm.chat, prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, exactModel: opts.exactModel, reasoningEffort: opts.reasoningEffort, log: meter.calls }, { note: (m) => warn(m) }));
+      const out = await track(`llm ${model}`, hedgedChat(core.llm.chat, prompt, { step: opts.label ?? lane, model, system: opts.system, temperature: opts.temperature, exactModel: opts.exactModel, reasoningEffort: opts.reasoningEffort, ...(NO_FALLBACK ? { fallback: false } : {}), log: meter.calls }, { note: (m) => warn(m) }));
       meter.llm.answerChars += out.answer.length;
       meter.llm.tokensIn += out.tokensIn;
       meter.llm.tokensOut += out.tokensOut;
