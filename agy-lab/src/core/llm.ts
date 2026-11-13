@@ -355,6 +355,8 @@ export type BenchCall = {
   ok: boolean; answer: string; error: string | null; ms: number;
   /** ms until the first reasoning text, and until the first answer text, as the stream showed them (null: none came). */
   firstReasoningMs: number | null; firstAnswerMs: number | null;
+  /** ms until the response headers arrived (the server started answering). */
+  firstByteMs: number | null;
   tokensIn: number; tokensOut: number; finish: string;
 };
 export async function benchCall(
@@ -363,7 +365,7 @@ export async function benchCall(
   opts: { reasoningEffort?: string; temperature?: number; json?: boolean; deadMs?: number } = {},
 ): Promise<BenchCall> {
   const t0 = Date.now();
-  const out: BenchCall = { ok: false, answer: '', error: null, ms: 0, firstReasoningMs: null, firstAnswerMs: null, tokensIn: 0, tokensOut: 0, finish: '' };
+  const out: BenchCall = { ok: false, answer: '', error: null, ms: 0, firstReasoningMs: null, firstAnswerMs: null, firstByteMs: null, tokensIn: 0, tokensOut: 0, finish: '' };
   const guard = idleGuard(IDLE_MS);
   const dead = AbortSignal.timeout(opts.deadMs ?? 480_000);
   let raw = '';
@@ -383,6 +385,7 @@ export async function benchCall(
       signal: AbortSignal.any([guard.signal, dead]),
     });
     guard.touch();
+    out.firstByteMs = Date.now() - t0;
     raw = await readText(res, guard, (chunk) => {
       if (out.firstReasoningMs === null && /"(reasoning_content|reasoning)"\s*:\s*"[^"]/.test(chunk)) out.firstReasoningMs = Date.now() - t0;
       if (out.firstAnswerMs === null && /"content"\s*:\s*"[^"]/.test(chunk)) out.firstAnswerMs = Date.now() - t0;

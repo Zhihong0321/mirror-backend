@@ -31,16 +31,26 @@ type Result = Record<string, unknown>;
 type Bench = { id: string; status: 'running' | 'done'; started_at: string; finished_at: string | null; plan: unknown; results: Result[]; notes: string[] };
 const benches = new Map<string, Bench>();
 
-/** The two lanes under test, or what is missing. */
-function targets(): { targets: Target[]; missing: string[] } {
+/** Every lane the bench knows, by name. Default (no `targets` given): terra and deepseek. Keys live in hub variables. */
+function targets(names: string[]): { targets: Target[]; missing: string[] } {
   const missing: string[] = [];
   const out: Target[] = [];
-  const key = (process.env.BENCH_LINGSUAN_KEY ?? '').trim();
-  if (key) out.push({ label: 'gpt-6.1-terra (lingsuan)', lane: { url: 'https://api.lingsuan.si/v1', key, model: 'gpt-6.1-terra', label: 'bench lingsuan' } });
-  else missing.push('hub variable BENCH_LINGSUAN_KEY is not set');
-  const vectide = llm.pool().find((l) => /vectide\.cn/i.test(l.url) && /deepseek/i.test(l.model));
-  if (vectide) out.push({ label: 'deepseek-v4.1 (vectide)', lane: { ...vectide, first: false, label: 'bench vectide' } });
-  else missing.push('no Vectide deepseek lane in the hub pool');
+  const lingsuan = (process.env.BENCH_LINGSUAN_KEY ?? '').trim();
+  const vectideKey = (process.env.BENCH_VECTIDE_KEY ?? '').trim();
+  const known: Record<string, () => Target | string> = {
+    terra: () => lingsuan ? { label: 'gpt-6.1-terra (lingsuan)', lane: { url: 'https://api.lingsuan.si/v1', key: lingsuan, model: 'gpt-6.1-terra', label: 'bench lingsuan' } } : 'hub variable BENCH_LINGSUAN_KEY is not set',
+    'sol-lingsuan': () => lingsuan ? { label: 'gpt-6.1-sol (lingsuan)', lane: { url: 'https://api.lingsuan.si/v1', key: lingsuan, model: 'gpt-6.1-sol', label: 'bench lingsuan' } } : 'hub variable BENCH_LINGSUAN_KEY is not set',
+    'sol-vectide': () => vectideKey ? { label: 'gpt-6.1-sol (vectide token plan)', lane: { url: 'https://vectide.cn/v1', key: vectideKey, model: 'gpt-6.1-sol', label: 'bench vectide token plan' } } : 'hub variable BENCH_VECTIDE_KEY is not set',
+    deepseek: () => {
+      const v = llm.pool().find((l) => /vectide\.cn/i.test(l.url) && /deepseek/i.test(l.model));
+      return v ? { label: 'deepseek-v4.1 (vectide)', lane: { ...v, first: false, label: 'bench vectide' } } : 'no Vectide deepseek lane in the hub pool';
+    },
+  };
+  for (const name of names.length ? names : ['terra', 'deepseek']) {
+    const make = known[name];
+    const got = make ? make() : `unknown target "${name}" (known: ${Object.keys(known).join(', ')})`;
+    if (typeof got === 'string') missing.push(got); else out.push(got);
+  }
   return { targets: out, missing };
 }
 
@@ -107,6 +117,7 @@ async function runBench(bench: Bench, reportIds: string[], rounds: number, tg: T
           bench.results.push({
             report_id: reportId, company: s2.input.company, country: s2.input.country, round, model: t.label, effort: EFFORT, prompt_chars: promptChars,
             ok: call.ok, error: call.error, seconds: +(call.ms / 1000).toFixed(1),
+            first_byte_s: call.firstByteMs === null ? null : +(call.firstByteMs / 1000).toFixed(1),
             first_reasoning_s: call.firstReasoningMs === null ? null : +(call.firstReasoningMs / 1000).toFixed(1),
             first_answer_s: call.firstAnswerMs === null ? null : +(call.firstAnswerMs / 1000).toFixed(1),
             tokens_in: call.tokensIn, tokens_out: call.tokensOut, finish: call.finish,
@@ -135,7 +146,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       const reportIds = (Array.isArray(b.report_ids) ? b.report_ids : []).map(String).filter(Boolean);
       if (!reportIds.length) return json(res, 400, { error: 'missing: report_ids' }), true;
       const rounds = Math.min(5, Math.max(1, Number(b.rounds) || 1));
-      const tg = targets();
+      const tg = targets((Array.isArray(b.targets) ? b.targets : []).map(String));
       if (tg.missing.length) return json(res, 409, { error: tg.missing.join('; ') }), true;
       const bench: Bench = { id: crypto.randomUUID(), status: 'running', started_at: new Date().toISOString(), finished_at: null, plan: { report_ids: reportIds, rounds, effort: EFFORT, models: tg.targets.map((t) => t.label) }, results: [], notes: [] };
       benches.set(bench.id, bench);
