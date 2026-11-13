@@ -97,8 +97,11 @@ test('tidy: records found become evidence (first three records), "not listed" is
   assert.match(country[0].text, /5 matches/);
   assert.match(country[0].text, /Record 3: .*ACME 3/);
   assert.doesNotMatch(country[0].text, /Record 4/);
-  assert.match(country[1].text, /Source MY-b\/w1/);
-  assert.match(country[1].text, /Source MY-c\/w1 \(unconfirmed: searched with the English name/);
+  // "not listed" is a count, not a list of source names; the unconfirmed ones are counted with their note
+  assert.match(country[1].text, /^2 registers and directories of the country, searched by the company name, returned nothing\./);
+  assert.match(country[1].text, /1 of them are unconfirmed: searched with the English name/);
+  assert.doesNotMatch(country[1].text, /Source MY-b\/w1/);
+  assert.match(country[1].title, /^2 registers and directories returned nothing/);
   const cannot = t.could_not_check.map((c: any) => c.target);
   assert.ok(cannot.includes('Source MY-d/w1') && cannot.includes('Source MY-e/w1'));
 });

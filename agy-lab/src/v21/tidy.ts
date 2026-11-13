@@ -536,7 +536,11 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
     if (ch && ch.status === 'failed') {
       couldNotCheck.push({ target: 'Public registers and directories of the country', reason: ch.error || 'country handlers failed' });
     }
-    const notListed: string[] = [];
+    // The "not listed" answers are kept whole in the checkpoint (assets.country_handlers); Step 2 gets only their count,
+    // and says how many are unconfirmed (a name searched in the wrong script).
+    let notListed = 0;
+    let unconfirmed = 0;
+    let unconfirmedNote = '';
     for (const h of ch?.handlers ?? []) {
       const l = h.lookup;
       if (!l || l.job_status !== 'done' || !l.status || l.status === 'couldnt_check') {
@@ -544,7 +548,8 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
         continue;
       }
       if (l.status === 'not_found') {
-        notListed.push(h.name_note ? `${h.source_name} (unconfirmed: ${h.name_note})` : h.source_name);
+        notListed++;
+        if (h.name_note) { unconfirmed++; unconfirmedNote = h.name_note; }
         continue;
       }
       const records = (Array.isArray(l.records) ? l.records : []).slice(0, 3).map((x) => cleanText(JSON.stringify(x)).slice(0, 500));
@@ -558,14 +563,14 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
         check_id: `country:${h.id}`,
       });
     }
-    if (notListed.length) {
+    if (notListed) {
       evidence.push({
         id: `E${++n}`,
         kind: 'search',
         source_name: 'Country registers and directories',
         url: '',
-        title: `Registers and directories that answered "not listed" for "${ch?.company ?? 'the company'}"`,
-        text: `Searched by the company name, these sources returned nothing: ${notListed.join('; ')}. A name that is not on a list is not a finding by itself.`,
+        title: `${notListed} registers and directories returned nothing for "${ch?.company ?? 'the company'}"`,
+        text: `${notListed} registers and directories of the country, searched by the company name, returned nothing.${unconfirmed ? ` ${unconfirmed} of them are unconfirmed: ${unconfirmedNote}.` : ''} A name that is not on a list is not a finding by itself.`,
         check_id: 'country:not_listed',
       });
     }
