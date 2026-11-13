@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company Dive — Investor Deck</title>
+<meta name="description" content="Company Dive: automated due diligence on the public internet for SMEs. $59 report, 4 markets, 97%+ gross margin.">
+<style>
+  /* ---------------------------------------------------------------
+     Company Dive investor deck — one self-contained file.
+     No fonts, scripts or images are loaded from the network.
+     Palette follows the report: near-black paper, warm amber signal,
+     muted teal for the second voice.
+     --------------------------------------------------------------- */
+  :root{
+    --bg:#080a0c; --surface:#0f1317; --surface2:#141a1f;
+    --ink:#ece8df; --ink2:#b9b5ab; --muted:#7d858d;
+    --line:rgba(255,255,255,.085); --line2:rgba(255,255,255,.16);
+    --amber:#dcb45f; --amber-dim:#8a6f34;
+    --teal:#63c9af; --red:#d97a6c;
+    --r:14px;
+    --pad:clamp(22px,4.6vw,84px);
+    --font:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-snap-type:y proximity;background:var(--bg)}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-size:16px;line-height:1.5}
+  ::selection{background:var(--amber);color:#111}
+  h1,h2,h3,h4,p,ul,ol,figure,table{margin:0}
+  ul,ol{padding:0;list-style:none}
+  a{color:inherit}
+  b,strong{font-weight:600;color:var(--ink)}
+  .g{color:var(--amber)} .t{color:var(--teal)}
+  .slide{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+    padding:clamp(56px,7vh,96px) var(--pad) clamp(62px,8vh,104px);border-bottom:1px solid var(--line);
+    scroll-snap-align:start;scroll-margin-top:0;overflow:hidden}
+  .wrap{width:100%;max-width:1180px;margin:0 auto;position:relative;z-index:1}
+  .eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:clamp(16px,2.4vh,28px)}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--amber);flex:none}
+  h1{font-size:clamp(40px,6.4vw,88px);line-height:.97;letter-spacing:-.038em;font-weight:600}
+  h2{font-size:clamp(30px,4.4vw,58px);line-height:1.02;letter-spacing:-.032em;font-weight:600}
+  h3{font-size:clamp(18px,1.6vw,22px);line-height:1.2;letter-spacing:-.015em;font-weight:600}
+  .lead{font-size:clamp(16px,1.55vw,20px);line-height:1.55;color:var(--ink2);max-width:64ch;margin-top:clamp(18px,2.4vh,26px)}
+  .small{font-size:13px;line-height:1.5;color:var(--muted)}
+  .src{margin-top:clamp(20px,3vh,32px);font-size:11px;line-height:1.55;color:#666e76;max-width:96ch}
+  .mono{font-family:var(--mono);font-size:12px;letter-spacing:-.01em}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,2.6vw,40px)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.8vw,24px)}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.5vw,20px)}
+  .grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,2vw,26px)}
+  .card.flat{background:none}
+  .card .lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .card h3{margin-bottom:8px}
+  .card p{font-size:14px;line-height:1.55;color:var(--ink2)}
+  .card p + p{margin-top:10px}
+  .kpis{display:flex;flex-wrap:wrap;gap:clamp(24px,4vw,56px);margin-top:clamp(26px,4vh,40px)}
+  .kpi .big{font-size:clamp(30px,3.6vw,48px);line-height:1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;font-weight:600}
+  .kpi .cap{font-size:11.5px;color:var(--muted);margin-top:8px;max-width:22ch;line-height:1.45}
+  .rule{height:1px;background:var(--line);margin:clamp(20px,3vh,32px) 0}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 9px;border:1px solid var(--line2);border-radius:99px;color:var(--ink2);white-space:nowrap}
+  .pill.a{border-color:rgba(220,180,95,.4);color:var(--amber);background:rgba(220,180,95,.06)}
+  .pill.t{border-color:rgba(99,201,175,.35);color:var(--teal);background:rgba(99,201,175,.05)}
+  .pill.r{border-color:rgba(217,122,108,.35);color:var(--red);background:rgba(217,122,108,.05)}
+  .slide-no{position:absolute;bottom:22px;right:var(--pad);font-size:10.5px;letter-spacing:.16em;color:#5c646b;font-variant-numeric:tabular-nums}
+  .slide-tag{position:absolute;bottom:22px;left:var(--pad);font-size:10.5px;letter-spacing:.16em;color:#5c646b;text-transform:uppercase}
+  /* nav ------------------------------------------------------- */
+  .topbar{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;justify-content:space-between;align-items:center;
+    gap:16px;padding:12px var(--pad);background:linear-gradient(180deg,rgba(8,10,12,.92),rgba(8,10,12,.55) 70%,transparent);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .topbar b{color:var(--ink);font-weight:600;letter-spacing:.16em}
+  .topbar .hint{display:flex;gap:14px;align-items:center}
+  .topbar kbd{font:inherit;border:1px solid var(--line2);border-radius:5px;padding:1px 5px;color:var(--ink2)}
+  .progress{position:fixed;top:0;left:0;height:2px;background:var(--amber);z-index:51;width:0;transition:width .2s ease}
+  .navbtn{position:fixed;bottom:18px;right:18px;z-index:50;display:flex;gap:6px}
+  .navbtn button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);background:rgba(15,19,23,.9);
+    color:var(--ink2);font-size:15px;cursor:pointer;line-height:1}
+  .navbtn button:hover{color:var(--ink);border-color:var(--amber)}
+  @media (max-width:900px){
+    .grid2,.grid3,.grid4,.grid5{grid-template-columns:1fr}
+    .grid2.two-up{grid-template-columns:1fr}
+    .topbar .hint{display:none}
+    .navbtn{display:none}
+    .slide{min-height:auto;padding-top:84px;padding-bottom:72px}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+  /* print ----------------------------------------------------- */
+  @page{size:A4 landscape;margin:0}
+  .print-only{display:none}
+  @media print{
+    html{scroll-snap-type:none}
+    body{background:#080a0c!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .topbar,.navbtn,.progress,.hint{display:none!important}
+    /* One 16:9 slide per A4 landscape page: the design keeps its 1440px
+       proportions and is zoomed to fit, so nothing reflows or clips. */
+    .slide{min-height:0;height:210mm;page-break-after:always;break-after:page;
+      padding:0;border:0;display:block;overflow:hidden}
+    .slide:last-of-type{page-break-after:auto}
+    .slide-no,.slide-tag{display:none}
+    .wrap{zoom:.78;width:1180px;max-width:1180px;margin:0 auto;padding:15mm 0}
+    .card,.kpi,.pill,.src{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="bar"></div>
+<div class="topbar">
+  <span><b>Company Dive</b> &nbsp;·&nbsp; Investor deck &nbsp;·&nbsp; 2026</span>
+  <span class="hint"><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>P</kbd> print / PDF</span><span id="count">01 / 17</span></span>
+</div>
+<div class="navbtn"><button id="prev" aria-label="Previous slide">‹</button><button id="next" aria-label="Next slide">›</button></div>
+
+<!-- ============================================================
+     01 — COVER
+     ============================================================ -->
+<section class="slide" id="s1" data-title="Cover">
+  <div class="wrap">
+    <p class="eyebrow">Eternalgy · Pre-seed · 2026</p>
+    <h1>The internet is already<br>describing your company.<br><span class="g">Usually wrongly.</span></h1>
+    <p class="lead" style="margin-top:clamp(22px,3.4vh,34px);max-width:58ch">
+      Company Dive audits what the public internet says about a small business — the directories, registers,
+      maps, reviews and AI answers the owner never checks — and sells the owner the fix for <b>$59</b>.
+    </p>
+    <p class="lead" style="margin-top:14px;color:var(--ink2);max-width:58ch">
+      A free two-minute preview proves the problem. A twenty-minute automated run delivers the report.
+      Four markets, one pipeline, near-zero marginal cost.
+    </p>
+    <div class="kpis">
+      <div class="kpi"><div class="big">4</div><div class="cap">markets live: MY · SG · AU · KR</div></div>
+      <div class="kpi"><div class="big">122</div><div class="cap">researched checks in 21 country × industry packs</div></div>
+      <div class="kpi"><div class="big">12 + 6</div><div class="cap">analysis lanes and writing stages per paid run</div></div>
+      <div class="kpi"><div class="big">&lt;$1.20</div><div class="cap">measured cost of goods per report</div></div>
+      <div class="kpi"><div class="big">97%+</div><div class="cap">gross margin at list price</div></div>
+    </div>
+  </div>
+  <div class="slide-tag">Confidential · for discussion</div>
+  <div class="slide-no">01</div>
+</section>
+
+<!-- ============================================================
+     02 — PROBLEM
+     ============================================================ -->
+<section class="slide" id="s2" data-title="The blind spot">
+  <div class="wrap">
+    <p class="eyebrow">01 · The blind spot</p>
+    <h2>Owners cannot see the version<br>of themselves that <span class="g">buyers see.</span></h2>
+
+    <div class="grid2" style="margin-top:clamp(26px,4vh,40px)">
+      <div class="card flat" style="border-left:1px solid var(--line2);border-radius:0;padding-left:clamp(18px,2.2vw,28px)">
+        <p class="lbl">Inside the business</p>
+        <h3 style="margin-bottom:14px">The story the owner tells</h3>
+        <ul style="display:grid;gap:10px;font-size:14.5px;color:var(--ink2);line-height:1.5">
+          <li>— The website they wrote and approved.</li>
+          <li>— The Facebook page they curate.</li>
+          <li>— The pitch they rehearse on every call.</li>
+          <li>— The licence they renewed last year.</li>
+        </ul>
+        <p class="small" style="margin-top:18px">All of it true. Almost none of it what a stranger meets first.</p>
+      </div>
+      <div class="card" style="border-color:rgba(220,180,95,.24)">
+        <p class="lbl" style="color:var(--amber)">The internet's version</p>
+        <h3 style="margin-bottom:14px">What a buyer actually meets</h3>
+        <ul style="display:grid;gap:10px;font-size:14.5px;color:var(--ink);line-height:1.5">
+          <li>— A directory still printing the phone number changed in 2021.</li>
+          <li>— A Maps listing filed under the old legal name.</li>
+          <li>— A professional registration two days from expiry.</li>
+          <li>— A 2019 award the owner never displayed.</li>
+          <li>— Sixty staff reviews nobody has read.</li>
+          <li>— An AI assistant that names six competitors and not them.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <p style="font-size:clamp(17px,1.9vw,23px);line-height:1.4;letter-spacing:-.015em;max-width:80ch">
+      The gap between those two columns is the product.
+      <span class="small" style="display:block;margin-top:10px">No agency will audit a $500k company for $500 an hour. That is the entire market.</span>
+    </p>
+  </div>
+  <div class="slide-no">02</div>
+</section>
+
+<!-- ============================================================
+     03 — WHY NOW
+     ============================================================ -->
+<section class="slide" id="s3" data-title="Why now">
+  <div class="wrap">
+    <p class="eyebrow">02 · Why now</p>
+    <h2>Four things changed at once.<br><span class="g">The gap became sellable.</span></h2>
+
+    <div class="grid4" style="margin-top:clamp(28px,4.4vh,44px)">
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">01</p>
+        <h3>Buyers ask AI first</h3>
+        <p>“Who should I hire for this?” now returns a short list. If the internet describes you wrongly, or not at all, you are not on it — and you never hear about it.</p>
+      </div>
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">02</p>
+        <h3>Public records went free</h3>
+        <p>RDAP, certificate transparency, DNS, PageSpeed, Wayback, open professional registers. Evidence that used to need a researcher now needs an HTTP call.</p>
+      </div>
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">03</p>
+        <h3>Inference costs cents</h3>
+        <p>A twelve-lane, evidence-first audit now costs less than a coffee. The same work billed by a consultant is $500–5,000 and takes weeks.</p>
+      </div>
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">04</p>
+        <h3>The long tail is unserved</h3>
+        <p>Eleven million SMEs across four launch markets. Agencies serve the top one percent. The rest have never had an external audit of any kind.</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <p style="font-size:clamp(17px,1.9vw,23px);line-height:1.4;letter-spacing:-.015em;max-width:84ch">
+      AI made <i>writing</i> cheap. It did not make <i>evidence</i> cheap.
+      <span class="g">Evidence is the moat — and it is the part everyone else skips.</span>
+    </p>
+  </div>
+  <div class="slide-no">03</div>
+</section>
+
+<section class="slide" id="s4" data-title="The product">
+  <div class="wrap">
+    <p class="eyebrow">03 · The product</p>
+    <h2>Free proof. <span class="g">Paid answers.</span></h2>
+    <p class="lead">Two artefacts, one dataset. The preview is deliberately incomplete; the report is deliberately complete.
+      The same rows feed both, so a number can only match or grow.</p>
+
+    <div class="grid2" style="margin-top:clamp(24px,3.6vh,36px)">
+      <div class="card" style="border-color:var(--line2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px">
+          <p class="lbl" style="margin:0">The bait</p><span class="pill t">Free · 2 min read</span>
+        </div>
+        <h3 style="font-size:clamp(20px,2vw,26px);margin-bottom:12px">A public page that proves<br>real problems exist.</h3>
+        <ul style="display:grid;gap:9px;font-size:14px;color:var(--ink2);line-height:1.5">
+          <li>— One finding proven in full: quote, source, consequence.</li>
+          <li>— Every other finding as a consequence title and urgency tag — never the detail, never the fix.</li>
+          <li>— Three questions the page says it cannot answer.</li>
+          <li>— Real strengths, so it reads as an audit and not an attack.</li>
+          <li>— A guarantee: fewer than ten new findings in the paid report, full refund.</li>
+        </ul>
+        <p class="small" style="margin-top:16px">Withholding is the design. The owner finishes it thinking: <i>“I can see it is real, I cannot see what to do, and doing it myself is a week of work.”</i></p>
+      </div>
+
+      <div class="card" style="border-color:rgba(220,180,95,.32)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px">
+          <p class="lbl" style="margin:0;color:var(--amber)">The product</p><span class="pill a">$59 · 20+ min run</span>
+        </div>
+        <h3 style="font-size:clamp(20px,2vw,26px);margin-bottom:12px">A print-ready report<br>the owner can act on Monday.</h3>
+        <ul style="display:grid;gap:9px;font-size:14px;color:var(--ink2);line-height:1.5">
+          <li>— Six parts: contact, understanding, voice, credibility, assets, speed.</li>
+          <li>— One cross-part analysis, plus “what a stranger sees in ten minutes”.</li>
+          <li>— A task list sorted by who does the work, with effort and timing.</li>
+          <li>— Ready-to-use copy: homepage lines, review replies, FAQ, AI-visibility plan.</li>
+          <li>— Appendix: every finding, every source, every check that found nothing.</li>
+        </ul>
+        <p class="small" style="margin-top:16px">A4 HTML + PDF · English and Korean · white-label for agencies.</p>
+      </div>
+    </div>
+    <p class="src">Pricing and promise as operated today: orders close by email reply and the team starts the run. Self-serve checkout is a use-of-funds item, not a claim.</p>
+  </div>
+  <div class="slide-no">04</div>
+</section>
+
+<!-- 05 — FREE PIPELINE -->
+<section class="slide" id="s5" data-title="The free pipeline">
+  <div class="wrap">
+    <p class="eyebrow">04 · How it works — the free path</p>
+    <h2>Five steps. <span class="g">One job each.</span></h2>
+    <p class="lead">Every step reads the previous step's saved file. A step never does another step's job, so any
+      step can be re-run, tested or replaced without touching the rest.</p>
+
+    <div class="grid5" style="margin-top:clamp(24px,3.8vh,40px);align-items:stretch">
+      <div class="card" style="padding:18px 16px">
+        <p class="lbl" style="color:var(--amber)">01 · Research</p>
+        <h3 style="font-size:16px;margin-bottom:10px">Gather, never judge</h3>
+        <p style="font-size:12.5px">Official-site gate. Own pages first, then country searches, then the 122-check catalog. Maps, LinkedIn and Naver read by our own worker PCs.</p>
+        <p class="mono" style="margin-top:12px;color:var(--amber);font-size:10.5px">step1_research.json</p>
+      </div>
+      <div class="card" style="padding:18px 16px">
+        <p class="lbl" style="color:var(--amber)">02 · Technical audit</p>
+        <h3 style="font-size:16px;margin-bottom:10px">Deterministic, zero LLM</h3>
+        <p style="font-size:12.5px">PageSpeed mobile + desktop. Domain expiry and transfer lock. SPF/DMARC spoofability, TLS. DNS, certificate logs, Wayback, YouTube, Maps reviews.</p>
+        <p class="mono" style="margin-top:12px;color:var(--amber);font-size:10.5px">assets row</p>
+      </div>
+      <div class="card" style="padding:18px 16px">
+        <p class="lbl" style="color:var(--amber)">03 · People</p>
+        <h3 style="font-size:16px;margin-bottom:10px">Who is tied to the company</h3>
+        <p style="font-size:12.5px">Public people and contact drift: the decision maker, a dead phone field, ex-staff still listed. Company data only — no private numbers.</p>
+        <p class="mono" style="margin-top:12px;color:var(--amber);font-size:10.5px">people row</p>
+      </div>
+      <div class="card" style="padding:18px 16px;border-color:rgba(220,180,95,.35)">
+        <p class="lbl" style="color:var(--amber)">04 · Analyse</p>
+        <h3 style="font-size:16px;margin-bottom:10px">The only judge</h3>
+        <p style="font-size:12.5px">One LLM call and one recheck produce four lists: findings, contradictions, suggestions, notes. Namesakes dropped. Not found is not a finding.</p>
+        <p class="mono" style="margin-top:12px;color:var(--amber);font-size:10.5px">step2_*.json</p>
+      </div>
+      <div class="card" style="padding:18px 16px">
+        <p class="lbl" style="color:var(--amber)">05 · Write</p>
+        <h3 style="font-size:16px;margin-bottom:10px">Never judges</h3>
+        <p style="font-size:12.5px">One call writes the summary, the email and the proof line. Plain code checks every sentence against the Step 2 ids, then renders the page itself.</p>
+        <p class="mono" style="margin-top:12px;color:var(--amber);font-size:10.5px">page + email</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(16px,3vw,40px)">
+      <p class="small" style="flex:1 1 300px"><b>Why the split matters.</b> Judgement is the only expensive, unreliable part. It happens once, in one place, against saved evidence — so quality is measurable and cost is bounded.</p>
+      <p class="small" style="flex:1 1 300px"><b>No kill gates.</b> A step that fails is recorded and labelled “not run”. The report is still produced, and the gap is named rather than hidden.</p>
+    </div>
+    <p class="src">Sources: docs/v21.md, docs/v21-step2.md, src/v21/ (steps 1, 1.5, 1.6, 2, 3). Outputs are the actual stored file and row names.</p>
+  </div>
+  <div class="slide-no">05</div>
+</section>
+
+<!-- 06 — PAID PIPELINE -->
+<section class="slide" id="s6" data-title="The paid run">
+  <div class="wrap">
+    <p class="eyebrow">05 · How it works — the paid path</p>
+    <h2>Twelve lanes in three waves.<br><span class="g">Then six writing stages.</span></h2>
+    <p class="lead">The $59 report is the same evidence, pushed through every check the free preview withholds —
+      registers, people, assets, competitors and AI answers. Twenty-plus minutes, fully automated.</p>
+
+    <div style="margin-top:clamp(22px,3.4vh,34px);display:grid;gap:14px">
+      <div class="card" style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;padding:16px 18px">
+        <p class="lbl" style="margin:0;color:var(--amber)">Wave 1<br><span style="color:var(--muted);letter-spacing:.06em">outside view</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <span class="pill">Maps rank</span><span class="pill">Search &amp; AI answers</span><span class="pill">Registers &amp; credibility</span><span class="pill">News, forums, social</span>
+        </div>
+      </div>
+      <div class="card" style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;padding:16px 18px">
+        <p class="lbl" style="margin:0;color:var(--amber)">Wave 2<br><span style="color:var(--muted);letter-spacing:.06em">identity</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <span class="pill">Website &amp; reachability</span><span class="pill">Government registries</span><span class="pill">Cross-source merge</span><span class="pill">Who AI recommends instead</span>
+        </div>
+      </div>
+      <div class="card" style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;padding:16px 18px">
+        <p class="lbl" style="margin:0;color:var(--amber)">Wave 3<br><span style="color:var(--muted);letter-spacing:.06em">completion</span></p>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <span class="pill">People &amp; contacts</span><span class="pill">Domains, DNS, certificates</span><span class="pill">Brand consistency</span><span class="pill">Speed (measured up front)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <p class="lbl" style="margin-bottom:12px">Writing, in order — each stage reads what the last one saved</p>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2)">
+      <span class="pill t">01 Recheck the evidence</span><span style="color:var(--amber)">→</span>
+      <span class="pill t">02 Consult the copy rules</span><span style="color:var(--amber)">→</span>
+      <span class="pill t">03 Write titles</span><span style="color:var(--amber)">→</span>
+      <span class="pill t">04 Full analysis</span><span style="color:var(--amber)">→</span>
+      <span class="pill t">05 Department plan</span><span style="color:var(--amber)">→</span>
+      <span class="pill t">06 Final check</span>
+    </div>
+
+    <div class="grid3" style="margin-top:clamp(20px,3vh,30px)">
+      <p class="small"><b>Durable by default.</b> Every lane retries three times and saves before the next starts, so a restart keeps what was found.</p>
+      <p class="small"><b>Failure is local.</b> A lane that dies drops only its own block; the other chapters still ship, labelled.</p>
+      <p class="small"><b>Checked twice.</b> S1 re-reads the evidence before writing; S6 re-reads the written report against it.</p>
+    </div>
+    <p class="src">Sources: src/divedeeper/v21/run.ts (V21_DEEPER_LANES, V21_DEEPER_WRITING), report-html.ts. Lane code names: H/G/K/N · H/D/C/G · R/A/B + W-speed; S1–S6.</p>
+  </div>
+  <div class="slide-no">06</div>
+</section>
+
+<!-- 07 — PROOF -->
+<section class="slide" id="s7" data-title="Proof">
+  <div class="wrap">
+    <p class="eyebrow">06 · Proof</p>
+    <h2>What it finds on real companies.<br><span class="g">Nothing here is hypothetical.</span></h2>
+
+    <div class="grid2" style="margin-top:clamp(24px,3.8vh,38px)">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:10px">
+          <p class="lbl" style="margin:0">Construction · Johor</p><span class="pill r">2 days left</span>
+        </div>
+        <h3 style="margin-bottom:8px">A licence expires in two days</h3>
+        <p>A CIDB G7 registration ending 05/11/2026 — found on a public register the owner does not monitor. Tender eligibility disappears quietly, not loudly.</p>
+        <p class="mono" style="margin-top:12px;color:var(--muted);font-size:10.5px">Source: CIDB register · run 2026-11-03</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:10px">
+          <p class="lbl" style="margin:0">Accounting · Kuala Lumpur</p><span class="pill">identity</span>
+        </div>
+        <h3 style="margin-bottom:8px">Two legal names for one firm</h3>
+        <p>The site footer says YYC Holdings Sdn Bhd; Facebook and a public directory say YYC Advisors Sdn Bhd. A buyer checking the entity finds a different company.</p>
+        <p class="mono" style="margin-top:12px;color:var(--muted);font-size:10.5px">Source: own site vs directory</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:10px">
+          <p class="lbl" style="margin:0">Logistics · Selangor</p><span class="pill">contact</span>
+        </div>
+        <h3 style="margin-bottom:8px">Six directories, the wrong number</h3>
+        <p>Directories print 03-3324 4027; the site prints 03-3324 2868. A US carrier with the same name adds a second identity to the pile.</p>
+        <p class="mono" style="margin-top:12px;color:var(--muted);font-size:10.5px">Source: Maps, directories, own site</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:10px">
+          <p class="lbl" style="margin:0">Solar EPC · Malaysia</p><span class="pill r">spoofable</span>
+        </div>
+        <h3 style="margin-bottom:8px">A domain that can lapse, mail anyone can forge</h3>
+        <p>The domain behind the published email expires 2026-12-04 with no transfer lock. DMARC is p=none, so anyone can send invoices as the company. The LinkedIn phone field is broken.</p>
+        <p class="mono" style="margin-top:12px;color:var(--muted);font-size:10.5px">Source: RDAP, DNS, LinkedIn</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <p style="font-size:clamp(16px,1.7vw,20px);line-height:1.45;max-width:86ch">
+      Each line is a quote and a URL, held in the same row the preview and the report read.
+      <span class="g">The bait is not clever copy. It is the owner's own evidence.</span>
+    </p>
+    <p class="src">Drawn from the documented validation runs in docs/v21.md and docs/reports/: three market batches of five companies, plus Korean packs and repeat runs on live prospects.</p>
+  </div>
+  <div class="slide-no">07</div>
+</section>
+
+<!-- 08 — ADVANTAGE -->
+<section class="slide" id="s8" data-title="The advantage">
+  <div class="wrap">
+    <p class="eyebrow">07 · The advantage</p>
+    <h2>Any model can write an audit.<br><span class="g">Almost none can gather one.</span></h2>
+
+    <div class="grid2" style="margin-top:clamp(24px,3.6vh,36px);grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)">
+      <div>
+        <p class="lead" style="margin-top:0">The model is a commodity and we treat it that way: the cheapest capable
+          model, called once for judgement and once for writing. What cannot be bought off the shelf is the
+          <b>check catalog</b>, the <b>evidence discipline</b> and the <b>reader fleet</b>.</p>
+        <div class="card flat" style="border-left:1px solid var(--amber);border-radius:0;padding:6px 0 6px 18px;margin-top:26px">
+          <p style="font-size:15px;line-height:1.55;color:var(--ink)">A competitor can copy the page in a weekend.
+            Copying 122 researched checks across four legal systems takes a research team a year — and then the
+            next country starts.</p>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:0">
+        <div style="padding:16px 0;border-top:1px solid var(--line)">
+          <div style="display:flex;gap:14px"><span class="mono" style="color:var(--amber)">01</span><div>
+            <h3 style="margin-bottom:6px">The catalog is data, not code</h3>
+            <p class="small" style="color:var(--ink2)">122 checks in 21 country × industry packs. Each names its source, the rule behind it, the exact query and a manual fallback. A new industry is a research task; a new country is a layer, not a rewrite.</p>
+          </div></div>
+        </div>
+        <div style="padding:16px 0;border-top:1px solid var(--line)">
+          <div style="display:flex;gap:14px"><span class="mono" style="color:var(--amber)">02</span><div>
+            <h3 style="margin-bottom:6px">Discipline is enforced in code</h3>
+            <p class="small" style="color:var(--ink2)">Namesakes dropped. Own-site claims filtered out of “the internet says”. Not found is never a finding. Every claim carries a quote and a URL, and the writer is checked sentence by sentence against the ids it cited.</p>
+          </div></div>
+        </div>
+        <div style="padding:16px 0;border-top:1px solid var(--line)">
+          <div style="display:flex;gap:14px"><span class="mono" style="color:var(--amber)">03</span><div>
+            <h3 style="margin-bottom:6px">Reads run on our own machines</h3>
+            <p class="small" style="color:var(--ink2)">Pages, PDFs, Maps, LinkedIn and search results are fetched by worker PCs we already own. Paid indexes are used only where there is no free path. That is why the marginal cost is cents, not dollars.</p>
+          </div></div>
+        </div>
+        <div style="padding:16px 0;border-top:1px solid var(--line)">
+          <div style="display:flex;gap:14px"><span class="mono" style="color:var(--amber)">04</span><div>
+            <h3 style="margin-bottom:6px">One dataset, two products</h3>
+            <p class="small" style="color:var(--ink2)">Preview and report read the same rows, so the paid report can never contradict the free one. The preview's count is what the free check found, never a promise about the total.</p>
+          </div></div>
+        </div>
+        <div style="padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+          <div style="display:flex;gap:14px"><span class="mono" style="color:var(--amber)">05</span><div>
+            <h3 style="margin-bottom:6px">The outcome graph compounds</h3>
+            <p class="small" style="color:var(--ink2)">Every finding, rejection and register hit is stored. In a year that is a benchmark no competitor can buy: how a Johor contractor compares with 400 others, and which checks actually predict a lost tender.</p>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-no">08</div>
+</section>
+
+<!-- 09 — MARKET -->
+<section class="slide" id="s9" data-title="Market">
+  <div class="wrap">
+    <p class="eyebrow">08 · Market</p>
+    <h2>A bottom-up market,<br><span class="g">not a top-down story.</span></h2>
+
+    <div class="grid3" style="margin-top:clamp(24px,3.8vh,38px)">
+      <div class="card">
+        <p class="lbl">TAM · four launch markets</p>
+        <p class="big" style="font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em">$1.45B</p>
+        <p style="margin-top:10px">11M SMEs in Malaysia, Singapore, Australia and South Korea, at $131.50 of annual value per account.</p>
+      </div>
+      <div class="card">
+        <p class="lbl">SAM · has a site, in our industries</p>
+        <p class="big" style="font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em">$130M</p>
+        <p style="margin-top:10px">About 1.0M businesses in accounting, marketing, import/export, interior design and web design.</p>
+      </div>
+      <div class="card" style="border-color:rgba(220,180,95,.32)">
+        <p class="lbl" style="color:var(--amber)">SOM · three years</p>
+        <p class="big" style="color:var(--amber);font-size:clamp(30px,3.4vw,46px);letter-spacing:-.03em">$0.6M</p>
+        <p style="margin-top:10px">4,500 accounts — 0.45% of the serviceable market — at $59 plus a 25% take-up of monitoring.</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <div class="grid3">
+      <div><p class="lbl">Account value</p><p style="font-size:15px;color:var(--ink2)">$59 report today; a planned $290/year tier monitors the same footprint and re-runs quarterly.</p></div>
+      <div><p class="lbl">Why the wedge is agencies</p><p style="font-size:15px;color:var(--ink2)">One accounting or marketing firm brings 50–500 SMEs. White-label, per-client pricing, one invoice.</p></div>
+      <div><p class="lbl">Why expansion is cheap</p><p style="font-size:15px;color:var(--ink2)">A new country is a country layer plus borrowed industry packs. No new pipeline, no new UI, no new billing.</p></div>
+    </div>
+    <p class="src">Bottom-up estimate, rounded. SME counts from DOSM, SME Corp Malaysia, SingStat/MTI, ABS and KOSME; industry mix and monitoring take-up are internal assumptions to be re-verified before close. “Value per account” = $59 + 25% × $290.</p>
+  </div>
+  <div class="slide-no">09</div>
+</section>
+
+<!-- 10 — UNIT ECONOMICS -->
+<section class="slide" id="s10" data-title="Unit economics">
+  <div class="wrap">
+    <p class="eyebrow">09 · Unit economics</p>
+    <h2>A $59 product with<br><span class="g">software margins.</span></h2>
+
+    <div class="grid2" style="margin-top:clamp(24px,3.6vh,36px);grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)">
+      <div>
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead><tr>
+            <th style="text-align:left;padding:0 0 10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Cost of one paid report</th>
+            <th style="text-align:right;padding:0 0 10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Measured</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:11px 0;border-top:1px solid var(--line);color:var(--ink2)">Search credits, 30–60 calls</td><td style="padding:11px 0;border-top:1px solid var(--line);text-align:right" class="mono">$0.15–0.50</td></tr>
+            <tr><td style="padding:11px 0;border-top:1px solid var(--line);color:var(--ink2)">LLM, 3–4 calls</td><td style="padding:11px 0;border-top:1px solid var(--line);text-align:right" class="mono">$0.02–0.10</td></tr>
+            <tr><td style="padding:11px 0;border-top:1px solid var(--line);color:var(--ink2)">People index, ~15 calls</td><td style="padding:11px 0;border-top:1px solid var(--line);text-align:right" class="mono">$0.11–0.55</td></tr>
+            <tr><td style="padding:11px 0;border-top:1px solid var(--line);color:var(--ink2)">Infra and storage</td><td style="padding:11px 0;border-top:1px solid var(--line);text-align:right" class="mono">&lt;$0.10</td></tr>
+            <tr><td style="padding:11px 0;border-top:1px solid var(--line);color:var(--ink2)">Page reads on our own workers</td><td style="padding:11px 0;border-top:1px solid var(--line);text-align:right" class="mono">$0.00</td></tr>
+            <tr><td style="padding:14px 0;border-top:1px solid var(--line2);font-weight:600">Total cost of goods</td><td style="padding:14px 0;border-top:1px solid var(--line2);text-align:right;font-weight:600" class="mono">$0.40–1.20</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top:14px">Every call is metered and priced in code. These ranges come from that meter, not from a spreadsheet someone typed once.</p>
+      </div>
+
+      <div>
+        <div class="kpis" style="margin-top:0;display:grid;grid-template-columns:1fr 1fr;gap:22px">
+          <div class="kpi"><div class="big">$59</div><div class="cap">price of the full report</div></div>
+          <div class="kpi"><div class="big">97–99%</div><div class="cap">gross margin before payment fees</div></div>
+          <div class="kpi"><div class="big">&lt;$15</div><div class="cap">target CAC: automated Maps → contact → email</div></div>
+          <div class="kpi"><div class="big">~$40</div><div class="cap">contribution on the first order, after fees and CAC</div></div>
+        </div>
+        <div class="card" style="margin-top:24px;border-color:var(--line2)">
+          <p class="lbl" style="color:var(--amber)">The honest cost today</p>
+          <p style="font-size:14px;color:var(--ink2)">Checkout is manual, so a sale costs roughly an hour of ops. That is the bottleneck this round removes — not the compute.</p>
+        </div>
+      </div>
+    </div>
+    <p class="src">Sources: src/cost.ts price table (Tavily $0.008/credit, Brave $0.005/call, Exa $0.007/search, DeepSeek via Vectide); docs/v21-people-step-plan.md cost envelope. Payment fee assumed 5%.</p>
+  </div>
+  <div class="slide-no">10</div>
+</section>
+
+<!-- 11 — GO TO MARKET -->
+<section class="slide" id="s11" data-title="Distribution">
+  <div class="wrap">
+    <p class="eyebrow">10 · Distribution</p>
+    <h2>The outreach machine<br><span class="g">is already running.</span></h2>
+    <p class="lead">This is not a channel plan. It is the code that fills the queue, enriches the contact and sends the
+      preview while the owner is still deciding whether the problem is real.</p>
+
+    <div class="grid5" style="margin-top:clamp(24px,3.8vh,38px)">
+      <div class="card" style="padding:16px 14px">
+        <p class="lbl" style="color:var(--amber)">01 · Sweep</p>
+        <p style="font-size:13px;color:var(--ink2)">Every taman in every district is queued for a Maps scan. The lead list fills itself from geography, not from bought databases.</p>
+      </div>
+      <div class="card" style="padding:16px 14px">
+        <p class="lbl" style="color:var(--amber)">02 · Enrich</p>
+        <p style="font-size:13px;color:var(--ink2)">Contact research finds the decision maker and a reachable phone or email, and records what it could not verify.</p>
+      </div>
+      <div class="card" style="padding:16px 14px">
+        <p class="lbl" style="color:var(--amber)">03 · Prove</p>
+        <p style="font-size:13px;color:var(--ink2)">The free preview runs automatically and lands as a noindex link with the company's own numbers in the subject line.</p>
+      </div>
+      <div class="card" style="padding:16px 14px">
+        <p class="lbl" style="color:var(--amber)">04 · Close</p>
+        <p style="font-size:13px;color:var(--ink2)">Reply to buy; the guarantee removes the risk. Stripe replaces the reply in the next ninety days.</p>
+      </div>
+      <div class="card" style="padding:16px 14px">
+        <p class="lbl" style="color:var(--amber)">05 · Expand</p>
+        <p style="font-size:13px;color:var(--ink2)">Monitoring subscription, agency white-label, then the next country — same machine, new data.</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <span class="pill a">Running today</span>
+      <span class="pill">autoscan — Maps sweep by district</span>
+      <span class="pill">autocontact — people and contact research</span>
+      <span class="pill">autoqueue — hourly throughput health</span>
+      <span class="pill">ads-leads — landing-page capture</span>
+      <span class="pill">Smartlead — outbound sequences</span>
+    </div>
+    <p class="src">Sources: worker/ (gmap.mjs, ads.mjs), src/v21/ autoqueue and contact modules. Named modules are running code, not roadmap.</p>
+  </div>
+  <div class="slide-no">11</div>
+</section>
+
+<!-- 12 — COMPETITION -->
+<section class="slide" id="s12" data-title="Competition">
+  <div class="wrap">
+    <p class="eyebrow">11 · Competition</p>
+    <h2>Everyone sells a dashboard.<br><span class="g">We sell the finding.</span></h2>
+
+    <div style="overflow-x:auto;margin-top:clamp(22px,3.4vh,34px)">
+      <table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px">
+        <thead><tr>
+          <th style="text-align:left;padding:0 12px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Who</th>
+          <th style="text-align:left;padding:0 12px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Price</th>
+          <th style="text-align:left;padding:0 12px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">What it can see</th>
+          <th style="text-align:left;padding:0 12px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Identity &amp; registers</th>
+          <th style="text-align:left;padding:0 12px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Output</th>
+          <th style="text-align:left;padding:0 0 12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">APAC reach</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line)">SEO audit tools</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">$99–999/mo</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Your site and backlinks</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--muted)">—</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Dashboard you interpret</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--muted)">—</td></tr>
+          <tr><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line)">AI visibility trackers</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">$50–500/mo</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Prompt mentions</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--muted)">—</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Charts</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Partial</td></tr>
+          <tr><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line)">Review platforms</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">$200–600/mo</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Reviews on one profile</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--muted)">—</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Review workflow</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Partial</td></tr>
+          <tr><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line)">Local agency audit</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">$500–5,000</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Whatever they think to check</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Sometimes</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Deck, then an invoice</td><td style="padding:14px 12px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Yes</td></tr>
+          <tr style="background:rgba(220,180,95,.055)"><td style="padding:16px 12px 16px 10px;border-top:1px solid rgba(220,180,95,.35);border-left:2px solid var(--amber);font-weight:600">Company Dive</td><td style="padding:16px 12px 16px 0;border-top:1px solid rgba(220,180,95,.35);color:var(--amber);font-weight:600">$59</td><td style="padding:16px 12px 16px 0;border-top:1px solid rgba(220,180,95,.35);color:var(--ink)">Directories, registers, maps, reviews, people, AI answers</td><td style="padding:16px 12px 16px 0;border-top:1px solid rgba(220,180,95,.35);color:var(--ink)">Yes</td><td style="padding:16px 12px 16px 0;border-top:1px solid rgba(220,180,95,.35);color:var(--ink)">A plan with the copy written</td><td style="padding:16px 16px 16px 0;border-top:1px solid rgba(220,180,95,.35);color:var(--ink)">MY · SG · AU · KR, EN + KO</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src">Competitor pricing from public list prices, rounded and indicative. The comparison is by category, not by vendor. Company Dive is the only row where the output is a finished task list rather than a tool the owner must still learn.</p>
+  </div>
+  <div class="slide-no">12</div>
+</section>
+
+<!-- 13 — STATUS -->
+<section class="slide" id="s13" data-title="Where we are">
+  <div class="wrap">
+    <p class="eyebrow">12 · Where we are</p>
+    <h2>Built. Running. <span class="g">Not yet self-serve.</span></h2>
+
+    <div class="grid3" style="margin-top:clamp(24px,3.6vh,36px)">
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">4</p><p class="small" style="margin-top:8px">markets live: Malaysia, Singapore, Australia, South Korea. Output in English and Korean.</p></div>
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">21</p><p class="small" style="margin-top:8px">country × industry packs, holding 122 researched checks — each with a source, a legal reason and a fallback.</p></div>
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">15</p><p class="small" style="margin-top:8px">companies in the validation set, run end to end across MY, SG and AU, plus Korean packs and repeat runs on live prospects.</p></div>
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">75.8k</p><p class="small" style="margin-top:8px">lines of production TypeScript. 80 test files, 13k lines of tests. Every external call metered and priced.</p></div>
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">12 + 6</p><p class="small" style="margin-top:8px">analysis lanes and writing stages per paid run, with durable saves and a final check that re-reads the report.</p></div>
+      <div class="card"><p class="big" style="font-size:clamp(28px,3vw,40px);letter-spacing:-.03em">2</p><p class="small" style="margin-top:8px">products generating end to end: the free public preview and the paid A4 report. The gap between them is billing.</p></div>
+    </div>
+
+    <div class="rule"></div>
+    <div class="card" style="border-color:rgba(217,122,108,.28)">
+      <p class="lbl" style="color:var(--red)">What is not built yet — said plainly</p>
+      <p style="font-size:14.5px;color:var(--ink2)">Self-serve checkout. The monitoring subscription. Two more markets. Sales today are manual, design-partner deals closed by reply; there is no self-serve revenue to show yet. Everything on this slide is engineering that exists, not a pilot that might.</p>
+    </div>
+    <p class="src">Counts from the repository at this commit: 168 commits, 163 non-test source files, 80 test files. Market and pack counts from src/v21/catalog-data/. Validation set documented in docs/reports/.</p>
+  </div>
+  <div class="slide-no">13</div>
+</section>
+
+<!-- 14 — ROADMAP -->
+<section class="slide" id="s14" data-title="Plan">
+  <div class="wrap">
+    <p class="eyebrow">13 · The plan</p>
+    <h2>Eighteen months to<br><span class="g">a self-serve business.</span></h2>
+
+    <div class="grid3" style="margin-top:clamp(24px,3.6vh,36px)">
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">Months 0–3 · remove the bottleneck</p>
+        <ul style="display:grid;gap:8px;font-size:13.5px;color:var(--ink2);line-height:1.5">
+          <li>Stripe checkout and automatic run on payment.</li>
+          <li>Monitoring MVP: quarterly re-run and change alerts.</li>
+          <li>150 paid reports; three agency pilots signed.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <p class="lbl" style="color:var(--amber)">Months 3–9 · widen the catalog</p>
+        <ul style="display:grid;gap:8px;font-size:13.5px;color:var(--ink2);line-height:1.5">
+          <li>Ten new industry packs in the four live markets.</li>
+          <li>Agency portal: white-label, per-client pricing, one invoice.</li>
+          <li>800 cumulative paid reports; 250 subscribers.</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(220,180,95,.32)">
+        <p class="lbl" style="color:var(--amber)">Months 9–18 · compound</p>
+        <ul style="display:grid;gap:8px;font-size:13.5px;color:var(--ink2);line-height:1.5">
+          <li>3,000 cumulative reports; 800 subscribers.</li>
+          <li>Two new markets scoped from the same country layer.</li>
+          <li>Roughly $410k ARR at the exit of the plan.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+    <p class="lbl" style="margin-bottom:14px">Use of $500k</p>
+    <div style="display:grid;gap:10px">
+      <div style="display:grid;grid-template-columns:150px 1fr 48px;gap:12px;align-items:center;font-size:12.5px;color:var(--ink2)"><span>Engineering (2 hires)</span><span style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:40%;background:var(--amber)"></span></span><span class="mono">40%</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr 48px;gap:12px;align-items:center;font-size:12.5px;color:var(--ink2)"><span>Research ops (catalog)</span><span style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:22%;background:var(--amber)"></span></span><span class="mono">22%</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr 48px;gap:12px;align-items:center;font-size:12.5px;color:var(--ink2)"><span>Go to market</span><span style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:22%;background:var(--amber)"></span></span><span class="mono">22%</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr 48px;gap:12px;align-items:center;font-size:12.5px;color:var(--ink2)"><span>Infra, legal, privacy</span><span style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:10%;background:var(--amber)"></span></span><span class="mono">10%</span></div>
+      <div style="display:grid;grid-template-columns:150px 1fr 48px;gap:12px;align-items:center;font-size:12.5px;color:var(--ink2)"><span>Buffer</span><span style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:6%;background:var(--amber)"></span></span><span class="mono">6%</span></div>
+    </div>
+    <p class="src">Plan assumes $59 average order and a 25% attach rate on $290/year monitoring. Milestones are internal targets, not guidance.</p>
+  </div>
+  <div class="slide-no">14</div>
+</section>
+
+<!-- 15 — RISKS -->
+<section class="slide" id="s15" data-title="Risks">
+  <div class="wrap">
+    <p class="eyebrow">14 · Risks</p>
+    <h2>The five ways this fails.<br><span class="g">And what is already in the code.</span></h2>
+
+    <div style="overflow-x:auto;margin-top:clamp(22px,3.4vh,34px)">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
+        <thead><tr>
+          <th style="text-align:left;padding:0 14px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;width:28%">Risk</th>
+          <th style="text-align:left;padding:0 14px 12px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;width:38%">Already in place</th>
+          <th style="text-align:left;padding:0 0 12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">What this round adds</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line)"><b>Platform access.</b><br><span class="small">LinkedIn and Google can block readers or change terms.</span></td><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Own worker PCs, an independent search index, ordered fallbacks. No single source is required for a report to exist.</td><td style="padding:14px 0;border-top:1px solid var(--line);color:var(--ink2)">A second reader path per source, plus a legal review of every data route.</td></tr>
+          <tr><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line)"><b>Accuracy.</b><br><span class="small">A confident wrong claim about a business is a liability.</span></td><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Quote and URL only. “Cannot be confirmed” instead of “is false”. Namesakes dropped. Sentence-level checks before publishing.</td><td style="padding:14px 0;border-top:1px solid var(--line);color:var(--ink2)">Spot-check queue, errors-and-omissions cover, a written correction policy.</td></tr>
+          <tr><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line)"><b>Willingness to pay.</b><br><span class="small">A $59 one-off is a thin wedge if nobody renews.</span></td><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Free proof, a refund guarantee, and an agency channel where one buyer pays for many clients.</td><td style="padding:14px 0;border-top:1px solid var(--line);color:var(--ink2)">Monitoring subscription and price tests across the four markets.</td></tr>
+          <tr><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line)"><b>Commoditisation.</b><br><span class="small">Anyone can wrap a model and call it an audit.</span></td><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">The value is in registers, directories, namesakes and people — not prose. That is a year of research per country.</td><td style="padding:14px 0;border-top:1px solid var(--line);color:var(--ink2)">Published benchmarks that only our outcome data can produce.</td></tr>
+          <tr><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line)"><b>Privacy.</b><br><span class="small">PDPA and its equivalents govern personal data.</span></td><td style="padding:14px 14px 14px 0;border-top:1px solid var(--line);color:var(--ink2)">Company data only; no private mobile numbers; redaction rules enforced before a page is stored.</td><td style="padding:14px 0;border-top:1px solid var(--line);color:var(--ink2)">A named data-protection owner and an annual audit.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule"></div>
+    <p style="font-size:clamp(16px,1.75vw,20px);line-height:1.45;max-width:86ch">
+      <b>What would actually kill it:</b> if preview-to-paid conversion stays below two percent.
+      <span class="small" style="display:block;margin-top:8px">That number is measured weekly, per market and per industry. The guarantee caps the buyer's risk; measuring conversion caps ours.</span>
+    </p>
+  </div>
+  <div class="slide-no">15</div>
+</section>
+
+<!-- 16 — ASK -->
+<section class="slide" id="s16" data-title="The ask">
+  <div class="wrap">
+    <p class="eyebrow">15 · The ask</p>
+    <h2>$500k pre-seed.<br><span class="g">Eighteen months to prove one number.</span></h2>
+
+    <div class="grid2" style="margin-top:clamp(24px,3.6vh,36px);grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)">
+      <div class="card" style="border-color:rgba(220,180,95,.32)">
+        <p class="lbl" style="color:var(--amber)">The round</p>
+        <p style="font-size:clamp(34px,4.4vw,56px);line-height:1;letter-spacing:-.04em;font-weight:600">$500,000</p>
+        <p style="margin-top:12px;font-size:14px;color:var(--ink2)">18 months of runway. Two engineering hires, ten new industry packs, self-serve checkout, and the monitoring subscription.</p>
+        <div class="rule" style="margin:18px 0"></div>
+        <p class="lbl">What it buys</p>
+        <ul style="display:grid;gap:7px;font-size:13px;color:var(--ink2);line-height:1.5">
+          <li>— 3,000 paid reports and 800 subscribers.</li>
+          <li>— Roughly $410k ARR at month 18.</li>
+          <li>— A measured preview→paid conversion rate per market.</li>
+          <li>— Two new markets scoped, not guessed.</li>
+        </ul>
+      </div>
+
+      <div style="display:grid;gap:16px;align-content:start">
+        <div class="card">
+          <p class="lbl">Team</p>
+          <h3 style="margin-bottom:8px">Operator-led, in-house engineering</h3>
+          <p style="font-size:14px;color:var(--ink2)">Eternalgy is an SME, and the first company it audited was itself. The pipeline was built in-house: 168 commits, 75.8k lines of TypeScript, 80 test files, four markets live. The same team runs the outreach machine and reads the reports it sells.</p>
+        </div>
+        <div class="card" style="border-style:dashed;border-color:var(--line2)">
+          <p class="lbl">Before sending</p>
+          <p style="font-size:13px;color:var(--muted)">Add founder names, roles, photos and the contact address here. The rest of the deck is sourced and ready.</p>
+        </div>
+        <div class="card" style="border-color:var(--line2)">
+          <p class="lbl" style="color:var(--amber)">The one line</p>
+          <p style="font-size:15px;color:var(--ink)">Every SME is already being described. We are the first to show them how — and the first to charge $59 for the answer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-no">16</div>
+</section>
+
+<!-- 17 — APPENDIX -->
+<section class="slide" id="s17" data-title="Appendix">
+  <div class="wrap">
+    <p class="eyebrow">Appendix · the pipeline on one page</p>
+    <h2>Every step, its job,<br><span class="g">and what it leaves behind.</span></h2>
+
+    <div style="overflow-x:auto;margin-top:clamp(20px,3vh,30px)">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:680px">
+        <thead><tr>
+          <th style="text-align:left;padding:0 12px 10px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Step</th>
+          <th style="text-align:left;padding:0 12px 10px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Job</th>
+          <th style="text-align:left;padding:0 12px 10px 0;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Judges?</th>
+          <th style="text-align:left;padding:0 0 10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500">Leaves behind</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink)">1 · Research</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Coverage: own site, country searches, catalog probes, Maps and LinkedIn</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--muted)">No</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">step1_research.json</td></tr>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink)">1.5 · Technical audit</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Speed, domain, DNS, TLS, certificate logs, Wayback, YouTube, reviews</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--muted)">No LLM</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">assets row</td></tr>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink)">1.6 · People</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Who is publicly tied to the company; contact drift</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--muted)">Extract only</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">people row</td></tr>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink)">2 · Analyse</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Four lists; drop namesakes; apply “not found” rules</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">1 call + recheck</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">step2_*.json</td></tr>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink)">3 · Write</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Summary, email, proof line; code validates every sentence</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--muted)">1 call</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">page + email</td></tr>
+          <tr><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--amber)">Paid run</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">12 lanes in three waves, then six writing stages</td><td style="padding:11px 12px 11px 0;border-top:1px solid var(--line);color:var(--ink2)">Per lane</td><td style="padding:11px 0;border-top:1px solid var(--line)" class="mono">A4 report</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule"></div>
+    <p class="lbl" style="margin-bottom:12px">The rules that make the output trustworthy</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="pill">Not found is not a finding</span>
+      <span class="pill">Drop the namesake</span>
+      <span class="pill">The client's own site is not “the internet”</span>
+      <span class="pill">Every claim has a quote and a URL</span>
+      <span class="pill">Every number traces to a cited row</span>
+      <span class="pill">No kill gates — label what did not run</span>
+    </div>
+    <p class="src" style="margin-top:26px">Company Dive · Eternalgy · 2026 · Confidential. Built from docs/v21.md, docs/v21-step2.md, docs/divedeeper-modular-design.md, docs/preview-writing-plan.md, src/v21/, src/divedeeper/ and src/cost.ts at commit d0a9260.</p>
+  </div>
+  <div class="slide-no">17</div>
+</section>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var bar = document.getElementById('bar');
+  var count = document.getElementById('count');
+  var current = 0;
+
+  function label(n){ return String(n + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0'); }
+
+  function setActive(n){
+    current = Math.max(0, Math.min(slides.length - 1, n));
+    count.textContent = label(current);
+  }
+
+  function go(n){
+    setActive(n);
+    slides[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function progress(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+    bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting && e.intersectionRatio > 0.5) setActive(slides.indexOf(e.target));
+      });
+    }, { threshold: [0.5, 0.75] });
+    slides.forEach(function(s){ io.observe(s); });
+  }
+
+  window.addEventListener('scroll', progress, { passive: true });
+  window.addEventListener('resize', progress);
+
+  document.getElementById('next').addEventListener('click', function(){ go(current + 1); });
+  document.getElementById('prev').addEventListener('click', function(){ go(current - 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(current + 1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); go(current - 1); }
+    else if (k === 'Home') { e.preventDefault(); go(0); }
+    else if (k === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (k === 'p' || k === 'P') { window.print(); }
+  });
+
+  setActive(0);
+  progress();
+})();
+</script>
+</body>
+</html>
