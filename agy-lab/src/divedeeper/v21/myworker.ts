@@ -1,3 +1,4 @@
+import { workerIdentification } from '../../v21/worker-identification.ts';
 import { secret, type MapsRow } from '../lib.ts';
 
 export type WorkerRow = MapsRow & { place_id: string | null };
@@ -34,7 +35,7 @@ async function job(path: string, payload: Record<string, unknown>, opts: Options
     if (!body.job) throw new Error('myworker returned no job');
     return body.job;
   };
-  let out = await request(path, { method: 'POST', body: JSON.stringify({ ...payload, wait: 60 }) });
+  let out = await request(path, { method: 'POST', body: JSON.stringify({ ...payload, ...workerIdentification(({ '/api/fetch': 'Read web page', '/api/lookup': 'Look up company', '/api/chat': 'Ask ChatGPT', '/api/shot': 'Capture web page' } as Record<string, string>)[path] ?? 'Run worker job'), wait: 60 }) });
   while (out.status === 'pending' || out.status === 'running') {
     if (!out.id) throw new Error('myworker returned no job id');
     out = await request(`/api/jobs/${encodeURIComponent(out.id)}?wait=60`);
@@ -106,7 +107,7 @@ export async function scan(keyword: string, place: string, max: number, opts: Op
       if (!body.job) throw new Error('myworker returned no job');
       return body.job;
     };
-    let job = await request('/api/scan', { method: 'POST', body: JSON.stringify({ keyword, place, max, wait: 60 }) });
+    let job = await request('/api/scan', { method: 'POST', body: JSON.stringify({ keyword, place, max, ...workerIdentification('Search Google Maps'), wait: 60 }) });
     while (job.status === 'pending' || job.status === 'running') {
       if (!job.id) throw new Error('myworker returned no job id');
       job = await request(`/api/scan/${encodeURIComponent(job.id)}?wait=60`);

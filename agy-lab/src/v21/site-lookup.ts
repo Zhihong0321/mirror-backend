@@ -1,3 +1,4 @@
+import { workerIdentification } from './worker-identification.ts';
 // Site lookups on the Local Gmap Worker service (myworker, its /docs "Site lookup"): a catalog prompt whose site has a
 // verified handler is answered by running that handler on a worker PC, instead of a Brave site: search.
 // Step 1 gathers only: the handler's answer is kept as it came back, with the handler id and version that produced it.
@@ -218,7 +219,7 @@ export async function siteLookup(handler: string, keyword: string): Promise<Site
     let res = await fetch(`${HUB_URL}/api/lookup`, {
       method: 'POST',
       headers: headers(),
-      body: JSON.stringify({ handler, keyword, wait: 60 }),
+      body: JSON.stringify({ handler, keyword, ...workerIdentification('Look up company'), wait: 60 }),
     });
     let data = await res.json();
     while (res.status === 202) {

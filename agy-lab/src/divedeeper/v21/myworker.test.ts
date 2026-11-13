@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
-import { scan, fetchPage, lookup, shot } from './myworker.ts';
+import { scan, fetchPage, lookup, shot, chat } from './myworker.ts';
 
 const business = { name: 'Acme', rating: 4.7, reviews: 12, category: 'Installer', address: 'Johor', phone: '123', website: 'https://acme.my', mapsUrl: 'https://maps.example/acme', place_id: 'place-acme' };
 type Request = { method: string; path: string; authorization?: string; body: any };
@@ -31,7 +31,7 @@ test('myworker finishes in the POST response, preserving Maps order and place_id
     assert.equal(out.error, undefined);
     assert.deepEqual(out.rows, [business, { name: 'Second', rating: null, reviews: null, category: null, address: null, phone: null, website: null, mapsUrl: null, place_id: null }]);
     assert.deepEqual(requests.map((r) => [r.method, r.path]), [['GET', '/health'], ['POST', '/api/scan']]);
-    assert.deepEqual(requests[1].body, { keyword: 'solar installer', place: 'Johor', max: 60, wait: 60 });
+    assert.deepEqual(requests[1].body, { keyword: 'solar installer', place: 'Johor', max: 60, callerId: 'mirrormirror', taskDescription: 'Search Google Maps', wait: 60 });
     assert.equal(requests[1].authorization, 'Bearer test-key');
   });
 });
@@ -82,7 +82,7 @@ test('fetchPage returns content, headers and redirects and requests the whole pa
   await fake(() => ({ body: { job: { status: 'done', result: page } } }), async (baseUrl, requests) => {
     assert.deepEqual(await fetchPage(page.url, { format: 'html', keepErrors: true, headers: true }, { baseUrl, apiKey: 'test-key' }), page);
     assert.deepEqual(requests.map((r) => [r.method, r.path, r.authorization]), [['POST', '/api/fetch', 'Bearer test-key']]);
-    assert.deepEqual(requests[0].body, { url: page.url, format: 'html', keepErrors: true, headers: true, mainContent: false, wait: 60 });
+    assert.deepEqual(requests[0].body, { url: page.url, format: 'html', keepErrors: true, headers: true, mainContent: false, callerId: 'mirrormirror', taskDescription: 'Read web page', wait: 60 });
   });
 });
 
@@ -112,7 +112,7 @@ test('lookup returns the handler answer with its handler and version', async () 
   await fake(() => ({ body: { job: { status: 'done', result: { result, handler: 'MY-register/w1', version: 'abc123' } } } }), async (baseUrl, requests) => {
     assert.deepEqual(await lookup('MY-register/w1', 'Acme', { baseUrl, apiKey: 'test-key' }), { ...result, handler: 'MY-register/w1', version: 'abc123' });
     assert.equal(requests[0].path, '/api/lookup');
-    assert.deepEqual(requests[0].body, { handler: 'MY-register/w1', keyword: 'Acme', wait: 60 });
+    assert.deepEqual(requests[0].body, { handler: 'MY-register/w1', keyword: 'Acme', callerId: 'mirrormirror', taskDescription: 'Look up company', wait: 60 });
   });
 });
 
@@ -124,7 +124,7 @@ test('shot preserves successful proof and blocked evidence, and returns failed j
   ]) await fake(() => ({ body: { job: { status: 'done', result } } }), async (baseUrl, requests) => {
     assert.deepEqual(await shot(ask, { baseUrl, apiKey: 'test-key' }), result);
     assert.equal(requests[0].path, '/api/shot');
-    assert.deepEqual(requests[0].body, { ...ask, wait: 60 });
+    assert.deepEqual(requests[0].body, { ...ask, callerId: 'mirrormirror', taskDescription: 'Capture web page', wait: 60 });
   });
   await fake(() => ({ body: { job: { status: 'failed', error: 'browser failed' } } }), async (baseUrl) => {
     assert.deepEqual(await shot(ask, { baseUrl, apiKey: 'test-key' }), { error: 'browser failed' });
@@ -148,4 +148,12 @@ test('all page tools poll the shared jobs route through pending and running', as
       ]);
     });
   }
+});
+
+
+test('chat identifies the caller and task', async () => {
+  await fake(() => ({ body: { job: { status: 'done', result: { answer: 'Hello' } } } }), async (baseUrl, requests) => {
+    assert.deepEqual(await chat('Hi', { baseUrl, apiKey: 'test-key' }), { answer: 'Hello', tookMs: null, worker: undefined });
+    assert.deepEqual(requests[0].body, { prompt: 'Hi', timeoutMs: 240_000, callerId: 'mirrormirror', taskDescription: 'Ask ChatGPT', wait: 60 });
+  });
 });

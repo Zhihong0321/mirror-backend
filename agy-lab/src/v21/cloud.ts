@@ -1,3 +1,4 @@
+import { workerIdentification } from './worker-identification.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -266,7 +267,7 @@ export async function mapsSearch(keyword: string, max = 20): Promise<{ status: s
     const health = await (await fetch(`${MAPS_URL}/health`)).json();
     if (!health.workersLive) return { status: 'failed', error: 'no Gmap worker online' };
     // Requests are held 60s at a time: the host's proxy drops a longer one ("upstream error").
-    let res = await fetch(`${MAPS_URL}/api/scan`, { method: 'POST', headers, body: JSON.stringify({ keyword, max, wait: 60 }) });
+    let res = await fetch(`${MAPS_URL}/api/scan`, { method: 'POST', headers, body: JSON.stringify({ keyword, max, ...workerIdentification('Search Google Maps'), wait: 60 }) });
     let data = await res.json();
     // 202: still running; each poll holds up to 60s. The service fails a job itself after its deadline.
     while (res.status === 202) {
@@ -292,7 +293,7 @@ export async function workerFetch(url: string, format: 'markdown' | 'html' = 'ma
   let res = await fetch(`${MAPS_URL}/api/fetch`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ url, format, mainContent: false, timeoutMs: 120_000, wait: 60 }),
+    body: JSON.stringify({ url, format, mainContent: false, timeoutMs: 120_000, ...workerIdentification('Read web page'), wait: 60 }),
   });
   let data = await res.json();
   // 202: still running (a long PDF); each poll holds up to 60s, under the host's proxy limit.
@@ -317,7 +318,7 @@ export async function workerAudit(
   try {
     const health = await (await fetch(`${MAPS_URL}/health`)).json();
     if (!health.workersLive) return { status: 'failed', error: 'no worker online' };
-    const body = { url, maxPages: opts.maxPages ?? 5, botTest: opts.botTest ?? true, timeoutMs: opts.timeoutMs ?? 300_000, wait: 30 };
+    const body = { url, ...workerIdentification('Audit website'), maxPages: opts.maxPages ?? 5, botTest: opts.botTest ?? true, timeoutMs: opts.timeoutMs ?? 300_000, wait: 30 };
     // Requests are held 30s at a time: a 60s hold on /api/jobs came back HTTP 502 from the host's proxy (2026-11-06).
     // The service fails the job itself after its timeout (also when no worker takes site.audit jobs).
     let res = await fetch(`${MAPS_URL}/api/audit`, { method: 'POST', headers, body: JSON.stringify(body) });
@@ -394,7 +395,7 @@ export async function linkedinCompany(url: string): Promise<{ status: string; wo
   try {
     const health = await (await fetch(`${MAPS_URL}/health`)).json();
     if (!health.workersLive) return { status: 'failed', error: 'no worker online' };
-    let res = await fetch(`${MAPS_URL}/api/linkedin`, { method: 'POST', headers, body: JSON.stringify({ kind: 'company', url, wait: 60 }) });
+    let res = await fetch(`${MAPS_URL}/api/linkedin`, { method: 'POST', headers, body: JSON.stringify({ kind: 'company', url, ...workerIdentification('Read LinkedIn company'), wait: 60 }) });
     let data = await res.json();
     while (res.status === 202) {
       res = await fetch(`${MAPS_URL}/api/linkedin/${data.job.id}?wait=60`, { headers });
