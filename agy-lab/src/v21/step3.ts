@@ -265,7 +265,7 @@ export function checkLine(raw: any, items: Map<string, Item>, reasons: string[])
 
 // ---------------------------------------------------------------- the prompt
 
-function itemsForPrompt(s2: Step2V2Output): string {
+export function itemsForPrompt(s2: Step2V2Output): string {
   const f = (s2.conclusive_findings ?? []).map((x) => ({ id: x.id, kind: x.kind, title: x.title, statement: x.statement, why_it_matters: x.why_it_matters, ...(x.ownership ? { domain_ownership: x.ownership } : {}), sources: [...new Set((x.evidence ?? []).map((e) => e.party))] }));
   const c = (s2.contradictions ?? []).map((x) => ({ id: x.id, title: x.title, versions: (x.versions ?? []).map((v) => `${v.source}: ${v.value}`), why_it_matters: x.why_it_matters }));
   const s = (s2.suggestions ?? []).map((x) => ({ id: x.id, action: x.action, why: x.why, based_on: x.based_on }));

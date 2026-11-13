@@ -348,6 +348,77 @@ async function request(c: LlmConfig, messages: Message[], opts: CallOpts, fetchI
   return answer;
 }
 
+/** TEST ONLY (owner, 2026-11-13: gpt-6.1-terra vs deepseek, same prompt, fired together). One streamed call to ONE
+ *  explicit lane: no pool, no rest, no retry, no MiniMax, so the timing is that lane's alone. Never throws: a failed or
+ *  dead (idle, or over `deadMs`) call comes back ok:false with the reason, and whatever text had arrived is kept. */
+export type BenchCall = {
+  ok: boolean; answer: string; error: string | null; ms: number;
+  /** ms until the first reasoning text, and until the first answer text, as the stream showed them (null: none came). */
+  firstReasoningMs: number | null; firstAnswerMs: number | null;
+  tokensIn: number; tokensOut: number; finish: string;
+};
+export async function benchCall(
+  c: LlmConfig,
+  messages: Message[],
+  opts: { reasoningEffort?: string; temperature?: number; json?: boolean; deadMs?: number } = {},
+): Promise<BenchCall> {
+  const t0 = Date.now();
+  const out: BenchCall = { ok: false, answer: '', error: null, ms: 0, firstReasoningMs: null, firstAnswerMs: null, tokensIn: 0, tokensOut: 0, finish: '' };
+  const guard = idleGuard(IDLE_MS);
+  const dead = AbortSignal.timeout(opts.deadMs ?? 480_000);
+  let raw = '';
+  try {
+    const res = await fetch(c.url + '/chat/completions', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + c.key, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: c.model,
+        messages: messages.map((m) => ({ ...m, content: m.content.toWellFormed() })),
+        temperature: opts.temperature ?? 0.1,
+        stream: true,
+        stream_options: { include_usage: true },
+        ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
+        ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
+      }),
+      signal: AbortSignal.any([guard.signal, dead]),
+    });
+    guard.touch();
+    raw = await readText(res, guard, (chunk) => {
+      if (out.firstReasoningMs === null && /"(reasoning_content|reasoning)"\s*:\s*"[^"]/.test(chunk)) out.firstReasoningMs = Date.now() - t0;
+      if (out.firstAnswerMs === null && /"content"\s*:\s*"[^"]/.test(chunk)) out.firstAnswerMs = Date.now() - t0;
+      return answerProgress(chunk);
+    });
+    guard.done();
+    if (!res.ok) { out.error = `HTTP ${res.status}: ${raw.slice(0, 300)}`; }
+    else {
+      const read = (event: any) => {
+        if (event?.error) out.error = String(event.error.message ?? JSON.stringify(event.error)).slice(0, 300);
+        const choice = event?.choices?.[0];
+        out.answer += choice?.delta?.content ?? choice?.message?.content ?? '';
+        if (choice?.finish_reason) out.finish = choice.finish_reason;
+        if (event?.usage) { out.tokensIn = Number(event.usage.prompt_tokens ?? 0); out.tokensOut = Number(event.usage.completion_tokens ?? 0); }
+      };
+      if (/^\s*data:/m.test(raw)) {
+        for (const line of raw.split('\n')) {
+          const data = line.trim().startsWith('data:') ? line.trim().slice(5).trim() : '';
+          if (!data || data === '[DONE]') continue;
+          try { read(JSON.parse(data)); } catch { /* keep-alive or partial line */ }
+        }
+      } else {
+        try { read(JSON.parse(raw)); } catch { out.error = `no JSON: ${raw.slice(0, 200)}`; }
+      }
+      out.answer = out.answer.trim();
+      if (!out.answer && !out.error) out.error = out.finish === 'length' ? 'cut off by the model limit before any answer' : 'empty answer';
+      out.ok = Boolean(out.answer) && !out.error;
+    }
+  } catch (cause) {
+    guard.done();
+    out.error = dead.aborted ? `dead: no finished answer after ${Math.round((opts.deadMs ?? 480_000) / 60_000)} min (owner rule: over 8 min = dead)` : guard.idled ? `dead: nothing arrived for ${Math.round(IDLE_MS / 1000)}s` : `failed: ${netError(cause)}`;
+  }
+  out.ms = Date.now() - t0;
+  return out;
+}
+
 /** One pass over the lanes: each tried once, a free one first; the first answer wins. */
 async function round(step: string, messages: Message[], lanes: LlmConfig[], opts: CallOpts, fetchImpl: FetchImpl, log?: ApiCall[]): Promise<Answer & { lane: LlmConfig }> {
   const left = order(lanes);
