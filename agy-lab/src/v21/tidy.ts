@@ -526,6 +526,49 @@ export function tidyCheckpoint(cp: RawResearchCheckpoint, assets?: Step1_5_Asset
         ...(gh?.domain ? { domain: gh.domain.toLowerCase() } : {}),
       });
     }
+
+    // Country handlers (Step 1.5 country_handlers): the registers, regulators, courts and directories of the company's
+    // country, each asked for the company's name on a worker PC. One item per handler that found records (its first
+    // records, as the site wrote them: which one is this company is Step 2's call); the handlers that answered "not
+    // listed" are one item, since absence from a list is not a finding; a handler that did not run or could not check
+    // is "could not check". Nothing here stops the report.
+    const ch = assets.country_handlers;
+    if (ch && ch.status === 'failed') {
+      couldNotCheck.push({ target: 'Public registers and directories of the country', reason: ch.error || 'country handlers failed' });
+    }
+    const notListed: string[] = [];
+    for (const h of ch?.handlers ?? []) {
+      const l = h.lookup;
+      if (!l || l.job_status !== 'done' || !l.status || l.status === 'couldnt_check') {
+        couldNotCheck.push({ target: h.source_name, reason: l?.error || l?.reason || cleanText(String(l?.excerpt ?? '')).slice(0, 200) || 'did not answer' });
+        continue;
+      }
+      if (l.status === 'not_found') {
+        notListed.push(h.name_note ? `${h.source_name} (unconfirmed: ${h.name_note})` : h.source_name);
+        continue;
+      }
+      const records = (Array.isArray(l.records) ? l.records : []).slice(0, 3).map((x) => cleanText(JSON.stringify(x)).slice(0, 500));
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: h.source_name,
+        url: l.source_url || '',
+        title: `${h.source_name}: records found for "${ch?.company ?? 'the company'}"`,
+        text: [cleanText(String(l.excerpt ?? '')).slice(0, 600), ...records.map((x, i) => `Record ${i + 1}: ${x}`)].filter(Boolean).join('\n'),
+        check_id: `country:${h.id}`,
+      });
+    }
+    if (notListed.length) {
+      evidence.push({
+        id: `E${++n}`,
+        kind: 'search',
+        source_name: 'Country registers and directories',
+        url: '',
+        title: `Registers and directories that answered "not listed" for "${ch?.company ?? 'the company'}"`,
+        text: `Searched by the company name, these sources returned nothing: ${notListed.join('; ')}. A name that is not on a list is not a finding by itself.`,
+        check_id: 'country:not_listed',
+      });
+    }
   }
 
   // ---- Catalog probes: not run -> could not check; read pages -> passages where the name appears.

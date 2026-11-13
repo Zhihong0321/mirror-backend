@@ -126,6 +126,91 @@ export async function runGlobalHandlers(domain: string): Promise<GlobalHandlersB
   }
 }
 
+// ---------------------------------------------------------------- country handlers (every country, not only a catalog prompt's)
+// The worker service has handlers for the 25 research countries: public registers, regulators, courts, business
+// directories, portals. They are not matched to a catalog prompt: every runnable handler of the company's country is
+// asked for the company's name, once per report, in Step 1.5 (assets.ts, `country_handlers` block), beside the global
+// handlers. Always runs: there is no switch (owner, 2026-11-12). A handler the hub flags broken is still asked, and its
+// health is recorded with its answer; nothing here stops the report.
+
+export type CountryHandlerAnswer = {
+  id: string;
+  question: string;
+  source_name: string;
+  /** The hub's own canary health for this handler when it was listed (ok, broken, unknown), as it said. */
+  health?: string;
+  /** Set when "not listed" cannot be trusted as it stands (for example the register is in Thai and the name searched was English). */
+  name_note?: string;
+  lookup: SiteLookupResult;
+};
+
+/** done: every handler was asked (each answer carries its own status). not_run: no company name or no handlers for
+ *  the country. failed: the handler list could not be read. */
+export type CountryHandlersBlock = {
+  status: 'done' | 'not_run' | 'failed';
+  reason?: string;
+  error?: string;
+  country_code?: string;
+  company?: string;
+  handlers: CountryHandlerAnswer[];
+};
+
+/** Countries whose registers are written in their own script: the name searched must be in it to be trusted. */
+const OWN_SCRIPT: Record<string, string> = { TH: 'Thai', JP: 'Japanese', KR: 'Korean', RU: 'Russian', TW: 'Chinese' };
+/** CountryCode -> a note when the name searched has no letter of that script (an English name on a Thai register). */
+export function nameNote(countryCode: string, name: string): string | undefined {
+  const language = OWN_SCRIPT[countryCode];
+  if (!language || /[^\x00-\x7f]/.test(name)) return undefined;
+  return `searched with the English name; this source is in ${language}, so "not listed" here is unconfirmed`;
+}
+
+export async function loadCountryHandlers(countryCode: string): Promise<Array<HandlerEntry & { health?: { state?: string; broken_reason?: string | null } }>> {
+  const res = await fetch(`${HUB_URL}/api/handlers?country=${encodeURIComponent(countryCode)}`, { headers: headers() });
+  if (!res.ok) throw new Error(`worker service answered HTTP ${res.status}`);
+  const data = await res.json();
+  const list = Array.isArray(data) ? data : (data.handlers ?? []);
+  return list.filter((h: any) => h && h.id && (h.tier === 1 || h.tier === 2)).sort((a: any, b: any) => String(a.id).localeCompare(String(b.id)));
+}
+
+const COUNTRY_HANDLERS_AT_ONCE = 10;
+const COUNTRY_HANDLER_CAP_MS = 5 * 60_000;
+
+/** Run every runnable handler of the company's country on its name, on worker PCs. Never throws; a handler that did
+ *  not run is in the block with its error, and the others are kept. */
+export async function runCountryHandlers(countryCode: string | null, company: string): Promise<CountryHandlersBlock> {
+  if (!countryCode) return { status: 'not_run', reason: 'the worker service has no handlers for this country', company, handlers: [] };
+  if (!String(company ?? '').trim()) return { status: 'not_run', reason: 'no company name', country_code: countryCode, handlers: [] };
+  try {
+    const list = await loadCountryHandlers(countryCode);
+    if (!list.length) return { status: 'not_run', reason: 'the worker service lists no runnable handlers for this country', country_code: countryCode, company, handlers: [] };
+    const note = nameNote(countryCode, company);
+    // No handler may hold Step 1.5 (and the report) for ever: one that has not answered in 5 minutes is recorded as not
+    // run, and the others keep their answers.
+    const capped = (id: string): Promise<SiteLookupResult> => new Promise((resolve) => {
+      const timer = setTimeout(() => resolve({ handler: id, job_status: 'failed', error: 'no answer within 5 minutes' }), COUNTRY_HANDLER_CAP_MS);
+      siteLookup(id, company).then((r) => { clearTimeout(timer); resolve(r); }, (e) => { clearTimeout(timer); resolve({ handler: id, job_status: 'failed', error: String(e?.message ?? e) }); });
+    });
+    const answers: SiteLookupResult[] = new Array(list.length);
+    let next = 0;
+    await Promise.all(Array.from({ length: Math.min(COUNTRY_HANDLERS_AT_ONCE, list.length) }, async () => {
+      while (next < list.length) { const i = next++; answers[i] = await capped(list[i].id); }
+    }));
+    return {
+      status: 'done',
+      country_code: countryCode,
+      company,
+      handlers: list.map((h, i) => ({
+        id: h.id, question: h.question, source_name: h.source_name ?? h.host,
+        ...(h.health?.state ? { health: h.health.state } : {}),
+        ...(note ? { name_note: note } : {}),
+        lookup: answers[i],
+      })),
+    };
+  } catch (err: any) {
+    return { status: 'failed', country_code: countryCode, company, error: err?.message ?? String(err), handlers: [] };
+  }
+}
+
 /** Run one handler with one name on a worker PC. Never throws: a lookup that did not run comes back failed with why. */
 export async function siteLookup(handler: string, keyword: string): Promise<SiteLookupResult> {
   try {

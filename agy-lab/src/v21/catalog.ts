@@ -11,17 +11,37 @@ const trackerDataDir = fs.existsSync(path.resolve(here, '../../research-tracker/
   : path.resolve(here, 'catalog-data');
 const fallbackPromptsPath = path.resolve(here, '../companydive/v2-prompts.json');
 
+// Every country the worker service has handlers for (the 25 research countries), by each name a dive may carry.
 const COUNTRY_MAP: Record<string, string> = {
-  malaysia: 'MY',
-  my: 'MY',
-  singapore: 'SG',
-  sg: 'SG',
-  australia: 'AU',
-  au: 'AU',
-  'south korea': 'KR',
-  korea: 'KR',
-  kr: 'KR',
+  malaysia: 'MY', my: 'MY',
+  singapore: 'SG', sg: 'SG',
+  australia: 'AU', au: 'AU',
+  'south korea': 'KR', korea: 'KR', 'republic of korea': 'KR', kr: 'KR',
+  india: 'IN', in: 'IN',
+  brazil: 'BR', brasil: 'BR', br: 'BR',
+  'united kingdom': 'GB', uk: 'GB', 'u.k.': 'GB', 'great britain': 'GB', england: 'GB', gb: 'GB',
+  canada: 'CA', ca: 'CA',
+  france: 'FR', fr: 'FR',
+  netherlands: 'NL', 'the netherlands': 'NL', holland: 'NL', nl: 'NL',
+  germany: 'DE', deutschland: 'DE', de: 'DE',
+  'united states': 'US', 'united states of america': 'US', usa: 'US', 'u.s.a.': 'US', 'u.s.': 'US', america: 'US', us: 'US',
+  switzerland: 'CH', ch: 'CH',
+  indonesia: 'ID', id: 'ID',
+  philippines: 'PH', 'the philippines': 'PH', ph: 'PH',
+  spain: 'ES', es: 'ES',
+  'united arab emirates': 'AE', uae: 'AE', 'u.a.e.': 'AE', ae: 'AE',
+  'new zealand': 'NZ', nz: 'NZ',
+  vietnam: 'VN', 'viet nam': 'VN', vn: 'VN',
+  argentina: 'AR', ar: 'AR',
+  taiwan: 'TW', tw: 'TW',
+  ireland: 'IE', 'republic of ireland': 'IE', ie: 'IE',
+  russia: 'RU', 'russian federation': 'RU', ru: 'RU',
+  japan: 'JP', jp: 'JP',
+  thailand: 'TH', th: 'TH',
 };
+
+/** The two-letter code the worker service uses for a country as a dive names it; null when it has no handlers for it. */
+export const countryCodeOf = (country: string): string | null => COUNTRY_MAP[String(country ?? '').trim().toLowerCase()] ?? null;
 
 const INDUSTRY_MAP: Record<string, string> = {
   'accounting firm': 'accounting-firm',

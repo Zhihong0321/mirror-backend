@@ -16,7 +16,8 @@ import { pagespeed, scrapertech } from '../core/index.ts';
 import { readPsi, type Psi } from '../divedeeper/sections/W-speed.ts';
 import type { RawResearchCheckpoint } from './research.ts';
 import { workerAudit } from './cloud.ts';
-import { runGlobalHandlers, type GlobalHandlersBlock } from './site-lookup.ts';
+import { runGlobalHandlers, runCountryHandlers, type GlobalHandlersBlock, type CountryHandlersBlock } from './site-lookup.ts';
+import { countryCodeOf } from './catalog.ts';
 
 const FREE_MAIL = /^(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|icloud|me|aol|proton|protonmail|qq|163|126|zoho)\./i;
 const SOCIAL_DOMAINS = /^(?:[a-z0-9-]+\.)?(facebook|instagram|linkedin|tiktok|youtube|x|twitter|xiaohongshu|threads|weibo|github|pinterest|whatsapp|telegram)\.com$/i;
@@ -125,6 +126,8 @@ export type Step1_5_AssetsOutput = {
   site_audit?: SiteAuditBlock;
   /** The global handlers' answers for the official domain. Always present on a new run. */
   global_handlers?: GlobalHandlersBlock;
+  /** Every runnable handler of the company's country (registers, regulators, courts, directories), asked for its name. */
+  country_handlers?: CountryHandlersBlock;
   findings: TechnicalFinding[];
   stats: {
     domains_checked: number;
@@ -623,6 +626,12 @@ export async function runStep1_5Assets(
     globalRun = runGlobalHandlers(officialDomain);
   }
 
+  // 5b. The country's own handlers (registers, regulators, courts, directories) ask for the company's name on worker PCs,
+  // beside the global handlers; awaited at the end. Needs no official website. Never stops the rest of Step 1.5.
+  const countryRun: Promise<CountryHandlersBlock> = checkpoint.skipped
+    ? Promise.resolve({ status: 'not_run', reason: `Research skipped: ${checkpoint.skipped}`, handlers: [] } as CountryHandlersBlock)
+    : (log(`[Step 1.5] Country handlers for ${input.country} (worker PCs)...`), runCountryHandlers(countryCodeOf(input.country), input.company));
+
   if (checkpoint.skipped || !officialSiteUrl) {
     psiStatus = 'skipped';
     psiReason = checkpoint.skipped ? `Research skipped: ${checkpoint.skipped}` : 'No confirmed official website';
@@ -773,6 +782,12 @@ export async function runStep1_5Assets(
     log(`[Step 1.5] Global handlers: ${globalHandlers.status}${globalHandlers.error ? ` (${globalHandlers.error})` : ''}${globalHandlers.handlers.length ? ` - ${globalHandlers.handlers.map((h) => `${h.id} ${h.lookup.job_status === 'done' ? h.lookup.status : 'did not run'}`).join(', ')}` : ''}`);
   }
 
+  const countryHandlers = await countryRun;
+  {
+    const answered = countryHandlers.handlers.filter((h) => h.lookup.job_status === 'done');
+    log(`[Step 1.5] Country handlers: ${countryHandlers.status}${countryHandlers.reason ? ` (${countryHandlers.reason})` : ''}${countryHandlers.error ? ` (${countryHandlers.error})` : ''}${countryHandlers.handlers.length ? ` - ${countryHandlers.handlers.length} asked, ${answered.filter((h) => h.lookup.status === 'found').length} found, ${answered.filter((h) => h.lookup.status === 'not_found').length} not listed, ${countryHandlers.handlers.length - answered.length} did not run` : ''}`);
+  }
+
   const durationMs = Date.now() - started;
   log(`[Step 1.5] Completed in ${durationMs}ms with ${findings.length} technical findings.`);
 
@@ -801,6 +816,7 @@ export async function runStep1_5Assets(
     google_reviews,
     ...(siteAudit ? { site_audit: siteAudit } : {}),
     ...(globalHandlers ? { global_handlers: globalHandlers } : {}),
+    country_handlers: countryHandlers,
     findings,
     stats: {
       domains_checked: auditedDomains.length,
