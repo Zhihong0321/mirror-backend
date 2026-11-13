@@ -46,6 +46,9 @@ function recentRejections(id) {
     .slice(-3).map((l) => JSON.parse(l));
 }
 
+// A country-layer answer lists sources; an industry answer lists prompts. Either way, the count of what it holds.
+const itemsOf = (r) => (Array.isArray(r?.sources) ? r.sources : Array.isArray(r?.prompts) ? r.prompts : []);
+
 function pairStatus(id) {
   const r1 = readRound(id, 1);
   const r2 = readRound(id, 2);
@@ -53,8 +56,8 @@ function pairStatus(id) {
     round1: r1 ? (current(r1) ? 'accepted' : 'outdated') : 'todo',
     round2: r2 ? (current(r2) ? 'accepted' : 'outdated') : current(r1) ? 'todo' : 'locked',
     rejected: rejectedCount(id, 1) + rejectedCount(id, 2),
-    prompts1: r1 ? r1.prompts.length : 0,
-    prompts2: r2 ? r2.prompts.length : 0,
+    prompts1: r1 ? itemsOf(r1).length : 0,
+    prompts2: r2 ? itemsOf(r2).length : 0,
     submitted_at: { round1: r1?._received_at ?? null, round2: r2?._received_at ?? null },
   };
 }
@@ -115,6 +118,20 @@ function validate(body) {
 function briefFor(pair, n) {
   const template = pair.kind === 'country' ? countryBriefTemplate : briefTemplate;
   let text = template.replaceAll('{{COUNTRY}}', pair.country).replaceAll('{{INDUSTRY}}', pair.industry);
+  if (n === 2 && pair.kind === 'country') {
+    const r1 = readRound(pair.id, 1);
+    if (!current(r1)) return null;
+    const pass1 = Object.fromEntries(Object.entries(r1).filter(([k]) => !k.startsWith('_')));
+    text += `\n\n## Round 2: test your own first pass\n\n` +
+      `Below is your round 1 answer. For every source, open it yourself and test the claim that a company can be looked up there from the public web:\n` +
+      `- add \`public_access\`: "yes" (readable with no login, fee or CAPTCHA), "partial" (some of it is readable) or "no";\n` +
+      `- add \`how_to_search\`: in words, how to find a company on it (which page, which search box, what to type, which part of the result to read);\n` +
+      `- add \`tested_with\`: the name of a real company you searched for to check, and whether it came back.\n` +
+      `Keep every source in the list, including the ones that fail: mark them \`"public_access": "no"\` and say why in \`how_to_search\`. Add any source you missed. Update \`suggestion\` if the tests change it.\n` +
+      `Return the full round 2 answer in the same JSON format, not a diff.\n\n` +
+      `Round 1 answer:\n\`\`\`json\n${JSON.stringify(pass1, null, 2)}\n\`\`\`\n`;
+    return text;
+  }
   if (n === 2) {
     const r1 = readRound(pair.id, 1);
     if (!current(r1)) return null;
@@ -161,6 +178,34 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && parts.length === 0) {
       return send(res, 200, fs.readFileSync(path.join(here, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
     }
+    // GET /api/agy-run : the last lines of the country-layer driver's log (run-countries.mjs), for the live panel
+    if (req.method === 'GET' && url.pathname === '/api/agy-run') {
+      const f = path.join(DATA, '_agy-runs', 'log.jsonl');
+      const lines = fs.existsSync(f) ? fs.readFileSync(f, 'utf8').split('\n').filter(Boolean).slice(-80) : [];
+      return send(res, 200, lines.map((l) => { try { return JSON.parse(l); } catch { return { event: l }; } }));
+    }
+    // GET /api/probe-run : the handler probe (probe/run-probe.mjs): per-country counts from probe/state.json, what is
+    // running now, and the last log lines, for the probe panel
+    if (req.method === 'GET' && url.pathname === '/api/probe-run') {
+      const pdir = path.join(here, 'probe');
+      const readJ = (f, fb) => { try { return JSON.parse(fs.readFileSync(path.join(pdir, f), 'utf8')); } catch { return fb; } };
+      const tasks = readJ('tasks.json', { tasks: [] }).tasks ?? [];
+      const state = readJ('state.json', {});
+      const rows = {};
+      for (const t of tasks) {
+        const r = rows[t.country_code] ??= { total: 0, done: 0, running: 0, failed: 0, tiers: [0, 0, 0, 0] };
+        const s = state[t.id]?.status ?? 'queued';
+        r.total++;
+        if (s === 'done') { r.done++; const tier = state[t.id].tier; if (tier >= 1 && tier <= 4) r.tiers[tier - 1]++; }
+        else if (s === 'running') r.running++;
+        else if (s === 'failed') r.failed++;
+      }
+      let pid = 0; try { pid = Number(fs.readFileSync(path.join(pdir, 'RUN.lock'), 'utf8')); } catch {}
+      let alive = false; if (pid) { try { process.kill(pid, 0); alive = true; } catch (e) { alive = e.code === 'EPERM'; } }
+      const running = tasks.filter((t) => state[t.id]?.status === 'running').map((t) => ({ id: t.id, started: state[t.id].started, attempts: state[t.id].attempts }));
+      let lines = []; try { lines = fs.readFileSync(path.join(pdir, 'log.jsonl'), 'utf8').split('\n').filter(Boolean).slice(-40).map((l) => { try { return JSON.parse(l); } catch { return { event: l }; } }); } catch {}
+      return send(res, 200, { alive, stopping: fs.existsSync(path.join(pdir, 'STOP')), rows, running, lines });
+    }
     if (req.method === 'GET' && url.pathname === '/api/pairs') {
       return send(res, 200, pairs.map((p) => ({ ...p, ...pairStatus(p.id) })));
     }
@@ -188,7 +233,10 @@ const server = http.createServer(async (req, res) => {
           logLine({ pair: pair.id, round: n, result: 'rejected', errors: [`not valid JSON: ${err.message}`] });
           return send(res, 400, { accepted: false, errors: [`not valid JSON: ${err.message}`] });
         }
-        const errors = validate(body);
+        // A country answer is a discovery list: it is stored whatever it holds (only a JSON object is needed), and
+        // anything unexpected is recorded as a warning on the log, not used to refuse it.
+        const errors = pair.kind === 'country' ? (body && typeof body === 'object' && !Array.isArray(body) ? [] : ['the body must be one JSON object']) : validate(body);
+        const warnings = pair.kind === 'country' && !errors.length && !Array.isArray(body.sources) ? ['no "sources" list in the answer'] : [];
         if (errors.length) {
           logLine({ pair: pair.id, round: n, result: 'rejected', errors });
           return send(res, 422, { accepted: false, errors });
@@ -196,8 +244,8 @@ const server = http.createServer(async (req, res) => {
         fs.mkdirSync(path.join(DATA, pair.id), { recursive: true });
         const stored = { ...body, _received_at: new Date().toISOString(), _pair: pair.id, _round: n, _schema: S.version };
         fs.writeFileSync(roundFile(pair.id, n), JSON.stringify(stored, null, 2) + '\n');
-        logLine({ pair: pair.id, round: n, result: 'accepted', prompts: body.prompts.length });
-        return send(res, 200, { accepted: true, pair: pair.id, round: n, prompts: body.prompts.length });
+        logLine({ pair: pair.id, round: n, result: 'accepted', prompts: itemsOf(body).length, ...(warnings.length ? { warnings } : {}) });
+        return send(res, 200, { accepted: true, pair: pair.id, round: n, prompts: itemsOf(body).length, ...(warnings.length ? { warnings } : {}) });
       }
     }
     return send(res, 404, { error: 'not found' });

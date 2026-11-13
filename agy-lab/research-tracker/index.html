@@ -52,6 +52,17 @@
 <h1>Research tracker</h1>
 <p class="sub">150 research runs: 125 country × industry pairs plus one country layer per country, two passes each. Answers come in from outside AI tools. This page refreshes every 10 seconds.</p>
 
+<div class="detail" id="runbox" style="margin-bottom:16px" hidden>
+  <b>Live research run</b> <span class="muted" id="run-sum"></span>
+  <pre id="run-log" style="max-height:220px;overflow:auto;margin:8px 0 0;font-size:12px;white-space:pre-wrap"></pre>
+</div>
+
+<div class="detail" id="probebox" style="margin-bottom:16px" hidden>
+  <b>Handler probe</b> <span class="muted" id="probe-sum"></span>
+  <table style="margin:8px 0;font-size:12px;border-collapse:collapse"><thead><tr id="probe-head"></tr></thead><tbody id="probe-rows"></tbody></table>
+  <pre id="probe-log" style="max-height:200px;overflow:auto;margin:8px 0 0;font-size:12px;white-space:pre-wrap"></pre>
+</div>
+
 <div class="cards">
   <div class="card"><b id="c-pairs">–</b><span>research runs</span></div>
   <div class="card"><b id="c-r1">–</b><span>pass 1 accepted</span></div>
@@ -219,7 +230,19 @@ async function showDetail(id, scroll) {
   for (const n of [1, 2]) {
     const r = n === 1 ? d.answer1 : d.answer2;
     if (!r) continue;
-    panel.append(el('h3', { text: `Pass ${n} prompts (${r.prompts.length}) · received ${new Date(r._received_at).toLocaleString()}` }));
+    if (Array.isArray(r.sources)) {
+      panel.append(el('h3', { text: `Pass ${n} sources (${r.sources.length}) · received ${new Date(r._received_at).toLocaleString()}` }));
+      if (r.suggestion) panel.append(el('p', { class: 'muted', text: String(r.suggestion) }));
+      for (const s of r.sources) {
+        panel.append(el('div', { class: 'prompt' }, [
+          el('p', {}, [el('b', { text: `${s.group ?? ''} · ` }), el('a', { href: s.url, target: '_blank', rel: 'noopener', text: s.name ?? 'source' })]),
+          el('p', { class: 'muted', text: `${s.what_to_see ?? ''}${s.public_access ? ' · public access: ' + s.public_access : ''}` }),
+          ...(s.how_to_search ? [el('p', { class: 'muted', text: `how to search: ${s.how_to_search}` })] : []),
+        ]));
+      }
+      continue;
+    }
+    panel.append(el('h3', { text: `Pass ${n} prompts (${(r.prompts ?? []).length}) · received ${new Date(r._received_at).toLocaleString()}` }));
     panel.append(promptList(r));
   }
   if (!d.answer1 && !d.answer2) panel.append(el('p', { class: 'muted', text: 'No answer yet. Pass 1 is the first step.' }));
@@ -229,8 +252,39 @@ async function showDetail(id, scroll) {
 
 for (const id of ['f-country', 'f-industry', 'f-status']) $(id).addEventListener('change', render);
 $('f-search').addEventListener('input', render);
+async function loadRun() {
+  try {
+    const lines = await fetch('/api/agy-run', { cache: 'no-store' }).then((r) => r.json());
+    if (!lines.length) return;
+    $('runbox').hidden = false;
+    const last = new Date(lines[lines.length - 1].at);
+    const stored = lines.filter((l) => l.event === 'stored').length;
+    $('run-sum').textContent = `· ${stored} stored in the last ${lines.length} events · last event ${Math.max(0, Math.round((Date.now() - last) / 1000))}s ago`;
+    $('run-log').textContent = lines.slice(-40).map((l) => `${l.at ? new Date(l.at).toLocaleTimeString() : ''}  ${l.pair ?? ''}  ${l.event}${l.note ? ' · ' + l.note : ''}`).join('\n');
+    $('run-log').scrollTop = $('run-log').scrollHeight;
+  } catch {}
+}
+
+async function loadProbe() {
+  try {
+    const d = await fetch('/api/probe-run', { cache: 'no-store' }).then((r) => r.json());
+    const cc = Object.keys(d.rows).sort();
+    if (!cc.length) return;
+    $('probebox').hidden = false;
+    const tot = cc.reduce((a, k) => ({ total: a.total + d.rows[k].total, done: a.done + d.rows[k].done }), { total: 0, done: 0 });
+    $('probe-sum').textContent = `· ${tot.done} of ${tot.total} sites done · ${d.alive ? (d.stopping ? 'stopping after the running sites' : 'running now: ' + (d.running.map((r) => r.id).join(', ') || 'between sites')) : 'not running'}`;
+    const cell = (t, v, b) => `<${t} style="padding:2px 10px;text-align:right${b ? ';font-weight:600' : ''}">${v}</${t}>`;
+    $('probe-head').innerHTML = ['country', 'sites', 'done', 'pending', 'running', 'failed', 'tier 1', 'tier 2', 'tier 3', 'tier 4'].map((h) => cell('th', h)).join('');
+    $('probe-rows').innerHTML = cc.map((k) => { const r = d.rows[k]; return '<tr>' + [k, r.total, r.done, r.total - r.done, r.running, r.failed, ...r.tiers].map((v) => cell('td', v)).join('') + '</tr>'; }).join('');
+    $('probe-log').textContent = d.lines.slice(-25).map((l) => `${l.at ? new Date(l.at).toLocaleTimeString() : ''}  ${l.task ?? ''}  ${l.event}${l.note ? ' · ' + l.note : ''}`).join('\n');
+    $('probe-log').scrollTop = $('probe-log').scrollHeight;
+  } catch {}
+}
+
 load();
-setInterval(() => { if (document.visibilityState === 'visible') load(); }, 10000);
+loadRun();
+loadProbe();
+setInterval(() => { if (document.visibilityState === 'visible') { load(); loadRun(); loadProbe(); } }, 5000);
 </script>
 </body>
 </html>
