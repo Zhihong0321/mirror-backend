@@ -36,7 +36,7 @@ import * as v21Step1_6 from './v21-step1-6-http.ts';
 import * as v21Step2 from './v21-step2-http.ts';
 import * as v21Store from './v21-store.ts';
 import * as v21Step3 from './v21-step3-http.ts';
-import * as v21Bench from './v21-bench-llm.ts';
+import * as benchLlm from './v21-bench-llm.ts';
 import * as v21DeeperHttp from './v21-deeper-http.ts';
 import * as v21DeeperRun from './divedeeper/v21/run.ts';
 import * as companyDive from './companydive.ts';
@@ -452,7 +452,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   if (await v21Step2.handle(req, res, url, { json, readJson })) return;
   if (await v21Step3.handle(req, res, url, { json, readJson })) return;
   // Test only: gpt-6.1-terra against deepseek on the same Step 3 prompt (v21-bench-llm.ts). Behind the token.
-  if (await v21Bench.handle(req, res, url, { json, readJson })) return;
+  if (await benchLlm.handle(req, res, url, { json, readJson })) return;
   if (await v21DeeperHttp.handle(req, res, url, { json, readJson })) return;
   if (await v21Store.handle(req, res, url, { json })) return;
 
