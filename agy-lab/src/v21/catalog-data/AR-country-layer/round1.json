@@ -1,0 +1,463 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member in the AmCham Argentina member directory (nuestros socios)?",
+      "why_it_matters": "Chamber membership signals standing among leading multinationals and local business peers.",
+      "source": {
+        "name": "AmCham Argentina",
+        "url": "https://www.amcham.com.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AmCham Argentina members page and enter the company name in its member search.",
+      "found_when": "The company appears as a listed AmCham Argentina member.",
+      "not_found_when": "A clean name search returns no member entry for the company.",
+      "couldnt_check_when": "The member directory cannot be searched or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an employer profile with employee ratings on Computrabajo Argentina?",
+      "why_it_matters": "Crowdsourced employee reviews reveal how the company is perceived as a workplace.",
+      "source": {
+        "name": "Computrabajo Argentina",
+        "url": "https://ar.computrabajo.com",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Computrabajo company search box and enter the company name.",
+      "found_when": "A company profile appears with employee evaluations or ratings.",
+      "not_found_when": "A clean search returns no company profile for the name.",
+      "couldnt_check_when": "The search cannot be executed, the name is too common to match, or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do corporate notices for this company appear in the Boletín Oficial de la Provincia de Buenos Aires?",
+      "why_it_matters": "Gazette notices confirm incorporation, bylaw changes and officer appointments.",
+      "source": {
+        "name": "Boletín Oficial de la Provincia de Buenos Aires",
+        "url": "https://boletinoficial.gba.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the gazette's search page and enter the company name in the words field.",
+      "found_when": "One or more legal notices naming the company are returned.",
+      "not_found_when": "A clean search returns no notice for the company name.",
+      "couldnt_check_when": "The search page cannot be reached, results are illegible, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company profile with open job postings on Bumeran Argentina?",
+      "why_it_matters": "Active hiring pages show growth areas and confirm the company is operating at scale.",
+      "source": {
+        "name": "Bumeran Argentina",
+        "url": "https://www.bumeran.com.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Bumeran company suggestion search and type the company name.",
+      "found_when": "The company appears with a profile and job postings.",
+      "not_found_when": "No company profile is returned for a clean name search.",
+      "couldnt_check_when": "The company lookup cannot be searched or returns an unreadable result.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of CESSI, the Argentine software industry chamber?",
+      "why_it_matters": "Sector membership evidences a genuine software business and industry recognition.",
+      "source": {
+        "name": "CESSI - Cámara de la Industria Argentina del Software",
+        "url": "https://www.cessi.org.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CESSI site or its member pages for the company name.",
+      "found_when": "A CESSI member page names the company.",
+      "not_found_when": "No CESSI member entry is found for the company.",
+      "couldnt_check_when": "The CESSI member pages cannot be searched or loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear among the transport operators authorised by CNRT?",
+      "why_it_matters": "Only CNRT-authorised carriers may legally provide passenger or freight transport.",
+      "source": {
+        "name": "Comisión Nacional de Regulación del Transporte (CNRT)",
+        "url": "https://www.cnrt.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CNRT habilitated-company consultation and submit the company name.",
+      "found_when": "The company is returned as a habilitated transport operator.",
+      "not_found_when": "The consultation returns no authorisation for the company.",
+      "couldnt_check_when": "The consultation form fails or the listing cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have filings, such as financial statements or material facts, in the CNV registry?",
+      "why_it_matters": "Regulator filings confirm the company's corporate and financial disclosures.",
+      "source": {
+        "name": "Comisión Nacional de Valores (CNV)",
+        "url": "https://www.cnv.gov.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CNV company registry by company name or CUIT.",
+      "found_when": "A CNV company record with filings is returned.",
+      "not_found_when": "No CNV record is found for the company.",
+      "couldnt_check_when": "The CNV registry cannot be searched or the record cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "legal",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered as a state supplier or shown in public procurement records on COMPR.AR?",
+      "why_it_matters": "Supplier registration and contract history show public-sector engagement and any sanctions.",
+      "source": {
+        "name": "COMPR.AR - Sistema de Compras Públicas",
+        "url": "https://comprar.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the COMPR.AR supplier search and enter the company name or CUIT.",
+      "found_when": "The company appears as a registered supplier or in contract records.",
+      "not_found_when": "The supplier search returns no record for the company.",
+      "couldnt_check_when": "The supplier search cannot be submitted or results are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in public works bidding or awarded contract records on CONTRAT.AR?",
+      "why_it_matters": "Public works records evidence construction capacity and contract performance.",
+      "source": {
+        "name": "CONTRAT.AR - Sistema de Obra Pública",
+        "url": "https://contratar.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CONTRAT.AR advanced search and enter the company name.",
+      "found_when": "Bidding or awarded contract records name the company.",
+      "not_found_when": "A clean search returns no public works record for the company.",
+      "couldnt_check_when": "The advanced search cannot be executed or the results are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has El Cronista Comercial published news or a company profile about this company?",
+      "why_it_matters": "Business press coverage reflects market visibility and public record of corporate events.",
+      "source": {
+        "name": "El Cronista Comercial",
+        "url": "https://www.cronista.com",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search El Cronista, including its company profiles section, for the company name.",
+      "found_when": "Articles or a company profile naming the company are returned.",
+      "not_found_when": "No article or profile is found for a clean search.",
+      "couldnt_check_when": "The site search is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in ENACOM's registry of licensed telecom, internet, broadcasting or postal providers?",
+      "why_it_matters": "Operator registries confirm the company holds the licence its services require.",
+      "source": {
+        "name": "Ente Nacional de Comunicaciones (ENACOM)",
+        "url": "https://www.enacom.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ENACOM provider information section and search the company name.",
+      "found_when": "The company appears as a registered provider or licensee.",
+      "not_found_when": "No ENACOM provider record is found for the company.",
+      "couldnt_check_when": "The provider lookup cannot be searched or the listing is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in ENARGAS industry directories as a licensed gas operator, workshop or equipment manufacturer?",
+      "why_it_matters": "ENARGAS listing confirms regulatory authorisation for gas-related activity.",
+      "source": {
+        "name": "Ente Nacional Regulador del Gas (ENARGAS)",
+        "url": "https://www.enargas.gob.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ENARGAS industry directory and search for the company name.",
+      "found_when": "The company is listed in an ENARGAS industry directory.",
+      "not_found_when": "No directory entry exists for the company.",
+      "couldnt_check_when": "The directory cannot be searched or the page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company profiled as an Endeavor Argentina entrepreneur venture?",
+      "why_it_matters": "Endeavor selection signals a vetted, high-growth venture with credible founders.",
+      "source": {
+        "name": "Endeavor Argentina",
+        "url": "https://www.endeavor.org.ar",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Endeavor Argentina entrepreneurs page for the company name.",
+      "found_when": "A venture profile for the company appears on the list.",
+      "not_found_when": "The company is absent from the published entrepreneur list.",
+      "couldnt_check_when": "The list does not load or the company name is too common to distinguish.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 14,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among IDEA's member companies (empresas socias)?",
+      "why_it_matters": "IDEA membership places the company in Argentina's top corporate executive network.",
+      "source": {
+        "name": "IDEA - Instituto para el Desarrollo Empresarial de la Argentina",
+        "url": "https://www.idea.org.ar",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the IDEA member companies page for the company name.",
+      "found_when": "The company appears in the IDEA member company list.",
+      "not_found_when": "The company is absent from the member list.",
+      "couldnt_check_when": "The member list cannot be loaded or read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in IRAM's list of granted certifications?",
+      "why_it_matters": "IRAM certificates evidence certified quality, safety or environmental management.",
+      "source": {
+        "name": "Instituto Argentino de Normalización y Certificación (IRAM)",
+        "url": "https://www.iram.org.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the IRAM granted certifications page and search for the company name.",
+      "found_when": "A granted IRAM or ISO certificate names the company.",
+      "not_found_when": "No certificate is listed for the company.",
+      "couldnt_check_when": "The certification list cannot be searched or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company run an official store on Mercado Libre Argentina with visible buyer ratings?",
+      "why_it_matters": "Official store presence and buyer feedback show commercial activity and service quality.",
+      "source": {
+        "name": "Mercado Libre Argentina",
+        "url": "https://www.mercadolibre.com.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Mercado Libre Argentina for the company name and open any official store.",
+      "found_when": "An official company store page with ratings is found.",
+      "not_found_when": "No official store or seller page exists for the company.",
+      "couldnt_check_when": "The marketplace search cannot be used or results are ambiguous.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 17,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Nosis hold a commercial report for the company with CUIT and corporate details?",
+      "why_it_matters": "Credit bureau records corroborate legal identity, ownership and litigation history.",
+      "source": {
+        "name": "Nosis",
+        "url": "https://www.nosis.com",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Nosis report search box.",
+      "found_when": "A Nosis report shows the company with CUIT or shareholder details.",
+      "not_found_when": "No Nosis record matches the company name.",
+      "couldnt_check_when": "The report requires payment, the search fails, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in Páginas Amarillas Argentina with a phone number and address?",
+      "why_it_matters": "Directory listings validate contact details and physical branch presence.",
+      "source": {
+        "name": "Páginas Amarillas Argentina",
+        "url": "https://www.paginasamarillas.com.ar",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Páginas Amarillas by company name and review the listing details.",
+      "found_when": "A listing shows the company with a phone number or address.",
+      "not_found_when": "No listing is returned for the company name.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member (socio) of the Unión Industrial Argentina?",
+      "why_it_matters": "UIA membership shows the company is recognised in Argentine industry circles.",
+      "source": {
+        "name": "Unión Industrial Argentina (UIA)",
+        "url": "https://www.uia.org.ar",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the UIA members page for the company name.",
+      "found_when": "The company appears in the UIA member list.",
+      "not_found_when": "The company is absent from the member list.",
+      "couldnt_check_when": "The member list cannot be loaded or read.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "AR-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 19 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

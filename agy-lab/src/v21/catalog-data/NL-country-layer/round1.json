@@ -1,0 +1,563 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "identity_registration",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Altares Dun & Bradstreet Nederland database with a verifiable DUNS number and corporate family record?",
+      "why_it_matters": "A matching DUNS record confirms the company's legal identity and financial risk profile before any trade or credit decision.",
+      "source": {
+        "name": "Altares Dun & Bradstreet Nederland",
+        "url": "https://altares.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Altares.nl company search and enter the company's registered name.",
+      "found_when": "A company record with the matching name, DUNS number or corporate family link is returned.",
+      "not_found_when": "A search on the exact registered name returns no company record at all.",
+      "couldnt_check_when": "The search endpoint fails or the name matches so many companies that the record cannot be identified.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this organisation listed in the Belastingdienst ANBI Register as holding public benefit (ANBI) status?",
+      "why_it_matters": "A claim of ANBI status is only valid if the organisation appears in the tax authority's own register, which also exposes its published finances.",
+      "source": {
+        "name": "Belastingdienst ANBI Register",
+        "url": "https://www.belastingdienst.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Belastingdienst ANBI search and enter the full statutory name of the stichting or vereniging.",
+      "found_when": "The organisation is returned with an ANBI designation and its published policy plan or remuneration data.",
+      "not_found_when": "A clean search on the exact statutory name returns no ANBI entry.",
+      "couldnt_check_when": "The register search is unavailable or the organisation trades under a name different from its statutory name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member of Bouwend Nederland?",
+      "why_it_matters": "Membership shows the contractor is bound by the sector's safety rules and tender standards rather than operating outside them.",
+      "source": {
+        "name": "Bouwend Nederland",
+        "url": "https://www.bouwendnederland.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Bouwend Nederland organisation search on the members section and enter the company name.",
+      "found_when": "The company appears in the members result with its name and place of business.",
+      "not_found_when": "The members search on the company name returns no matching organisation.",
+      "couldnt_check_when": "The member search is down or the company name is too generic to match a single organisation.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the BouwGarant register of certified builders and contractors?",
+      "why_it_matters": "BouwGarant certification means the builder carries insolvency insurance and dispute coverage, which protects the client if the firm fails.",
+      "source": {
+        "name": "BouwGarant",
+        "url": "https://www.bouwgarant.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BouwGarant builder search page and enter the company name or its certification number.",
+      "found_when": "A certified builder record with the matching company name and valid certificate is shown.",
+      "not_found_when": "The search returns no certified builder for that company name.",
+      "couldnt_check_when": "The search page fails to load or the company name returns a long list of unrelated builders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a BOVAG member for its garage, dealership, rental or driving school activities?",
+      "why_it_matters": "BOVAG membership backs the warranty and complaint mediation a customer gets, so an unlisted firm offers weaker consumer protection.",
+      "source": {
+        "name": "BOVAG",
+        "url": "https://www.bovag.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the BOVAG member search (leden) and enter the company name and place.",
+      "found_when": "A BOVAG member page for the company exists with its branch and services listed.",
+      "not_found_when": "The member search on the company name returns no BOVAG member entry.",
+      "couldnt_check_when": "The member search is unavailable or several franchises share the same trading name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the De Nederlandsche Bank openbaar register with a licence for its financial activity?",
+      "why_it_matters": "Only entities in the DNB register may lawfully offer banking, insurance, pension, payment or trust services in the Netherlands.",
+      "source": {
+        "name": "De Nederlandsche Bank (DNB Openbaar Register)",
+        "url": "https://www.dnb.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the DNB openbaar register and search the statutory name of the company.",
+      "found_when": "The company appears with a register entry and the licence type it holds.",
+      "not_found_when": "A clean search on the statutory name returns no register entry.",
+      "couldnt_check_when": "The register is offline or the group name returns several legal entities that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a public profile or published assignments on Freelance.nl?",
+      "why_it_matters": "A public profile shows how the company presents its services, rates and track record to Dutch clients.",
+      "source": {
+        "name": "Freelance.nl",
+        "url": "https://www.freelance.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Freelance.nl profile and project search and enter the company or trade name.",
+      "found_when": "A profile page for the company is returned with its description, rates or listed projects.",
+      "not_found_when": "The site search returns no profile or project linked to that name.",
+      "couldnt_check_when": "The search is blocked or the name is so common that profiles of unrelated freelancers dominate.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 8,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on the Kansspelautoriteit site as a licensed gambling or lottery operator, or in its penalty and warning notices?",
+      "why_it_matters": "The gambling authority's register and enforcement notices separate lawful operators from illegal ones and flag past sanctions.",
+      "source": {
+        "name": "Kansspelautoriteit (Netherlands Gambling Authority)",
+        "url": "https://kansspelautoriteit.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on kansspelautoriteit.nl and enter the company name, checking both register and enforcement results.",
+      "found_when": "The company appears either in the licence register or in a published penalty, warning or cease-and-desist notice.",
+      "not_found_when": "The site search returns no licence entry and no enforcement notice for the company.",
+      "couldnt_check_when": "The site search returns no usable results or the page structure cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a merchant page with customer reviews and a reliability score on Kieskeurig.nl?",
+      "why_it_matters": "Review scores and dispute handling on Kieskeurig show how the merchant actually treats paying customers.",
+      "source": {
+        "name": "Kieskeurig.nl",
+        "url": "https://www.kieskeurig.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Kieskeurig.nl shops for the company name and open its store information page.",
+      "found_when": "A shop page exists with reviews, a score or warranty and returns information.",
+      "not_found_when": "No shop page is found for that company name.",
+      "couldnt_check_when": "The shop page exists but carries no reviews, or the site search is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "complaints",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Kifid register of financial service providers with published complaints or rulings?",
+      "why_it_matters": "Kifid rulings show whether customers have taken the firm to the financial ombudsman and how those disputes ended.",
+      "source": {
+        "name": "Kifid (Financial Services Complaints Institute)",
+        "url": "https://www.kifid.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Kifid financial service provider search and enter the company name.",
+      "found_when": "The provider is listed and its published rulings or complaint records are shown.",
+      "not_found_when": "The provider search returns no entry for the company.",
+      "couldnt_check_when": "The provider search fails or the name matches several group entities that cannot be distinguished.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a complaint page with reported grievances and a response record on Klacht.nl?",
+      "why_it_matters": "An open complaint file shows unresolved consumer disputes and how quickly the company responds to them.",
+      "source": {
+        "name": "Klacht.nl",
+        "url": "https://www.klacht.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Klacht.nl search and enter the company or brand name.",
+      "found_when": "A company page is returned listing complaints, a satisfaction score or replies from the company.",
+      "not_found_when": "The search returns no company page and no complaints for that name.",
+      "couldnt_check_when": "The site blocks the search or the brand name also covers unrelated businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the Landelijk Register Kinderopvang as an approved childcare provider?",
+      "why_it_matters": "Only registered providers may legally offer childcare, and the register also exposes inspection findings and operator identity.",
+      "source": {
+        "name": "Landelijk Register Kinderopvang (LRK)",
+        "url": "https://www.landelijkregisterkinderopvang.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the LRK search and enter the name of the childcare organisation or its holder.",
+      "found_when": "A registered location or holder is returned with approval status and inspection details.",
+      "not_found_when": "The register returns no location or holder for that name.",
+      "couldnt_check_when": "The register search is unavailable or the childcare name is duplicated across municipalities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company run a commercial seller account on Marktplaats with visible ratings or reviews?",
+      "why_it_matters": "Seller ratings and transaction history show whether the company actually trades at the volume and quality it advertises.",
+      "source": {
+        "name": "Marktplaats Zakelijk",
+        "url": "https://www.marktplaats.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Marktplaats for the company name and open the seller profile behind the listings.",
+      "found_when": "A seller profile is found with the company name, listings and ratings or reviews.",
+      "not_found_when": "The search returns no listings or seller profile linked to that name.",
+      "couldnt_check_when": "The seller name is not displayed publicly or the search cannot be completed.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 14,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member of NLdigital?",
+      "why_it_matters": "NLdigital membership means the IT supplier endorses the sector's terms and standards, which is often claimed but not always true.",
+      "source": {
+        "name": "NLdigital",
+        "url": "https://www.nldigital.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the NLdigital member pages for the company name and open its member page.",
+      "found_when": "A member page for the company exists with its description and membership details.",
+      "not_found_when": "No member page is found for the company name.",
+      "couldnt_check_when": "The member overview is unreachable or the name matches several group entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Stichting Normering Arbeid register as NEN 4400 certified?",
+      "why_it_matters": "SNA certification proves payroll tax and VAT are paid, which shields clients from liability for the contractor's unpaid taxes.",
+      "source": {
+        "name": "Stichting Normering Arbeid (SNA Register / NEN 4400)",
+        "url": "https://www.normeringarbeid.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SNA certified companies list and search the company name.",
+      "found_when": "The company is listed with a valid NEN 4400 certificate number and expiry date.",
+      "not_found_when": "The certified companies list returns no entry for the company.",
+      "couldnt_check_when": "The register search fails or the company name is too generic to identify the certified entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in NVWA inspection results, approvals or recall notices?",
+      "why_it_matters": "NVWA findings reveal hygiene failures, safety violations or recalls that the company does not advertise itself.",
+      "source": {
+        "name": "Nederlandse Voedsel- en Warenautoriteit (NVWA Inspection Results)",
+        "url": "https://www.nvwa.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the NVWA site and the published company overview for the company name or its approval number.",
+      "found_when": "The company appears with an approval, an inspection outcome or a published recall or warning.",
+      "not_found_when": "No approval, inspection result or recall notice matches the company.",
+      "couldnt_check_when": "The inspection data is not published per company or the overview cannot be searched.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Officiële Bekendmakingen (Staatscourant) in notices such as filings, permits, mergers, liquidations or sanctions?",
+      "why_it_matters": "Official gazette notices record legal events the company may not publicise, including insolvency, permit decisions and sanctions.",
+      "source": {
+        "name": "Officiële Bekendmakingen (Staatscourant & Official Gazette)",
+        "url": "https://www.officielebekendmakingen.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Officiële Bekendmakingen results page for the company name in quotation marks.",
+      "found_when": "One or more notices naming the company are returned with a publication date and notice type.",
+      "not_found_when": "A quoted search on the company name returns no notices.",
+      "couldnt_check_when": "The search returns hits for unrelated names or the results page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Stichting Reclame Code archive of advertising complaints or rulings?",
+      "why_it_matters": "Published SRC rulings show whether the company's marketing claims were found misleading, for example on sustainability.",
+      "source": {
+        "name": "Stichting Reclame Code (SRC)",
+        "url": "https://www.reclamecode.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SRC ruling search and enter the company or brand name as keyword.",
+      "found_when": "One or more rulings naming the company or its brand are returned.",
+      "not_found_when": "The ruling search returns no decisions for that name.",
+      "couldnt_check_when": "The search returns only rulings about other advertisers using the same word, or the archive is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Raad voor Accreditatie register as an accredited laboratory, inspection or certification body?",
+      "why_it_matters": "Only RvA-accredited bodies may issue recognised test reports and certificates, so the listing validates the scope claimed.",
+      "source": {
+        "name": "Raad voor Accreditatie (RvA - Dutch Accreditation Council)",
+        "url": "https://www.rva.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the RvA organisation register for the company name and open its accreditation page.",
+      "found_when": "An organisation page is returned listing the accreditation scope and register number.",
+      "not_found_when": "The organisation register returns no accredited entity for that name.",
+      "couldnt_check_when": "The register search fails or the name matches several accredited group entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "register",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as a patent holder or applicant in the Octrooicentrum Nederland register?",
+      "why_it_matters": "A patent record shows the company's actual innovation output and legal status of its technology claims.",
+      "source": {
+        "name": "Octrooicentrum Nederland (Netherlands Patent Office - RVO)",
+        "url": "https://www.rvo.nl/onderwerpen/octrooien",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Mijn Octrooi register search and enter the company name as holder or applicant.",
+      "found_when": "Patent applications or granted patents are returned with the company as holder or applicant.",
+      "not_found_when": "The register returns no patents for that holder name.",
+      "couldnt_check_when": "The register search is unavailable or the company files under a different legal entity name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member in the Techniek Nederland member directory?",
+      "why_it_matters": "Membership confirms the installer is recognised by the sector and bound by its technical and warranty standards.",
+      "source": {
+        "name": "Techniek Nederland",
+        "url": "https://www.technieknederland.nl",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Techniek Nederland ledenzoek member search and enter the company name.",
+      "found_when": "A member result for the company is returned with its branch and location.",
+      "not_found_when": "The member search returns no entry for the company name.",
+      "couldnt_check_when": "The member search is unavailable or the name matches many small installation firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a valid Thuiswinkel Waarborg certification in the Thuiswinkel.org member list?",
+      "why_it_matters": "The trust mark can only be used by certified web shops that meet Dutch rules on returns, payment and privacy.",
+      "source": {
+        "name": "Thuiswinkel Waarborg (Thuiswinkel.org)",
+        "url": "https://www.thuiswinkel.org",
+        "language": "Dutch"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Thuiswinkel.org member list for the company name or web shop domain.",
+      "found_when": "A member entry with the company name and a valid Thuiswinkel Waarborg certification is shown.",
+      "not_found_when": "The member list returns no entry for the company or its web shop.",
+      "couldnt_check_when": "The member search fails or the shop trades under a brand name not shown in the list.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member of VNO-NCW?",
+      "why_it_matters": "Membership shows the company is inside the main employers' confederation and its policy and network position.",
+      "source": {
+        "name": "VNO-NCW",
+        "url": "https://www.vno-ncw.nl",
+        "language": "Dutch"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the VNO-NCW members page for the company name or its branch association.",
+      "found_when": "The company or its branch organisation is named in the member overview.",
+      "not_found_when": "The members page does not name the company or any association it belongs to.",
+      "couldnt_check_when": "The member list is not published in full or the page cannot be loaded.",
+      "confidence": "medium"
+    }
+  ],
+  "_pair": "NL-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 23 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

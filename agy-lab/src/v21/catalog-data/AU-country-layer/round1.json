@@ -1,0 +1,1163 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a licensed customs brokerage on abf.gov.au?",
+      "why_it_matters": "A customs brokerage licence shows the company is authorised to clear goods through the Australian border.",
+      "source": {
+        "name": "abf.gov.au",
+        "url": "https://abf.gov.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the abf.gov.au licensed brokerages list and scan it for the company name.",
+      "found_when": "The company name appears in the brokerages list on abf.gov.au.",
+      "not_found_when": "The company name is absent from the brokerages list after a clean scan.",
+      "couldnt_check_when": "The list cannot be loaded or the name is too common to match with confidence.",
+      "confidence": "low"
+    },
+    {
+      "rank": 2,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an active ABN record on abr.business.gov.au?",
+      "why_it_matters": "An active ABN record confirms the entity is registered to trade in Australia.",
+      "source": {
+        "name": "abr.business.gov.au",
+        "url": "https://abr.business.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ABN Lookup search on abr.business.gov.au and enter the company or business name.",
+      "found_when": "A record for the company is returned showing its ABN and entity details.",
+      "not_found_when": "No record is returned for the name on a clean search.",
+      "couldnt_check_when": "The lookup is unavailable or several similar names make the match unclear.",
+      "confidence": "low"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in any entry of the ACCC public registers on accc.gov.au?",
+      "why_it_matters": "ACCC register entries can reveal undertakings or enforcement action against the company.",
+      "source": {
+        "name": "accc.gov.au",
+        "url": "https://accc.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ACCC public registers search on accc.gov.au and enter the company name in quotes.",
+      "found_when": "One or more public register entries list the company name.",
+      "not_found_when": "The quoted name returns no register entries.",
+      "couldnt_check_when": "The register search fails or the name is too generic to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a licensed carrier or named in an enforcement finding on the ACMA Register of Radiocommunications and Telecommunications?",
+      "why_it_matters": "ACMA records show whether the company holds required telecommunications and spectrum licences.",
+      "source": {
+        "name": "ACMA Register of Radiocommunications and Telecommunications",
+        "url": "https://www.acma.gov.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ACMA register of licensed carriers on acma.gov.au and scan the list for the company name.",
+      "found_when": "The company appears in the licensed carriers or licence holder list.",
+      "not_found_when": "The company is absent from the register after a clean scan.",
+      "couldnt_check_when": "The register page cannot be read or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Australian Financial Review (AFR) on afr.com published news coverage naming this company?",
+      "why_it_matters": "AFR reporting reveals deals, disputes, insolvencies and board news affecting the company's standing.",
+      "source": {
+        "name": "Australian Financial Review (AFR)",
+        "url": "https://www.afr.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on afr.com and enter the company name in quotes.",
+      "found_when": "The search returns AFR articles that name the company.",
+      "not_found_when": "The search returns no articles naming the company.",
+      "couldnt_check_when": "Paywalls or search errors block results, or the name matches many unrelated articles.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the past awards listings on ami.org.au?",
+      "why_it_matters": "An industry award listing is third-party evidence of recognised work and quality.",
+      "source": {
+        "name": "ami.org.au",
+        "url": "https://ami.org.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the past awards pages on ami.org.au and scan each year for the company name.",
+      "found_when": "The company name appears in an awards listing on ami.org.au.",
+      "not_found_when": "No awards listing names the company after scanning the pages.",
+      "couldnt_check_when": "The awards pages are missing, incomplete or unreadable.",
+      "confidence": "low"
+    },
+    {
+      "rank": 7,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed on an APRA register as an authorised deposit-taking institution, insurer or superannuation entity?",
+      "why_it_matters": "APRA registers show whether the company is a prudentially regulated financial entity.",
+      "source": {
+        "name": "APRA Disqualification and Corporate Registers",
+        "url": "https://www.apra.gov.au/registers",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the APRA registers pages on apra.gov.au and scan the relevant institution list for the company name.",
+      "found_when": "The company appears on one of the APRA institution registers.",
+      "not_found_when": "The company appears on none of the APRA registers after a clean scan.",
+      "couldnt_check_when": "The register lists cannot be opened or the entity name is ambiguous.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the ASX company directory on asx.com.au with announcements and financial reports?",
+      "why_it_matters": "An ASX listing gives audited financials and disclosure announcements against which public claims can be checked.",
+      "source": {
+        "name": "ASX (Australian Securities Exchange)",
+        "url": "https://www.asx.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the ASX company directory on asx.com.au by company name or code.",
+      "found_when": "A listed-entity page for the company returns with announcements or reports.",
+      "not_found_when": "The directory returns no listed entity for the name on a clean search.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as an accredited .au registrar on auda.org.au?",
+      "why_it_matters": "auDA accreditation shows the company is authorised to sell .au domain names.",
+      "source": {
+        "name": "auda.org.au",
+        "url": "https://auda.org.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the list of .au accredited registrars on auda.org.au and scan it for the company name.",
+      "found_when": "The company name appears in the accredited registrar list.",
+      "not_found_when": "The company is absent from the accredited registrar list after a clean scan.",
+      "couldnt_check_when": "The registrar list cannot be loaded or the name is too similar to others.",
+      "confidence": "low"
+    },
+    {
+      "rank": 10,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member of the Australian Banking Association (ABA) on ausbanking.org.au?",
+      "why_it_matters": "ABA membership signals the company is a recognised bank bound by the code of banking practice.",
+      "source": {
+        "name": "Australian Banking Association (ABA)",
+        "url": "https://www.ausbanking.org.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ABA members page on ausbanking.org.au and scan the member list for the company name.",
+      "found_when": "The company name appears in the ABA member list.",
+      "not_found_when": "The company is absent from the ABA member list after a clean scan.",
+      "couldnt_check_when": "The members page cannot be read or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the gallery of australianinteriordesignawards.com?",
+      "why_it_matters": "Awards gallery entries are independent evidence of recognised projects by the company.",
+      "source": {
+        "name": "australianinteriordesignawards.com",
+        "url": "https://australianinteriordesignawards.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the gallery search on australianinteriordesignawards.com and enter the company name.",
+      "found_when": "The gallery returns projects credited to the company.",
+      "not_found_when": "The gallery search returns no projects for the company.",
+      "couldnt_check_when": "The gallery search errors or the company name matches many unrelated designers.",
+      "confidence": "low"
+    },
+    {
+      "rank": 12,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Bartercard Australia trade directory on bartercard.com.au?",
+      "why_it_matters": "A trade-exchange listing shows the business is active inside a verified B2B network.",
+      "source": {
+        "name": "Bartercard Australia",
+        "url": "https://www.bartercard.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Bartercard marketplace directory search and enter the business name.",
+      "found_when": "A directory listing for the business is returned.",
+      "not_found_when": "The directory search returns no listing for the business.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Business Council of Australia (BCA) member directory on bca.com.au?",
+      "why_it_matters": "BCA membership indicates the company is one of Australia's largest corporate employers.",
+      "source": {
+        "name": "Business Council of Australia (BCA)",
+        "url": "https://www.bca.com.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the BCA member directory on bca.com.au and scan it for the company name.",
+      "found_when": "The company name appears in the BCA member directory.",
+      "not_found_when": "The company is absent from the member directory after a clean scan.",
+      "couldnt_check_when": "The member directory cannot be loaded or the lists are incomplete.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a seller in the buyict.gov.au seller catalogue?",
+      "why_it_matters": "A seller catalogue listing shows the company is eligible for Australian government ICT procurement.",
+      "source": {
+        "name": "buyict.gov.au",
+        "url": "https://buyict.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the buyict.gov.au seller catalogue and search it for the company name.",
+      "found_when": "A seller record for the company is returned.",
+      "not_found_when": "The catalogue returns no seller record for the company.",
+      "couldnt_check_when": "The catalogue cannot be searched or the name matches several similar sellers.",
+      "confidence": "low"
+    },
+    {
+      "rank": 15,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named on a Victorian government panel, supplier register or contract award on buyingfor.vic.gov.au?",
+      "why_it_matters": "State procurement records show the company has been vetted and awarded government work.",
+      "source": {
+        "name": "Buying for Victoria",
+        "url": "https://www.buyingfor.vic.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search buyingfor.vic.gov.au for the company name across panels, supplier registers and contract listings.",
+      "found_when": "A panel, supplier register or contract record naming the company is found.",
+      "not_found_when": "No panel, register or contract record names the company after a clean search.",
+      "couldnt_check_when": "The site search is unavailable or contract pages are not readable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have job vacancies or an employer profile on CareerOne (careerone.com.au)?",
+      "why_it_matters": "Open vacancies show current hiring activity and how the company recruits.",
+      "source": {
+        "name": "CareerOne",
+        "url": "https://www.careerone.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the CareerOne employer or jobs search on careerone.com.au.",
+      "found_when": "A company jobs page or employer profile lists the company with vacancies.",
+      "not_found_when": "No employer page or vacancies are returned for the company.",
+      "couldnt_check_when": "The jobs search is unavailable or the name matches many unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Chamber of Commerce NT business directory on chambernt.com.au?",
+      "why_it_matters": "A chamber directory listing shows the company is an active Northern Territory business member.",
+      "source": {
+        "name": "Chamber of Commerce NT",
+        "url": "https://www.chambernt.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the chambernt.com.au business directory and search for the company name.",
+      "found_when": "A directory detail page for the company is returned.",
+      "not_found_when": "The directory search returns no entry for the company.",
+      "couldnt_check_when": "The directory search is down or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in the Clean Energy Regulator public registers, such as NGER emissions data or ACCU project registers?",
+      "why_it_matters": "Clean Energy Regulator records show reported emissions, environmental obligations and carbon project participation.",
+      "source": {
+        "name": "Clean Energy Regulator Public Registers",
+        "url": "https://www.cleanenergyregulator.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Clean Energy Regulator public registers for the company name, starting with the ACCU project and contract register.",
+      "found_when": "A register record naming the company is returned.",
+      "not_found_when": "The registers return no records naming the company after a clean search.",
+      "couldnt_check_when": "The register search is unavailable or the name matches many similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Consult Australia member list on consultaustralia.com.au?",
+      "why_it_matters": "Consult Australia membership shows the firm belongs to the recognised built-environment consulting industry body.",
+      "source": {
+        "name": "Consult Australia",
+        "url": "https://www.consultaustralia.com.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Consult Australia member list pages on consultaustralia.com.au and scan for the company name.",
+      "found_when": "The company name appears in the Consult Australia member list.",
+      "not_found_when": "The company is absent from the member list after scanning all letter pages.",
+      "couldnt_check_when": "Member pages are missing or unreadable, or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current licence recorded in the Consumer Affairs Victoria (CAV) public registers?",
+      "why_it_matters": "A current CAV licence confirms the company is authorised in its Victorian regulated trade.",
+      "source": {
+        "name": "Consumer Affairs Victoria (CAV) Public Registers",
+        "url": "https://www.consumer.vic.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CAV public register search and enter the company name with current status.",
+      "found_when": "A current licence record for the company is returned with its licence number.",
+      "not_found_when": "No current licence record is returned for the company.",
+      "couldnt_check_when": "The register search fails or the name matches several similar licensees.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the ATO Corporate Tax Transparency dataset published on data.gov.au?",
+      "why_it_matters": "The dataset gives reported income and tax paid to compare against the company's public claims.",
+      "source": {
+        "name": "ATO Corporate Tax Transparency Public Report",
+        "url": "https://data.gov.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the corporate transparency dataset on data.gov.au and scan the published entity list for the company name.",
+      "found_when": "A row in the dataset names the company with its reported income and tax figures.",
+      "not_found_when": "No row in the dataset names the company after a clean scan.",
+      "couldnt_check_when": "The dataset cannot be downloaded or the name is too common to match a row.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its designer listed in the find-a-designer directory on design.org.au?",
+      "why_it_matters": "A directory listing shows the company is recognised as a design services provider.",
+      "source": {
+        "name": "design.org.au",
+        "url": "https://design.org.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the find-a-designer directory on design.org.au and search for the company name.",
+      "found_when": "A directory profile for the company or its designer is returned.",
+      "not_found_when": "The directory returns no profile for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name matches several designers.",
+      "confidence": "low"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current licence in the Consumer Protection WA licence search (DMIRS)?",
+      "why_it_matters": "A current WA licence confirms the company may legally perform its regulated trade in Western Australia.",
+      "source": {
+        "name": "Consumer Protection WA Licence Search (DMIRS)",
+        "url": "https://www.dmirs.wa.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the WA licence search and enter the company name.",
+      "found_when": "A current licence record for the company is returned.",
+      "not_found_when": "No licence record is returned for the company on a clean search.",
+      "couldnt_check_when": "The licence search is unavailable or the name matches several similar licensees.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in the EPA Victoria public register of licences, notices or compliance actions?",
+      "why_it_matters": "EPA Victoria records reveal environmental licences, action notices and enforcement history.",
+      "source": {
+        "name": "EPA Victoria Public Register",
+        "url": "https://www.epa.vic.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the EPA Victoria public register by company name.",
+      "found_when": "A register entry naming the company is returned.",
+      "not_found_when": "The register returns no entries for the company on a clean search.",
+      "couldnt_check_when": "The public register search is unavailable or the name matches many similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company advertise vacancies on EthicalJobs (ethicaljobs.com.au)?",
+      "why_it_matters": "Listing on a purpose-driven job board shows the company presents itself as a not-for-profit or social-purpose employer.",
+      "source": {
+        "name": "EthicalJobs",
+        "url": "https://www.ethicaljobs.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ethicaljobs.com.au for the company name or its employer jobs page.",
+      "found_when": "An employer page or job ads for the company are returned.",
+      "not_found_when": "No employer page or job ads are returned for the company.",
+      "couldnt_check_when": "The job search is unavailable or the name matches several charities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a supplier in the ICN Gateway supplier directory on gateway.icn.org.au?",
+      "why_it_matters": "An ICN Gateway profile shows the company is registered to bid for major Australian project work.",
+      "source": {
+        "name": "gateway.icn.org.au",
+        "url": "https://gateway.icn.org.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the ICN Gateway supplier directory for the company name.",
+      "found_when": "A supplier profile page for the company is returned.",
+      "not_found_when": "The supplier directory returns no profile for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name matches several suppliers.",
+      "confidence": "low"
+    },
+    {
+      "rank": 27,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the IAB Australia member list on iabaustralia.com.au?",
+      "why_it_matters": "IAB Australia membership shows the company is a recognised digital advertising industry participant.",
+      "source": {
+        "name": "iabaustralia.com.au",
+        "url": "https://iabaustralia.com.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the IAB Australia members page and scan the member list for the company name.",
+      "found_when": "The company name appears in the IAB Australia member list.",
+      "not_found_when": "The company is absent from the member list after a clean scan.",
+      "couldnt_check_when": "The members page cannot be loaded or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a supplier with product listings on IndustrySearch (industrysearch.com.au)?",
+      "why_it_matters": "A supplier listing shows the company's industrial products as presented to buyers.",
+      "source": {
+        "name": "IndustrySearch",
+        "url": "https://www.industrysearch.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the IndustrySearch supplier directory for the company name.",
+      "found_when": "A supplier page for the company with product listings is returned.",
+      "not_found_when": "No supplier page is returned for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name matches several suppliers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company certified in the JAS-ANZ register of certified organisations?",
+      "why_it_matters": "A JAS-ANZ record verifies whether claimed ISO certifications are genuinely accredited.",
+      "source": {
+        "name": "JAS-ANZ Register (Joint Accreditation System of Australia and New Zealand)",
+        "url": "https://www.jasanz.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the JAS-ANZ certified organisations register search and enter the company name.",
+      "found_when": "A certificate record for the company is returned with its standard and certifying body.",
+      "not_found_when": "The register returns no certificate record for the company.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several certified entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered as a migration agent business on the OMARA Register of Migration Agents?",
+      "why_it_matters": "OMARA registration confirms the business may lawfully provide Australian migration advice.",
+      "source": {
+        "name": "OMARA Register of Migration Agents",
+        "url": "https://www.mara.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the OMARA register search and search by business name.",
+      "found_when": "A registration record for the company is returned with its status.",
+      "not_found_when": "The register returns no record for the company on a clean search.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several similar agencies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company published a modern slavery statement on the Modern Slavery Statements Register?",
+      "why_it_matters": "A published statement shows the company meets its mandatory supply-chain transparency duty.",
+      "source": {
+        "name": "Modern Slavery Statements Register",
+        "url": "https://modernslaveryregister.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the statements register by the company name.",
+      "found_when": "One or more statements naming the company are returned.",
+      "not_found_when": "The register returns no statements for the company.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several related entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has mumbrella.com.au published articles naming this company?",
+      "why_it_matters": "Trade media coverage shows how the company and its campaigns are perceived in the industry.",
+      "source": {
+        "name": "mumbrella.com.au",
+        "url": "https://mumbrella.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on mumbrella.com.au with the company name in quotes.",
+      "found_when": "The search returns articles that name the company.",
+      "not_found_when": "The search returns no articles naming the company.",
+      "couldnt_check_when": "The site search fails or the name matches many unrelated posts.",
+      "confidence": "low"
+    },
+    {
+      "rank": 33,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current licence on the New South Wales public register accessed through nsw.gov.au?",
+      "why_it_matters": "A current NSW licence shows the company is authorised for its regulated trade in New South Wales.",
+      "source": {
+        "name": "nsw.gov.au",
+        "url": "https://nsw.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NSW licence verification search and enter the company name.",
+      "found_when": "A current licence record for the company is returned.",
+      "not_found_when": "No licence record is returned for the company on a clean search.",
+      "couldnt_check_when": "The verification service is unavailable or the name matches several licensees.",
+      "confidence": "low"
+    },
+    {
+      "rank": 34,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as an applicant or owner in IP Australia's AusPat patent search?",
+      "why_it_matters": "Patent records show the company's claimed technology ownership and innovation activity.",
+      "source": {
+        "name": "IP Australia - AusPat (Patent Search)",
+        "url": "https://pericles.ipaustralia.gov.au/ols/auspat/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search AusPat by applicant name on pericles.ipaustralia.gov.au.",
+      "found_when": "One or more patent records list the company as applicant or owner.",
+      "not_found_when": "No patent records list the company after a clean search.",
+      "couldnt_check_when": "The patent search is unavailable or the name matches many similarly named applicants.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a listing with customer reviews on ProductReview.com.au?",
+      "why_it_matters": "Customer ratings and recurring complaints show how the company is experienced by consumers.",
+      "source": {
+        "name": "ProductReview.com.au",
+        "url": "https://www.productreview.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ProductReview.com.au for the company name and open its listing.",
+      "found_when": "A listing for the company is returned with reviews and a rating.",
+      "not_found_when": "No listing for the company is returned on a clean search.",
+      "couldnt_check_when": "The listing is empty, blocked or the name matches many brands.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current licence recorded in the Queensland Fair Trading public registers?",
+      "why_it_matters": "A current Queensland licence confirms the company is authorised for its regulated activity in the state.",
+      "source": {
+        "name": "Queensland Fair Trading Public Registers",
+        "url": "https://www.qld.gov.au/law/fair-trading",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Queensland Fair Trading licence search and enter the company name.",
+      "found_when": "A licence record for the company is returned.",
+      "not_found_when": "No licence record is returned for the company on a clean search.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several licensees.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as a certificate holder in the certified organisations register on register.jasanz.org?",
+      "why_it_matters": "The register entry verifies which management-system certification the company actually holds.",
+      "source": {
+        "name": "register.jasanz.org",
+        "url": "https://register.jasanz.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the certified organisations register on register.jasanz.org for the company name.",
+      "found_when": "A certificate holder record names the company with its standard.",
+      "not_found_when": "The register returns no record for the company.",
+      "couldnt_check_when": "The register cannot be searched or the name matches several holders.",
+      "confidence": "low"
+    },
+    {
+      "rank": 38,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as an applicant or owner in IP Australia's Australian Trade Mark Search?",
+      "why_it_matters": "Trade mark records show whether the company's brand claims are backed by a registered mark.",
+      "source": {
+        "name": "IP Australia - Australian Trade Mark Search",
+        "url": "https://search.ipaustralia.gov.au/trademarks/search",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the quick search on search.ipaustralia.gov.au/trademarks and enter the company or brand name.",
+      "found_when": "One or more trade mark records list the company as applicant or owner.",
+      "not_found_when": "No trade mark records name the company after a clean search.",
+      "couldnt_check_when": "The search is unavailable or the name returns many unrelated marks.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer profile with job ads, employee reviews or salary data on Seek Australia (seek.com.au)?",
+      "why_it_matters": "Seek data shows hiring activity and how employees rate the company.",
+      "source": {
+        "name": "Seek Australia",
+        "url": "https://www.seek.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search seek.com.au for the company name and open its company profile.",
+      "found_when": "A company profile page is returned with jobs or reviews.",
+      "not_found_when": "No company profile is returned for the company on a clean search.",
+      "couldnt_check_when": "The profile is blocked or the name matches several similarly named employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this business have a profile with customer reviews and completed jobs on ServiceSeeking (serviceseeking.com.au)?",
+      "why_it_matters": "Customer ratings and completion records show the quality and reliability of the business's work.",
+      "source": {
+        "name": "ServiceSeeking",
+        "url": "https://www.serviceseeking.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search serviceseeking.com.au for the business name and open its profile.",
+      "found_when": "A business profile with reviews is returned.",
+      "not_found_when": "No business profile is returned for the company on a clean search.",
+      "couldnt_check_when": "The profile is unavailable or the name matches several similar trades.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed with a business profile on StartLocal Australia (startlocal.com.au)?",
+      "why_it_matters": "A directory profile shows the public contact details and category the company presents.",
+      "source": {
+        "name": "StartLocal Australia",
+        "url": "https://www.startlocal.com.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search startlocal.com.au by business name.",
+      "found_when": "A business profile for the company is returned.",
+      "not_found_when": "No business profile is returned for the company.",
+      "couldnt_check_when": "The search is unavailable or the listing has no readable details.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member of the Tech Council of Australia on techcouncil.com.au?",
+      "why_it_matters": "Tech Council membership shows the company is recognised as part of the Australian technology sector.",
+      "source": {
+        "name": "Tech Council of Australia",
+        "url": "https://www.techcouncil.com.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the members page on techcouncil.com.au and scan the list for the company name.",
+      "found_when": "The company name appears in the Tech Council member list.",
+      "not_found_when": "The company is absent from the member list after a clean scan.",
+      "couldnt_check_when": "The members page cannot be loaded or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 43,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as a supplier on awarded Commonwealth contracts listed on tenders.gov.au?",
+      "why_it_matters": "Awarded contract notices show the company has won and delivered Australian government work.",
+      "source": {
+        "name": "tenders.gov.au",
+        "url": "https://tenders.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the tenders.gov.au contract notice advanced search and enter the company as supplier name.",
+      "found_when": "One or more contract notices list the company as supplier.",
+      "not_found_when": "No contract notices list the company as supplier on a clean search.",
+      "couldnt_check_when": "The search is unavailable or the supplier name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 44,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as an awarded supplier or contractor in Tenders WA (tenders.wa.gov.au)?",
+      "why_it_matters": "Western Australian award records show the company's public sector contract history.",
+      "source": {
+        "name": "Tenders WA (Western Australia Procurement)",
+        "url": "https://www.tenders.wa.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Tenders WA by supplier name.",
+      "found_when": "One or more contract award records name the company.",
+      "not_found_when": "No contract award records name the company on a clean search.",
+      "couldnt_check_when": "The supplier search is unavailable or the name matches several contractors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its agent registered on the Tax Practitioners Board public register at tpb.gov.au?",
+      "why_it_matters": "TPB registration confirms the business is registered to charge for Australian tax agent services.",
+      "source": {
+        "name": "tpb.gov.au",
+        "url": "https://tpb.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TPB public register search and enter the company or agent name.",
+      "found_when": "A registration record for the company is returned with its status.",
+      "not_found_when": "The register returns no record for the company on a clean search.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several practitioners.",
+      "confidence": "low"
+    },
+    {
+      "rank": 46,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current licence in the Service NSW public register at verify.licence.nsw.gov.au?",
+      "why_it_matters": "A current NSW licence record confirms the company's stated trade credentials.",
+      "source": {
+        "name": "Service NSW Public Register",
+        "url": "https://verify.licence.nsw.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NSW licence verification search and enter the company name.",
+      "found_when": "A current licence record for the company is returned with its status.",
+      "not_found_when": "No licence record is returned for the company on a clean search.",
+      "couldnt_check_when": "The verification service is unavailable or the name matches several licensees.",
+      "confidence": "high"
+    },
+    {
+      "rank": 47,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company or its agency appear among the winners on webawards.com.au?",
+      "why_it_matters": "An award-winner listing is independent evidence of recognised digital work.",
+      "source": {
+        "name": "webawards.com.au",
+        "url": "https://webawards.com.au",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the winners pages on webawards.com.au for recent years and scan for the company name.",
+      "found_when": "An award entry on webawards.com.au names the company.",
+      "not_found_when": "No award entry names the company after scanning the winner pages.",
+      "couldnt_check_when": "The winners pages are unreadable or years are missing.",
+      "confidence": "low"
+    },
+    {
+      "rank": 48,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in WorkSafe Victoria prosecution records or enforceable undertakings?",
+      "why_it_matters": "WorkSafe records show whether the company has been prosecuted or fined for workplace safety breaches.",
+      "source": {
+        "name": "WorkSafe Victoria Prosecution and Enforceable Undertakings",
+        "url": "https://www.worksafe.vic.gov.au",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the WorkSafe Victoria prosecution records on worksafe.vic.gov.au for the company name.",
+      "found_when": "A prosecution or enforceable undertaking record names the company.",
+      "not_found_when": "The records return no match for the company on a clean search.",
+      "couldnt_check_when": "The records search is unavailable or the name matches several similar entities.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "AU-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 48 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

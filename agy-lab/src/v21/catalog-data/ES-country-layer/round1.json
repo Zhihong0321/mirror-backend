@@ -1,0 +1,827 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the AEMPS - Agencia Española de Medicamentos y Productos Sanitarios registers of pharmaceutical manufacturers, medical devices or authorised cosmetic facilities?",
+      "why_it_matters": "An AEMPS register entry is the Spanish authorisation needed to make or place medicines, medical devices or cosmetics on the market.",
+      "source": {
+        "name": "AEMPS - Agencia Española de Medicamentos y Productos Sanitarios",
+        "url": "https://www.aemps.gob.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AEMPS register search and enter the company name to look for a manufacturing, device or cosmetic facility entry.",
+      "found_when": "The company appears in an AEMPS register with a facility or product authorisation.",
+      "not_found_when": "A clean search of the AEMPS registers by the exact company name returns no entry.",
+      "couldnt_check_when": "The register search does not load, or the company name is too generic to isolate one facility.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Agencia Española de Protección de Datos (AEPD) published sanction resolutions or in its register of designated Data Protection Officers?",
+      "why_it_matters": "AEPD resolutions are public proof of GDPR and LOPD breaches, and a DPO listing shows the company has a data protection officer of record.",
+      "source": {
+        "name": "Agencia Española de Protección de Datos (AEPD)",
+        "url": "https://www.aepd.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the AEPD site search with the full company name and review the resolutions and DPO records returned.",
+      "found_when": "A resolution or DPO record naming the company is returned by the AEPD search.",
+      "not_found_when": "The AEPD search returns no resolution and no DPO record naming the company.",
+      "couldnt_check_when": "The AEPD search engine fails, or the name is too common to attribute documents to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company profile in the Alimarket sectoral directory covering food and beverage, FMCG, retail, packaging or logistics?",
+      "why_it_matters": "An Alimarket profile shows the company is tracked as a real operator in its Spanish sector.",
+      "source": {
+        "name": "Alimarket",
+        "url": "https://www.alimarket.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the full company name in the Alimarket company search and open any matching profile.",
+      "found_when": "An Alimarket company profile for the company is returned with sector and business data.",
+      "not_found_when": "The Alimarket company search returns no profile for the exact company name.",
+      "couldnt_check_when": "The results are paywalled or unreadable, or the name matches several unrelated firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member (asociado) of AMETIC, the Spanish association of digital technology, electronics and telecommunications companies?",
+      "why_it_matters": "An AMETIC listing shows the company is recognised inside Spain's digital technology industry association.",
+      "source": {
+        "name": "AMETIC",
+        "url": "https://ametic.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the AMETIC associates page for the exact company name.",
+      "found_when": "The company appears in the AMETIC list of associated companies.",
+      "not_found_when": "A clean search of the AMETIC associates list returns no company of that name.",
+      "couldnt_check_when": "The associates list does not load or cannot be filtered by name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an Axesor company report showing commercial registry filings, financial statements or legal proceedings?",
+      "why_it_matters": "An Axesor report gives a third-party view of filings, accounts and litigation the company may not disclose itself.",
+      "source": {
+        "name": "Axesor",
+        "url": "https://www.axesor.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Axesor for the exact company name and open the matching company report.",
+      "found_when": "An Axesor report page exists for the company with registry, financial or legal data.",
+      "not_found_when": "The Axesor search returns no report for the exact company name.",
+      "couldnt_check_when": "The report sits behind a paywall or the search returns only same-name companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company entered in the Banco de España (BdE) - Registro de Entidades as an authorised credit institution, payment institution, electronic money institution or currency exchange operator?",
+      "why_it_matters": "Lending, payment or currency services in Spain require an entry in the Banco de España register of entities.",
+      "source": {
+        "name": "Banco de España (BdE) - Registro de Entidades",
+        "url": "https://www.bde.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Banco de España register of entities by the company name.",
+      "found_when": "The company appears in the register with a licence category and registration code.",
+      "not_found_when": "A clean search of the register by the exact name returns no entity.",
+      "couldnt_check_when": "The register search does not respond or the name is too common to isolate one entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Boletín Oficial del Registro Mercantil (BORME) filings, and do those filings show any capital change, director change, liquidation or dissolution?",
+      "why_it_matters": "BORME notices are the official Spanish record of incorporations, capital changes, insolvency and dissolutions.",
+      "source": {
+        "name": "Boletín Oficial del Registro Mercantil (BORME)",
+        "url": "https://www.boe.es/diario_borme/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search BORME by the registered company name in the title field and read the notices returned.",
+      "found_when": "BORME notices naming the company are returned with the registry events listed.",
+      "not_found_when": "A clean BORME name search returns no notice for the company.",
+      "couldnt_check_when": "The BORME search fails or the name returns many unrelated companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Cámara de Comercio de España chamber business census (censo.camara.es)?",
+      "why_it_matters": "The chamber census confirms the company is a registered Spanish trading firm recognised by the chambers of commerce.",
+      "source": {
+        "name": "Cámara de Comercio de España",
+        "url": "https://www.camara.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the chamber census search form and submit the query.",
+      "found_when": "The company appears in the census results with chamber or location data.",
+      "not_found_when": "The census search returns no record for the exact company name.",
+      "couldnt_check_when": "The census form does not submit or returns an unreadable or error page.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the member companies (empresas asociadas) of the Confederación Española de Organizaciones Empresariales (CEOE)?",
+      "why_it_matters": "CEOE membership signals standing with Spain's main employers confederation.",
+      "source": {
+        "name": "Confederación Española de Organizaciones Empresariales (CEOE)",
+        "url": "https://www.ceoe.es/",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the CEOE list of current member companies for the company name.",
+      "found_when": "The company name appears in the CEOE current member company list.",
+      "not_found_when": "The member list is complete and contains no company of that name.",
+      "couldnt_check_when": "The member list cannot be reached or is paginated beyond what can be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a profile or news coverage in the Cinco Días company directory and archive?",
+      "why_it_matters": "Press coverage shows how the company is reported in Spanish financial media.",
+      "source": {
+        "name": "Cinco Días",
+        "url": "https://cincodias.elpais.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Cinco Días company directory for the full company name and open any company page returned.",
+      "found_when": "A Cinco Días company page or article naming the company is returned.",
+      "not_found_when": "The directory search returns no company page and no article for that name.",
+      "couldnt_check_when": "The directory search is paywalled or blocked, or the name matches several unrelated firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Citiservi local business directory with a trading address in Spain?",
+      "why_it_matters": "A directory entry confirms a reachable operating location and the contact details published for it.",
+      "source": {
+        "name": "Citiservi",
+        "url": "https://www.citiservi.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Citiservi with the full company name and check any matching business listing.",
+      "found_when": "A Citiservi listing shows the company with an address, phone or opening times.",
+      "not_found_when": "The Citiservi search returns no listing for the company.",
+      "couldnt_check_when": "The search returns only unrelated same-name businesses or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Comisión Nacional de los Mercados y la Competencia (CNMC) decisions or proceedings as a party to an antitrust, merger or regulated-sector case?",
+      "why_it_matters": "CNMC files show competition sanctions or merger reviews that affect the company's standing.",
+      "source": {
+        "name": "Comisión Nacional de los Mercados y la Competencia (CNMC)",
+        "url": "https://www.cnmc.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CNMC site for the company name and read the decisions and case files returned.",
+      "found_when": "A CNMC decision, sanction or notified merger naming the company is found.",
+      "not_found_when": "The CNMC search returns no case or decision naming the company.",
+      "couldnt_check_when": "The site search fails or the name returns too many unrelated mentions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded in the Comisión Nacional del Mercado de Valores (CNMV) public registers of authorised entities, or listed in its warnings list of unauthorised financial operators?",
+      "why_it_matters": "Only CNMV-registered firms may offer investment services in Spain, and a warnings entry marks an unauthorised operator.",
+      "source": {
+        "name": "Comisión Nacional del Mercado de Valores (CNMV)",
+        "url": "https://www.cnmv.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CNMV entity consultations by company name and check both the registers and the warnings list.",
+      "found_when": "The company appears in a CNMV register entry or in a CNMV warning notice.",
+      "not_found_when": "Clean searches of the CNMV registers and warnings list return no record of the company.",
+      "couldnt_check_when": "The consultation pages fail to load or the name is too generic to match one entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a bidder or awardee in Plataforma de Contratación del Sector Público (PLACSP) tender records?",
+      "why_it_matters": "Public tender records show awarded contracts, tender values and any joint venture (UTE) formations.",
+      "source": {
+        "name": "Plataforma de Contratación del Sector Público (PLACSP)",
+        "url": "https://contrataciondelestado.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the PLACSP tender search with the exact company name and review the contracts tendered or awarded.",
+      "found_when": "Tender or award documents naming the company are returned.",
+      "not_found_when": "A clean PLACSP search by the exact name returns no tender or award record.",
+      "couldnt_check_when": "The tender search times out or the name matches many unrelated bidders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a clinic or practice profile with patient reviews on Doctoralia España?",
+      "why_it_matters": "Patient ratings and practice verification show how a healthcare provider is publicly reviewed.",
+      "source": {
+        "name": "Doctoralia España",
+        "url": "https://www.doctoralia.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Doctoralia with the clinic or practice name and open the matching profile.",
+      "found_when": "A Doctoralia profile exists for the practice with reviews or verification details.",
+      "not_found_when": "The Doctoralia search returns no profile for the practice name.",
+      "couldnt_check_when": "The profile exists but carries no reviews, or the name matches many unrelated clinics.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named in EjePrime news coverage of the Spanish real estate and property investment sector?",
+      "why_it_matters": "Real estate press coverage shows the company's visibility and deal activity in the property market.",
+      "source": {
+        "name": "EjePrime",
+        "url": "https://www.ejeprime.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search EjePrime with the company name and review the articles returned.",
+      "found_when": "One or more EjePrime articles name the company in the headline or summary.",
+      "not_found_when": "The EjePrime search returns no article naming the company.",
+      "couldnt_check_when": "The search page fails to load or the name returns only unrelated mentions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company page or news coverage on El Economista?",
+      "why_it_matters": "Coverage and a company page show the financial performance and corporate events reported about the company.",
+      "source": {
+        "name": "El Economista",
+        "url": "https://www.eleconomista.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the El Economista company page for the company name and read what is returned.",
+      "found_when": "An El Economista company page or article naming the company is returned.",
+      "not_found_when": "No company page and no article is returned for the exact name.",
+      "couldnt_check_when": "The page does not load or the name matches several unrelated companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company profiled in the El Referente startup directory or covered for funding rounds and investment?",
+      "why_it_matters": "Startup press profiles show the funding, investors and traction that back the company's claims.",
+      "source": {
+        "name": "El Referente",
+        "url": "https://elreferente.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search El Referente for the company name and open any startup profile or funding article.",
+      "found_when": "An El Referente profile or article names the company with startup or funding details.",
+      "not_found_when": "The El Referente search returns no profile and no article for the company.",
+      "couldnt_check_when": "The directory page is missing or the name is too generic to match one startup.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the ENAC - Entidad Nacional de Acreditación directory of accredited testing laboratories, inspection bodies or certification entities?",
+      "why_it_matters": "ENAC accreditation is the credential behind any claim of accredited testing, inspection or certification.",
+      "source": {
+        "name": "ENAC - Entidad Nacional de Acreditación",
+        "url": "https://www.enac.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ENAC accredited-entity search, enter the company name and review the entries.",
+      "found_when": "The company appears in the ENAC accredited entities directory with a scope of accreditation.",
+      "not_found_when": "A clean ENAC search by the exact name returns no accredited entity.",
+      "couldnt_check_when": "The accreditation search does not load or the name matches several entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Expansión company database or in its corporate news coverage?",
+      "why_it_matters": "Expansión reports governance, deals and litigation that shape the company's public standing.",
+      "source": {
+        "name": "Expansión",
+        "url": "https://www.expansion.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Expansión company finder with the exact company name and open the company record.",
+      "found_when": "An Expansión company record or an article naming the company is found.",
+      "not_found_when": "The company finder returns no record and no article names the company.",
+      "couldnt_check_when": "The company finder is unavailable or the name returns many similar companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a professional profile with client reviews on Habitissimo?",
+      "why_it_matters": "Client reviews and a work portfolio show the quality of the work the company has delivered.",
+      "source": {
+        "name": "Habitissimo",
+        "url": "https://www.habitissimo.es/",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Habitissimo professional listings for the company name and open its profile.",
+      "found_when": "A Habitissimo profile exists for the company with reviews or a work portfolio.",
+      "not_found_when": "The Habitissimo listings return no profile for the company.",
+      "couldnt_check_when": "The listing carries no reviews or the listings show only unrelated tradespeople.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an Infoempresa profile showing its directors, capital changes and deposited annual accounts?",
+      "why_it_matters": "Filed accounts and director records let a researcher test what the company says about its size and ownership.",
+      "source": {
+        "name": "Infoempresa",
+        "url": "https://www.infoempresa.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Infoempresa by the exact company name and open the company profile page.",
+      "found_when": "An Infoempresa profile exists for the company with director, capital or accounts data.",
+      "not_found_when": "The Infoempresa search returns no profile for the exact name.",
+      "couldnt_check_when": "The profile is partly paywalled or the name matches several companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Base de Datos Nacional de Subvenciones (BDNS) as a recipient of public subsidies, grants or EU funding?",
+      "why_it_matters": "Subsidy records show public funding actually received, which can be compared with grants the company claims.",
+      "source": {
+        "name": "Base de Datos Nacional de Subvenciones (BDNS)",
+        "url": "https://www.infosubvenciones.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the BDNS third-party subsidy records with the exact company or trade name.",
+      "found_when": "Subsidy records naming the company as beneficiary are returned.",
+      "not_found_when": "A clean BDNS search by the exact name returns no subsidy record.",
+      "couldnt_check_when": "The BDNS search endpoint fails or the name is too common to isolate the beneficiary.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as an employer with job adverts on JobToday España?",
+      "why_it_matters": "Active adverts show the company is hiring and where its operational sites are.",
+      "source": {
+        "name": "JobToday España",
+        "url": "https://jobtoday.com/es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search JobToday by the company name with a Spanish location and look for adverts from that employer.",
+      "found_when": "JobToday lists one or more adverts posted by the company.",
+      "not_found_when": "The JobToday search returns no advert from the company.",
+      "couldnt_check_when": "The search needs a location filter that is unknown, or no readable employer names are returned.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "complaints",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named as a party in judgments published in the CENDOJ - Buscador de Jurisprudencia (Consejo General del Poder Judicial)?",
+      "why_it_matters": "Published court judgments reveal the commercial, labour or criminal litigation the company is involved in.",
+      "source": {
+        "name": "CENDOJ - Buscador de Jurisprudencia (Consejo General del Poder Judicial)",
+        "url": "https://www.poderjudicial.es/cgpj/es/Temas/Jurisprudencia/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CENDOJ jurisprudence finder with the company name in quotes.",
+      "found_when": "Judgments naming the company as a party are returned.",
+      "not_found_when": "A clean search of the database returns no judgment naming the company.",
+      "couldnt_check_when": "The search returns too many generic mentions or the database does not respond.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the QDQ business directory with its trading locations and service listings?",
+      "why_it_matters": "Directory entries show published addresses and services that can be checked against the company's own claims.",
+      "source": {
+        "name": "QDQ",
+        "url": "https://www.qdq.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search QDQ with the full company name and open any matching company listing.",
+      "found_when": "A QDQ listing shows the company with a location or service summary.",
+      "not_found_when": "The QDQ search returns no listing for the company.",
+      "couldnt_check_when": "The search returns only similar names or the listing cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have user reviews, discussions or complaints on the Rankia financial community forum?",
+      "why_it_matters": "Forum complaints and reviews show how customers actually experience the company's products.",
+      "source": {
+        "name": "Rankia",
+        "url": "https://www.rankia.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Rankia with the company name and read the threads and reviews returned.",
+      "found_when": "Rankia threads, reviews or complaints naming the company are found.",
+      "not_found_when": "The Rankia search returns no thread or review naming the company.",
+      "couldnt_check_when": "The search returns only unrelated market chatter or the forum pages are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Ranking de Empresas de El Economista with a sales turnover figure for its province and CNAE sector?",
+      "why_it_matters": "A ranked turnover figure gives an independent benchmark against the size the company claims.",
+      "source": {
+        "name": "Ranking de Empresas de El Economista",
+        "url": "https://ranking-empresas.eleconomista.es/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Ranking de Empresas by the company name and open its ranking page.",
+      "found_when": "A ranking page shows the company with turnover or with province and sector data.",
+      "not_found_when": "The ranking search returns no entry for the exact company name.",
+      "couldnt_check_when": "The ranking page does not load or the name matches several companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of SpainCap, the Spanish association for venture capital, growth equity and private equity?",
+      "why_it_matters": "SpainCap records show whether the company is a recognised VC/PE manager or a backed portfolio company.",
+      "source": {
+        "name": "SpainCap",
+        "url": "https://www.spaincap.org/",
+        "language": "Spanish"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the SpainCap members (socios) list for the company name and open its member page.",
+      "found_when": "The company appears in the SpainCap members list with a member profile.",
+      "not_found_when": "The members list contains no entry for the company name.",
+      "couldnt_check_when": "The member list is not accessible or the name matches several member managers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a profile on Startupxplore showing its funding history and investors?",
+      "why_it_matters": "Funding history and investor syndicates can be checked against the company's own fundraising claims.",
+      "source": {
+        "name": "Startupxplore",
+        "url": "https://startupxplore.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Startupxplore by the company name and open the matching startup profile.",
+      "found_when": "A Startupxplore profile exists for the company with funding or investor data.",
+      "not_found_when": "The Startupxplore search returns no profile for the company.",
+      "couldnt_check_when": "The search returns only similar names or the profile is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member company of Tech Barcelona?",
+      "why_it_matters": "Membership shows the company belongs to Barcelona's recognised digital and tech ecosystem.",
+      "source": {
+        "name": "Tech Barcelona",
+        "url": "https://techbarcelona.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Tech Barcelona company directory for the company name.",
+      "found_when": "The company appears in the Tech Barcelona company listing with a member profile.",
+      "not_found_when": "A clean search of the company directory returns no entry for the company.",
+      "couldnt_check_when": "The directory search does not respond or the name matches several companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a client employer with IT job offers on Tecnoempleo?",
+      "why_it_matters": "Listed IT vacancies show that the company runs in-house technology teams and what it recruits for.",
+      "source": {
+        "name": "Tecnoempleo",
+        "url": "https://www.tecnoempleo.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Tecnoempleo client-employer list for the company name.",
+      "found_when": "The company appears as a Tecnoempleo client employer with advertised vacancies.",
+      "not_found_when": "No client employer entry is returned for the exact company name.",
+      "couldnt_check_when": "The employer list cannot be filtered or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as an employer with job offers on Trabajos.com?",
+      "why_it_matters": "A company page with active offers shows ongoing recruitment and the regions where it operates.",
+      "source": {
+        "name": "Trabajos.com",
+        "url": "https://www.trabajos.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Trabajos.com company search with the company name as the keyword.",
+      "found_when": "A Trabajos.com company page lists offers from the company.",
+      "not_found_when": "The company search returns no employer page for the exact name.",
+      "couldnt_check_when": "The search returns only other employers with similar names or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an employer page with job offers on Turijobs España?",
+      "why_it_matters": "Tourism and hospitality vacancies show where the company operates and how it staffs those sites.",
+      "source": {
+        "name": "Turijobs España",
+        "url": "https://www.turijobs.com/",
+        "language": "Spanish"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Turijobs for the company name and open any matching employer page.",
+      "found_when": "A Turijobs employer page lists job offers from the company.",
+      "not_found_when": "The Turijobs search returns no employer page for the company.",
+      "couldnt_check_when": "The employer page exists without offers or the name matches several operators.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "ES-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 34 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

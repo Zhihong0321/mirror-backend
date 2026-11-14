@@ -1,0 +1,868 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company profile on 104 Job Bank showing self-reported employee headcount, capital base and hiring volume, and do those figures match the company's other public records?",
+      "why_it_matters": "A live 104 employer profile shows the company really operates and hires in Taiwan, and its self-reported size can be compared with official filings.",
+      "source": {
+        "name": "104 Job Bank",
+        "url": "https://www.104.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open 104 Job Bank, enter the company name in the company/job search box and open the matching company profile page.",
+      "found_when": "A company profile exists on 104 Job Bank with headcount, capital or active job listings for the company.",
+      "not_found_when": "A clean search of the full and short company name on 104 Job Bank returns no matching company profile.",
+      "couldnt_check_when": "The site blocks the search, or the name is common and several similarly named employers cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a hiring employer on 518 Bear Job, the SME-focused Taiwanese job portal, with storefront or branch hiring?",
+      "why_it_matters": "Presence on 518 shows frontline and retail hiring, which reflects the physical operating footprint of consumer-facing businesses.",
+      "source": {
+        "name": "518 Bear Job",
+        "url": "https://www.518.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the keyword search box on 518 Bear Job with the company name and open any matching company page or job list.",
+      "found_when": "A company page or job postings under the company name appear on 518 Bear Job.",
+      "not_found_when": "A clean name search on 518 Bear Job returns no company page or postings for the company.",
+      "couldnt_check_when": "The search page will not load, or the name is too generic to identify the right employer.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the American Chamber of Commerce in Taiwan (AmCham Taiwan) member directory?",
+      "why_it_matters": "AmCham membership places the company among recognised multinational and local firms active in Taiwan's business community.",
+      "source": {
+        "name": "American Chamber of Commerce in Taiwan (AmCham Taiwan)",
+        "url": "https://amcham.com.tw",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the AmCham Taiwan member directory pages and search the member listings for the company name.",
+      "found_when": "The company appears in the AmCham Taiwan member directory.",
+      "not_found_when": "The member directory contains no entry for the company after a clean scan of the listings.",
+      "couldnt_check_when": "The member directory is behind a login, fails to load, or the name is too common to match confidently.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded in the Ministry of Labor Violation Database (勞動部違反勞動法令事業單位查詢) for labour law sanctions such as unpaid wages, overtime breaches or occupational accidents?",
+      "why_it_matters": "An official labour-violation record signals legal exposure, penalty history and workforce-management failures.",
+      "source": {
+        "name": "Ministry of Labor Violation Database",
+        "url": "https://announcement.mol.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Ministry of Labor Violation Database query form, enter the company name (事業單位名稱) and submit the search.",
+      "found_when": "One or more penalty announcements list the company name with a statute, penalty date or fine.",
+      "not_found_when": "A clean search of the full and short company name returns no violation announcements.",
+      "couldnt_check_when": "The query form times out or the name matches many unrelated employers with the same prefix.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "register",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Control Yuan Political Donations Public Disclosure Platform as a corporate donor to parties or candidates?",
+      "why_it_matters": "Documented political donations reveal corporate political ties and lobbying channels that can matter for public-sector work.",
+      "source": {
+        "name": "Control Yuan Political Donations Public Disclosure Platform",
+        "url": "https://ardata.cy.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the platform's donation search, enter the company name or its UBN as the donor and run the query.",
+      "found_when": "Donation records list the company as a donor with an amount, recipient and reporting period.",
+      "not_found_when": "A clean donor search on the company name and UBN returns no donation records.",
+      "couldnt_check_when": "The search interface or API is unavailable, or the name matches several donors and cannot be separated without a UBN.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Business Today (今周刊) published investigative reporting on the company covering ownership disputes, executive controversies or financial engineering?",
+      "why_it_matters": "Investigative coverage in a financial weekly exposes governance conflicts and control battles that are not in filings.",
+      "source": {
+        "name": "Business Today (今周刊)",
+        "url": "https://www.businesstoday.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Business Today by the company name or its tag page and read any articles naming the company.",
+      "found_when": "One or more Business Today articles name the company in connection with ownership, management or financial disputes.",
+      "not_found_when": "A clean site search on the company name returns no articles about the company.",
+      "couldnt_check_when": "The site search is broken or the name is too generic to separate the company from other mentions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company page on CakeResume showing team size, tech stack or salary ranges?",
+      "why_it_matters": "A CakeResume page confirms the company recruits technical staff locally and how it presents itself to candidates.",
+      "source": {
+        "name": "CakeResume",
+        "url": "https://www.cakeresume.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in CakeResume's company search and open any matching company page.",
+      "found_when": "A CakeResume company page exists for the company with description, team size or open roles.",
+      "not_found_when": "A clean company search on CakeResume returns no page for the company.",
+      "couldnt_check_when": "The search requires an account, fails to load, or the name matches several similar startups.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a supplier profile in the China Economic News Service (CENS B2B) sourcing directory?",
+      "why_it_matters": "A CENS supplier entry shows the company trades internationally as a Taiwanese manufacturer or exporter.",
+      "source": {
+        "name": "China Economic News Service (CENS B2B Sourcing)",
+        "url": "https://www.cens.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CENS supplier search with the company name and review any matching supplier entries.",
+      "found_when": "A supplier profile in CENS lists the company with products, catalog or contact details.",
+      "not_found_when": "A clean supplier search on the company name returns no CENS entry.",
+      "couldnt_check_when": "The search results page will not load, or the name is too generic to match the right supplier.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold valid product safety certifications (RPC registration or CNS Mark) in the BSMI certification lookup?",
+      "why_it_matters": "A current BSMI certification shows the company may legally place its regulated products on the Taiwan market.",
+      "source": {
+        "name": "Bureau of Standards, Metrology and Inspection (BSMI) Certification Lookup",
+        "url": "https://civil.bsmi.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BSMI certification lookup, enter the company name as applicant and review the returned certificates.",
+      "found_when": "Certificates under the company name appear with a valid status and certificate number.",
+      "not_found_when": "A clean lookup on the company name returns no certificates, consistent with a non-regulated product mix.",
+      "couldnt_check_when": "The lookup system is down, or the company name matches several applicants and certificates cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Taiwan Intellectual Property Office (TIPO) trademark register as an applicant or owner of live trademarks?",
+      "why_it_matters": "Registered trademarks prove which entity owns the brand and can reveal opposition or invalidation disputes.",
+      "source": {
+        "name": "Taiwan Intellectual Property Office (TIPO) Trademark Search System",
+        "url": "https://cloud.tipo.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TIPO trademark search, enter the company name as applicant and review status, classes and any opposition records.",
+      "found_when": "Trademark records list the company as applicant or owner with a status and Nice classes.",
+      "not_found_when": "A clean applicant search on the company name returns no trademark records.",
+      "couldnt_check_when": "The search API fails, or the applicant name matches many entities so ownership cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Anue (鉅亨網) carry financial news, analyst coverage or executive interviews about the company?",
+      "why_it_matters": "Financial newswire coverage shows how capital markets and analysts view the company and flags negative coverage.",
+      "source": {
+        "name": "Anue (鉅亨網)",
+        "url": "https://www.cnyes.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Anue by the company name or stock code and read the news items and any stock profile page.",
+      "found_when": "Anue publishes one or more items naming the company, its earnings or its executives.",
+      "not_found_when": "A clean site search returns no Anue coverage of the company.",
+      "couldnt_check_when": "The search is unavailable or the company name is a common phrase producing unrelated hits.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Ronnywang g0v Taiwan Company Open Data Tool with consolidated commercial registration, factory licence, tender or political-donation records?",
+      "why_it_matters": "This civic aggregator cross-links official datasets, making registration gaps and conflicting records easy to spot.",
+      "source": {
+        "name": "Ronnywang g0v Taiwan Company Open Data Tool",
+        "url": "https://company.g0v.ronny.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name or UBN in the g0v company search and open the resulting consolidated company page.",
+      "found_when": "A consolidated company page appears with registration details and linked datasets for the company.",
+      "not_found_when": "The search returns no company entry for the name or UBN.",
+      "couldnt_check_when": "The site or its API is unavailable, or the name returns many partial matches that cannot be narrowed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered with a D-U-N-S number in Dun & Bradstreet Taiwan, and do the registered name, address and parent linkage match its own claims?",
+      "why_it_matters": "A D-U-N-S record confirms the entity identity and commercial credit profile used by international counterparties.",
+      "source": {
+        "name": "Dun & Bradstreet Taiwan",
+        "url": "https://www.dnb.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the D&B Taiwan D-U-N-S company search with the company name and open the matching company record.",
+      "found_when": "A D-U-N-S record lists the company with a matching name, address or parent linkage.",
+      "not_found_when": "A clean name search returns no D-U-N-S record for the company.",
+      "couldnt_check_when": "The record requires a paid account, fails to load, or the name matches several registered entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the European Chamber of Commerce Taiwan (ECCT)?",
+      "why_it_matters": "ECCT membership signals standing with European business partners and access to Taiwan policy discussions.",
+      "source": {
+        "name": "European Chamber of Commerce Taiwan (ECCT)",
+        "url": "https://www.ecct.com.tw",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ECCT membership pages and scan the member company listing for the company name.",
+      "found_when": "The company appears in the ECCT member company listing.",
+      "not_found_when": "No ECCT member entry exists for the company after a clean scan of the listing.",
+      "couldnt_check_when": "The member listing is login-gated or unreadable, or the name is too common to identify the right member.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold active Taiwan Food and Drug Administration (TFDA) licences as a pharmaceutical, medical device, health food or cosmetics company, and does it have any recall or border-inspection failures?",
+      "why_it_matters": "TFDA licences are mandatory for regulated products, and recall or inspection failures point to quality and compliance risk.",
+      "source": {
+        "name": "Taiwan Food and Drug Administration (TFDA) License Lookup",
+        "url": "https://www.fda.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TFDA licence lookup, enter the company name as licence holder and review licences, recalls and inspection records.",
+      "found_when": "Licences under the company name appear, with status, product scope and any recall or failure notices.",
+      "not_found_when": "A clean lookup returns no TFDA licences, consistent with products outside TFDA scope.",
+      "couldnt_check_when": "The lookup service fails, or the name matches several licence holders with similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "register",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded in the FINDIT Startup & Venture Database with disclosed funding rounds, investors or government subsidies?",
+      "why_it_matters": "FINDIT entries corroborate funding claims and show which investors and subsidy programmes back the company.",
+      "source": {
+        "name": "FINDIT Startup & Venture Database (TIER)",
+        "url": "https://findit.org.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search FINDIT by the company name and open the startup profile to read funding rounds and investors.",
+      "found_when": "A startup profile lists the company with funding events, investors or subsidies.",
+      "not_found_when": "A clean search returns no startup profile for the company.",
+      "couldnt_check_when": "The database search is unavailable, or the name matches several startups that cannot be separated.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Financial Supervisory Commission (FSC) or its bureaus issued any enforcement action, sanction or penalty against the company or its management?",
+      "why_it_matters": "FSC sanctions record compliance failures, accounting problems or internal-control breakdowns at regulated firms.",
+      "source": {
+        "name": "Financial Supervisory Commission (FSC) Enforcement & Sanctions",
+        "url": "https://www.fsc.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the FSC or Banking Bureau enforcement announcement lists and search them for the company name.",
+      "found_when": "One or more FSC or bureau announcements name the company with a disposition, fine or corrective order.",
+      "not_found_when": "A clean search of the enforcement lists finds no announcement naming the company.",
+      "couldnt_check_when": "The announcement lists cannot be searched or are only published as unreadable PDFs.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Fair Trade Commission (FTC) issued any sanction decision, merger approval or investigation involving the company?",
+      "why_it_matters": "FTC decisions expose antitrust, cartel or deceptive-advertising findings and merger control history.",
+      "source": {
+        "name": "Fair Trade Commission Sanction Decisions and Public Search",
+        "url": "https://www.ftc.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the FTC decision search, enter the company name in the disposition search and review the results.",
+      "found_when": "A disposition or decision letter names the company with the conduct, date and penalty.",
+      "not_found_when": "A clean decision search on the company name returns no FTC decisions.",
+      "couldnt_check_when": "The decision search is down, or the name is too common to attribute decisions to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a workplace profile on GoodJob (職場透明化運動) with reported salaries, working hours or overtime data?",
+      "why_it_matters": "Crowdsourced GoodJob data shows real pay and overtime practice, which can contradict employer claims.",
+      "source": {
+        "name": "GoodJob (職場透明化運動)",
+        "url": "https://goodjob.life",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search GoodJob by the company name and open its company page to read submitted salary and working-hour entries.",
+      "found_when": "A GoodJob company page exists with one or more salary, overtime or satisfaction entries.",
+      "not_found_when": "A clean company search returns no GoodJob page or no submitted entries.",
+      "couldnt_check_when": "The site API is unavailable, or the name matches several employers with identical prefixes.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Chunghwa Telecom iYP Yellow Pages with a verified landline number and operating address?",
+      "why_it_matters": "A verified iYP landline and address confirms the company has a real, contactable operating presence.",
+      "source": {
+        "name": "Chunghwa Telecom iYP Yellow Pages",
+        "url": "https://www.iyp.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the iYP search box with all cities selected and open any matching business listing.",
+      "found_when": "An iYP listing shows the company with a phone number, address and business category.",
+      "not_found_when": "A clean iYP search for the company name returns no business listing.",
+      "couldnt_check_when": "The directory search fails, or the name matches many unrelated local businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company, its legal representatives or subsidiaries appear in the Judicial Yuan Law and Judgment Search System as a party to civil, criminal or enforcement proceedings?",
+      "why_it_matters": "Court records reveal debt defaults, contract disputes, criminal charges and bankruptcy that filings do not show.",
+      "source": {
+        "name": "Judicial Yuan Law and Judgment Search System",
+        "url": "https://judgment.judicial.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the judgment search, enter the company name as a party in the full-text or party field and review the result list.",
+      "found_when": "Judgments or rulings list the company, its representatives or subsidiaries as a party.",
+      "not_found_when": "A clean party search on the company name returns no judgments.",
+      "couldnt_check_when": "The search requires a captcha that cannot be solved, or the name is too common to attribute cases.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company sell on the momo Shopping Network as a listed seller or as the brand behind products on the platform?",
+      "why_it_matters": "Presence on momo confirms an active retail channel and can test claims of authorised distribution.",
+      "source": {
+        "name": "momo Shopping Network",
+        "url": "https://www.momoshop.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company or brand name in the momo search bar and check both seller results and product listings.",
+      "found_when": "A seller page or product listings on momo are attributed to the company or its brand.",
+      "not_found_when": "A clean search returns no seller and no product listings tied to the company.",
+      "couldnt_check_when": "The platform blocks scraping, or the name is generic and results cannot be tied to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in MoneyDJ's Industry Value Chain Platform or stock pages as a listed manufacturer with named customers or suppliers?",
+      "why_it_matters": "Value-chain mapping shows who the company really supplies and buys from, testing supply-chain and partnership claims.",
+      "source": {
+        "name": "MoneyDJ (理財網 & 產業價值鏈資訊平台)",
+        "url": "https://www.moneydj.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search MoneyDJ by the company name or stock code, then open its stock page and value-chain entry.",
+      "found_when": "A MoneyDJ page lists the company with industry position, upstream/downstream links or counterparties.",
+      "not_found_when": "A clean search returns no company page or value-chain entry for the company.",
+      "couldnt_check_when": "The site blocks requests, or the company is unlisted and only loosely named on the platform.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company's facility appear in the Ministry of Environment PRTR and Pollution Tracking Database with emission records or environmental sanctions?",
+      "why_it_matters": "PRTR records show pollution releases and environmental fines that signal operational and regulatory risk.",
+      "source": {
+        "name": "Ministry of Environment PRTR and Pollution Tracking Database",
+        "url": "https://prtr.moenv.gov.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PRTR facility search, enter the company name as facility name and review permits, releases and penalties.",
+      "found_when": "Facility records under the company name show permits, chemical releases or environmental penalties.",
+      "not_found_when": "A clean facility search returns no records, consistent with no tracked industrial facility.",
+      "couldnt_check_when": "The PRTR search API fails, or the company operates through a factory name that cannot be matched.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an employer review page on Qollie (求職天眼通) with ratings or complaints from employees?",
+      "why_it_matters": "Anonymous Qollie reviews surface management, overtime and turnover problems reported by former staff.",
+      "source": {
+        "name": "Qollie (求職天眼通)",
+        "url": "https://www.qollie.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Qollie by the company name and open its company page to read the submitted reviews and ratings.",
+      "found_when": "A Qollie company page exists with one or more employee reviews or ratings.",
+      "not_found_when": "A clean company search returns no Qollie page for the company.",
+      "couldnt_check_when": "The site is offline or the API returns nothing readable, or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the member directory of the General Chamber of Commerce of the Republic of China (ROCCOC), or named among its business award winners?",
+      "why_it_matters": "ROCCOC membership or awards show recognition by Taiwan's peak domestic commercial body.",
+      "source": {
+        "name": "General Chamber of Commerce of the Republic of China (ROCCOC)",
+        "url": "https://www.roccoc.org.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ROCCOC member and award listing pages and scan them for the company name.",
+      "found_when": "The company appears in a ROCCOC member, federation or award-winner listing.",
+      "not_found_when": "No ROCCOC listing mentions the company after a clean scan of the member and award pages.",
+      "couldnt_check_when": "The listing pages are unreadable, paginated too deeply, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does StatementDog (財報狗) carry a company page for the company, and do the financial metrics shown agree with its reported figures?",
+      "why_it_matters": "Independent fundamental analysis flags margin erosion, inventory risk and cash-cycle problems that contradict upbeat claims.",
+      "source": {
+        "name": "StatementDog (財報狗 Investor Community)",
+        "url": "https://statementdog.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search StatementDog by company name or stock code and open its company page to compare the computed metrics.",
+      "found_when": "A StatementDog company page exists with financial metrics or community commentary on the company.",
+      "not_found_when": "A clean search returns no StatementDog page, typical for unlisted companies.",
+      "couldnt_check_when": "The site requires login, blocks the request, or the company is unlisted with no comparable data.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company's laboratory, calibration facility or inspection body accredited by the Taiwan Accreditation Foundation (TAF) to ISO/IEC 17025, ISO 15189 or ISO/IEC 17021?",
+      "why_it_matters": "Valid TAF accreditation is the proof that test reports and certificates issued by the company are internationally recognised.",
+      "source": {
+        "name": "Taiwan Accreditation Foundation (TAF)",
+        "url": "https://www.taftw.org.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TAF accreditation listing, enter the company or laboratory name and review the returned accreditation items.",
+      "found_when": "The TAF listing shows the company or its laboratory with a valid accreditation and standard.",
+      "not_found_when": "A clean listing search returns no accredited laboratory under the company name, consistent with no accreditation claim.",
+      "couldnt_check_when": "The listing endpoint fails, or the laboratory name differs from the company name and cannot be linked.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a verified supplier profile on Taiwantrade with its factory certifications and export product catalogues?",
+      "why_it_matters": "A Taiwantrade supplier profile shows verified export capability and which certifications the company actually holds.",
+      "source": {
+        "name": "Taiwantrade",
+        "url": "https://www.taiwantrade.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in Taiwantrade's supplier search and open the matching supplier detail page.",
+      "found_when": "A Taiwantrade supplier detail page lists the company with products, certifications or verification badges.",
+      "not_found_when": "A clean supplier search returns no Taiwantrade profile for the company.",
+      "couldnt_check_when": "The search fails or the name is too generic to identify the right supplier among many.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a member of the Taiwan Association of Machinery Industry (TAMI) with a member factory listing?",
+      "why_it_matters": "TAMI membership confirms the company is a recognised Taiwanese machinery builder rather than a trading intermediary.",
+      "source": {
+        "name": "Taiwan Association of Machinery Industry (TAMI)",
+        "url": "https://www.tami.org.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TAMI member directory search, enter the company name and open any matching member detail page.",
+      "found_when": "A TAMI member detail page lists the company with products or factory information.",
+      "not_found_when": "A clean member search returns no TAMI listing for the company, consistent with a non-machinery business.",
+      "couldnt_check_when": "The member directory search is unavailable, or the name matches several members with similar prefixes.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Taiwan Depository & Clearing Corporation (TDCC) equity dispersion table show the company's shareholding structure by bracket, and has the large-holder distribution shifted recently?",
+      "why_it_matters": "TDCC dispersion data shows whether control is concentrated or retail-held and flags major shareholder accumulation or dumping.",
+      "source": {
+        "name": "Taiwan Depository & Clearing Corporation (TDCC Equity Dispersion Database)",
+        "url": "https://www.tdcc.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TDCC equity dispersion query page, enter the company's stock code and read the bracket table for recent weeks.",
+      "found_when": "Dispersion tables exist for the company's stock code with bracket percentages across weeks.",
+      "not_found_when": "A clean query returns no dispersion table, typical for a non-listed company.",
+      "couldnt_check_when": "The query form fails or the company is unlisted and has no stock code to query.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Taiwan Electrical and Electronic Manufacturers' Association (TEEMA) member or B2B company directory?",
+      "why_it_matters": "TEEMA membership corroborates claims of being an electronics or ICT hardware manufacturer in Taiwan.",
+      "source": {
+        "name": "Taiwan Electrical and Electronic Manufacturers' Association (TEEMA)",
+        "url": "https://www.teema.org.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the TEEMA B2B company search with the company name and open any matching member company page.",
+      "found_when": "A TEEMA company listing shows the company with products or member details.",
+      "not_found_when": "A clean company search returns no TEEMA listing, consistent with a non-electronics business.",
+      "couldnt_check_when": "The directory search fails, or the name is too generic to identify the right member.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company profile on Wenbi All-Products Taiwan (ttnet.net) showing factory location, equipment or trade capacity?",
+      "why_it_matters": "A ttnet profile shows whether the company is a real OEM/ODM factory with production capacity, not only a trader.",
+      "source": {
+        "name": "Wenbi All-Products Taiwan (ttnet.net)",
+        "url": "https://tw.ttnet.net",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the manufacturer name in the ttnet company search and open the matching company profile.",
+      "found_when": "A ttnet company profile lists the company with factory information, equipment or products.",
+      "not_found_when": "A clean company search returns no ttnet profile for the company.",
+      "couldnt_check_when": "The search page fails to load, or the name matches many similarly named factories.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Twincn company information directory show a registry entry for the company with consistent capital history, directors and affiliated companies?",
+      "why_it_matters": "Twincn aggregates commercial registry data, so director and capital history can be cross-checked for inconsistencies.",
+      "source": {
+        "name": "Twincn Company Information Directory",
+        "url": "https://www.twincn.com",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Twincn search with the company name or UBN and open the matching company record.",
+      "found_when": "A registry record lists the company with capital, directors, supervisors and related companies.",
+      "not_found_when": "A clean name or UBN search returns no registry record for the company.",
+      "couldnt_check_when": "The site blocks the request, or the name matches many companies and the UBN is unknown.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "news_press",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the TWSE WebPro system host investor conference (法人說明會) videos or press announcements presented by the company's management?",
+      "why_it_matters": "Recorded investor briefings let a researcher compare management's own statements with the company's filings and claims.",
+      "source": {
+        "name": "TWSE WebPro Video Broadcast System",
+        "url": "https://webpro.twse.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the WebPro investor search with the company name or stock code and open any matching briefing videos.",
+      "found_when": "WebPro lists one or more investor conference videos or announcements for the company.",
+      "not_found_when": "A clean keyword search returns no WebPro recordings, typical for unlisted companies.",
+      "couldnt_check_when": "The video archive search fails, or the company is unlisted and has no briefings indexed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a hiring employer on yes123 Job Bank with contact details and wage ranges for its vacancies?",
+      "why_it_matters": "A yes123 employer listing confirms active SME hiring and shows the pay levels the company publicly advertises.",
+      "source": {
+        "name": "yes123 Job Bank",
+        "url": "https://www.yes123.com.tw",
+        "language": "Traditional Chinese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in yes123's job keyword search and open any matching company or vacancy pages.",
+      "found_when": "yes123 shows a company page or vacancies under the company name with contact or wage details.",
+      "not_found_when": "A clean name search returns no company page or vacancies for the company.",
+      "couldnt_check_when": "The search results fail to load, or the name is too generic to identify the right employer.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "TW-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 36 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

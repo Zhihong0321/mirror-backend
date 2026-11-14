@@ -1,0 +1,1126 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "complaints",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in company-specific threads on 5channel (5ch.net) that raise workplace, management or misconduct complaints?",
+      "why_it_matters": "Anonymous employee and insider posts can surface workplace problems or scandals that never reach official channels.",
+      "source": {
+        "name": "5channel (5ちゃんねる / 5ch.net)",
+        "url": "https://5ch.net",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the full company name in the 5ch thread search site (find.5ch.io) and read the matching thread titles.",
+      "found_when": "One or more thread titles contain the company name and discuss the company.",
+      "not_found_when": "A clean search of the full company name returns no thread about the company.",
+      "couldnt_check_when": "The search site is unreachable or the name is so generic that hits cannot be tied to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a supplier or manufacturer with a catalog page on Aperza (アペルザ)?",
+      "why_it_matters": "A B2B catalog presence shows the company actually sells the industrial or electronic products it claims.",
+      "source": {
+        "name": "Aperza (アペルザ)",
+        "url": "https://www.aperza.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Aperza catalog search with the full company name and look for a supplier page in the results.",
+      "found_when": "A company or supplier page under that name appears in the Aperza catalog search results.",
+      "not_found_when": "The catalog search returns no supplier or product page for that company name.",
+      "couldnt_check_when": "The catalog search fails, requires a login, or returns near-identical supplier names that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company post executive or specialist job openings on BizReach (ビズリーチ)?",
+      "why_it_matters": "Senior hiring ads reveal expansion plans and pay levels that can be compared with the company's own statements.",
+      "source": {
+        "name": "BizReach (ビズリーチ - Visional)",
+        "url": "https://www.bizreach.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the BizReach job search page by keyword using the full company name.",
+      "found_when": "Job postings carrying the company name as employer appear in the search results.",
+      "not_found_when": "A clean keyword search returns no postings from that employer.",
+      "couldnt_check_when": "Results are behind a member login or the company name matches many unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Consumer Affairs Agency enforcement or recall notices (消費者庁)?",
+      "why_it_matters": "Administrative sanctions for misleading advertising or illegal sales practices are a direct legal and reputational red flag.",
+      "source": {
+        "name": "Consumer Affairs Agency Enforcement & Recall Notices (消費者庁)",
+        "url": "https://www.caa.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the enforcement notice pages by year for the company name in the list of sanctioned or recalling businesses.",
+      "found_when": "The company name appears in an enforcement, penalty or recall notice entry.",
+      "not_found_when": "The published notice lists contain no entry naming the company.",
+      "couldnt_check_when": "The notice pages cannot be loaded or the name is written only in a form that cannot be matched.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do questions or answers on Yahoo! Chiebukuro (Yahoo!知恵袋) describe disputes or doubts about this company?",
+      "why_it_matters": "Consumer and candidate questions show recurring service disputes or doubts about whether the company is legitimate.",
+      "source": {
+        "name": "Yahoo! Chiebukuro (Yahoo!知恵袋)",
+        "url": "https://chiebukuro.yahoo.co.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Yahoo! Chiebukuro with the full company name as the keyword and read the top questions.",
+      "found_when": "Questions or answers naming the company describe complaints, disputes or legitimacy doubts.",
+      "not_found_when": "The keyword search returns no post about the company.",
+      "couldnt_check_when": "The search page is blocked or the keyword is too common to isolate the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as a party in published court decisions in the Courts in Japan precedent database (裁判例検索)?",
+      "why_it_matters": "Published judgments show past or ongoing litigation that the company may not disclose.",
+      "source": {
+        "name": "Courts in Japan Precedent Database (裁判例検索)",
+        "url": "https://www.courts.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the full company name in the precedent search keyword field and review the listed judgments.",
+      "found_when": "One or more published judgments name the company as a party.",
+      "not_found_when": "A clean keyword search returns no judgment naming the company.",
+      "couldnt_check_when": "The search interface errors out or the name is too generic to confirm the hits are the same company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a profile or news coverage on Diamond Online (ダイヤモンド・オンライン) reporting disputes or management trouble?",
+      "why_it_matters": "Business press coverage adds context on executive conflicts and supply chain friction that filings omit.",
+      "source": {
+        "name": "Diamond Online (ダイヤモンド・オンライン)",
+        "url": "https://diamond.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Diamond Online company list for the company name, then read any linked articles.",
+      "found_when": "The company appears in the company list or in an article about it.",
+      "not_found_when": "The company list and site search show no profile or article about the company.",
+      "couldnt_check_when": "The company list is too large to scan in the time available or the pages require a subscription.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company file statutory securities reports on EDINET (disclosure2.edinet-fsa.go.jp)?",
+      "why_it_matters": "Audited filings give verified financials, major shareholders and stated risks that can be checked against marketing claims.",
+      "source": {
+        "name": "EDINET - Electronic Disclosure for Investors' NETwork (Financial Services Agency)",
+        "url": "https://disclosure2.edinet-fsa.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the EDINET document search, enter the company name, and check the filed report list.",
+      "found_when": "Filings such as a securities report are listed under the company name.",
+      "not_found_when": "The document search returns no filings for the company, which is normal for non-listed firms.",
+      "couldnt_check_when": "The EDINET codelist or document search cannot be retrieved or produced no readable result.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company's executive listed among the members of Keizai Doyukai (経済同友会)?",
+      "why_it_matters": "Membership of this executive association signals peer-recognised leadership standing.",
+      "source": {
+        "name": "Keizai Doyukai (Japan Association of Corporate Executives / 経済同友会)",
+        "url": "https://www.doyukai.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the listed managers and members pages for the company name or its executive name.",
+      "found_when": "A member entry names the company or its executive.",
+      "not_found_when": "The published member lists contain no entry for the company or its executives.",
+      "couldnt_check_when": "The member list only shows individual names without companies, so the link cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have employee reviews on En-Hyoban / Lighthouse (ライトハウス)?",
+      "why_it_matters": "Employee reviews expose working conditions, overtime and turnover problems that are not in official disclosures.",
+      "source": {
+        "name": "En-Hyoban / Lighthouse (ライトハウス)",
+        "url": "https://en-hyoban.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the site with the full company name and open the matching company review page.",
+      "found_when": "A company page with reported ratings and reviews exists for the company.",
+      "not_found_when": "The search returns no company page for that name.",
+      "couldnt_check_when": "The review page is paywalled, blocked, or the name matches several similar employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Financial Services Agency register of licensed financial institutions, or in its published enforcement notices (金融庁)?",
+      "why_it_matters": "Operating without the required financial licence, or with a penalty order, is a serious legal exposure.",
+      "source": {
+        "name": "Financial Services Agency Register & Enforcement Portal (金融庁)",
+        "url": "https://www.fsa.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the FSA register spreadsheets for the relevant licence type and search them for the company name, then check the enforcement notices.",
+      "found_when": "The company name appears in a licence register or an enforcement notice list.",
+      "not_found_when": "The relevant registers and notice lists contain no entry under the company name.",
+      "couldnt_check_when": "The register files cannot be downloaded or the business falls outside every licence type listed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company page with interviews and team details on Green (グリーン)?",
+      "why_it_matters": "Recruitment pages state the business model and team size, which can be compared with the company's other claims.",
+      "source": {
+        "name": "Green (グリーン - Atrae)",
+        "url": "https://www.green-japan.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Green by company name and open the matching company profile page.",
+      "found_when": "A company profile page exists under the company name.",
+      "not_found_when": "No company profile page is found for that name.",
+      "couldnt_check_when": "The profile is behind a member login or the search returns only loosely similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a verified employer record on Hello Work Internet Service (ハローワーク インターネットサービス)?",
+      "why_it_matters": "The government job service holds registered employee counts, founding year, wages and insurance status to check against company claims.",
+      "source": {
+        "name": "Hello Work Internet Service (ハローワーク インターネットサービス)",
+        "url": "https://www.hellowork.mhlw.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the job search screens with the company name as keyword and open the employer detail page.",
+      "found_when": "An employer record with the company name and its corporate details is returned.",
+      "not_found_when": "The search returns no employer record for the company name.",
+      "couldnt_check_when": "The search screens require a session that cannot be established or return only unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a corporate number record on the National Tax Agency Corporate Number Publication Site (法人番号公表サイト)?",
+      "why_it_matters": "The official record confirms the legal name, registered address and whether the company is still active, merged or dissolved.",
+      "source": {
+        "name": "National Tax Agency Corporate Number Publication Site (国税庁法人番号公表サイト)",
+        "url": "https://www.houjin-bangou.nta.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the corporate number search and open the matching result.",
+      "found_when": "A record with a 13-digit corporate number and matching registered name is returned.",
+      "not_found_when": "The search returns no record for the company name.",
+      "couldnt_check_when": "The search form cannot be submitted or several records share the same name and cannot be distinguished.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a profile on gBizINFO showing subsidies, procurement awards or certifications?",
+      "why_it_matters": "Official open data confirms registry details and reveals public money or public contracts the company may not mention.",
+      "source": {
+        "name": "gBizINFO (Ministry of Economy, Trade and Industry)",
+        "url": "https://info.gbiz.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search gBizINFO by company name or corporate number and open the company detail page.",
+      "found_when": "A company profile page exists with registry data and any subsidy, procurement or certification records.",
+      "not_found_when": "The search returns no company page for that name.",
+      "couldnt_check_when": "The search does not respond or the name is too common to select the right entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an INITIAL company profile with funding and executive history?",
+      "why_it_matters": "Funding rounds, alliances and executive backgrounds can confirm or contradict a startup's stated traction.",
+      "source": {
+        "name": "INITIAL (Uzabase)",
+        "url": "https://initial.inc",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search INITIAL with the full company name and open the matching company profile.",
+      "found_when": "A company profile page exists showing financing history or executive details.",
+      "not_found_when": "The search returns no profile page for the company.",
+      "couldnt_check_when": "The profile is behind a paid login or the search returns only similarly named firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a product catalog page on Ipros (イプロス)?",
+      "why_it_matters": "A catalog listing confirms real manufacturing capability and product lines in a B2B marketplace.",
+      "source": {
+        "name": "Ipros (イプロス)",
+        "url": "https://www.ipros.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Ipros product directory by the full company name and open the supplier page.",
+      "found_when": "A company or product page exists under the company name.",
+      "not_found_when": "The directory search returns no page for the company.",
+      "couldnt_check_when": "The search is blocked or returns only similarly named suppliers that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the NC Network factory search (エミダス) with its equipment and capabilities?",
+      "why_it_matters": "Factory listings document machinery, capacity and certifications that support or contradict supplier claims.",
+      "source": {
+        "name": "NC Network Factory Search / Emidas (エミダス)",
+        "url": "https://ja.nc-net.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the full company name in the NC Network factory search and open the factory detail page.",
+      "found_when": "A factory profile with the company name and its capabilities is returned.",
+      "not_found_when": "The factory search returns no entry for the company name.",
+      "couldnt_check_when": "The search page cannot be loaded or the name matches several factories that cannot be distinguished.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company recorded in the Japan Accreditation Board (JAB) register of certified organisations?",
+      "why_it_matters": "The JAB register verifies whether an ISO 9001, ISO 14001 or ISO 27001 certification the company advertises actually exists.",
+      "source": {
+        "name": "Japan Accreditation Board (日本適合性認定協会 - JAB)",
+        "url": "https://www.jab.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Query the JAB compatible-organizations register with the company name and review the certification records.",
+      "found_when": "A certification record naming the company and its standard is returned.",
+      "not_found_when": "The register returns no certification record for the company name.",
+      "couldnt_check_when": "The register query fails or returns too many partial name matches to confirm the entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a listed member of the Japan Association of New Economy (新経済連盟 - JANE)?",
+      "why_it_matters": "Membership of this tech business federation indicates standing among Japanese digital-economy companies.",
+      "source": {
+        "name": "Japan Association of New Economy (新経済連盟 - JANE)",
+        "url": "https://jane.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the JANE general member list page for the company name.",
+      "found_when": "The company name appears in the published member list.",
+      "not_found_when": "The member list contains no entry for the company.",
+      "couldnt_check_when": "The member list page cannot be loaded or lists members only by abbreviation.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the JETRO trade partner or business support directory?",
+      "why_it_matters": "Cross-border partner records show real export activity and overseas alliances rather than claimed ones.",
+      "source": {
+        "name": "JETRO (Japan External Trade Organization / 日本貿易振興機構)",
+        "url": "https://www.jetro.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the JETRO partner and trade directory pages for the company name.",
+      "found_when": "The company is listed as a partner or directory entry on JETRO.",
+      "not_found_when": "The scanned directory pages contain no entry for the company.",
+      "couldnt_check_when": "The relevant JETRO pages cannot be loaded or require a registered account.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 22,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Japan Fair Trade Commission (公正取引委員会) cease-and-desist or surcharge order lists?",
+      "why_it_matters": "Antimonopoly and subcontracting violations are serious legal findings against the company.",
+      "source": {
+        "name": "Japan Fair Trade Commission (公正取引委員会)",
+        "url": "https://www.jftc.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the published order lists by fiscal year for the company name.",
+      "found_when": "The company is named in a cease-and-desist, surcharge or other enforcement entry.",
+      "not_found_when": "The published order lists contain no entry naming the company.",
+      "couldnt_check_when": "The order lists cannot be opened or the company is named only by an outdated trade name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered as a licensed staffing or placement agency on the MHLW Human Resources Services site (人材サービス総合サイト)?",
+      "why_it_matters": "Providing dispatch or placement services without the statutory licence is a legal violation for the company.",
+      "source": {
+        "name": "MHLW Human Resources Services Comprehensive Site (人材サービス総合サイト)",
+        "url": "https://jinzai.hellowork.mhlw.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the licence register by company name and open the agency detail record.",
+      "found_when": "A licence record exists showing the company name and licence number.",
+      "not_found_when": "The licence register returns no record for the company name.",
+      "couldnt_check_when": "The search form cannot be submitted or the company operates outside the licensed service categories.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the JISA member directory of the Japan Information Technology Services Industry Association?",
+      "why_it_matters": "Association membership indicates the company is an established IT services firm rather than an unverified vendor.",
+      "source": {
+        "name": "Japan Information Technology Services Industry Association (情報サービス産業協会 - JISA)",
+        "url": "https://www.jisa.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the JISA member list page for the company name.",
+      "found_when": "The company name appears in the JISA member list.",
+      "not_found_when": "The member list contains no entry for the company.",
+      "couldnt_check_when": "The member list page is unavailable or shows only abbreviated trade names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a corporate profile page on Mynavi (マイナビ) recruitment site?",
+      "why_it_matters": "The recruitment profile states capital, sales and branch network that can be compared with other sources.",
+      "source": {
+        "name": "Mynavi (マイナビ)",
+        "url": "https://job.mynavi.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Mynavi corporate pages by company name and open the outline page.",
+      "found_when": "A company outline page exists with the company name and corporate data.",
+      "not_found_when": "No company outline page is found for that name.",
+      "couldnt_check_when": "The pages require a student login or the search returns only similarly named firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Rikunabi (リクナビ) company page with mandatory recruitment metrics?",
+      "why_it_matters": "Disclosed headcount, average age and years of service are hard numbers to test the company's own claims against.",
+      "source": {
+        "name": "Rikunabi (リクナビ - Recruit)",
+        "url": "https://job.rikunabi.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Rikunabi company pages by name and open the company data page.",
+      "found_when": "A company page exists showing headcount, capital or revenue figures.",
+      "not_found_when": "No company page is returned for the name.",
+      "couldnt_check_when": "The pages are behind a login or the returned names are too similar to identify the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have employee reviews on Tenshoku Kaigi (転職会議)?",
+      "why_it_matters": "Unfiltered employee reviews reveal overtime, management trust and resignation reasons.",
+      "source": {
+        "name": "Tenshoku Kaigi (転職会議 - Livesense)",
+        "url": "https://jobtalk.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the site by company name and open the matching company review page.",
+      "found_when": "A company review page with ratings or employee posts exists.",
+      "not_found_when": "The search returns no review page for the company name.",
+      "couldnt_check_when": "Reviews are hidden behind a member login or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Japan Venture Capital Association (JVCA) member directory as a VC or CVC member?",
+      "why_it_matters": "JVCA membership confirms the firm really is a recognised venture or corporate venture investor.",
+      "source": {
+        "name": "Japan Venture Capital Association (日本ベンチャーキャピタル協会 - JVCA)",
+        "url": "https://jvca.jp",
+        "language": "Japanese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the JVCA VC member list page for the company name.",
+      "found_when": "The company name appears in the JVCA member list.",
+      "not_found_when": "The member list contains no entry for the company.",
+      "couldnt_check_when": "The member list page cannot be loaded or lists only abbreviated names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company or its product have user reviews on Kigyolog (起業ログ)?",
+      "why_it_matters": "User evaluations of a business tool show whether customers actually rate the product as claimed.",
+      "source": {
+        "name": "Kigyolog (起業ログ)",
+        "url": "https://kigyolog.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the site for the company or product name and open the matching vendor page.",
+      "found_when": "A vendor or product page with user ratings exists for the company.",
+      "not_found_when": "The search returns no vendor or product page for the company.",
+      "couldnt_check_when": "The search is blocked or the company name matches unrelated products.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the M&A Online (M&Aオンライン) transaction database?",
+      "why_it_matters": "Recorded deals reveal ownership changes, buyouts or succession events that affect who really controls the company.",
+      "source": {
+        "name": "M&A Online (M&Aオンライン)",
+        "url": "https://maonline.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the M&A Online company database by company name and open the matching company page.",
+      "found_when": "A company page or deal record naming the company is returned.",
+      "not_found_when": "The database returns no company page or deal for that name.",
+      "couldnt_check_when": "Parts of the database require a paid account or the name matches several companies.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 31,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the MLIT Negative Information Search System (国土交通省 ネガティブ情報等検索サイト) for sanctions or licence cancellations?",
+      "why_it_matters": "Business suspension orders or cancelled licences in construction, transport or real estate are direct legal risks.",
+      "source": {
+        "name": "MLIT Negative Information Search System (国土交通省 ネガティブ情報等検索サイト)",
+        "url": "https://www.mlit.go.jp/nega-inf/",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Choose the relevant business sector in the negative information search and enter the company name.",
+      "found_when": "A sanction, suspension or licence cancellation entry names the company.",
+      "not_found_when": "The search returns no negative information entry for the company.",
+      "couldnt_check_when": "The search requires selecting a sector the company does not belong to, or the entry names an old trade name only.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Nagoya Chamber of Commerce and Industry (名古屋商工会議所) member directory?",
+      "why_it_matters": "Chamber membership confirms a locally registered operating business with regional supplier standing.",
+      "source": {
+        "name": "Nagoya Chamber of Commerce and Industry (名古屋商工会議所)",
+        "url": "https://www.nagoya-cci.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the chamber member directory by keyword with the full company name.",
+      "found_when": "A member company entry with that name is returned.",
+      "not_found_when": "The member search returns no entry for the company.",
+      "couldnt_check_when": "The member search is unavailable or only covers businesses in the Chubu region.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company page or news coverage on Nikkei (日本経済新聞) reporting lawsuits, investigations or leadership changes?",
+      "why_it_matters": "Japan's main business daily is where regulatory investigations and executive turnover are first reported.",
+      "source": {
+        "name": "Nikkei (日本経済新聞)",
+        "url": "https://www.nikkei.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Nikkei with the company name and open its company page and recent articles.",
+      "found_when": "A company page or articles naming the company are returned.",
+      "not_found_when": "The search returns no company page or article about the company.",
+      "couldnt_check_when": "Articles are limited to subscribers or the company name is too generic to search reliably.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Consumer Affairs Agency Specified Commercial Transactions Act enforcement guide (特定商取引法ガイド)?",
+      "why_it_matters": "Business suspension or prohibition orders for illegal selling practices are a direct trading risk.",
+      "source": {
+        "name": "Consumer Affairs Agency Specified Commercial Transactions Act Violations Guide (特定商取引法ガイド)",
+        "url": "https://www.no-trouble.caa.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the enforcement action search and review the result list.",
+      "found_when": "An enforcement action naming the company is listed.",
+      "not_found_when": "The search returns no enforcement action for the company.",
+      "couldnt_check_when": "The search form fails or the company is named under a different corporate name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company or its executives published statements or post-mortems on note (note.com) that can be compared with its official claims?",
+      "why_it_matters": "First-hand company posts often disclose failures, layoffs or strategy reversals that marketing material hides.",
+      "source": {
+        "name": "note (note.com)",
+        "url": "https://note.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search note for the company name and review posts published by company or executive accounts.",
+      "found_when": "Posts by the company or its executives are found under the searched name.",
+      "not_found_when": "The search returns no company or executive posts for that name.",
+      "couldnt_check_when": "The search returns only posts by unrelated individual users, or the search page cannot be loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer review page on OpenWork (オープンワーク)?",
+      "why_it_matters": "Aggregated employee ratings reveal management integrity, overtime and organisational problems.",
+      "source": {
+        "name": "OpenWork (オープンワーク)",
+        "url": "https://www.openwork.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the OpenWork company list with the full company name and open the company page.",
+      "found_when": "A company page with review scores exists for the company.",
+      "not_found_when": "The company list returns no page for that name.",
+      "couldnt_check_when": "The review page requires login or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Osaka Chamber of Commerce and Industry (大阪商工会議所 - OCCI) member directory?",
+      "why_it_matters": "Chamber membership in the Kansai region supports claims of being an established local business.",
+      "source": {
+        "name": "Osaka Chamber of Commerce and Industry (大阪商工会議所 - OCCI)",
+        "url": "https://www.osaka.cci.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the OCCI member directory by keyword with the full company name.",
+      "found_when": "A member entry with that company name is returned.",
+      "not_found_when": "The member search returns no entry for the company.",
+      "couldnt_check_when": "The member search is unavailable or only covers businesses in the Kansai region.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the JIPDEC PrivacyMark registry (プライバシーマーク付与事業者検索)?",
+      "why_it_matters": "The registry shows whether a PrivacyMark certification the company advertises is real and still valid.",
+      "source": {
+        "name": "JIPDEC PrivacyMark Registry (プライバシーマーク付与事業者検索)",
+        "url": "https://privacymark.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the PrivacyMark registry by certified business name using the full company name.",
+      "found_when": "A certified business record naming the company is returned.",
+      "not_found_when": "The registry returns no record for the company name.",
+      "couldnt_check_when": "The registry query fails or the name matches many licensed entities that cannot be separated.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "news_press",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company issue press releases on PR TIMES that can be checked against its stated partnerships and funding?",
+      "why_it_matters": "A dated press release trail confirms or contradicts claimed launches, capital raises and alliances.",
+      "source": {
+        "name": "PR TIMES",
+        "url": "https://prtimes.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search PR TIMES by keyword with the full company name and review the releases from the company account.",
+      "found_when": "Press releases published by or naming the company are returned.",
+      "not_found_when": "The keyword search returns no release for the company.",
+      "couldnt_check_when": "The search returns only unrelated mentions, or the search page cannot be loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an organization page with active contributors on Qiita?",
+      "why_it_matters": "An organization page with real contributions shows the engineering capability the company claims actually exists.",
+      "source": {
+        "name": "Qiita",
+        "url": "https://qiita.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Qiita organization pages with the full company name and open the matching organization.",
+      "found_when": "An organization page exists for the company with members or articles.",
+      "not_found_when": "The organization search returns no page for the company.",
+      "couldnt_check_when": "The search is blocked or returns only individual users with similar names.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 41,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company file timely disclosures on TDnet (release.tdnet.info)?",
+      "why_it_matters": "Exchange disclosures report earnings revisions, M&A and internal investigations that contradict or confirm the company story.",
+      "source": {
+        "name": "TDnet - Timely Disclosure Network (Tokyo Stock Exchange / JPX)",
+        "url": "https://www.release.tdnet.info",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TDnet disclosure search, enter the company name or securities code, and list the filings.",
+      "found_when": "Disclosure filings are listed under the company name or code.",
+      "not_found_when": "The disclosure search returns no filing for the company, which is normal for unlisted firms.",
+      "couldnt_check_when": "The search form cannot be submitted or the company code cannot be identified.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company publish employment indicators on the MHLW Shokuba Lab workplace information site (しょくばらぼ)?",
+      "why_it_matters": "Official overtime, leave and turnover figures test the working conditions the company advertises.",
+      "source": {
+        "name": "MHLW Shokuba Lab - Workplace Information Comprehensive Site (職場情報総合サイト「しょくばらぼ」)",
+        "url": "https://shokuba.mhlw.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the site by free word with the full company name and open the company data page.",
+      "found_when": "A company page exists showing overtime, leave or turnover indicators.",
+      "not_found_when": "The search returns no company page for that name.",
+      "couldnt_check_when": "The search form cannot be submitted or the company is not among those required to publish.",
+      "confidence": "high"
+    },
+    {
+      "rank": 43,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company report on Teikoku Databank (帝国データバンク - TDB) with a credit summary or bankruptcy record?",
+      "why_it_matters": "Credit summaries and bankruptcy reports show financial distress that ordinary websites do not disclose.",
+      "source": {
+        "name": "Teikoku Databank (帝国データバンク - TDB)",
+        "url": "https://www.tdb.co.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TDB company information page by company name and open the matching credit report summary.",
+      "found_when": "A company record with a credit summary or score is returned.",
+      "not_found_when": "The search returns no company record for that name.",
+      "couldnt_check_when": "The detailed report requires a paid contract, leaving only a bare name match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 44,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold radio station or telecommunications licences recorded on the MIC radio use portal (電波利用ホームページ)?",
+      "why_it_matters": "Licensed spectrum or carrier registrations verify that the company legally operates wireless or telecom services.",
+      "source": {
+        "name": "MIC Radio Station License & Telecommunications Search (電波利用ホームページ)",
+        "url": "https://www.tele.soumu.go.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the radio station licence search, enter the company name as licensee, and run the search.",
+      "found_when": "Licence records list the company as a licensee or registered carrier.",
+      "not_found_when": "The licence search returns no record for the company name.",
+      "couldnt_check_when": "The search times out or the name matches many licensees that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Tokyo Chamber of Commerce and Industry (東京商工会議所 - TCCI) member directory?",
+      "why_it_matters": "Metropolitan chamber membership supports claims of a genuine Tokyo operating base and business standing.",
+      "source": {
+        "name": "Tokyo Chamber of Commerce and Industry (東京商工会議所 - TCCI)",
+        "url": "https://www.tokyo-cci.or.jp",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TCCI member directory by free word with the full company name.",
+      "found_when": "A member entry with that name is returned.",
+      "not_found_when": "The member search returns no entry for the company.",
+      "couldnt_check_when": "The member search is unavailable or only covers Tokyo-registered businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 46,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company page on Wantedly (ウォンテッドリー) with values, team and office information?",
+      "why_it_matters": "The page shows the founding story, organisation and team that the company presents to candidates.",
+      "source": {
+        "name": "Wantedly (ウォンテッドリー)",
+        "url": "https://www.wantedly.com",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Wantedly companies by name and open the matching company page.",
+      "found_when": "A company page exists with the company name and team or project content.",
+      "not_found_when": "The search returns no company page for that name.",
+      "couldnt_check_when": "The page requires a login or the search returns only similarly named companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 47,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company publish engineering articles as a publication on Zenn?",
+      "why_it_matters": "Corporate technical publications evidence a real engineering organisation behind the company's product claims.",
+      "source": {
+        "name": "Zenn",
+        "url": "https://zenn.dev",
+        "language": "Japanese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Zenn publications by the full company name and open the matching publication.",
+      "found_when": "A publication or organisation page exists for the company.",
+      "not_found_when": "The publication search returns nothing for the company name.",
+      "couldnt_check_when": "The search API is unavailable or returns only individual authors with similar names.",
+      "confidence": "medium"
+    }
+  ],
+  "_pair": "JP-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 47 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

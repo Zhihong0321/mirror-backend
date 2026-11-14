@@ -1,0 +1,988 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Construction Industry Federation (CIF) members directory?",
+      "why_it_matters": "CIF membership shows the company is recognised by the main representative body of the Irish construction sector.",
+      "source": {
+        "name": "Construction Industry Federation (CIF)",
+        "url": "https://cif.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CIF members directory search and enter the company name in the keyword field.",
+      "found_when": "A member listing for the company appears in the CIF directory, with its sector or division shown.",
+      "not_found_when": "A clean search of the CIF members directory returns no listing for the company name.",
+      "couldnt_check_when": "The members directory cannot be searched, the page is unreadable, or the trading name differs too much from the registered name to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a member listing in the Cork Chamber of Commerce business directory?",
+      "why_it_matters": "A chamber listing shows the company is visible in the Munster business network and reaches regional buyers.",
+      "source": {
+        "name": "Cork Chamber of Commerce",
+        "url": "https://www.corkchamber.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Cork Chamber member directory search and enter the company name.",
+      "found_when": "A member profile page for the company appears in the Cork Chamber directory.",
+      "not_found_when": "The member directory returns no profile for the company under a clean name search.",
+      "couldnt_check_when": "The directory search is unavailable, or the name matches several unrelated members so the right one cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named as a party in any written judgment on the Courts Service of Ireland judgments portal?",
+      "why_it_matters": "Court judgments reveal commercial disputes, insolvency or contract litigation the company has been involved in.",
+      "source": {
+        "name": "Courts Service of Ireland - Judgments Portal",
+        "url": "https://www.courts.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the judgments portal search, enter the company name and run a title search.",
+      "found_when": "One or more published judgments list the company as a party or name it in the ruling.",
+      "not_found_when": "A clean title search returns no judgment naming the company.",
+      "couldnt_check_when": "The judgments search is unavailable, or the name is too common to separate the company from similarly named parties.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed among the authorised energy suppliers published by the Commission for Regulation of Utilities (CRU)?",
+      "why_it_matters": "Only suppliers on the CRU list may lawfully sell electricity or gas to Irish customers.",
+      "source": {
+        "name": "Commission for Regulation of Utilities (CRU)",
+        "url": "https://www.cru.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the CRU energy suppliers in Ireland page and scan the list of authorised suppliers for the company name.",
+      "found_when": "The company name appears in the CRU list of authorised electricity or gas suppliers.",
+      "not_found_when": "A clean scan of the published supplier lists shows no entry for the company.",
+      "couldnt_check_when": "The supplier lists cannot be loaded or clearly read, or it is unclear whether the entity supplies energy at all.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in any Data Protection Commission (DPC) decision, inquiry finding or enforcement notice?",
+      "why_it_matters": "A DPC decision shows the data regulator has found problems with how the company handles personal data.",
+      "source": {
+        "name": "Data Protection Commission (DPC)",
+        "url": "https://www.dataprotection.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the search box on the DPC website and enter the company name to look for decisions and inquiry findings.",
+      "found_when": "A DPC decision, inquiry finding, fine or corrective order naming the company is returned.",
+      "not_found_when": "A clean site search returns no DPC decision or enforcement material naming the company.",
+      "couldnt_check_when": "The site search fails or returns too many unrelated hits for a common name to attribute any decision confidently.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Dublin Chamber of Commerce member directory?",
+      "why_it_matters": "A Dublin Chamber listing signals the company is part of the largest business network in the Greater Dublin Area.",
+      "source": {
+        "name": "Dublin Chamber of Commerce",
+        "url": "https://www.dublinchamber.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Dublin Chamber member directory and search for the company name.",
+      "found_when": "A member entry or profile for the company is shown in the Dublin Chamber directory.",
+      "not_found_when": "The directory returns no member entry for the company after a clean name search.",
+      "couldnt_check_when": "The directory cannot be searched or loaded, or the name returns only unrelated listings.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a client company in the Enterprise Ireland company directory?",
+      "why_it_matters": "Enterprise Ireland client status shows the company is recognised and supported as an Irish exporting business.",
+      "source": {
+        "name": "Enterprise Ireland",
+        "url": "https://www.enterprise-ireland.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the search on the Enterprise Ireland site and enter the company name to find its client profile.",
+      "found_when": "A client company profile or entry for the company appears on the Enterprise Ireland site.",
+      "not_found_when": "A clean search returns no client profile or entry for the company.",
+      "couldnt_check_when": "The site search is unavailable, or results are too generic to confirm whether the company is an Enterprise Ireland client.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Department of Enterprise, Trade and Employment employment permits issued to companies register?",
+      "why_it_matters": "The permits list shows how heavily the company relies on non-EEA hires, which sharpens questions about staffing and local jobs claims.",
+      "source": {
+        "name": "Department of Enterprise, Trade and Employment - Employment Permits Register",
+        "url": "https://enterprise.gov.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the published employment permits issued to companies file and search it for the company name.",
+      "found_when": "The company name appears in the permits issued file with a record of permits granted.",
+      "not_found_when": "A clean search of the published file shows no permit record under the company name.",
+      "couldnt_check_when": "The published file cannot be downloaded or opened, or the name is abbreviated in the data so that a match cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold an industrial emissions, IPC or waste licence recorded in the EPA Licensing and LEAP online system?",
+      "why_it_matters": "An EPA licence record shows whether the company operates a regulated industrial site and how it has complied.",
+      "source": {
+        "name": "Environmental Protection Agency (EPA) - Licensing & LEAP Online",
+        "url": "https://www.epa.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the EPA LEAP licence search and enter the company or site name in the search field.",
+      "found_when": "A licence record for the company or its site is returned with licence type and status.",
+      "not_found_when": "A clean licence search returns no licence record under the company name.",
+      "couldnt_check_when": "The LEAP search is unavailable, or the company trades under a site name that cannot be linked to the legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as applicant or party in any planning application on the ePlanning national planning search?",
+      "why_it_matters": "Planning records show whether the company has secured, been refused or been subject to enforcement on property permissions.",
+      "source": {
+        "name": "ePlanning (National Planning Applications Search)",
+        "url": "https://www.eplanning.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ePlanning search for the relevant local authority and search the applicant or party name field for the company.",
+      "found_when": "One or more planning application files list the company as applicant or party.",
+      "not_found_when": "A clean search of the relevant planning authority returns no application under the company name.",
+      "couldnt_check_when": "The ePlanning portal for the relevant authority is unreachable, or planning files name individuals rather than the company so no match is possible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the German-Irish Chamber of Industry and Commerce member directory?",
+      "why_it_matters": "Membership signals the company is recognised in the German-Irish trade network and can be trusted by cross-border partners.",
+      "source": {
+        "name": "German-Irish Chamber of Industry and Commerce (AHK Irland)",
+        "url": "https://www.german-irish.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the chamber's member directory search and enter the company name.",
+      "found_when": "A member entry for the company appears in the chamber directory.",
+      "not_found_when": "The member directory returns no entry for the company under a clean name search.",
+      "couldnt_check_when": "The directory cannot be searched or loaded, or the name is too generic to identify the right member.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a listed member of the Guaranteed Irish certification network?",
+      "why_it_matters": "The Guaranteed Irish symbol is a vetted provenance claim, so checking the directory shows whether the company may legitimately use it.",
+      "source": {
+        "name": "Guaranteed Irish",
+        "url": "https://guaranteedirish.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Guaranteed Irish member directory for the company name.",
+      "found_when": "A vendor entry for the company is returned from the Guaranteed Irish directory.",
+      "not_found_when": "A clean search of the directory returns no vendor entry for the company.",
+      "couldnt_check_when": "The directory search or API is unavailable, or the name matches too many similar vendors to confirm the entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the High Court Search registry of proceedings, winding-up petitions or listed cases?",
+      "why_it_matters": "High Court records show whether the company faces or has faced significant litigation or insolvency proceedings.",
+      "source": {
+        "name": "Courts Service of Ireland - High Court Search",
+        "url": "https://highcourtsearch.courts.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open High Court Search and enter the company name in the party name search field.",
+      "found_when": "One or more case records list the company as a party in High Court or Commercial Court proceedings.",
+      "not_found_when": "A clean party-name search returns no case record for the company.",
+      "couldnt_check_when": "The search service is down or requires an account, or the name returns too many cases to isolate the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered with the Health Information and Quality Authority (HIQA) as a designated centre or healthcare provider?",
+      "why_it_matters": "HIQA registration is mandatory to operate a nursing home or care centre, and inspection reports show compliance history.",
+      "source": {
+        "name": "Health Information and Quality Authority (HIQA)",
+        "url": "https://www.hiqa.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the HIQA find-a-centre search and enter the company or centre name.",
+      "found_when": "A centre record for the company is returned with registration status and any inspection reports.",
+      "not_found_when": "A clean search returns no centre record under the company name.",
+      "couldnt_check_when": "The centre search is unavailable, or the company operates under a trading or centre name that cannot be linked to it.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "news_press",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Hospitality Ireland published any article naming this company?",
+      "why_it_matters": "Trade press coverage reveals the company's deals, expansions and reputational issues in the hospitality sector.",
+      "source": {
+        "name": "Hospitality Ireland",
+        "url": "https://www.hospitalityireland.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the search box on Hospitality Ireland and enter the company name.",
+      "found_when": "One or more articles naming the company are returned by the site search.",
+      "not_found_when": "A clean site search returns no article mentioning the company.",
+      "couldnt_check_when": "The site search is unavailable or the name is too generic to tell which articles concern this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Health and Safety Authority (HSA) list of workplace safety prosecutions?",
+      "why_it_matters": "A prosecution or prohibition notice shows the company has been taken to court or stopped from working over safety breaches.",
+      "source": {
+        "name": "Health and Safety Authority (HSA)",
+        "url": "https://www.hsa.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the HSA prosecutions pages for the relevant year and scan the listed cases for the company name.",
+      "found_when": "The company name appears in an HSA prosecution summary or notice entry.",
+      "not_found_when": "A clean scan of the relevant yearly prosecution lists shows no entry for the company.",
+      "couldnt_check_when": "The prosecution lists cannot be opened, or the list for the relevant year is not published so no absence can be inferred.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed on the Irish Aviation Authority travel trade register of licensed or bonded travel agents and tour operators?",
+      "why_it_matters": "Only registered and bonded operators may lawfully sell package holidays, so absence points to an unprotected consumer offering.",
+      "source": {
+        "name": "Irish Aviation Authority (IAA) - Travel Trade Register",
+        "url": "https://www.iaa.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the IAA travel trade register listing and scan it for the company name or trading name.",
+      "found_when": "The company appears in the IAA travel trade register with a licence or bond entry.",
+      "not_found_when": "A clean scan of the register shows no entry under the company or trading name.",
+      "couldnt_check_when": "The register list cannot be loaded or read, or it is unclear whether the company sells travel at all.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in an Ibec sector association member directory?",
+      "why_it_matters": "Ibec membership shows the company is affiliated with Ireland's main employer and lobby group in its sector.",
+      "source": {
+        "name": "Ibec (Irish Business and Employers Confederation)",
+        "url": "https://www.ibec.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the relevant Ibec sector association member directory and scan the member list for the company name.",
+      "found_when": "The company name appears in an Ibec sector association member directory.",
+      "not_found_when": "A clean scan of the relevant Ibec member directories shows no entry for the company.",
+      "couldnt_check_when": "The member directory cannot be opened, or it is unclear which Ibec sector association the company would belong to.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Irish Hotels Federation (IHF) member or supplier directory?",
+      "why_it_matters": "IHF membership shows the operator is recognised by the national hotel and guesthouse representative body.",
+      "source": {
+        "name": "Irish Hotels Federation (IHF)",
+        "url": "https://www.ihf.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the IHF member or supplier directory and scan the listed hotels, guesthouses and suppliers for the company name.",
+      "found_when": "The company appears as a member or supplier entry in the IHF directory.",
+      "not_found_when": "A clean scan of the IHF directory shows no entry for the company or its property.",
+      "couldnt_check_when": "The directory cannot be loaded, or the company's property trades under a name that cannot be tied to the entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a full member of the Irish Venture Capital Association (IVCA)?",
+      "why_it_matters": "IVCA membership shows the firm is a recognised Irish investor or venture capital participant.",
+      "source": {
+        "name": "Irish Venture Capital Association (IVCA)",
+        "url": "https://www.ivca.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the IVCA full members page and scan the listed member firms for the company name.",
+      "found_when": "The company appears in the IVCA full members list.",
+      "not_found_when": "A clean scan of the IVCA member list shows no entry for the company.",
+      "couldnt_check_when": "The member list cannot be opened, or the company is an investee rather than an investor so an IVCA listing would not be expected.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company currently advertising job vacancies on JobAlert.ie?",
+      "why_it_matters": "Live ads show the company is actively hiring in Ireland and how visible it is to local candidates.",
+      "source": {
+        "name": "JobAlert.ie",
+        "url": "https://www.jobalert.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the JobAlert.ie job search and enter the company name to see its listed ads.",
+      "found_when": "One or more job ads are returned naming the company as the employer.",
+      "not_found_when": "A clean search returns no ads under the company name.",
+      "couldnt_check_when": "The job search is unavailable, or ads are posted under a recruiter or trading name so the employer cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its named solicitor listed in the Law Society of Ireland Find a Firm or Find a Solicitor directory?",
+      "why_it_matters": "A Law Society listing verifies a current practising certificate, which is required to provide legal services in Ireland.",
+      "source": {
+        "name": "Law Society of Ireland",
+        "url": "https://www.lawsociety.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Law Society Find a Firm or Find a Solicitor search and enter the firm or solicitor name.",
+      "found_when": "The firm or a named solicitor appears with a practising status entry.",
+      "not_found_when": "A clean name search returns no firm or solicitor entry.",
+      "couldnt_check_when": "The search returns an error, or the name is too common to identify the correct firm or solicitor.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a member listing with Limerick Chamber of Commerce?",
+      "why_it_matters": "A Limerick Chamber listing shows the company is visible in the Mid-West regional business network.",
+      "source": {
+        "name": "Limerick Chamber of Commerce",
+        "url": "https://www.limerickchamber.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Limerick Chamber member search and enter the company name.",
+      "found_when": "A member listing for the company is returned by the chamber directory search.",
+      "not_found_when": "A clean search returns no member listing for the company.",
+      "couldnt_check_when": "The member search is unavailable, or the name matches several members so the entry cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the National Standards Authority of Ireland (NSAI) search for a certified company?",
+      "why_it_matters": "The NSAI register is the official check that an ISO or CE certification the company advertises is real and current.",
+      "source": {
+        "name": "National Standards Authority of Ireland (NSAI)",
+        "url": "https://www.nsai.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NSAI search for a certified company and enter the company name.",
+      "found_when": "The company appears with a valid NSAI certification entry, including the standard certified.",
+      "not_found_when": "A clean search returns no certified company entry under the company name.",
+      "couldnt_check_when": "The certification search cannot be completed, or certification is held by a parent or sister entity so no direct match is possible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named as a party in any case before An Bord Pleanála?",
+      "why_it_matters": "Appeal outcomes can confirm, delay or block planning permissions the company depends on for its sites.",
+      "source": {
+        "name": "An Bord Pleanála",
+        "url": "https://www.pleanala.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the An Bord Pleanála case search and enter the company name in the parties field.",
+      "found_when": "One or more case records list the company as an appellant, applicant or party.",
+      "not_found_when": "A clean parties search returns no case for the company.",
+      "couldnt_check_when": "The case search is unavailable, or cases are recorded under a site or individual name so no match is possible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed on the Private Security Authority (PSA) register of licensed contractors?",
+      "why_it_matters": "Security guarding, CCTV, alarm and access control work requires a PSA licence, so absence is a legal compliance gap.",
+      "source": {
+        "name": "Private Security Authority (PSA)",
+        "url": "https://www.psa-gov.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the PSA registered contractors list and scan it for the company name and licence number.",
+      "found_when": "The company appears in the PSA registered contractors list with a licence entry.",
+      "not_found_when": "A clean scan of the PSA register shows no entry for the company name.",
+      "couldnt_check_when": "The register list cannot be loaded or read, or the company trades under a name different from its registration.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the Pharmaceutical Society of Ireland (PSI) statutory register of retail pharmacies or online suppliers?",
+      "why_it_matters": "Operating a pharmacy or supplying medicines online requires PSI registration, and the register also shows disciplinary notices.",
+      "source": {
+        "name": "Pharmaceutical Society of Ireland (PSI)",
+        "url": "https://www.psi.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PSI search register, select the register type and enter the company or pharmacy name.",
+      "found_when": "The company appears in a PSI register with registration details and status.",
+      "not_found_when": "A clean register search returns no entry for the company.",
+      "couldnt_check_when": "The register search is unavailable, or the company operates a pharmacy under a trading name that cannot be linked to the entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this organisation advertising vacancies as a public body on Publicjobs.ie?",
+      "why_it_matters": "A Publicjobs.ie presence confirms the organisation is a recognised civil service, local authority or state body employer.",
+      "source": {
+        "name": "Publicjobs.ie",
+        "url": "https://www.publicjobs.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Publicjobs.ie vacancy board and search the listings for the organisation name.",
+      "found_when": "One or more vacancy notices name the organisation as the recruiting public body.",
+      "not_found_when": "A clean search of the vacancy board returns no listing under the organisation name.",
+      "couldnt_check_when": "The vacancy board cannot be searched, or the organisation recruits through another channel so absence proves nothing.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 29,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as an approved supplier in the Restaurants Association of Ireland (RAI) directory?",
+      "why_it_matters": "An RAI approved supplier listing shows the company is endorsed by the national restaurant trade body.",
+      "source": {
+        "name": "Restaurants Association of Ireland (RAI)",
+        "url": "https://www.rai.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the RAI approved suppliers page and scan the listed suppliers for the company name.",
+      "found_when": "The company appears in the RAI approved suppliers list.",
+      "not_found_when": "A clean scan of the approved suppliers page shows no entry for the company.",
+      "couldnt_check_when": "The supplier page cannot be loaded, or the company is a restaurant member rather than a supplier so this list does not apply.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company profile or job listings on RecruitIreland?",
+      "why_it_matters": "A company profile shows the employer is visible on one of Ireland's long-running specialist job boards.",
+      "source": {
+        "name": "RecruitIreland",
+        "url": "https://www.recruitireland.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the RecruitIreland company search and enter the company name.",
+      "found_when": "A company profile or one or more job listings for the company are returned.",
+      "not_found_when": "A clean company search returns no profile or listing for the company.",
+      "couldnt_check_when": "The company search is unavailable, or the name matches several employers so the profile cannot be confirmed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named on a Revenue Commissioners tax defaulters list?",
+      "why_it_matters": "A defaulters list entry means Revenue secured a settlement or court determination for tax evasion or serious under-declaration.",
+      "source": {
+        "name": "Revenue Commissioners - Tax Defaulters List",
+        "url": "https://www.revenue.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the published quarterly tax defaulters lists and scan them for the company name and address.",
+      "found_when": "The company name appears in a published defaulters list with a settlement or court determination.",
+      "not_found_when": "A clean scan of the published defaulters lists shows no entry for the company.",
+      "couldnt_check_when": "The published list files cannot be opened, or only some quarterly lists are available so absence cannot be relied on.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Residential Tenancies Board (RTB) enforcement outcomes or dispute determinations?",
+      "why_it_matters": "RTB orders and court prosecutions show whether a landlord or letting agent has breached tenancy law.",
+      "source": {
+        "name": "Residential Tenancies Board (RTB)",
+        "url": "https://www.rtb.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the RTB enforcement outcomes and investigation search and enter the company name.",
+      "found_when": "An RTB determination order, investigation outcome or court order names the company.",
+      "not_found_when": "A clean search returns no RTB enforcement or determination record for the company.",
+      "couldnt_check_when": "The RTB search cannot be run, or records use property addresses rather than the company name so no match is possible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as an approved seafood establishment by the Sea-Fisheries Protection Authority (SFPA)?",
+      "why_it_matters": "Approved establishment status is required to process or export seafood and reflects food safety compliance.",
+      "source": {
+        "name": "Sea-Fisheries Protection Authority (SFPA)",
+        "url": "https://www.sfpa.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SFPA list of approved establishments and scan it for the company name and approval number.",
+      "found_when": "The company appears in the approved establishments list with an approval reference.",
+      "not_found_when": "A clean scan of the approved establishments list shows no entry for the company.",
+      "couldnt_check_when": "The list cannot be loaded or read, or the company is in a seafood activity that this list does not cover.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company recorded as a corporate donor in the Standards in Public Office Commission (SIPO) political donations returns?",
+      "why_it_matters": "SIPO donor records show whether the company has made political donations that must be disclosed, which tests its public neutrality claims.",
+      "source": {
+        "name": "Standards in Public Office Commission (SIPO) - Political Donations",
+        "url": "https://www.sipo.ie",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SIPO published donations disclosures and scan the donor entries for the company name.",
+      "found_when": "The company name appears in a published corporate donations disclosure with a donation record.",
+      "not_found_when": "A clean scan of the published donation disclosures shows no entry for the company.",
+      "couldnt_check_when": "The disclosure files cannot be opened, or only aggregate donation data is published so individual donors cannot be verified.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "register",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company record on SoloCheck showing financials, directors or credit risk indicators?",
+      "why_it_matters": "A SoloCheck report gives filed accounts, director histories and a credit risk view that can contradict the company's own presentation.",
+      "source": {
+        "name": "SoloCheck",
+        "url": "https://www.solocheck.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SoloCheck company search and enter the company name, then open the matching Irish company record.",
+      "found_when": "A company record for the company is returned with registration details and any financial or risk data.",
+      "not_found_when": "A clean company search returns no record matching the company name.",
+      "couldnt_check_when": "The search is limited without an account, or the name matches several similar companies so the correct record cannot be identified.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the StubbsGazette database of registered judgments, insolvency appointments or bad debt records?",
+      "why_it_matters": "Judgment and insolvency records show whether the company has defaulted on debts or entered liquidation or examinership.",
+      "source": {
+        "name": "StubbsGazette",
+        "url": "https://www.stubbsgazette.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the StubbsGazette search box and enter the company name, then review any judgment or insolvency entries.",
+      "found_when": "One or more records naming the company are returned, such as a registered judgment or insolvency appointment.",
+      "not_found_when": "A clean search returns no judgment, insolvency or bad debt record for the company.",
+      "couldnt_check_when": "The search requires a subscription or fails, or the name is too common to attribute returned records to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has The Currency published investigative or business articles naming this company?",
+      "why_it_matters": "Investigative business coverage can surface litigation, ownership or financial problems the company does not disclose itself.",
+      "source": {
+        "name": "The Currency",
+        "url": "https://thecurrency.news",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on The Currency and enter the company name, quoting it if the name is common.",
+      "found_when": "One or more articles naming the company are returned by the site search.",
+      "not_found_when": "A clean site search returns no article mentioning the company.",
+      "couldnt_check_when": "The site search is unavailable, or the name is too generic to tell whether the articles concern this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered on the Tusla early years register for childcare services?",
+      "why_it_matters": "Early years services must be registered with Tusla, and the register plus inspection reports show safety and staffing compliance.",
+      "source": {
+        "name": "Tusla - Child and Family Agency (Early Years Register)",
+        "url": "https://www.tusla.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Tusla early years register search and enter the service or company name.",
+      "found_when": "The service appears in the Tusla early years register with registration details and inspection reports.",
+      "not_found_when": "A clean register search returns no entry for the company or its service.",
+      "couldnt_check_when": "The register search is unavailable, or the service is registered under a trading name that cannot be linked to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Údarás na Gaeltachta client directory?",
+      "why_it_matters": "A Údarás client listing shows the company is supported as an employer in a Gaeltacht area, which supports its local presence claims.",
+      "source": {
+        "name": "Údarás na Gaeltachta",
+        "url": "https://udaras.ie",
+        "language": "Irish and English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Údarás na Gaeltachta client directory (eolaire) and scan the listed companies for the company name.",
+      "found_when": "The company appears in the Údarás na Gaeltachta client directory with a location in a Gaeltacht area.",
+      "not_found_when": "A clean scan of the client directory shows no entry for the company.",
+      "couldnt_check_when": "The directory cannot be loaded, or the company's Gaeltacht operations are not separately listed so absence proves nothing.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "register",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Vision-net report showing filed accounts, directors, judgments or a risk score?",
+      "why_it_matters": "Vision-net consolidates company filings, director linkages and Commercial Court judgments into one risk view.",
+      "source": {
+        "name": "Vision-net (CRIF Vision-net)",
+        "url": "https://www.vision-net.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Vision-net free company search and enter the company name, then open the matching company page.",
+      "found_when": "A company report page for the company is returned with registration, financial or risk information.",
+      "not_found_when": "A clean company name search returns no matching company report.",
+      "couldnt_check_when": "The report is behind a paywall so key data cannot be read, or several similar names make it unclear which report is correct.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named as a party in any Workplace Relations Commission (WRC) decision or Labour Court determination?",
+      "why_it_matters": "WRC and Labour Court records show whether the company has lost disputes over dismissals, wages or equality law.",
+      "source": {
+        "name": "Workplace Relations Commission (WRC) - Decisions & Determinations",
+        "url": "https://www.workplacerelations.ie",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the WRC decisions search, enter the company name in the names of parties field and run the search.",
+      "found_when": "One or more decisions or determinations list the company as a party.",
+      "not_found_when": "A clean party-name search returns no decision or determination for the company.",
+      "couldnt_check_when": "The decision search is unavailable, or the name is too common to separate the company from other similarly named parties.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "IE-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 41 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

@@ -1,0 +1,270 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed on B3 - Brasil, Bolsa, Balcão as an issuer of shares or debt, and if so under which corporate governance tier (Novo Mercado, Nível 1, Nível 2)?",
+      "why_it_matters": "An exchange listing shows the company meets B3 disclosure and governance rules, and its absence contradicts any claim of being publicly traded.",
+      "source": {
+        "name": "B3 - Brasil, Bolsa, Balcão",
+        "url": "https://www.b3.com.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open B3's listed companies search and enter the company's full corporate name or ticker.",
+      "found_when": "The company or its securities appear in B3's listed company records with a governance tier.",
+      "not_found_when": "A search by full corporate name and trade name returns no listed issuer.",
+      "couldnt_check_when": "The B3 search page cannot be loaded or the name is too common to isolate one issuer.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded by Banco Central do Brasil (BCB) as an authorised or supervised financial entity, and does it appear free of BCB administrative sanctions?",
+      "why_it_matters": "Financial activity in Brazil requires BCB authorisation, and a BCB sanction is a direct regulatory red flag.",
+      "source": {
+        "name": "Banco Central do Brasil (BCB)",
+        "url": "https://www.bcb.gov.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search BCB's supervised entities data for the company's corporate name, then check the administrative sanctions records.",
+      "found_when": "The company appears in BCB's supervised entities data or in its sanctions lists.",
+      "not_found_when": "Neither the supervised entities data nor the sanctions records return the company name.",
+      "couldnt_check_when": "The BCB dataset cannot be queried or the name returns many unrelated financial entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Casa dos Dados show the company with an active CNPJ whose registered name, address, capital and partners match what the company presents publicly?",
+      "why_it_matters": "The CNPJ record confirms the company is legally registered and active, and mismatches point to impersonation or stale claims.",
+      "source": {
+        "name": "Casa dos Dados",
+        "url": "https://casadosdados.com.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company's razão social or CNPJ in Casa dos Dados' company search and open the matching record.",
+      "found_when": "A CNPJ record for the company appears and its registration status and details can be read.",
+      "not_found_when": "A search on the full corporate name and CNPJ returns no registered company.",
+      "couldnt_check_when": "The search is unavailable or the name returns too many similarly named companies to identify one.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "complaints",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on Consumidor.gov.br with a consumer complaint record, and what are its resolution rate and response time indicators?",
+      "why_it_matters": "This official platform shows how the company actually handles consumer disputes, not just how it markets itself.",
+      "source": {
+        "name": "Consumidor.gov.br",
+        "url": "https://www.consumidor.gov.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Consumidor.gov.br for the company by name and open its participant company page.",
+      "found_when": "The company has a page showing complaint volumes, resolution index or response time.",
+      "not_found_when": "The company search returns no registered participant company.",
+      "couldnt_check_when": "The company search cannot be reached or the name matches several similarly named registered companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "news_press",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Imprensa Oficial do Estado de São Paulo (DOE SP) carry company publications such as shareholder notices, audited accounts, state contracts or state tax penalties involving the company?",
+      "why_it_matters": "Official gazette entries are legally binding public notices and can reveal obligations, contracts or penalties the company does not advertise.",
+      "source": {
+        "name": "Imprensa Oficial do Estado de São Paulo (DOE SP)",
+        "url": "https://www.doe.sp.gov.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the DOE SP advanced search, enter the company's razão social or trade name and scan the returned publications.",
+      "found_when": "Gazette publications naming the company appear in the search results.",
+      "not_found_when": "A search on the company name over a broad date range returns no publication.",
+      "couldnt_check_when": "The advanced search is unavailable, or the name is too generic to attribute any publication to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Exame report on the company or include it in its 'Melhores e Maiores' corporate performance ranking?",
+      "why_it_matters": "Independent business press coverage and ranking inclusion are third-party evidence of the company's real scale and standing.",
+      "source": {
+        "name": "Exame",
+        "url": "https://exame.com",
+        "language": "Portuguese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan Exame's 'Melhores e Maiores' ranking pages and its site search for the company name.",
+      "found_when": "The company is named in the ranking or in an Exame article about it.",
+      "not_found_when": "Neither the ranking pages nor a site search return the company.",
+      "couldnt_check_when": "The ranking pages are not readable or only a search box is available and it fails.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company operate an official store or seller account on Mercado Livre Brasil, and what reputation level, sales volume and customer reviews does it show?",
+      "why_it_matters": "Marketplace reputation, delivery punctuality and dispute rates show how the company behaves as a seller to end customers.",
+      "source": {
+        "name": "Mercado Livre Brasil",
+        "url": "https://www.mercadolivre.com.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Mercado Livre's official stores and sellers for the company or brand name and open the matching store page.",
+      "found_when": "A store or seller profile for the company appears with reputation and review data.",
+      "not_found_when": "No official store or seller account matches the company or brand name.",
+      "couldnt_check_when": "The store search cannot be queried or the brand name is used by unrelated third-party resellers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do Pelando community threads discuss the company, and do users report trustworthy or problematic purchasing experiences with it?",
+      "why_it_matters": "Community debate is candid, unsponsored feedback on whether the company delivers, honours prices and treats buyers well.",
+      "source": {
+        "name": "Pelando",
+        "url": "https://www.pelando.com.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use Pelando's search for the company or store name and read the deal threads and comments mentioning it.",
+      "found_when": "Search results contain deals or threads where users discuss the company.",
+      "not_found_when": "The search returns no deal or thread referencing the company.",
+      "couldnt_check_when": "The search page cannot be loaded or the company name yields only unrelated deals.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company, or any of its executives, listed by the Tribunal de Contas da União (TCU) as inidôneo or with irregular accounts, barring participation in federal public contracts?",
+      "why_it_matters": "A TCU debarment or irregular-accounts ruling legally prevents the company from contracting with the federal administration.",
+      "source": {
+        "name": "Tribunal de Contas da União (TCU) - Contas Irregulares e Inidôneos",
+        "url": "https://portal.tcu.gov.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TCU inidôneos and contas irregulares certificate list by the company's corporate name and by its partners' names.",
+      "found_when": "The company or one of its executives appears in the TCU inidôneos or irregular accounts list.",
+      "not_found_when": "Searches on the corporate name and on the listed partners return no TCU ruling.",
+      "couldnt_check_when": "The TCU certificate list cannot be searched or the name is too common to match a unique entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company covered on Promobit as a legitimate retailer, and do users report delivery, payment or trustworthiness problems with it?",
+      "why_it_matters": "Community verification on Promobit separates real retailers from scam storefronts and surfaces recurring fulfilment failures.",
+      "source": {
+        "name": "Promobit",
+        "url": "https://www.promobit.com.br",
+        "language": "Portuguese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open Promobit's store pages for the company name and scan its coupon and offer lists plus user comments.",
+      "found_when": "A Promobit store page or offer list exists for the company with user feedback.",
+      "not_found_when": "No store page, offer list or user post on Promobit mentions the company.",
+      "couldnt_check_when": "The store listing cannot be browsed or the name matches several unrelated merchants.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Tribunal de Justiça de São Paulo (TJSP) show civil lawsuits, debt executions, bankruptcy or judicial recovery (recuperação judicial) filings involving the company?",
+      "why_it_matters": "Court filings reveal unpaid debts, insolvency risk and litigation history that the company may keep quiet about.",
+      "source": {
+        "name": "Tribunal de Justiça de São Paulo (TJSP) - Consulta Processual e Falências",
+        "url": "https://www.tjsp.jus.br",
+        "language": "Portuguese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use TJSP's process search with the party-name option and enter the company's razão social.",
+      "found_when": "Case records naming the company as a party or as the debtor in a recovery/bankruptcy filing are returned.",
+      "not_found_when": "A party-name search on the full corporate name returns no case.",
+      "couldnt_check_when": "The court search is unavailable, requires a captcha that cannot be passed, or the name is too common to match one company.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "BR-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 11 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

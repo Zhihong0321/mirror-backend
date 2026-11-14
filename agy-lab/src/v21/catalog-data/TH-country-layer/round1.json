@@ -1,0 +1,796 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in ACT Ai's procurement analytics as a bidder on Thai state contracts, and does its bidding show a flagged pattern such as single-bidder awards, an unusual bidding network, or a conflict of interest with a public official?",
+      "why_it_matters": "It shows whether the company's public contract work is tied to suspicious bidding networks or officials.",
+      "source": {
+        "name": "ACT Ai (Anti-Corruption Organization of Thailand)",
+        "url": "https://actai.co",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open ACT Ai's company search and enter the company name or its Thai registered name.",
+      "found_when": "The company returns a profile with procurement awards, bidding partners or a flagging signal.",
+      "not_found_when": "A clean search on the full registered name returns no company record.",
+      "couldnt_check_when": "The search only matches the exact Thai legal name, or the page loads without results or errors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a corporate member in the AMCHAM Thailand member directory?",
+      "why_it_matters": "Chamber membership signals vetted foreign-linked standing and a partner network worth checking.",
+      "source": {
+        "name": "American Chamber of Commerce in Thailand (AMCHAM Thailand)",
+        "url": "https://www.amchamthailand.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the AMCHAM connect member search and enter the company name.",
+      "found_when": "The company appears as an AMCHAM corporate member profile.",
+      "not_found_when": "No member profile matches the company name in a clean search.",
+      "couldnt_check_when": "The member search sits behind a member login, or the name returns many similar firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in ATTA's member directory of travel agents?",
+      "why_it_matters": "ATTA lists bonded, association-vetted travel agents, so absence questions the company's tourism credentials.",
+      "source": {
+        "name": "Association of Thai Travel Agents (ATTA)",
+        "url": "https://atta.or.th",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open ATTA's member-directories page and scan or search the list for the company name.",
+      "found_when": "The company appears in the ATTA member directory.",
+      "not_found_when": "The member directory has no entry for the company under a clean search.",
+      "couldnt_check_when": "The directory is long and paginated, or the firm uses a different Thai and English trade name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member company in the British Chamber of Commerce Thailand directory?",
+      "why_it_matters": "BCCT membership is a vetted signal of standing in Thailand's British and international business community.",
+      "source": {
+        "name": "British Chamber of Commerce Thailand (BCCT)",
+        "url": "https://www.bccthai.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the BCCT members corporate search and enter the company name.",
+      "found_when": "A BCCT corporate member profile opens for the company.",
+      "not_found_when": "The member search returns no company of that name.",
+      "couldnt_check_when": "The member area requires a login, or the company is listed under a group or abbreviated name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Bank of Thailand's directory of licensed financial institutions, non-bank lenders, money changers, foreign exchange operators or payment providers?",
+      "why_it_matters": "Running a financial business without a BOT licence is illegal, so the listing settles whether the licence exists.",
+      "source": {
+        "name": "Bank of Thailand (BOT) - Financial Institutions & Non-Bank Directory",
+        "url": "https://www.bot.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BOT licence check search and enter the company name.",
+      "found_when": "The company is listed with a BOT licence type and supervisory status.",
+      "not_found_when": "The licence check returns no entry for the company.",
+      "couldnt_check_when": "The lookup needs the exact Thai legal name and licence category, or the service is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Creden Data profile showing its DBD registration, shareholders, directors and public procurement award history?",
+      "why_it_matters": "Cross-shareholding and director links reveal undisclosed related parties and ownership risk.",
+      "source": {
+        "name": "Creden Data (Creden Asia)",
+        "url": "https://data.creden.co",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use Creden's company suggestion search and enter the registered company name.",
+      "found_when": "A company profile opens with registration, ownership and award data.",
+      "not_found_when": "The suggestion search returns no matching registered company.",
+      "couldnt_check_when": "The search needs the Thai registered name, or the detailed results sit behind a paid plan.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company's project appear in ONEP's Smart EIA Plus registry with an approved or pending environmental impact assessment?",
+      "why_it_matters": "Factories, property, energy and mining projects cannot legally proceed without the EIA clearance recorded here.",
+      "source": {
+        "name": "Office of Natural Resources and Environmental Policy and Planning (ONEP Smart EIA Plus)",
+        "url": "https://eia.onep.go.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the EIA registry by company name or by the project name.",
+      "found_when": "A project record appears with an EIA, EHIA or IEE status for the company.",
+      "not_found_when": "The registry returns no project for the company under a clean search.",
+      "couldnt_check_when": "Records are filed under project names rather than company names, or the site times out.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as an active VAT registrant (Por Por 20) in the Revenue Department's VAT registrants search?",
+      "why_it_matters": "VAT status confirms the business is a live, tax-registered entity rather than a dormant shell.",
+      "source": {
+        "name": "Revenue Department - VAT Registrants Search (ภ.พ.20)",
+        "url": "https://eservice.rd.go.th/rd-ves-web/",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the VAT registrant search and enter the company name or its 13-digit tax ID.",
+      "found_when": "The company appears with an active VAT certificate status, branch number and place of business.",
+      "not_found_when": "The VAT search returns no registrant for the company.",
+      "couldnt_check_when": "The search requires the tax ID or a captcha, or the service is down.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in ETDA's registry of licensed digital platform providers, digital identity providers or electronic certification authorities?",
+      "why_it_matters": "Digital platform and e-transaction duties depend on whether ETDA has licensed or registered the operator.",
+      "source": {
+        "name": "Electronic Transactions Development Agency (ETDA)",
+        "url": "https://www.etda.or.th",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open ETDA's published licence lists and scan them for the company name.",
+      "found_when": "The company appears on one of ETDA's published licence or registration lists.",
+      "not_found_when": "None of ETDA's published lists contains the company.",
+      "couldnt_check_when": "The lists are split across several pages and published only in Thai.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Franco-Thai Chamber of Commerce online business directory?",
+      "why_it_matters": "FTCC listing shows the company is a recognised member of the French-Thai business community.",
+      "source": {
+        "name": "Franco-Thai Chamber of Commerce (FTCC)",
+        "url": "https://francothaicc.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FTCC online annuaire search and enter the company name.",
+      "found_when": "The company appears as an entry in the FTCC online directory.",
+      "not_found_when": "The directory search returns no entry for the company.",
+      "couldnt_check_when": "The directory lists member firms only, or the search matches French and Thai names inconsistently.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed member of an FTI industrial club, or registered in one of FTI's industry records such as GS1 barcodes or Made-in-Thailand certification?",
+      "why_it_matters": "FTI records show whether the company is a recognised operator in the industrial sector it claims.",
+      "source": {
+        "name": "Federation of Thai Industries (FTI / ส.อ.ท.)",
+        "url": "https://www.fti.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FTI member search and enter the Thai company name.",
+      "found_when": "The company appears in an FTI club member list or one of its registers.",
+      "not_found_when": "The member search returns no club or register entry for the company.",
+      "couldnt_check_when": "The member search matches Thai names only, or lapsed memberships are not displayed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the e-GP government procurement system as a contract winner, and is it on the published blacklist of disqualified or abandoned contractors?",
+      "why_it_matters": "This shows the company's record of state contract awards and any ban from public work.",
+      "source": {
+        "name": "Electronic Government Procurement (e-GP) - Comptroller General's Department",
+        "url": "http://www.gprocurement.go.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search e-GP by company name for award records, then check the blacklist page for the same name.",
+      "found_when": "The company appears in e-GP award records or on the blacklist.",
+      "not_found_when": "Neither the award search nor the blacklist shows the company.",
+      "couldnt_check_when": "The award search needs a Thai name, or the blacklist page is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold a valid Halal certificate in CICOT's Halal registry, with current certificate and certified product ranges?",
+      "why_it_matters": "An absent or expired Halal certificate makes a Halal claim on the company's products misleading.",
+      "source": {
+        "name": "The Central Islamic Council of Thailand (CICOT Halal)",
+        "url": "https://www.halal.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CICOT Halal database by company name or Halal certificate number.",
+      "found_when": "A certificate record appears with the company's certified products and expiry date.",
+      "not_found_when": "No Halal certificate is registered to the company.",
+      "couldnt_check_when": "Records are keyed to product or certificate numbers, or the search page fails to load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Housing Business Association in its developer and contractor member directory?",
+      "why_it_matters": "HBA membership indicates a residential developer vetted against the association's housing standards.",
+      "source": {
+        "name": "Housing Business Association (HBA)",
+        "url": "https://hba-th.org",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the HBA members contractor list and scan it for the company name.",
+      "found_when": "The company appears in the HBA member list.",
+      "not_found_when": "The member list has no entry for the company.",
+      "couldnt_check_when": "The list loads dynamically and only partly, or the developer is a project-level subsidiary.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on JobTH with active job postings, and do the hiring locations match the address it gives elsewhere?",
+      "why_it_matters": "Live postings evidence real operations, while mismatched locations point to a misdescribed or phantom employer.",
+      "source": {
+        "name": "JobTH",
+        "url": "https://www.jobth.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use JobTH's keyword company search and enter the company name.",
+      "found_when": "The company has a JobTH employer profile or current job postings.",
+      "not_found_when": "The keyword search returns no company profile or posting.",
+      "couldnt_check_when": "The employer posts under a trade name, or only closed listings remain visible.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 16,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company reviewed on JobTopGun's YouSay workplace review tool, and do its employee ratings point to any management or culture problems?",
+      "why_it_matters": "Anonymous employee reviews reveal management and culture issues that never appear in official filings.",
+      "source": {
+        "name": "JobTopGun",
+        "url": "https://www.jobtopgun.com",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Browse JobTopGun's company directory for the company name and open its review page.",
+      "found_when": "A company page with employee reviews or ratings exists.",
+      "not_found_when": "The company directory has no page for the company.",
+      "couldnt_check_when": "The directory is browsable only letter by letter, or the employer registers under a different trade name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company operate a storefront on Lazada Thailand, and how do its seller ratings and customer complaint records look?",
+      "why_it_matters": "Marketplace ratings and dispute complaints show how the company treats retail customers.",
+      "source": {
+        "name": "Lazada Thailand",
+        "url": "https://lazada.co.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Lazada catalog for the company's brand or store name.",
+      "found_when": "A LazMall or seller storefront appears with ratings or reviews.",
+      "not_found_when": "The catalog search finds no storefront or products under the company name.",
+      "couldnt_check_when": "The search returns unrelated products, or the company does not sell on the marketplace.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 18,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered as a licensed direct sales or direct marketing operator in the OCPB registry?",
+      "why_it_matters": "Direct sales and MLM schemes need this licence, so its absence suggests unauthorised or pyramid selling.",
+      "source": {
+        "name": "Office of the Consumer Protection Board (OCPB / สคบ.)",
+        "url": "https://www.ocpb.go.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the OCPB direct sales licence registry by company name.",
+      "found_when": "A licence record appears with the company's operator status.",
+      "not_found_when": "The registry lists no licensed operator under that name.",
+      "couldnt_check_when": "The registry needs the Thai legal name, or the service is under maintenance.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold Thai FDA registrations, with valid licence numbers, for the food, supplement, drug, cosmetic or medical device products it sells?",
+      "why_it_matters": "Selling regulated products without a valid FDA registration is illegal and licences can lapse unnoticed.",
+      "source": {
+        "name": "Thai Food and Drug Administration (Thai FDA / Oryor)",
+        "url": "https://oryor.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Oryor product database by company or product name.",
+      "found_when": "Registration records appear under the company with validity dates.",
+      "not_found_when": "No registration record is found for the company.",
+      "couldnt_check_when": "Records are keyed to product names or licence numbers, or the search returns nothing for a common name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company, or any of its directors, appear in SEC Thailand's licence register, enforcement actions or investor caution lists?",
+      "why_it_matters": "SEC sanctions and blacklists point to securities law breaches and barred directors.",
+      "source": {
+        "name": "Securities and Exchange Commission (SEC Thailand)",
+        "url": "https://www.sec.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SEC licence check and enforcement pages, searching by company and by director name.",
+      "found_when": "A licence record, sanction order or caution notice names the company or one of its directors.",
+      "not_found_when": "No licence, sanction or warning entry matches the company name.",
+      "couldnt_check_when": "The check only covers capital-market entities, or a common name matches several companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed issuer on the Stock Exchange of Thailand, and do its audited statements and 56-1 One Report match what it claims publicly?",
+      "why_it_matters": "Listed issuers must disclose audited financials and risks, which tests the company's own claims.",
+      "source": {
+        "name": "Stock Exchange of Thailand (SET / SETTRADE)",
+        "url": "https://www.set.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the SET listed company list and symbol lookup for the company name.",
+      "found_when": "A listed company profile with financial statements and filings exists.",
+      "not_found_when": "The company is not among SET listed issuers.",
+      "couldnt_check_when": "Only listed companies appear, or the name matches a subsidiary listed under a different symbol.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "news_press",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Techsauce's startup directory or coverage, with a funding round, accelerator programme or founder profile?",
+      "why_it_matters": "Independent startup coverage corroborates or contradicts funding and traction claims made by the company.",
+      "source": {
+        "name": "Techsauce",
+        "url": "https://techsauce.co",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Techsauce startup directory and the site itself by company name.",
+      "found_when": "A startup profile or article names the company with funding, programme or founder details.",
+      "not_found_when": "Neither the startup directory nor the site returns the company.",
+      "couldnt_check_when": "The directory covers startups only, or the company trades under a different name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 23,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the audit firm or CPA signing the company's financial statements listed as licensed and active in the TFAC directory?",
+      "why_it_matters": "Statements signed by an unlicensed or suspended auditor cannot be relied on.",
+      "source": {
+        "name": "Federation of Accounting Professions (TFAC / สภาวิชาชีพบัญชี)",
+        "url": "https://tfac.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TFAC corporate auditor database by the audit firm name or CPA name.",
+      "found_when": "The firm or CPA appears with a valid licence status.",
+      "not_found_when": "No licensed firm or CPA matches the name.",
+      "couldnt_check_when": "The auditor name must first be read from the DBD filing, or Thai names match loosely.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed member of the Thai Frozen Foods Association as a seafood or frozen food processor and exporter?",
+      "why_it_matters": "Membership signals a vetted export processor meeting the association's sanitary standards.",
+      "source": {
+        "name": "Thai Frozen Foods Association",
+        "url": "https://thai-frozen.or.th",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the association's member directory and scan it for the company name.",
+      "found_when": "The company appears in the association's member directory with a processor profile.",
+      "not_found_when": "The member directory has no entry for the company.",
+      "couldnt_check_when": "The directory lists members only, or the firm appears under a different export trade name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Thai-Chinese Chamber of Commerce's company directory?",
+      "why_it_matters": "Listing indicates Thai-Chinese ownership or joint-venture links and the business network that comes with them.",
+      "source": {
+        "name": "Thai-Chinese Chamber of Commerce (Thai-CC)",
+        "url": "https://thaicc.org",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Thai-CC company search and enter the company name.",
+      "found_when": "A company record appears in the chamber directory.",
+      "not_found_when": "The directory search returns no company of that name.",
+      "couldnt_check_when": "The directory holds member firms only, or the search needs the exact Thai or Chinese name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member in the Thai Condominium Association's directory or referenced in its market intelligence coverage?",
+      "why_it_matters": "Membership shows the developer is recognised in Thailand's condominium sector.",
+      "source": {
+        "name": "Thai Condominium Association",
+        "url": "https://thaicondo.or.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the association's site search and enter the developer or company name.",
+      "found_when": "A member entry or article mentioning the company appears.",
+      "not_found_when": "The site search returns nothing for the company name.",
+      "couldnt_check_when": "The site mixes news and member pages, so a hit may not prove membership.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 27,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company's hotel or resort listed as a member in the Thai Hotels Association directory?",
+      "why_it_matters": "THA listing confirms a registered accommodation operator inside the association's network.",
+      "source": {
+        "name": "Thai Hotels Association (THA)",
+        "url": "https://thaihotels.org",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the THA member directory for the relevant region and scan it for the hotel name.",
+      "found_when": "The hotel or resort appears in a regional THA member list.",
+      "not_found_when": "None of the regional member lists contains the hotel.",
+      "couldnt_check_when": "The lists are long and split by region, or the property is a branch under another name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 28,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member rice exporter or miller in the Thai Rice Exporters Association registry?",
+      "why_it_matters": "Only licensed exporters appear, so listing settles whether the company can legally ship rice.",
+      "source": {
+        "name": "Thai Rice Exporters Association",
+        "url": "https://thairiceexporters.or.th",
+        "language": "Thai"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the association's member list page and scan it for the company name.",
+      "found_when": "The company appears in the member list of exporters and millers.",
+      "not_found_when": "The member list has no entry for the company.",
+      "couldnt_check_when": "The static list is outdated, or the firm trades under a different registered name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Thai Subcontracting Promotion Association's member directory as an industrial subcontractor?",
+      "why_it_matters": "Listing evidences real manufacturing capability at the tier the company claims.",
+      "source": {
+        "name": "Thai Subcontracting Promotion Association (Thai Subcon)",
+        "url": "https://thaisubcon.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Thai Subcon member search and enter the company name.",
+      "found_when": "A member profile appears showing the company's manufacturing capabilities.",
+      "not_found_when": "The member search returns no company of that name.",
+      "couldnt_check_when": "The directory covers registered subcontractors only, or the profile page is unreadable.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 30,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a verified exporter or supplier profile on Thaitrade.com, the government B2B marketplace?",
+      "why_it_matters": "Verified profiles confirm the company is a registered Thai exporter with real product catalogues.",
+      "source": {
+        "name": "Thaitrade.com (Department of International Trade Promotion)",
+        "url": "https://www.thaitrade.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Thaitrade.com suppliers by company name.",
+      "found_when": "A supplier profile with verification badge and product catalogue appears.",
+      "not_found_when": "The supplier search returns no profile for the company.",
+      "couldnt_check_when": "The search matches product categories better than names, or the profile is incomplete.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on Wongnai with a business listing, and what do its customer ratings and reviews say about it?",
+      "why_it_matters": "Local reviews and customer photos show whether the outlet really operates and how it is regarded.",
+      "source": {
+        "name": "Wongnai (LINE MAN Wongnai)",
+        "url": "https://www.wongnai.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Wongnai businesses by company or outlet name.",
+      "found_when": "A business page with ratings, reviews or photos appears.",
+      "not_found_when": "No business listing matches the company name.",
+      "couldnt_check_when": "The listing may sit under a branch or trade name, or the company is not consumer facing.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 32,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a WorkVenture employer profile with insider employee reviews, culture assessments and leadership scores?",
+      "why_it_matters": "Insider reviews expose culture, pay and management problems that official records hide.",
+      "source": {
+        "name": "WorkVenture",
+        "url": "https://www.workventure.com",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search WorkVenture's company search by company name.",
+      "found_when": "An employer profile with reviews, ratings or leadership scores exists.",
+      "not_found_when": "The company has no employer profile on WorkVenture.",
+      "couldnt_check_when": "Only companies that register as employers appear, or the name matches a subsidiary.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a YellowPages Thailand listing, and do its phone number, address and branch details match its official registration?",
+      "why_it_matters": "A mismatched or missing directory entry signals unreliable contact data or a phantom office.",
+      "source": {
+        "name": "Thailand YellowPages (Teleinfo Media)",
+        "url": "https://www.yellowpages.co.th",
+        "language": "Thai"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the YellowPages search and enter the company name.",
+      "found_when": "A listing appears with contact details that can be compared to the registration.",
+      "not_found_when": "No listing matches the company name in a clean search.",
+      "couldnt_check_when": "Listings are keyed to trade names and paid placements, so absence is not proof.",
+      "confidence": "medium"
+    }
+  ],
+  "_pair": "TH-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 33 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 2
+}

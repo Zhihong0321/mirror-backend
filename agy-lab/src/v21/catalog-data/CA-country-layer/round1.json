@@ -1,0 +1,394 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Canada Revenue Agency (CRA) Charities Listings, and is its registration status, revocation history and T3010 filing record consistent with what the company claims?",
+      "why_it_matters": "A registered-charity or non-profit claim is easy to verify and a revoked or missing registration signals a legal or credibility problem.",
+      "source": {
+        "name": "Canada Revenue Agency (CRA) - Charities Listings",
+        "url": "https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Charities Listings basic search and enter the organisation's legal name in the name field.",
+      "found_when": "The organisation is returned with a registration number, status and annual information returns listed.",
+      "not_found_when": "A clean search on the full legal name returns no charity record.",
+      "couldnt_check_when": "The search is unavailable, or the name is generic enough that many unrelated charities match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Better Business Bureau (BBB) Canada profile, and does it carry a rating, complaints, alert notices or scam warnings?",
+      "why_it_matters": "BBB profiles reveal unresolved consumer complaints and accreditation claims that a company may not disclose.",
+      "source": {
+        "name": "Better Business Bureau (BBB) Canada",
+        "url": "https://www.bbb.org/en/ca",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the BBB Canada business search and enter the company name with the country filter set to Canada.",
+      "found_when": "A business profile is returned showing a rating, accreditation status, complaint count or alert notice.",
+      "not_found_when": "The search returns no matching business profile for the company name.",
+      "couldnt_check_when": "The search cannot be reached, or the company name is too common to identify a single profile.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Business Development Bank of Canada (BDC) venture capital portfolio or client success case studies?",
+      "why_it_matters": "Being listed as a BDC portfolio or client company corroborates financing and growth claims made by the company.",
+      "source": {
+        "name": "Business Development Bank of Canada (BDC)",
+        "url": "https://www.bdc.ca/",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the BDC venture capital portfolio page and BDC case studies for the company name or a close variant.",
+      "found_when": "The company is named on the BDC venture capital portfolio page or in a BDC client case study.",
+      "not_found_when": "The portfolio and case studies can be reviewed in full and the company is not named.",
+      "couldnt_check_when": "The portfolio pages do not load, or the name is too generic to distinguish from another listed business.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the CanadaOne Business Directory, and do the listed sector, province and contact details match the company's own details?",
+      "why_it_matters": "A stale or mismatched directory entry points to outdated contact details and inconsistent public information.",
+      "source": {
+        "name": "CanadaOne Business Directory",
+        "url": "https://www.canadaone.com/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CanadaOne directory search and enter the company name to open its listing.",
+      "found_when": "A directory listing for the company is returned with sector, province and contact details.",
+      "not_found_when": "The directory search returns no listing for the company name.",
+      "couldnt_check_when": "The directory search fails or returns many same-named entries that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed member or referenced business of the Chambre de commerce du Montréal métropolitain (CCMM) on ccmm.ca?",
+      "why_it_matters": "Chamber membership is a public credibility marker for Greater Montreal businesses and can confirm a claim of chamber affiliation.",
+      "source": {
+        "name": "Chambre de commerce du Montréal métropolitain (CCMM)",
+        "url": "https://www.ccmm.ca/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CCMM website for the company name to see whether it has a member or business page.",
+      "found_when": "The company has a member or business page, or is named in a CCMM announcement or mission notice.",
+      "not_found_when": "Searching the exact company name returns no member page or mention on ccmm.ca.",
+      "couldnt_check_when": "The site search is unavailable, or the name is generic enough that unrelated members match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "professional_membership",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Canadian Chamber of Commerce business member directory on chamber.ca?",
+      "why_it_matters": "The national member directory confirms or contradicts a company's claim to be a national chamber member.",
+      "source": {
+        "name": "Canadian Chamber of Commerce",
+        "url": "https://chamber.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the chamber.ca business member directory and search for the company name.",
+      "found_when": "The company appears as an entry in the business member directory.",
+      "not_found_when": "Searching the exact company name in the member directory returns no entry.",
+      "couldnt_check_when": "The directory search does not load, or the company trades under a name too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Eluta.ca job listings, and does the hiring activity and stated benefits match the company's own size and culture claims?",
+      "why_it_matters": "Live job postings indexed from employer websites show real hiring scale and can expose inflated workforce claims.",
+      "source": {
+        "name": "Eluta.ca",
+        "url": "https://www.eluta.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Eluta.ca search box and review the employer pages and postings returned.",
+      "found_when": "The company has an employer page or one or more active job postings on Eluta.ca.",
+      "not_found_when": "A clean search on the company name returns no postings from that employer.",
+      "couldnt_check_when": "Search results are blocked, or the name matches many other employers so postings cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a party to any proceeding or decision in the Federal Court of Canada Court Records Online, and do the dockets show federal litigation involving it?",
+      "why_it_matters": "Federal court dockets reveal IP disputes, tax appeals and regulatory challenges that a company may not disclose.",
+      "source": {
+        "name": "Federal Court of Canada - Court Records Online",
+        "url": "https://www.fct-cf.gc.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Federal Court proceedings query, enter the company name in the party name field and search the selected division.",
+      "found_when": "One or more court files list the company as a party with a file number and filing date.",
+      "not_found_when": "A clean party-name search returns no court files for the company.",
+      "couldnt_check_when": "The proceedings search is down, or the party name is too generic to attribute results to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the FINTRAC Money Services Businesses (MSB) Registry, and if it offers money transfer, foreign exchange, virtual currency or payment services, is it registered?",
+      "why_it_matters": "Operating a money services business without FINTRAC registration is a serious legal exposure and a clear red flag.",
+      "source": {
+        "name": "FINTRAC - Money Services Businesses (MSB) Registry",
+        "url": "https://fintrac-canafe.canada.ca/",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Download or open the FINTRAC MSB registry list file and search it for the company name.",
+      "found_when": "The company appears in the registry list with a registration number and listed services.",
+      "not_found_when": "The registry list can be searched in full and the company name does not appear.",
+      "couldnt_check_when": "The list file cannot be downloaded or read, or the name is an unregistered trade name not used in filings.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "If the company sells drugs or medical devices, does it hold licences in Health Canada's Drug Product Database or Medical Devices registry (MDALL), and are any of its products subject to compliance or recall notices?",
+      "why_it_matters": "Product licences and recall records show whether healthcare product claims are backed by a valid federal authorisation.",
+      "source": {
+        "name": "Health Canada - Drug Product & Medical Devices Registries (MDALL)",
+        "url": "https://health-products.canada.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Health Canada drug product and medical device databases by company name.",
+      "found_when": "The company is returned as a licence holder or manufacturer with DINs or device licences, and any recall notices are shown.",
+      "not_found_when": "A clean company-name search in the relevant database returns no licences or products.",
+      "couldnt_check_when": "The company does not operate in this sector, or the database is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company found in Canada's Business Registries (CBR/MRIS) search across Corporations Canada and the provincial registries, and do the legal name, corporate number, jurisdiction and status match the company's public claims?",
+      "why_it_matters": "A federal or provincial registration record is the baseline proof of legal existence and of the name and status a company presents.",
+      "source": {
+        "name": "Canada's Business Registries (CBR / MRIS)",
+        "url": "https://ised-isde.canada.ca/cbr-rec/en/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CBR federated business search and enter the company name to query the participating registries.",
+      "found_when": "A matching registry entry is returned with a corporate number, jurisdiction and legal status.",
+      "not_found_when": "A clean search on the exact legal name returns no registry entry in any participating jurisdiction.",
+      "couldnt_check_when": "The federated search is unavailable, or the name is too common to single out one entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company post jobs on Job Bank (Government of Canada), and do the postings, wage offers, locations and LMIA indicators match the company's stated size and hiring claims?",
+      "why_it_matters": "Federal job postings and LMIA indicators show real hiring activity and whether foreign-worker claims are consistent.",
+      "source": {
+        "name": "Job Bank (Government of Canada)",
+        "url": "https://www.jobbank.gc.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the exact company name in the Job Bank job search field and review the postings attributed to that employer.",
+      "found_when": "One or more active job postings are shown with the company as employer, with location and wage details.",
+      "not_found_when": "A clean search on the exact company name returns no postings from that employer.",
+      "couldnt_check_when": "The job search is unavailable, or the employer name is too generic to attribute postings.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered in the Northwest Territories Corporate Registries, and does the registry show a registration number and active status for it?",
+      "why_it_matters": "An NWT registry record confirms whether the company may legally carry on business in the territory.",
+      "source": {
+        "name": "Northwest Territories Corporate Registries",
+        "url": "https://www.justice.gov.nt.ca/en/corporate-registries/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NWT corporate registry name search and enter the company name in the search field.",
+      "found_when": "A registry entry is returned with the business name, registration number and status.",
+      "not_found_when": "A clean name search returns no NWT registration for the company.",
+      "couldnt_check_when": "The registry search page does not respond, or the name is too common to match one entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a venture or portfolio company on the MaRS Discovery District site, or named in its commercialisation and sector reports?",
+      "why_it_matters": "A MaRS portfolio listing corroborates innovation and investor claims that are otherwise hard to verify.",
+      "source": {
+        "name": "MaRS Discovery District",
+        "url": "https://www.marsdd.com/",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Search the MaRS site for the company name and scan the venture portfolio and report pages for it.",
+      "found_when": "The company appears as a portfolio company or is named in a MaRS report or announcement.",
+      "not_found_when": "Searching the exact company name across the MaRS site returns no portfolio entry or mention.",
+      "couldnt_check_when": "The site search is unavailable, or the name is too generic to distinguish from other ventures listed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a topic in the BC OrgBook, and do the credentials shown confirm the legal business name, registration date and active licences and standing?",
+      "why_it_matters": "OrgBook credentials give verifiable BC registration and licence data that can contradict a company's status claims.",
+      "source": {
+        "name": "BC OrgBook",
+        "url": "https://www.orgbook.gov.bc.ca/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search BC OrgBook for the company name and open the matching topic to read its credentials.",
+      "found_when": "A topic is returned showing the legal name, registration details and any listed licences or standing.",
+      "not_found_when": "A clean search on the exact name returns no OrgBook topic.",
+      "couldnt_check_when": "The search API does not respond, or several near-identical names cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the UrbanToronto Forum contain posts about the company, for example on its projects, tenant announcements, partnerships or controversies?",
+      "why_it_matters": "Forum threads surface construction progress, tenant moves and local controversies about property and development companies.",
+      "source": {
+        "name": "UrbanToronto Forum",
+        "url": "https://urbantoronto.ca/forum/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the UrbanToronto forum search with the company name in quotes and sort results by date.",
+      "found_when": "Forum posts naming the company are returned, with thread titles and dates.",
+      "not_found_when": "A quoted-name forum search returns no posts for the company.",
+      "couldnt_check_when": "Forum search requires a login, is unavailable, or the name is too common to attribute posts.",
+      "confidence": "medium"
+    }
+  ],
+  "_pair": "CA-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 16 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

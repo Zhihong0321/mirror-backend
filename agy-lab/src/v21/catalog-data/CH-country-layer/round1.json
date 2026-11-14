@@ -1,0 +1,1201 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on Alpha.ch as an employer advertising executive, management or senior board-level positions?",
+      "why_it_matters": "Senior hiring on a leadership-only portal shows whether the top team is growing, changing or losing people.",
+      "source": {
+        "name": "Alpha.ch",
+        "url": "https://www.alpha.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Alpha.ch job search, enter the company name in the search field and review the employer and vacancy results.",
+      "found_when": "The company name appears against one or more published executive vacancies or an employer profile.",
+      "not_found_when": "A clean search on the exact company name returns no vacancies and no employer profile.",
+      "couldnt_check_when": "The portal cannot be searched, the name is too common to match, or the results page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the AOOS public register of FINMA-supervised portfolio managers and trustees?",
+      "why_it_matters": "Absence from the supervisory register suggests the firm may manage assets without the required authorisation.",
+      "source": {
+        "name": "AOOS (Swiss Supervisory Organization for Asset Managers and Trustees)",
+        "url": "https://www.aoos.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AOOS supervised-entity register search and enter the company name.",
+      "found_when": "The company appears in the AOOS register as a supervised entity.",
+      "not_found_when": "A clean search on the exact company name returns no AOOS entry.",
+      "couldnt_check_when": "The register cannot be searched or the result page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Schweizerischer Arbeitgeberverband (SAV / UPS) on arbeitgeber.ch?",
+      "why_it_matters": "Membership shows the employer takes part in Swiss employer policy and collective bargaining structures.",
+      "source": {
+        "name": "Schweizerischer Arbeitgeberverband (SAV / UPS)",
+        "url": "https://www.arbeitgeber.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the members page of arbeitgeber.ch and scan the member list for the company name.",
+      "found_when": "The company name is listed among the association members.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The member list cannot be opened or the page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the ARIF member list as a FINMA-recognised financial intermediary?",
+      "why_it_matters": "Self-regulatory membership is the AML supervision link that lets a non-bank intermediary operate legally in Switzerland.",
+      "source": {
+        "name": "ARIF (Association Romande des Intermédiaires Financiers)",
+        "url": "https://www.arif.ch",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ARIF member list (liste des membres) and scan it for the company name.",
+      "found_when": "The company appears as an active ARIF member on the published list.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The list cannot be loaded, the name is too common to match, or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "register",
+      "problem_type": [
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is any aircraft registered in the Swiss aircraft register (BAZL / FOCA) with the company as owner or operator?",
+      "why_it_matters": "The aircraft register confirms or contradicts claims about owning or operating aircraft in Switzerland.",
+      "source": {
+        "name": "Federal Office of Civil Aviation Aircraft Register (BAZL / FOCA)",
+        "url": "https://www.bazl.admin.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BAZL aircraft register search and enter the company name as owner or operator.",
+      "found_when": "The company appears as registered owner or operator of an aircraft entry.",
+      "not_found_when": "A clean search on the exact company name returns no aircraft entry.",
+      "couldnt_check_when": "The register cannot be searched or the result pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a party in judgments published by the Swiss Federal Supreme Court (Bundesgericht / Tribunal fédéral) on bger.ch?",
+      "why_it_matters": "Supreme Court litigation shows legal exposure that may carry financial and reputational risk.",
+      "source": {
+        "name": "Federal Supreme Court (Bundesgericht / Tribunal fédéral)",
+        "url": "https://www.bger.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the bger.ch decision search, enter the company name in the simple query field and check the hits where it is a party.",
+      "found_when": "At least one published judgment names the company as a party.",
+      "not_found_when": "A clean exact search on the company name returns no judgments.",
+      "couldnt_check_when": "The name is too common to match reliably or the search and result pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named on the Bon à Savoir consumer alert list of companies not authorised in Switzerland?",
+      "why_it_matters": "A consumer alert entry signals complaints about unfair, unauthorised or dubious commercial conduct.",
+      "source": {
+        "name": "Bon à Savoir",
+        "url": "https://www.bonasavoir.ch",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Bon à Savoir alertes conso list and search the published entries for the company name.",
+      "found_when": "The company appears in a published Bon à Savoir consumer alert entry.",
+      "not_found_when": "The alert list contains no entry under the exact company name.",
+      "couldnt_check_when": "The alert list cannot be loaded or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a party in rulings of the Swiss Federal Administrative Court (Bundesverwaltungsgericht / TAF) published on bvger.ch?",
+      "why_it_matters": "Administrative court rulings expose regulatory, customs, procurement or IP disputes involving the company.",
+      "source": {
+        "name": "Federal Administrative Court (Bundesverwaltungsgericht / TAF)",
+        "url": "https://www.bvger.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the bvger.ch decision dashboard and enter the company name in the full-text search.",
+      "found_when": "At least one published ruling names the company as a party.",
+      "not_found_when": "A clean exact search on the company name returns no rulings.",
+      "couldnt_check_when": "The name is too common to match, the search is unavailable, or the documents cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Swiss Chambers of Commerce and Industry (CCIS) business directory on ccis.ch?",
+      "why_it_matters": "A chamber directory entry confirms the company is a recognised local business with published details.",
+      "source": {
+        "name": "Swiss Chambers of Commerce and Industry (CCIS)",
+        "url": "https://www.ccis.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ccis.ch company search and enter the company name in the search field.",
+      "found_when": "The company appears with its own directory entry showing address, legal form or sector.",
+      "not_found_when": "A clean search on the exact company name returns no directory entry.",
+      "couldnt_check_when": "The directory search does not respond or the result pages cannot be read.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 10,
+      "category": "claims_check",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Creditreform Switzerland hold a credit record for the company showing a rating, default probability or negative payment entries?",
+      "why_it_matters": "Credit bureau data tests whether claims about solvency and payment behaviour hold up.",
+      "source": {
+        "name": "Creditreform Switzerland",
+        "url": "https://www.creditreform.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Creditreform company search and enter the company name.",
+      "found_when": "A credit record for the company is returned with a rating, default probability or negative entries.",
+      "not_found_when": "A clean search on the exact company name returns no credit record.",
+      "couldnt_check_when": "The report is behind a paid login, the name is too common, or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company shown as an active VAT-registered taxpayer in the ESTV / AFC Swiss VAT register?",
+      "why_it_matters": "VAT registration confirms the company is an active taxable business and that invoiced VAT is legitimate.",
+      "source": {
+        "name": "Federal Tax Administration (ESTV / AFC) VAT Register",
+        "url": "https://www.estv.admin.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ESTV VAT register search and enter the company name or its UID number.",
+      "found_when": "The company appears with an active VAT entry and an entry date.",
+      "not_found_when": "A clean search on the exact company name returns no VAT entry.",
+      "couldnt_check_when": "The register cannot be queried or the result page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the company been named in a public notice or legal announcement published in the Official Gazette of the Canton of Vaud (faovd.ch)?",
+      "why_it_matters": "Cantonal legal notices reveal administrative decisions or creditor and land matters the company may not publicise.",
+      "source": {
+        "name": "Official Gazette of the Canton of Vaud (Feuille des avis officiels du canton de Vaud)",
+        "url": "https://faovd.ch",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the faovd.ch recherche page and enter the company name in the search field.",
+      "found_when": "At least one published notice or decision naming the company is returned.",
+      "not_found_when": "A clean search on the exact company name returns no notices.",
+      "couldnt_check_when": "The archive cannot be searched, the name is too common, or the notices cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company either licensed in the FINMA public registers or named on the FINMA warning list?",
+      "why_it_matters": "FINMA licensing is required for financial services, and a warning list entry means unauthorised activity.",
+      "source": {
+        "name": "FINMA Public Registers and Warning List",
+        "url": "https://www.finma.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the FINMA public registers and the warning list and search each for the company name.",
+      "found_when": "The company appears in an authorised-institution register or on the FINMA warning list.",
+      "not_found_when": "A clean search on the exact company name returns neither a licence entry nor a warning entry.",
+      "couldnt_check_when": "The registers cannot be searched or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company covered by Finanz und Wirtschaft (FuW), for example in its share guide or in reporting on its results?",
+      "why_it_matters": "Financial press coverage indicates transparency and gives an independent view of the business.",
+      "source": {
+        "name": "Finanz und Wirtschaft (FuW)",
+        "url": "https://www.fuw.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the FuW Aktienfuehrer list and scan it, then use the site search for the company name.",
+      "found_when": "The company has a share-guide entry or appears in a FuW article.",
+      "not_found_when": "Neither the share guide nor the site search returns the company under its exact name.",
+      "couldnt_check_when": "The archive is paywalled, the list cannot be loaded, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company or its establishment listed in the GastroSuisse member and hotel classification list?",
+      "why_it_matters": "Association membership and classification support quality claims in the hospitality sector.",
+      "source": {
+        "name": "GastroSuisse",
+        "url": "https://www.gastrosuisse.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the GastroSuisse classified-establishments list and scan it for the company or venue name.",
+      "found_when": "The company or its venue appears in the published GastroSuisse list.",
+      "not_found_when": "The list contains no entry under the exact company name.",
+      "couldnt_check_when": "The list cannot be loaded or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Help.ch publish a business directory entry for the company with address, trade name and management details?",
+      "why_it_matters": "A directory entry lets contact details and stated management be cross-checked against other sources.",
+      "source": {
+        "name": "Help.ch (Swiss Business Information Portal)",
+        "url": "https://www.help.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the help.ch site search and enter the exact company name.",
+      "found_when": "The company appears with its own directory entry showing address or management data.",
+      "not_found_when": "A clean search on the exact company name returns no directory entry.",
+      "couldnt_check_when": "The search fails, the name is too common to match, or the entry cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the member directory of the Handels- und Industrieverein des Kantons Bern (HIV Bern)?",
+      "why_it_matters": "Regional industry membership shows the company is embedded in the Bern business network.",
+      "source": {
+        "name": "Handels- und Industrieverein des Kantons Bern (HIV Bern)",
+        "url": "https://www.hiv-bern.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the HIV Bern member list and scan it for the company name.",
+      "found_when": "The company appears in the published member list.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The member list cannot be loaded or the pages cannot be read.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 18,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Handelskammer beider Basel (HKBB) member directory?",
+      "why_it_matters": "Chamber membership confirms a recognised local presence in the Basel region.",
+      "source": {
+        "name": "Handelskammer beider Basel (HKBB)",
+        "url": "https://www.hkbb.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the HKBB member directory, enter the company name in the name field and start the search.",
+      "found_when": "The company appears as a member with its own directory entry.",
+      "not_found_when": "A clean search on the exact company name returns no member entry.",
+      "couldnt_check_when": "The directory search does not respond or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the HotellerieSuisse member directory with an official hotel classification?",
+      "why_it_matters": "The official classification confirms or contradicts hotel quality and category claims.",
+      "source": {
+        "name": "HotellerieSuisse",
+        "url": "https://www.hotelleriesuisse.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the HotellerieSuisse member directory and enter the hotel or company name in the filter.",
+      "found_when": "The establishment appears as a member with a stated classification.",
+      "not_found_when": "A clean search on the exact name returns no member entry.",
+      "couldnt_check_when": "The directory cannot be filtered or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Jobs.ch show the company as an employer with an employer page or current job advertisements?",
+      "why_it_matters": "Active hiring shows the company is operating and expanding in German-speaking Switzerland.",
+      "source": {
+        "name": "Jobs.ch",
+        "url": "https://www.jobs.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Jobs.ch company search and enter the company name in the employer search field.",
+      "found_when": "The company has an employer page or at least one published job advertisement.",
+      "not_found_when": "A clean employer search on the exact company name returns no company page and no ads.",
+      "couldnt_check_when": "The search fails, the name is too common to match, or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Jobscout24 Switzerland show a company page or active vacancies for the company?",
+      "why_it_matters": "A nationwide job footprint shows the company is an active employer across regions.",
+      "source": {
+        "name": "Jobscout24 Switzerland",
+        "url": "https://www.jobscout24.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open Jobscout24 and enter the company name in the job or company search.",
+      "found_when": "A company page or at least one job listing in the company name is returned.",
+      "not_found_when": "A clean search on the exact company name returns no listing and no company page.",
+      "couldnt_check_when": "The search fails or the results cannot be read.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Jobtic.ch company directory for Italian-speaking Switzerland?",
+      "why_it_matters": "A Ticino job directory entry shows whether the company has a real presence in southern Switzerland.",
+      "source": {
+        "name": "Jobtic.ch",
+        "url": "https://www.jobtic.ch",
+        "language": "Italian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Jobtic.ch aziende company list and scan it for the company name.",
+      "found_when": "The company appears in the aziende list, with or without current vacancies.",
+      "not_found_when": "The company list contains no entry under the exact company name.",
+      "couldnt_check_when": "The list cannot be loaded or the pages cannot be read.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 23,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Jobup.ch show a company page or active job openings for the company in French-speaking Switzerland?",
+      "why_it_matters": "Recruitment activity in Romandie shows the company's real footprint in western Switzerland.",
+      "source": {
+        "name": "Jobup.ch",
+        "url": "https://www.jobup.ch",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Jobup.ch societes company search and enter the company name.",
+      "found_when": "A company page or at least one job advertisement in the company name is returned.",
+      "not_found_when": "A clean search on the exact company name returns no company page and no ads.",
+      "couldnt_check_when": "The search fails, the name is too common, or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named on a K-Tipp Warnliste or in a K-Tipp consumer complaint report?",
+      "why_it_matters": "Consumer watchdog warnings point to rip-off practices, dubious shops or abusive debt collection.",
+      "source": {
+        "name": "K-Tipp (Warnlisten and Consumer Forum)",
+        "url": "https://www.ktipp.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the K-Tipp Warnlisten section and the site search and enter the company name.",
+      "found_when": "The company appears on a published Warnliste or in a named K-Tipp article.",
+      "not_found_when": "A clean search on the exact company name returns no warning and no article.",
+      "couldnt_check_when": "Parts of the archive are paywalled, the search fails, or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Local.ch hold a business and telephone directory entry for the company with a street address and phone number?",
+      "why_it_matters": "Directory data confirms whether the stated address and landline actually exist and match.",
+      "source": {
+        "name": "Local.ch",
+        "url": "https://www.local.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open Local.ch, enter the company name and location in the search and open the matching entries.",
+      "found_when": "An entry in the company name with a street address and phone number is returned.",
+      "not_found_when": "A clean search on the exact name and address returns no entry.",
+      "couldnt_check_when": "The name is too common to match, the search fails, or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Moneyhouse hold a company record for the company with management, ownership or financial data?",
+      "why_it_matters": "Discrepancies in officers, seat or capital are a strong signal of an unreliable counterparty.",
+      "source": {
+        "name": "Moneyhouse",
+        "url": "https://www.moneyhouse.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Moneyhouse search and enter the exact company name.",
+      "found_when": "A company record is returned with officers, address history or financial data.",
+      "not_found_when": "A clean search on the exact company name returns no company record.",
+      "couldnt_check_when": "The record is behind a paywall, the name is too common, or the data cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does North Data Switzerland show a corporate record and group structure for the company?",
+      "why_it_matters": "Group and ownership links reveal who really controls the company behind the brand.",
+      "source": {
+        "name": "North Data Switzerland",
+        "url": "https://www.northdata.com",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open North Data, restrict the country filter to CH and enter the company name in the company search.",
+      "found_when": "A corporate record with ownership or officer links is returned for the company.",
+      "not_found_when": "A clean search restricted to Switzerland returns no record.",
+      "couldnt_check_when": "The search is limited without an account, the name is too common, or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a supervised financial intermediary in the OSFINcontrol register?",
+      "why_it_matters": "Supervision by a recognised body is required to act as an independent asset manager in Switzerland.",
+      "source": {
+        "name": "OSFINcontrol AG",
+        "url": "https://www.osfincontrol.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the OSFINcontrol supervised-entities table and enter the company name in its search field.",
+      "found_when": "The company appears in the supervised-entities register.",
+      "not_found_when": "A clean search on the exact company name returns no register entry.",
+      "couldnt_check_when": "The register cannot be searched or the table cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold a valid certificate in ProCert's list of certified clients?",
+      "why_it_matters": "Certificates published by the certification body confirm or refute claimed food safety, quality or environmental standards.",
+      "source": {
+        "name": "ProCert",
+        "url": "https://www.procert.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ProCert certificate search, enter the company name in the customer field and apply the filter.",
+      "found_when": "One or more certificates in the company name are returned with a standard and validity.",
+      "not_found_when": "A clean search on the exact company name returns no certificate.",
+      "couldnt_check_when": "The certificate search does not respond or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the audit firm appointed by the company listed in the FAOA / RAB public register with a valid licence?",
+      "why_it_matters": "An auditor without a valid licence undermines the reliability of the company's audited accounts.",
+      "source": {
+        "name": "Swiss Federal Audit Oversight Authority (FAOA / RAB / ASR)",
+        "url": "https://www.rab-asr.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the eRAB public register, take the auditor named in the company's commercial register entry and search that firm name.",
+      "found_when": "The appointed audit firm appears in the public register with a valid licence.",
+      "not_found_when": "A clean search on the exact auditor name returns no licence entry.",
+      "couldnt_check_when": "The appointed auditor is not stated in the sources, the register cannot be searched, or the entry cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Swiss Accreditation Service (SAS) directory of accredited laboratories, inspection or certification bodies?",
+      "why_it_matters": "Accreditation backs up technical competence claims for testing, inspection and certification services.",
+      "source": {
+        "name": "Swiss Accreditation Service (SAS)",
+        "url": "https://www.sas.admin.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SAS accreditation directory search and enter the company name.",
+      "found_when": "The company appears with an accreditation scope and validity period.",
+      "not_found_when": "A clean search on the exact company name returns no accreditation entry.",
+      "couldnt_check_when": "The directory cannot be searched or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the scienceindustries member index for the chemical, pharmaceutical and life sciences sector?",
+      "why_it_matters": "Membership shows the company belongs to the Swiss chemical, pharmaceutical and life sciences establishment.",
+      "source": {
+        "name": "scienceindustries",
+        "url": "https://www.scienceindustries.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the scienceindustries member index and scan it for the company name.",
+      "found_when": "The company appears in the published member index.",
+      "not_found_when": "The member index contains no entry under the exact company name.",
+      "couldnt_check_when": "The member index cannot be loaded or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Search.ch return a business and telephone directory entry for the company with locations and contact data?",
+      "why_it_matters": "Directory data confirms the company's physical presence and reachable contact points.",
+      "source": {
+        "name": "Search.ch",
+        "url": "https://www.search.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open Search.ch, enter the company name in the business search and open the matching entries.",
+      "found_when": "One or more entries in the company name with address or contact data are returned.",
+      "not_found_when": "A clean search on the exact company name returns no business entry.",
+      "couldnt_check_when": "The name is too common to match, the search fails, or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in SECA's find-a-member directory of Swiss private equity and corporate finance practitioners?",
+      "why_it_matters": "SECA membership shows the company is an established player in the Swiss deal-making community.",
+      "source": {
+        "name": "SECA (Swiss Private Equity & Corporate Finance Association)",
+        "url": "https://www.seca.ch",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SECA find-members directory and scan or search it for the company name.",
+      "found_when": "A member profile in the company name is published in the directory.",
+      "not_found_when": "The member directory contains no entry under the exact company name.",
+      "couldnt_check_when": "The directory cannot be loaded or the profiles cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on the SECO sanctions and embargo lists checked through the SESAM search?",
+      "why_it_matters": "A sanctions hit blocks dealings and can expose the company and its partners to prosecution.",
+      "source": {
+        "name": "SECO Sanctions and Embargo Lists",
+        "url": "https://www.seco.admin.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SESAM sanctions search and enter the company name.",
+      "found_when": "The company appears as a sanctioned entity with an asset freeze or restriction.",
+      "not_found_when": "A clean search on the exact company name returns no sanctions hit.",
+      "couldnt_check_when": "The search is unavailable, the name is too common to match, or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the members of the Schweizerischer Gewerbeverband (SGV / USAM)?",
+      "why_it_matters": "Membership shows the company is represented in the Swiss SME umbrella structure.",
+      "source": {
+        "name": "Schweizerischer Gewerbeverband (SGV / USAM)",
+        "url": "https://www.sgv-usam.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SGV / USAM member page, enter the company name in the search field and start the search.",
+      "found_when": "The company appears in the member list.",
+      "not_found_when": "A clean search on the exact company name returns no member entry.",
+      "couldnt_check_when": "The member search does not respond or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the company published commercial register notices in the Swiss Official Gazette of Commerce (SHAB / SOGC)?",
+      "why_it_matters": "The gazette log reveals capital changes, officer changes, creditor calls and bankruptcy notices that companies often omit.",
+      "source": {
+        "name": "SHAB / SOGC (Swiss Official Gazette of Commerce)",
+        "url": "https://www.shab.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SHAB publication search and enter the exact company name as keyword.",
+      "found_when": "At least one published commercial register notice naming the company is returned.",
+      "not_found_when": "A clean keyword search on the exact company name returns no publications.",
+      "couldnt_check_when": "The archive cannot be searched, the name is too common, or the notices cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the SICTIC portfolio list of angel-funded tech startups?",
+      "why_it_matters": "Angel-network inclusion evidences investor backing behind the company's growth story.",
+      "source": {
+        "name": "SICTIC (Swiss ICT Investor Club)",
+        "url": "https://www.sictic.ch",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SICTIC portfolio page and scan the listed companies for the company name.",
+      "found_when": "The company appears in the SICTIC portfolio or startup showcase.",
+      "not_found_when": "The portfolio page contains no entry under the exact company name.",
+      "couldnt_check_when": "The portfolio cannot be loaded or the entries cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a supervised financial intermediary in the SO-FIT register?",
+      "why_it_matters": "SO-FIT supervision is required for asset managers and trustees, so absence signals a licensing gap.",
+      "source": {
+        "name": "SO-FIT (Supervisory Organisation for Financial Intermediaries & Trustees)",
+        "url": "https://so-fit.ch",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SO-FIT search on so-fit.ch and enter the company name.",
+      "found_when": "The company appears in the SO-FIT register as a supervised intermediary.",
+      "not_found_when": "A clean search on the exact company name returns no register entry.",
+      "couldnt_check_when": "The search does not respond or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a certified organisation in the SQS certificate directory, for example for ISO 9001, ISO 14001 or ISO 27001?",
+      "why_it_matters": "A certificate published by the certifier confirms or refutes quality, environmental or information security claims.",
+      "source": {
+        "name": "SQS (Swiss Association for Quality and Management Systems)",
+        "url": "https://www.sqs.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SQS certified-organisations search and enter the company name in the title field.",
+      "found_when": "One or more certificates in the company name are returned with a standard and validity.",
+      "not_found_when": "A clean search on the exact company name returns no certificate.",
+      "couldnt_check_when": "The search does not respond or the certificate list cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Startupticker.ch published news articles about the company?",
+      "why_it_matters": "Startup press coverage shows funding rounds, awards and milestones that can be verified independently.",
+      "source": {
+        "name": "Startupticker.ch",
+        "url": "https://www.startupticker.ch",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Startupticker.ch search and enter the company name as an exact phrase.",
+      "found_when": "One or more articles naming the company are returned.",
+      "not_found_when": "A clean exact-phrase search on the company name returns no articles.",
+      "couldnt_check_when": "The search is unavailable, the name is too common to match, or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the member insurers of the Swiss Insurance Association (SVV / ASA)?",
+      "why_it_matters": "Association membership confirms the insurer belongs to the regulated Swiss private insurance market.",
+      "source": {
+        "name": "Swiss Insurance Association (SVV / ASA)",
+        "url": "https://www.svv.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SVV members page and scan the member list for the company name.",
+      "found_when": "The company appears in the published SVV member list.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The member list cannot be loaded or the page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 43,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Swico member directory for the Swiss digital economy?",
+      "why_it_matters": "Swico membership shows the company belongs to the recognised Swiss ICT and digital sector network.",
+      "source": {
+        "name": "Swico",
+        "url": "https://www.swico.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Swico member directory and scan it for the company name.",
+      "found_when": "The company appears in the published member directory.",
+      "not_found_when": "The member directory contains no entry under the exact company name.",
+      "couldnt_check_when": "The directory cannot be loaded or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 44,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the member institutions of the Swiss Bankers Association (Swiss Banking)?",
+      "why_it_matters": "SBA membership indicates the institution belongs to the organised Swiss banking sector.",
+      "source": {
+        "name": "Swiss Banking (Swiss Bankers Association - SBA)",
+        "url": "https://www.swissbanking.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Swiss Banking member institutions page and scan the list for the company name.",
+      "found_when": "The company appears in the published list of member institutions.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The member list cannot be loaded or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of SwissHoldings, the federation of multinational companies headquartered in Switzerland?",
+      "why_it_matters": "Membership supports claims of being a multinational group headquartered in Switzerland.",
+      "source": {
+        "name": "SwissHoldings",
+        "url": "https://www.swissholdings.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SwissHoldings members page and scan the member list for the company name.",
+      "found_when": "The company appears in the published member list.",
+      "not_found_when": "The member list contains no entry under the exact company name.",
+      "couldnt_check_when": "The member list cannot be loaded or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 46,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Swissmem member directory for the mechanical, electrical and metal industries?",
+      "why_it_matters": "Swissmem membership confirms the company is part of the recognised Swiss MEM industry network.",
+      "source": {
+        "name": "Swissmem",
+        "url": "https://www.swissmem.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Swissmem member directory and enter the company name in the search field.",
+      "found_when": "The company appears in the member directory with its own entry.",
+      "not_found_when": "A clean search on the exact company name returns no member entry.",
+      "couldnt_check_when": "The directory search does not respond or the results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 47,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold registered trademarks, patents or designs in the Swissreg database of the IPI / IGE?",
+      "why_it_matters": "IP registrations confirm or contradict ownership claims over brands and technology.",
+      "source": {
+        "name": "Swissreg (Swiss Federal Institute of Intellectual Property - IPI / IGE)",
+        "url": "https://www.swissreg.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Swissreg database client and enter the company name as proprietor in the trademark or patent search.",
+      "found_when": "One or more IP rights registered in the company name are returned with filing or expiry dates.",
+      "not_found_when": "A clean search on the exact company name as proprietor returns no IP rights.",
+      "couldnt_check_when": "The database cannot be searched, the name is too common to match, or the records cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 48,
+      "category": "awards",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company featured on Venturelab as one of the Swiss National Startup Team ventures?",
+      "why_it_matters": "Selection for the national startup programme is an independently awarded distinction.",
+      "source": {
+        "name": "Venturelab",
+        "url": "https://www.venturelab.swiss",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Venturelab site search and enter the company name.",
+      "found_when": "The company appears in a Venturelab venture or startup team listing.",
+      "not_found_when": "A clean search on the exact company name returns no Venturelab listing.",
+      "couldnt_check_when": "The search fails, the name is too common to match, or the pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 49,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in a WEKO / COMCO decision on merger control, antitrust or cartel enforcement?",
+      "why_it_matters": "Competition authority decisions reveal fines, behavioural orders or merger conditions affecting the company.",
+      "source": {
+        "name": "WEKO / COMCO (Competition Commission)",
+        "url": "https://www.weko.admin.ch",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the WEKO decisions page and scan the published decisions for the company name.",
+      "found_when": "A published decision names the company as a party or affected undertaking.",
+      "not_found_when": "The decisions list contains no entry naming the company.",
+      "couldnt_check_when": "The decisions page cannot be loaded, the name is too common to match, or the documents cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 50,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company entered in Zefix, the central Swiss business name index, with a UID, legal form, seat and current status?",
+      "why_it_matters": "The federal index is the baseline check that the company legally exists, where it is seated and whether it is active or in liquidation.",
+      "source": {
+        "name": "Zefix (Central Business Name Index)",
+        "url": "https://www.zefix.ch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Zefix company search and enter the exact company name.",
+      "found_when": "The company appears with a UID, legal form, registered seat and a status such as active, in liquidation or cancelled.",
+      "not_found_when": "A clean search on the exact company name returns no register entry.",
+      "couldnt_check_when": "The register cannot be searched, the name is too common to match, or the entry cannot be read.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "CH-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 50 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

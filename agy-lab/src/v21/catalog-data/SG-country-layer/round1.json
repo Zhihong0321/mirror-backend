@@ -1,0 +1,1290 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member on aams.org.sg?",
+      "why_it_matters": "A listing shows that peers in the company's own industry publicly accept it as a member.",
+      "source": {
+        "name": "aams.org.sg",
+        "url": "https://aams.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the members page on aams.org.sg and scan the published member list for the company name.",
+      "found_when": "The company name appears in the member list published on aams.org.sg.",
+      "not_found_when": "A clean scan of the member list shows no entry for the company.",
+      "couldnt_check_when": "The member list is unreadable or the company name is too generic to match reliably.",
+      "confidence": "low"
+    },
+    {
+      "rank": 2,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member bank of the Association of Banks in Singapore (ABS)?",
+      "why_it_matters": "ABS membership confirms the company is a recognised bank accepted by Singapore's banking industry body.",
+      "source": {
+        "name": "Association of Banks in Singapore (ABS)",
+        "url": "https://www.abs.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ABS member banks page and scan the list for the company name.",
+      "found_when": "The company appears on the ABS member banks list.",
+      "not_found_when": "The member banks list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The member list page cannot be loaded or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does acra.gov.sg publish a disciplinary or regulatory notice naming the company?",
+      "why_it_matters": "ACRA notices record formal sanctions against errant entities and their officers.",
+      "source": {
+        "name": "acra.gov.sg",
+        "url": "https://acra.gov.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ACRA disciplinary proceedings notices and scan or search the published notices for the company name.",
+      "found_when": "A published ACRA notice names the company.",
+      "not_found_when": "No published ACRA notice names the company after a clean search.",
+      "couldnt_check_when": "The notice pages cannot be searched or the name is too common to distinguish the company.",
+      "confidence": "low"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the American Chamber of Commerce in Singapore (AmCham) membership directory?",
+      "why_it_matters": "Listing shows the company is a recognised corporate member of the US business community in Singapore.",
+      "source": {
+        "name": "American Chamber of Commerce in Singapore (AmCham)",
+        "url": "https://amcham.com.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the AmCham membership directory and scan or search for the company name.",
+      "found_when": "The company appears in the AmCham membership directory.",
+      "not_found_when": "The directory shows no entry for the company after a clean search.",
+      "couldnt_check_when": "The directory is not searchable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does a search of news on asas.org.sg return any notice or update naming the company or its advertising?",
+      "why_it_matters": "Industry notices can flag claims or campaigns the company ran that were questioned.",
+      "source": {
+        "name": "asas.org.sg",
+        "url": "https://asas.org.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the search box on the asas.org.sg news pages and enter the company name.",
+      "found_when": "A news item or notice on asas.org.sg names the company.",
+      "not_found_when": "The news search returns no item naming the company.",
+      "couldnt_check_when": "The site search returns errors or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company directory on bca.gov.sg return a record for the company?",
+      "why_it_matters": "A BCA directory record confirms the firm is known to Singapore's building authority under the name it uses.",
+      "source": {
+        "name": "bca.gov.sg",
+        "url": "https://bca.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BCA company directory and search by company name or UEN.",
+      "found_when": "A BCA directory record matches the company.",
+      "not_found_when": "The directory search returns no record for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 7,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the bizSAFE register on bizsafe.wshc.sg hold a certification record for the company?",
+      "why_it_matters": "A current bizSAFE record shows the firm met workplace safety standards that buyers often require.",
+      "source": {
+        "name": "bizsafe.wshc.sg",
+        "url": "https://bizsafe.wshc.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the bizSAFE register on bizsafe.wshc.sg by company name.",
+      "found_when": "A bizSAFE record with a level and expiry date exists for the company.",
+      "not_found_when": "The register returns no record for the company after a clean search.",
+      "couldnt_check_when": "The register cannot be queried or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 8,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the British Chamber of Commerce Singapore (BritCham) membership directory?",
+      "why_it_matters": "BritCham listing shows the company is a recognised member of the British business community in Singapore.",
+      "source": {
+        "name": "British Chamber of Commerce Singapore (BritCham)",
+        "url": "https://www.britcham.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the BritCham corporate membership directory and scan for the company name.",
+      "found_when": "The company appears in the BritCham corporate directory.",
+      "not_found_when": "The directory shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The directory cannot be loaded or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the CASE TRUST accreditation list on casetrust.case.org.sg include the company?",
+      "why_it_matters": "CASE TRUST status signals that a consumer-facing business has met a recognised trust standard.",
+      "source": {
+        "name": "casetrust.case.org.sg",
+        "url": "https://casetrust.case.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the CASE TRUST list and scan the accredited businesses for the company name.",
+      "found_when": "The company appears on the CASE TRUST list.",
+      "not_found_when": "The list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The list is unreadable or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 10,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company shown as a licensed property agency in the Council for Estate Agencies (CEA) public register?",
+      "why_it_matters": "The CEA register confirms an agency's licence and any disciplinary or suspension history.",
+      "source": {
+        "name": "Council for Estate Agencies (CEA) Public Register",
+        "url": "https://www.cea.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CEA public register search and enter the company's business name.",
+      "found_when": "The register returns a licence record for the company with its current status.",
+      "not_found_when": "The register returns no licence record for the company after a clean search.",
+      "couldnt_check_when": "The register is unavailable or the name matches several unrelated agencies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered as a charity in the Charities Portal (charities.gov.sg)?",
+      "why_it_matters": "Registration status and governance records show whether the organisation is a regulated charity in good standing.",
+      "source": {
+        "name": "Charities Portal (Commissioner of Charities / MCCY)",
+        "url": "https://www.charities.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Charities Portal basic search and enter the organisation's registered name.",
+      "found_when": "The portal returns a charity or IPC record for the company.",
+      "not_found_when": "The portal returns no charity record for the company after a clean search.",
+      "couldnt_check_when": "The portal search fails or the name matches several similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Cultjobs carry a hiring profile or job postings for the company?",
+      "why_it_matters": "Hiring activity on Cultjobs points to a live creative, marketing or design operation in Singapore.",
+      "source": {
+        "name": "Cultjobs",
+        "url": "https://www.cultjobs.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Cultjobs for the company name and open any matching employer profile.",
+      "found_when": "An employer profile or job posting for the company appears on Cultjobs.",
+      "not_found_when": "The search returns no employer profile or posting for the company.",
+      "couldnt_check_when": "The site search is unavailable or the name matches unrelated agencies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "register",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does a search of the datasets on data.gov.sg return a record naming the company?",
+      "why_it_matters": "Government open data can corroborate a company's registered or licensed status independently.",
+      "source": {
+        "name": "data.gov.sg",
+        "url": "https://data.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search data.gov.sg, or query the relevant dataset's entity_name field, for the company name.",
+      "found_when": "A dataset record on data.gov.sg names the company.",
+      "not_found_when": "No dataset record names the company after a clean search.",
+      "couldnt_check_when": "The relevant dataset is not identifiable or the search interface is unreadable.",
+      "confidence": "low"
+    },
+    {
+      "rank": 14,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Singapore Government Electronic Gazette (eGazette) carry any notice naming the company?",
+      "why_it_matters": "Gazette notices flag winding-up, striking-off, receivership or tender-award events that change the company's legal standing.",
+      "source": {
+        "name": "Singapore Government Electronic Gazette (eGazette)",
+        "url": "https://www.egazette.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the eGazette browse search and enter the company's registered name.",
+      "found_when": "A gazette notice names the company.",
+      "not_found_when": "The gazette search returns no notice naming the company.",
+      "couldnt_check_when": "The gazette search is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do the court judgments published on elitigation.sg name the company in any proceeding?",
+      "why_it_matters": "Court judgments show litigation the company was party to and how it was decided.",
+      "source": {
+        "name": "elitigation.sg",
+        "url": "https://elitigation.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the elitigation judgment search and enter the company name as a quoted search phrase.",
+      "found_when": "A judgment on elitigation.sg names the company.",
+      "not_found_when": "The judgment search returns no case naming the company.",
+      "couldnt_check_when": "The search returns errors or the name is too common to separate from similar parties.",
+      "confidence": "low"
+    },
+    {
+      "rank": 16,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a licensed or exempt institution in the Monetary Authority of Singapore (MAS) Financial Institutions Directory?",
+      "why_it_matters": "The MAS directory is the authoritative check that a firm may conduct regulated financial business in Singapore.",
+      "source": {
+        "name": "Monetary Authority of Singapore (MAS) Financial Institutions Directory",
+        "url": "https://eservices.mas.gov.sg/fid",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the MAS Financial Institutions Directory search and enter the company's name.",
+      "found_when": "The directory returns an institution record for the company with its licence type.",
+      "not_found_when": "The directory returns no institution record for the company after a clean search.",
+      "couldnt_check_when": "The directory is unavailable or the name matches several unrelated institutions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does an eNotice on eservices.mlaw.gov.sg name the company, for example a notice of intended striking-off?",
+      "why_it_matters": "Such notices show the company is facing deregistration or another formal step against it.",
+      "source": {
+        "name": "eservices.mlaw.gov.sg",
+        "url": "https://eservices.mlaw.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the eNotices listing on eservices.mlaw.gov.sg and search for the company name.",
+      "found_when": "An eNotice names the company, such as an intended striking-off notice.",
+      "not_found_when": "The eNotices search returns no notice naming the company.",
+      "couldnt_check_when": "The eNotices pages cannot be searched or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 18,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the European Chamber of Commerce in Singapore (EuroCham) member directory?",
+      "why_it_matters": "EuroCham listing shows the company is a recognised European-linked business in Singapore.",
+      "source": {
+        "name": "European Chamber of Commerce in Singapore (EuroCham)",
+        "url": "https://eurocham.org.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the EuroCham member directory and search for the company name.",
+      "found_when": "The company appears in the EuroCham member directory.",
+      "not_found_when": "The directory returns no member entry for the company after a clean search.",
+      "couldnt_check_when": "The directory is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the French Chamber of Commerce in Singapore (FCCS) online directory?",
+      "why_it_matters": "FCCS listing shows the company is a recognised French-linked business with operations in Singapore.",
+      "source": {
+        "name": "French Chamber of Commerce in Singapore (FCCS)",
+        "url": "https://www.fccsingapore.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the FCCS online directory and enter the company name in its search filter.",
+      "found_when": "The company appears in the FCCS online directory.",
+      "not_found_when": "The directory returns no entry for the company after a clean search.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Fintechnews Singapore published coverage of the company?",
+      "why_it_matters": "Trade press coverage records funding, product and leadership events that shape the company's public profile.",
+      "source": {
+        "name": "Fintechnews Singapore",
+        "url": "https://fintechnews.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search fintechnews.sg for the company name and read any matching articles or directory entry.",
+      "found_when": "At least one article or directory entry on fintechnews.sg names the company.",
+      "not_found_when": "The site search returns no article or entry naming the company.",
+      "couldnt_check_when": "The site search is unavailable or the name matches unrelated entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a registered supplier in the GeBIZ supplier directory on gebiz.gov.sg?",
+      "why_it_matters": "A GeBIZ supplier record shows the company is eligible to bid for Singapore government contracts.",
+      "source": {
+        "name": "gebiz.gov.sg",
+        "url": "https://gebiz.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the GeBIZ supplier directory and search for the company's registered name.",
+      "found_when": "A supplier record for the company appears in the GeBIZ directory.",
+      "not_found_when": "The directory search returns no supplier record for the company.",
+      "couldnt_check_when": "The directory cannot be queried without a session or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 22,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as halal-certified in the MUIS Halal Certified Directory (halal.muis.gov.sg)?",
+      "why_it_matters": "A live MUIS certificate is the statutory proof a food business may trade as halal in Singapore.",
+      "source": {
+        "name": "Majlis Ugama Islam Singapura (MUIS) Halal Certified Directory",
+        "url": "https://halal.muis.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the MUIS halal establishments directory by the company's trading name.",
+      "found_when": "A halal certificate record for the company appears with a valid expiry date.",
+      "not_found_when": "The directory returns no halal record for the company after a clean search.",
+      "couldnt_check_when": "The directory is unavailable or the trading name matches several outlets.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "register",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the HDB registered contractor listing on hdb.gov.sg include the company?",
+      "why_it_matters": "HDB registration determines whether the firm may take on HDB renovation and maintenance works.",
+      "source": {
+        "name": "hdb.gov.sg",
+        "url": "https://hdb.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the HDB contractor listing and search for the company name.",
+      "found_when": "The company appears in the HDB registered contractor listing.",
+      "not_found_when": "The listing shows no entry for the company after a clean search.",
+      "couldnt_check_when": "The listing cannot be searched or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 24,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named among the winners or shortlists of the design awards shown on idcs.sg?",
+      "why_it_matters": "Design award recognition is independent evidence of the firm's work quality.",
+      "source": {
+        "name": "idcs.sg",
+        "url": "https://idcs.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the award gallery on idcs.sg and scan the winners and shortlists for the company name.",
+      "found_when": "The company or its project appears in the award winners or shortlist listing.",
+      "not_found_when": "The award listing shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The award pages are unreadable or only partly published.",
+      "confidence": "low"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does InternSG carry an employer listing or internship postings for the company?",
+      "why_it_matters": "Internship postings show the company is actively building a team in Singapore.",
+      "source": {
+        "name": "InternSG",
+        "url": "https://www.internsg.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the InternSG site search and enter the company name.",
+      "found_when": "An employer listing or internship posting for the company appears on InternSG.",
+      "not_found_when": "The search returns no listing or posting for the company.",
+      "couldnt_check_when": "The site search is unavailable or the name matches unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Jobstreet Singapore employer profile, and what do its employee reviews say?",
+      "why_it_matters": "Employer reviews reveal staff experience and reputation that a company's own website will not show.",
+      "source": {
+        "name": "Jobstreet Singapore",
+        "url": "https://www.jobstreet.com.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Jobstreet Singapore companies for the company name and open its employer profile.",
+      "found_when": "An employer profile with ratings or reviews for the company appears.",
+      "not_found_when": "The company search returns no employer profile for the company.",
+      "couldnt_check_when": "The site blocks the search or the name matches several unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the institution search on mas.gov.sg return a record for the company?",
+      "why_it_matters": "An entry on the central bank's own site ties the company to MAS supervision and reporting duties.",
+      "source": {
+        "name": "mas.gov.sg",
+        "url": "https://mas.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the MAS institution search linked from mas.gov.sg and enter the company name.",
+      "found_when": "The MAS search returns an institution record for the company.",
+      "not_found_when": "The search returns no record for the company after a clean query.",
+      "couldnt_check_when": "The search page cannot be loaded or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does MyCareersFuture carry open job postings from the company?",
+      "why_it_matters": "Postings on the government portal, with advertised salaries, evidence genuine local hiring.",
+      "source": {
+        "name": "MyCareersFuture",
+        "url": "https://www.mycareersfuture.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search MyCareersFuture companies for the company name and open its company page.",
+      "found_when": "A company page with current or past job postings appears for the company.",
+      "not_found_when": "The search returns no company page or posting for the company.",
+      "couldnt_check_when": "The search API is unavailable or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does an entity search on oxaide.com return a matching company record?",
+      "why_it_matters": "A matching entity record confirms the company trades under a verifiable corporate identity.",
+      "source": {
+        "name": "oxaide.com",
+        "url": "https://oxaide.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the entity search on oxaide.com and enter the company's registered name.",
+      "found_when": "An entity record matching the company's name and registration details is returned.",
+      "not_found_when": "The search returns no matching entity record for the company.",
+      "couldnt_check_when": "The search service is unavailable or returns several similar names.",
+      "confidence": "low"
+    },
+    {
+      "rank": 30,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Personal Data Protection Commission (PDPC) issued an enforcement decision naming the company?",
+      "why_it_matters": "A PDPC decision means a data-protection breach was investigated and penalised.",
+      "source": {
+        "name": "Personal Data Protection Commission (PDPC) Enforcement Decisions",
+        "url": "https://www.pdpc.gov.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the PDPC enforcement decisions list and scan or search the decisions for the company name.",
+      "found_when": "A PDPC enforcement decision names the company.",
+      "not_found_when": "No published enforcement decision names the company after a clean search.",
+      "couldnt_check_when": "The decision pages are unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Professional Engineers Board (PEB) directory of licensed corporations and partnerships?",
+      "why_it_matters": "PEB licensing is required to offer professional engineering services in Singapore.",
+      "source": {
+        "name": "peb.gov.sg",
+        "url": "https://peb.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PEB directory of licensed corporations and partnerships and search for the company name.",
+      "found_when": "A licensed corporation or partnership record matches the company.",
+      "not_found_when": "The directory returns no licence record for the company.",
+      "couldnt_check_when": "The directory is unavailable or the name matches several similar firms.",
+      "confidence": "low"
+    },
+    {
+      "rank": 32,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the .sg domain registrars published on prod.sgnic.sg?",
+      "why_it_matters": "SGNIC registrar status confirms the company is authorised to register .sg domains.",
+      "source": {
+        "name": "prod.sgnic.sg",
+        "url": "https://prod.sgnic.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the list of registrars and scan it for the company name.",
+      "found_when": "The company appears on the published .sg registrar list.",
+      "not_found_when": "The registrar list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The list page is unreadable or only reachable through the main sgnic.sg site.",
+      "confidence": "low"
+    },
+    {
+      "rank": 33,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Restaurant Association of Singapore (RAS)?",
+      "why_it_matters": "RAS membership shows the operator is recognised within Singapore's food and beverage industry.",
+      "source": {
+        "name": "Restaurant Association of Singapore (RAS)",
+        "url": "https://ras.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the RAS members page and scan the member list for the company name.",
+      "found_when": "The company appears in the RAS member list.",
+      "not_found_when": "The member list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The member list is unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Renotalk carry a professional listing or forum threads discussing the company?",
+      "why_it_matters": "Community threads expose unpaid contracts, poor workmanship and consumer disputes.",
+      "source": {
+        "name": "Renotalk",
+        "url": "https://www.renotalk.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Renotalk site search for the company name and open any professional listing or thread.",
+      "found_when": "A professional listing or forum thread on Renotalk names the company.",
+      "not_found_when": "The site search returns no listing or thread naming the company.",
+      "couldnt_check_when": "The forum search is unavailable or the name matches unrelated firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Singapore Business Review (SBR) published articles mentioning the company?",
+      "why_it_matters": "B2B press coverage records rankings, appointments and financial performance claims.",
+      "source": {
+        "name": "Singapore Business Review (SBR)",
+        "url": "https://sbr.com.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search sbr.com.sg for the company name and read any matching articles or company tag page.",
+      "found_when": "At least one SBR article or company entry names the company.",
+      "not_found_when": "The site search returns no article naming the company.",
+      "couldnt_check_when": "The site search is unavailable or the name matches unrelated entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Singapore Chinese Chamber of Commerce & Industry (SCCCI) member list?",
+      "why_it_matters": "SCCCI membership signals standing among Chinese-Singaporean business networks and trade links.",
+      "source": {
+        "name": "Singapore Chinese Chamber of Commerce & Industry (SCCCI)",
+        "url": "https://www.sccci.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SCCCI member list and scan it for the company name.",
+      "found_when": "The company appears in the SCCCI member list.",
+      "not_found_when": "The member list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The member list is unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company, or a named professional acting for it, listed in the members directory on sctp.org.sg?",
+      "why_it_matters": "Membership shows whether the firm's practitioners hold recognised professional standing.",
+      "source": {
+        "name": "sctp.org.sg",
+        "url": "https://sctp.org.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the members page on sctp.org.sg and search for the company name and its named principals.",
+      "found_when": "The company or its named professional appears in the directory.",
+      "not_found_when": "The directory shows no entry for the company or its principals after a clean search.",
+      "couldnt_check_when": "The directory search is unavailable or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 38,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Seedly list the company as a product or service with user reviews and ratings?",
+      "why_it_matters": "Consumer ratings show how customers rate the company against its competitors.",
+      "source": {
+        "name": "Seedly Community",
+        "url": "https://seedly.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Seedly for the company name and open its product page and reviews.",
+      "found_when": "A Seedly product page with ratings or reviews for the company exists.",
+      "not_found_when": "The search returns no product page for the company.",
+      "couldnt_check_when": "The search service is unavailable or the name matches unrelated brands.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the HDB contractor register on services2.hdb.gov.sg return a record for the company?",
+      "why_it_matters": "The register record confirms the firm's registered details for HDB-related works.",
+      "source": {
+        "name": "services2.hdb.gov.sg",
+        "url": "https://services2.hdb.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the HDB contractor register on services2.hdb.gov.sg and search for the company name.",
+      "found_when": "A contractor detail record matches the company.",
+      "not_found_when": "The register returns no record for the company after a clean search.",
+      "couldnt_check_when": "The register page cannot be queried directly or the name is too common to match.",
+      "confidence": "low"
+    },
+    {
+      "rank": 40,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company's Wantedly Singapore page describe the same business, team size and mission as its official channels?",
+      "why_it_matters": "Mismatched recruitment profiles expose inflated or stale claims about the company and its team.",
+      "source": {
+        "name": "Wantedly Singapore",
+        "url": "https://sg.wantedly.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Wantedly Singapore for the company name and compare its page with the company's official site.",
+      "found_when": "A company page exists and its stated business, team and mission match other public sources.",
+      "not_found_when": "No Wantedly company page exists for the company, so no comparison is possible.",
+      "couldnt_check_when": "The page is under an unrelated name or the search is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Singapore-German Chamber (SGC) members listing?",
+      "why_it_matters": "SGC membership shows the company is a recognised German-linked business with a regional hub in Singapore.",
+      "source": {
+        "name": "Singapore-German Chamber of Industry and Commerce (SGC)",
+        "url": "https://www.sgc.org.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SGC members listing and enter the company name in its search field.",
+      "found_when": "The company appears in the SGC members listing.",
+      "not_found_when": "The listing returns no entry for the company after a clean search.",
+      "couldnt_check_when": "The listing search is unavailable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the announcements search on sgx.com return filings by the company?",
+      "why_it_matters": "SGX filings show whether the company is listed and what it has disclosed to the market.",
+      "source": {
+        "name": "sgx.com",
+        "url": "https://sgx.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SGX company announcements search and enter the company name.",
+      "found_when": "One or more SGX announcements list the company as the submitting entity.",
+      "not_found_when": "The announcements search returns no filing for the company.",
+      "couldnt_check_when": "The announcements search is unavailable or the name matches several listed entities.",
+      "confidence": "low"
+    },
+    {
+      "rank": 43,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Singapore Indian Chamber of Commerce and Industry (SICCI) member directory?",
+      "why_it_matters": "SICCI listing shows the company is a recognised member of Singapore's Indian business network.",
+      "source": {
+        "name": "Singapore Indian Chamber of Commerce and Industry (SICCI)",
+        "url": "https://www.sicci.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SICCI member directory and scan it for the company name.",
+      "found_when": "The company appears in the SICCI member directory.",
+      "not_found_when": "The directory shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The directory is unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 44,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do SingaporeBrides Forum threads raise complaints or disputes about the company?",
+      "why_it_matters": "Consumer threads expose sudden closures, refund disputes and service failures.",
+      "source": {
+        "name": "SingaporeBrides Forum",
+        "url": "https://singaporebrides.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SingaporeBrides forum search and enter the company name.",
+      "found_when": "Forum threads naming the company describe a complaint, dispute or closure.",
+      "not_found_when": "The forum search returns no thread naming the company.",
+      "couldnt_check_when": "The forum search is unavailable or the name matches unrelated venues.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the member directory on singaporefintech.org?",
+      "why_it_matters": "Listing shows the company is recognised within Singapore's fintech community.",
+      "source": {
+        "name": "singaporefintech.org",
+        "url": "https://singaporefintech.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the singaporefintech.org member directory for the company name.",
+      "found_when": "A member directory page for the company exists on singaporefintech.org.",
+      "not_found_when": "The directory returns no entry for the company after a clean search.",
+      "couldnt_check_when": "The directory is unavailable or the name matches several firms.",
+      "confidence": "low"
+    },
+    {
+      "rank": 46,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Singapore Malay Chamber of Commerce and Industry (SMCCI) membership directory?",
+      "why_it_matters": "SMCCI membership shows the business is connected to a recognised Malay/Muslim enterprise network.",
+      "source": {
+        "name": "Singapore Malay Chamber of Commerce and Industry (SMCCI)",
+        "url": "https://www.smcci.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SMCCI membership directory and scan it for the company name.",
+      "found_when": "The company appears in the SMCCI directory.",
+      "not_found_when": "The directory shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The directory is unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 47,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named among the award winners published on spba.com.sg?",
+      "why_it_matters": "Brand award recognition is independent evidence of market standing and customer trust.",
+      "source": {
+        "name": "spba.com.sg",
+        "url": "https://spba.com.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the winners page on spba.com.sg and scan the winner list for the company name.",
+      "found_when": "The company appears in the published winner list.",
+      "not_found_when": "The winner list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The winners page is unreadable or only lists some award years.",
+      "confidence": "low"
+    },
+    {
+      "rank": 48,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Singapore Retailers Association (SRA)?",
+      "why_it_matters": "SRA membership shows the company is recognised within Singapore's retail industry.",
+      "source": {
+        "name": "Singapore Retailers Association (SRA)",
+        "url": "https://www.sra.org.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SRA ordinary members page and scan the list for the company name.",
+      "found_when": "The company appears in the SRA member list.",
+      "not_found_when": "The member list shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The member list is unreadable or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 49,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Streetdirectory.com list a business record with a physical address for the company?",
+      "why_it_matters": "A mapped address confirms the company has a real operating location in Singapore.",
+      "source": {
+        "name": "Streetdirectory.com",
+        "url": "https://www.streetdirectory.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Streetdirectory business finder for the company name and open the matching record.",
+      "found_when": "A business record with an address or branch for the company is returned.",
+      "not_found_when": "The business finder returns no record for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name matches unrelated businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 50,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named among the winners listed on swa.sg?",
+      "why_it_matters": "Award listing gives independent recognition of the company's performance.",
+      "source": {
+        "name": "swa.sg",
+        "url": "https://swa.sg",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the winners page on swa.sg and scan the list for the company name.",
+      "found_when": "The company appears in the winners listing on swa.sg.",
+      "not_found_when": "The winners listing shows no entry for the company after a clean scan.",
+      "couldnt_check_when": "The winners page is unreadable or only covers some award years.",
+      "confidence": "low"
+    },
+    {
+      "rank": 51,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the bizSAFE Marketplace on tal.sg show a verified bizSAFE level for the company?",
+      "why_it_matters": "A verified level proves the firm's workplace safety certification is current and publicly checkable.",
+      "source": {
+        "name": "Workplace Safety and Health (WSH) Council - bizSAFE Marketplace",
+        "url": "https://www.tal.sg/wshc",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the bizSAFE Marketplace from tal.sg and search for the company name.",
+      "found_when": "The marketplace shows a bizSAFE level and validity period for the company.",
+      "not_found_when": "The marketplace returns no bizSAFE record for the company.",
+      "couldnt_check_when": "The marketplace query fails or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 52,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Tech in Asia published reporting on the company?",
+      "why_it_matters": "Tech press investigations cover funding, layoffs, governance and founder track record.",
+      "source": {
+        "name": "Tech in Asia",
+        "url": "https://www.techinasia.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Tech in Asia for the company name and open its company profile and articles.",
+      "found_when": "A company profile or article on Tech in Asia names the company.",
+      "not_found_when": "The site search returns no profile or article naming the company.",
+      "couldnt_check_when": "The site search is paywalled or the name matches several startups.",
+      "confidence": "high"
+    },
+    {
+      "rank": 53,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company shown as a licensed travel agent in the Singapore Tourism Board (STB) TRUST system?",
+      "why_it_matters": "The statutory register confirms the agency may legally sell travel in Singapore and whether its licence was revoked.",
+      "source": {
+        "name": "Singapore Tourism Board (STB) TRUST System",
+        "url": "https://trust.stb.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TRUST business licence register for the company's name.",
+      "found_when": "A travel agent licence record for the company exists, with its current status.",
+      "not_found_when": "The register returns no travel agent licence for the company after a clean search.",
+      "couldnt_check_when": "The register cannot be searched directly or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 54,
+      "category": "directory",
+      "problem_type": [
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the BCA directory search on www1.bca.gov.sg return an entry for the company?",
+      "why_it_matters": "A BCA record confirms the firm holds a recognisable place in Singapore's built-environment sector.",
+      "source": {
+        "name": "www1.bca.gov.sg",
+        "url": "https://www1.bca.gov.sg",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BCA listing reachable from www1.bca.gov.sg and search for the company name.",
+      "found_when": "A BCA listing entry matches the company.",
+      "not_found_when": "The listing search returns no entry for the company.",
+      "couldnt_check_when": "The listing page cannot be queried directly or the name is too common to match.",
+      "confidence": "low"
+    }
+  ],
+  "_pair": "SG-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 54 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

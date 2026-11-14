@@ -1,0 +1,653 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a registered or licensed member of AFPI (Asosiasi Fintech Pendanaan Bersama Indonesia)?",
+      "why_it_matters": "P2P lending platforms must be AFPI members to hold an OJK licence, so absence points to an unlicensed operator.",
+      "source": {
+        "name": "AFPI (Asosiasi Fintech Pendanaan Bersama Indonesia)",
+        "url": "https://afpi.or.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AFPI member profile directory and enter the company name in the member search.",
+      "found_when": "The company appears in the AFPI member list with a profile page.",
+      "not_found_when": "A clean search of the member directory returns the company nowhere.",
+      "couldnt_check_when": "The member directory is unreachable, or the name is too generic to match a single entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in APJII's member directory of licensed Indonesian internet service providers?",
+      "why_it_matters": "APJII membership is the standard evidence that an ISP is a recognised, licensed network operator in Indonesia.",
+      "source": {
+        "name": "APJII (Asosiasi Penyelenggara Jasa Internet Indonesia)",
+        "url": "https://apjii.or.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the APJII member (penyelenggara) page and search the company name in the name field.",
+      "found_when": "The company is returned as an APJII member or licensed provider entry.",
+      "not_found_when": "The member search returns no entry for the company name.",
+      "couldnt_check_when": "The member page does not load or the search box rejects the query.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed on ASPERINDO's official member roster of express delivery and logistics operators?",
+      "why_it_matters": "ASPERINDO membership shows the courier or freight operator is recognised by the sector's official association.",
+      "source": {
+        "name": "ASPERINDO (Asosiasi Perusahaan Jasa Pengiriman Ekspres)",
+        "url": "https://asperindo.id",
+        "language": "Indonesian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ASPERINDO member page and scan the published roster for the company name.",
+      "found_when": "The company name appears in the published ASPERINDO member list.",
+      "not_found_when": "The full roster has been scanned and the company is absent.",
+      "couldnt_check_when": "The roster page is unreadable, paginated without access, or the name is ambiguous.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold a Bappebti licence as a commodity futures broker, digital gold trader or registered crypto-asset exchange, and is it absent from Bappebti's blocking list?",
+      "why_it_matters": "Bappebti licensing is mandatory for commodity futures and crypto trading and its warning list names illegal platforms.",
+      "source": {
+        "name": "Bappebti (Badan Pengawas Perdagangan Berjangka Komoditi)",
+        "url": "https://bappebti.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Bappebti legality check page (ceklegalitas) and enter the company name in the licensee search.",
+      "found_when": "The company appears as a licensed Bappebti entity or is missing from the blocking list where relevant.",
+      "not_found_when": "The legality search returns no licence entry and no blocking entry for the company.",
+      "couldnt_check_when": "The legality check form is down, requires a licence number the researcher lacks, or returns an error.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Cek BPOM show registered distribution authorisation numbers (NIE) for products marketed under the company's name?",
+      "why_it_matters": "Products sold without a BPOM registration number are unapproved and expose the company to regulatory and consumer risk.",
+      "source": {
+        "name": "Cek BPOM (Badan Pengawas Obat dan Makanan)",
+        "url": "https://cekbpom.pom.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Cek BPOM product search and enter the company name in the all-product query field.",
+      "found_when": "The search returns at least one registered product tied to the company.",
+      "not_found_when": "A clean product search under the company name returns no registered items.",
+      "couldnt_check_when": "The portal is unavailable, or the company name matches too many unrelated registrants to attribute products.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company maintain a verified employer profile on Dealls?",
+      "why_it_matters": "An employer profile there signals active, verifiable hiring and gives a public check on headcount and role claims.",
+      "source": {
+        "name": "Dealls",
+        "url": "https://dealls.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use Dealls company search and enter the company name.",
+      "found_when": "A company profile page is returned with hiring or culture information.",
+      "not_found_when": "The company search returns no profile for that name.",
+      "couldnt_check_when": "The search requires a login that is unavailable, or the name is too common to isolate one profile.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 7,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company an active listed member of AFTECH (Asosiasi Fintech Indonesia)?",
+      "why_it_matters": "AFTECH membership is the recognised industry endorsement for fintech operators designated by Bank Indonesia and OJK.",
+      "source": {
+        "name": "AFTECH (Asosiasi Fintech Indonesia)",
+        "url": "https://fintech.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AFTECH member company directory and search the company name with the active-member filter on.",
+      "found_when": "The company is returned in the AFTECH directory as an active member.",
+      "not_found_when": "A clean directory search with the active-member filter returns no company.",
+      "couldnt_check_when": "The directory endpoint fails or the name is too generic to attribute.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a GAIKINDO member with production or sales figures among Indonesia's automotive manufacturers?",
+      "why_it_matters": "GAIKINDO membership and reported volumes show the company is a genuine vehicle manufacturer or distributor, not just a brand name.",
+      "source": {
+        "name": "GAIKINDO (Gabungan Industri Kendaraan Bermotor Indonesia)",
+        "url": "https://gaikindo.or.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the GAIKINDO member (anggota) section and search for the company name.",
+      "found_when": "The company has a member page or appears in GAIKINDO production and sales statistics.",
+      "not_found_when": "The member search and statistics show no entry for the company.",
+      "couldnt_check_when": "The member section or statistics downloads are unavailable, or the name is a brand rather than a legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in GAPENSI's regional directory of construction contractors?",
+      "why_it_matters": "GAPENSI listing indicates an accredited general contractor, which matters for construction capability and tender eligibility.",
+      "source": {
+        "name": "GAPENSI (Gabungan Pelaksana Konstruksi Nasional Indonesia)",
+        "url": "https://gapensi.or.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the GAPENSI member (anggota) page and search the company name in the keyword field.",
+      "found_when": "The company is returned as a GAPENSI member contractor.",
+      "not_found_when": "The keyword search returns no member record for the company.",
+      "couldnt_check_when": "The member search errors out or the name matches too many regional entries to confirm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in GAPKI's palm oil member directory?",
+      "why_it_matters": "GAPKI membership corroborates that the company is an established palm oil producer or processor in Indonesia.",
+      "source": {
+        "name": "GAPKI (Gabungan Pengusaha Kelapa Sawit Indonesia)",
+        "url": "https://gapki.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the GAPKI member page and search the company name in the member search field.",
+      "found_when": "A GAPKI member entry is returned for the company.",
+      "not_found_when": "The member search returns no record for the company.",
+      "couldnt_check_when": "The member page is unavailable or the name returns only unrelated plantation groups.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Tech in Asia Indonesia carry news coverage of the company, such as funding rounds, founders, pivots or layoffs?",
+      "why_it_matters": "Independent tech press coverage corroborates or contradicts the company's own growth and funding claims.",
+      "source": {
+        "name": "Tech in Asia Indonesia",
+        "url": "https://id.techinasia.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Tech in Asia Indonesia site search and enter the company name.",
+      "found_when": "At least one article names the company and describes a verifiable event.",
+      "not_found_when": "The site search returns no matching article for the company.",
+      "couldnt_check_when": "Search results are paywalled, the search fails, or hits refer to a different company with the same name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in InaExport, the Ministry of Trade's official export-ready supplier directory?",
+      "why_it_matters": "InaExport listing is official confirmation that the company is a recognised export-ready manufacturer or supplier.",
+      "source": {
+        "name": "InaExport (Kementerian Perdagangan)",
+        "url": "https://inaexport.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the InaExport product and company directory and search the company name.",
+      "found_when": "A company or product listing tied to the company is returned.",
+      "not_found_when": "The directory search returns no listing for the company.",
+      "couldnt_check_when": "The directory search is down or the name returns only unrelated traders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a supplier or company profile on IndoNetwork, and do its listed contacts and address match other sources?",
+      "why_it_matters": "Old B2B listings often hold stale contacts, so comparison catches wrong addresses and phone numbers.",
+      "source": {
+        "name": "IndoNetwork",
+        "url": "https://indonetwork.co.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search IndoNetwork with the company type filter set to perusahaan and enter the company name.",
+      "found_when": "A company profile is returned with contact and address details.",
+      "not_found_when": "The filtered search returns no company profile.",
+      "couldnt_check_when": "The search page fails to load or the profile is behind a login.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does InfoAlkes Kemenkes record a medical device distribution or marketing authorisation (SDAK/IPAK) for the company?",
+      "why_it_matters": "Distributing medical devices without a valid Health Ministry authorisation is illegal in Indonesia.",
+      "source": {
+        "name": "InfoAlkes Kemenkes",
+        "url": "https://infoalkes.kemkes.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the InfoAlkes search page and enter the company name.",
+      "found_when": "The company appears with a valid distribution certificate or product authorisation.",
+      "not_found_when": "The search returns no licence record for the company.",
+      "couldnt_check_when": "The search portal is down or the name returns no attributable distributor record.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an employer page on Jobstreet Indonesia with vacancies, office locations or stated headcount?",
+      "why_it_matters": "Hiring activity and self-reported size on Jobstreet give an independent view of whether the company is operating at the scale it claims.",
+      "source": {
+        "name": "Jobstreet Indonesia",
+        "url": "https://jobstreet.co.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Jobstreet Indonesia company profiles for the company name.",
+      "found_when": "A company page is returned listing roles, locations or company overview.",
+      "not_found_when": "The company search returns no employer page.",
+      "couldnt_check_when": "The site blocks the request or the name matches several unrelated employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Karir.com show active job postings or a company profile for the company?",
+      "why_it_matters": "A live recruiting presence supports claims of ongoing operations and current staffing.",
+      "source": {
+        "name": "Karir.com",
+        "url": "https://karir.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Karir.com job search and enter the company name in the keyword field.",
+      "found_when": "Job postings or a company profile attributed to the company are returned.",
+      "not_found_when": "The search returns no postings or profile for the company.",
+      "couldnt_check_when": "The search page fails or postings carry only a brand name that cannot be tied to the legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Kaskus contain complaint threads in Surat Pembaca or negative trading feedback naming the company?",
+      "why_it_matters": "Community complaint threads surface unresolved consumer disputes and fraud allegations that formal records miss.",
+      "source": {
+        "name": "Kaskus",
+        "url": "https://kaskus.co.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Kaskus threads for the company name and review the complaint and trading-feedback sections.",
+      "found_when": "At least one thread names the company with a complaint or dispute allegation.",
+      "not_found_when": "The thread search returns no posts naming the company.",
+      "couldnt_check_when": "The search API fails, requires login, or the name is too common to attribute posts.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company page on KitaLulus showing frontline vacancies or compensation ranges?",
+      "why_it_matters": "Operational and retail hiring signals reveal the company's real frontline footprint in tier-1 and tier-2 cities.",
+      "source": {
+        "name": "KitaLulus",
+        "url": "https://kitalulus.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search KitaLulus company pages for the company name.",
+      "found_when": "A company page is returned with vacancies or salary information.",
+      "not_found_when": "The company search returns no page for the company.",
+      "couldnt_check_when": "The site is unreachable or the name matches several similar SME names.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 19,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Kontan reported on the company, for example on corporate actions, debt restructuring, PKPU hearings or regulatory sanctions?",
+      "why_it_matters": "Financial press coverage is the main public signal of insolvency proceedings and sanctions against Indonesian companies.",
+      "source": {
+        "name": "Kontan",
+        "url": "https://kontan.co.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Kontan site search and enter the company name.",
+      "found_when": "One or more articles name the company and describe a specific event.",
+      "not_found_when": "The site search returns no article mentioning the company.",
+      "couldnt_check_when": "Search results are blocked or articles refer to a different company with the same name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a vendor store on Mbizmarket with products, pricing and supplier ratings visible?",
+      "why_it_matters": "Mbizmarket vendor status shows the company is an accepted supplier for enterprise and government procurement.",
+      "source": {
+        "name": "Mbizmarket",
+        "url": "https://mbizmarket.co.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Mbizmarket store (toko) directory for the company name.",
+      "found_when": "A vendor store page is returned for the company.",
+      "not_found_when": "The store search returns no matching vendor.",
+      "couldnt_check_when": "The store search requires login or the name returns only unrelated resellers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered as a supplier on PaDi UMKM, the state-owned enterprise procurement marketplace?",
+      "why_it_matters": "PaDi UMKM registration shows the company can and does trade with Indonesian state-owned corporations.",
+      "source": {
+        "name": "PaDi UMKM",
+        "url": "https://padiumkm.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the PaDi UMKM store search and enter the company name.",
+      "found_when": "A supplier store or product listing attributed to the company is returned.",
+      "not_found_when": "The store search returns no listing for the company.",
+      "couldnt_check_when": "The search endpoint is unavailable or the name returns only similarly named SMEs.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered in the PSE Lingkup Privat registry of private electronic system operators?",
+      "why_it_matters": "Operating an app, SaaS or e-commerce service without PSE registration breaches Indonesian digital registration rules.",
+      "source": {
+        "name": "PSE Lingkup Privat Kemkomdigi",
+        "url": "https://pse.komdigi.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PSE registry list and search for the company or its platform name.",
+      "found_when": "The company or its platform appears as a registered PSE operator.",
+      "not_found_when": "A clean registry search returns no entry for the company or its platform.",
+      "couldnt_check_when": "The registry list fails to load or the operator is registered under a name unrelated to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a supplier storefront on Ralali with listed products and business categories?",
+      "why_it_matters": "A Ralali storefront indicates an active wholesale trading operation and visible product scope.",
+      "source": {
+        "name": "Ralali",
+        "url": "https://ralali.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Ralali vendor directory for the company name.",
+      "found_when": "A vendor page is returned with the company's products.",
+      "not_found_when": "The search returns no vendor page for the company.",
+      "couldnt_check_when": "The site blocks the request or the name matches only unrelated distributors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does SIAPkerja Kemnaker show the company as compliant with mandatory labour reporting (WLKP) and related manpower obligations?",
+      "why_it_matters": "Missing WLKP registration is a concrete labour-law compliance gap for any Indonesian employer.",
+      "source": {
+        "name": "SIAPkerja Kemnaker (Kementerian Ketenagakerjaan)",
+        "url": "https://siapkerja.kemnaker.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the SIAPkerja company directory for the company name.",
+      "found_when": "A company record is returned showing WLKP or manpower compliance data.",
+      "not_found_when": "The company directory returns no record for the company.",
+      "couldnt_check_when": "The platform requires an employer login, or the search endpoint is unavailable.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company or its products listed in the SMESCO Indonesia SME catalogue?",
+      "why_it_matters": "SMESCO listing shows the company is a vetted SME or cooperative producer with official export-development support.",
+      "source": {
+        "name": "SMESCO Indonesia",
+        "url": "https://smesco.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SMESCO UMKM catalogue search and enter the company or brand name.",
+      "found_when": "A UMKM or product entry attributed to the company is returned.",
+      "not_found_when": "The catalogue search returns no entry for the company.",
+      "couldnt_check_when": "The catalogue API is unavailable or the name is too common among small producers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the P3DN/TKDN Kemenperin registry hold a domestic component (TKDN) or BMP certificate for the company?",
+      "why_it_matters": "A TKDN certificate is required to claim local-content preference on Indonesian government contracts.",
+      "source": {
+        "name": "P3DN / TKDN Kemenperin",
+        "url": "https://tkdn.kemenperin.go.id",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the TKDN certificate search, choose the company search mode and enter the company name.",
+      "found_when": "At least one certificate row is returned for the company.",
+      "not_found_when": "The certificate search returns zero rows for the company name.",
+      "couldnt_check_when": "The certificate search page is down or the name returns rows for similarly named entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Tokopedia show a verified Official Store or Power Merchant Pro for the company, and does its buyer feedback support the claims made about it?",
+      "why_it_matters": "An official store plus sales and rating history confirms the company genuinely sells directly, not through unverified resellers.",
+      "source": {
+        "name": "Tokopedia",
+        "url": "https://tokopedia.com",
+        "language": "Indonesian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Tokopedia with the shop filter and enter the company name.",
+      "found_when": "A verified store page for the company is returned with sales and rating data.",
+      "not_found_when": "The shop search returns no store attributable to the company.",
+      "couldnt_check_when": "The search is blocked by the platform or the name only returns resellers claiming to represent the company.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "ID-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 27 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

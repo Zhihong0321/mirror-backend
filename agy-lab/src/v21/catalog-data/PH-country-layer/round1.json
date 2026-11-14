@@ -1,0 +1,587 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Bankers Association of the Philippines (BAP) on its published membership list?",
+      "why_it_matters": "BAP membership marks a bank as part of the official industry body, so a claimed banking status that is missing from the list is a contradiction.",
+      "source": {
+        "name": "Bankers Association of the Philippines (BAP)",
+        "url": "https://bap.org.ph",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the BAP membership page and scan the member list for the bank's corporate name.",
+      "found_when": "The company name appears on the BAP membership list.",
+      "not_found_when": "The full membership list contains no entry matching the company's corporate or trade name.",
+      "couldnt_check_when": "The membership page fails to load or shows only logos and acronyms that cannot be matched to the name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Bangko Sentral ng Pilipinas (BSP) directory of supervised financial institutions under the institution type it claims, such as bank, non-bank, money service business, virtual asset service provider or electronic money issuer?",
+      "why_it_matters": "Financial activity in the Philippines requires a BSP licence, and a missing record means the company is operating or claiming status without one.",
+      "source": {
+        "name": "Bangko Sentral ng Pilipinas (BSP) - Supervised Financial Institutions Directory",
+        "url": "https://www.bsp.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the BSP Supervised Financial Institutions Directory by the company's registered name and read the institution type, authority and status fields.",
+      "found_when": "The company is listed with an institution type, authority and status matching its claimed financial activity.",
+      "not_found_when": "A clean name search of the BSP institution directory returns no institution.",
+      "couldnt_check_when": "The directory does not load or the name returns several similar institutions that cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does BusinessList.ph carry a listing for the company whose address, telephone number and customer reviews match the contact details the company publishes itself?",
+      "why_it_matters": "Third-party directory data either confirms the company's contact details or exposes stale and inconsistent ones.",
+      "source": {
+        "name": "BusinessList.ph",
+        "url": "https://www.businesslist.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the BusinessList.ph Philippines business search page, enter the company name and open the matching listing.",
+      "found_when": "A listing exists whose address and phone match the company's own published contact details.",
+      "not_found_when": "The site search returns no listing for the company name, or only unrelated businesses.",
+      "couldnt_check_when": "The search form returns no results at all or the name is too generic to isolate one listing.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has BusinessWorld Online published reporting naming the company on earnings, mergers, regulatory disputes or debt events, and does that reporting match what the company says about itself?",
+      "why_it_matters": "Independent financial press coverage either corroborates or contradicts a company's own account of its performance and standing.",
+      "source": {
+        "name": "BusinessWorld Online",
+        "url": "https://www.bworldonline.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search BusinessWorld Online by the company's name or stock symbol and review the dated articles returned.",
+      "found_when": "One or more BusinessWorld articles name the company and describe its financial, deal or regulatory situation.",
+      "not_found_when": "A search by corporate name and common trade name returns no article about the company.",
+      "couldnt_check_when": "The site search is unavailable or the name produces many unrelated mentions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the European Chamber of Commerce of the Philippines (ECCP) member directory as a member?",
+      "why_it_matters": "ECCP membership is a checkable credential for firms that present European-Philippine business ties.",
+      "source": {
+        "name": "European Chamber of Commerce of the Philippines (ECCP)",
+        "url": "https://www.eccp.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the ECCP member directory by the company name and open its membership profile.",
+      "found_when": "A membership profile exists for the company in the ECCP directory.",
+      "not_found_when": "The member directory returns no profile for the company name.",
+      "couldnt_check_when": "The directory search is behind a login or the name is too common to match one profile.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a listed-issuer record on the Philippine Stock Exchange EDGE system with disclosed financial reports, shareholdings and material transactions?",
+      "why_it_matters": "EDGE records prove whether a company is genuinely publicly listed and how it performs, and their absence contradicts listing or transparency claims.",
+      "source": {
+        "name": "Philippine Stock Exchange Electronic Disclosure Generation Technology (PSE EDGE)",
+        "url": "https://edge.pse.com.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PSE EDGE company information search, enter the company name or ticker and review its disclosure history.",
+      "found_when": "A company information page exists with dated disclosures and financial reports for the company.",
+      "not_found_when": "The EDGE company search returns no listed issuer for the company name.",
+      "couldnt_check_when": "EDGE is unreachable or the name matches several similarly named issuers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Supreme Court of the Philippines E-Library contain decisions naming the company in corporate litigation, debt default, regulatory enforcement or director liability cases?",
+      "why_it_matters": "Court decisions are the strongest public evidence of a company's litigation record and of liabilities its management may not disclose.",
+      "source": {
+        "name": "Supreme Court of the Philippines E-Library",
+        "url": "https://elibrary.judiciary.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the E-Library full-text decision search with the company's exact corporate name in phrase mode.",
+      "found_when": "One or more decisions in the E-Library name the company as a party or in the findings.",
+      "not_found_when": "A phrase search on the exact corporate name returns no decision.",
+      "couldnt_check_when": "The decision search returns an error or the name is too common and produces unrelated hits.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named on FinTech Alliance.ph as a member or featured digital financial service provider?",
+      "why_it_matters": "Membership in the fintech coalition is a verifiable credential for firms presenting themselves as licensed digital finance players.",
+      "source": {
+        "name": "FinTech Alliance.ph",
+        "url": "https://fintechalliance.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search FinTech Alliance.ph with the company name using its site search and open any matching member or news page.",
+      "found_when": "A member listing or alliance page names the company.",
+      "not_found_when": "The site search returns no page naming the company.",
+      "couldnt_check_when": "The search returns no results even for a broader term, or page content cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the IT and Business Process Association of the Philippines (IBPAP) member list include the company as a member or accredited IT-BPM locator?",
+      "why_it_matters": "IBPAP membership confirms a firm is a recognised player in Philippine IT-BPM and either supports or contradicts its industry claims.",
+      "source": {
+        "name": "IT and Business Process Association of the Philippines (IBPAP)",
+        "url": "https://www.ibpap.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the IBPAP published member list and scan it for the company's corporate name.",
+      "found_when": "The company appears in the IBPAP member list.",
+      "not_found_when": "The full member list contains no entry matching the company.",
+      "couldnt_check_when": "The member list does not load or is published only as images that cannot be searched.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does JobStreet Philippines carry a company profile for the company with employee reviews, live job ads and salary data, and is the employee sentiment positive?",
+      "why_it_matters": "Employee reviews and hiring activity reveal workplace reputation and test whether the company's stated size and culture hold up.",
+      "source": {
+        "name": "JobStreet Philippines",
+        "url": "https://www.jobstreet.com.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search JobStreet Philippines companies by the company name and open its company profile.",
+      "found_when": "A company profile exists with reviews, ratings or active job ads for the company.",
+      "not_found_when": "The company search returns no employer profile for the company name.",
+      "couldnt_check_when": "The profile exists but carries no reviews, or the site blocks automated access.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Kalibrr Philippines host an employer profile for the company with active job campaigns, stated organisation size and benefits?",
+      "why_it_matters": "An active Kalibrr profile shows the company recruits at the scale it claims, while absence is a missed hiring channel rather than a legal problem.",
+      "source": {
+        "name": "Kalibrr Philippines",
+        "url": "https://www.kalibrr.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Kalibrr's company directory for the company name and open its jobs page.",
+      "found_when": "An employer page exists for the company with job posts or company details.",
+      "not_found_when": "No employer page matches the company name.",
+      "couldnt_check_when": "The employer pages require a login or the name matches several similarly named employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "claims_check",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Lazada Philippines (LazMall) show a storefront for the company as an authorised seller or brand distributor, consistent with the distribution rights it claims?",
+      "why_it_matters": "A LazMall storefront is public evidence of authorised retail distribution, and its absence or mismatch undercuts reseller or brand-owner claims.",
+      "source": {
+        "name": "Lazada Philippines (LazMall)",
+        "url": "https://www.lazada.com.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Lazada Philippines for the company or brand name and check whether a LazMall store page is returned.",
+      "found_when": "A store page names the company or its brand as an official LazMall seller.",
+      "not_found_when": "No store page for the company or brand appears in the search results.",
+      "couldnt_check_when": "Lazada blocks the search or the results show only third-party resellers with no company identity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company on the Maritime Industry Authority (MARINA) accreditation list of domestic shipping operators, registered vessels or maritime training centres?",
+      "why_it_matters": "MARINA accreditation is required to operate vessels or maritime services in the Philippines, so absence undermines shipping-sector claims.",
+      "source": {
+        "name": "Maritime Industry Authority (MARINA)",
+        "url": "https://marina.gov.ph",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the MARINA published accreditation list and scan it for the company's registered name.",
+      "found_when": "The company appears in the MARINA accreditation list with an operator, vessel or training-centre entry.",
+      "not_found_when": "The accreditation list contains no entry matching the company name.",
+      "couldnt_check_when": "The published list cannot be opened or the sheet is truncated and unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Government Procurement Policy Board (GPPB) Online Blacklisting Portal list the company as banned from participating in government procurement?",
+      "why_it_matters": "A blacklist entry is a formal government finding of misconduct and bars the company from public contracts.",
+      "source": {
+        "name": "Government Procurement Policy Board (GPPB) - Online Blacklisting Portal",
+        "url": "https://onlineblacklistingportal.gppb.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the GPPB portal blacklisted-entities list and search it by the company's exact registered name.",
+      "found_when": "The company appears in the blacklisted entities list with a banning agency and period.",
+      "not_found_when": "A clean search of the blacklist returns no entity matching the company name.",
+      "couldnt_check_when": "The portal list cannot be loaded or the name matches unrelated suppliers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Onlinejobs.ph carry a verified employer account for the company with a verification badge and a reachable contact?",
+      "why_it_matters": "A verified employer record shows the company really operates as a Philippine outsourcing employer, while stale or missing contacts signal a weak operation.",
+      "source": {
+        "name": "Onlinejobs.ph",
+        "url": "https://www.onlinejobs.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Onlinejobs.ph employer search, enter the company name and open the employer profile.",
+      "found_when": "An employer profile exists for the company with verification status or job posts.",
+      "not_found_when": "The employer search returns no profile for the company name.",
+      "couldnt_check_when": "The employer search requires a login or returns too many similar agency names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does PhilGEPS open data list the company as an accredited government supplier or contractor with awarded bids, and is it free of debarment records?",
+      "why_it_matters": "Accreditation and award history show the company is a recognised public supplier, while blacklist entries show it is barred.",
+      "source": {
+        "name": "PhilGEPS (Philippine Government Electronic Procurement System) Open Data",
+        "url": "https://open.philgeps.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the PhilGEPS merchant information lookup and search by the company's registered supplier name.",
+      "found_when": "A merchant record exists showing accreditation status, awarded contracts or a debarment entry.",
+      "not_found_when": "The merchant lookup returns no supplier record for the company name.",
+      "couldnt_check_when": "The analytics lookup fails to load or the name matches many similarly named suppliers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Philippine Economic Zone Authority (PEZA) enterprise directory as a registered ecozone enterprise?",
+      "why_it_matters": "PEZA registration is checkable proof of export-zone tax incentives, so a claimed PEZA status is contradicted when the directory omits the company.",
+      "source": {
+        "name": "Philippine Economic Zone Authority (PEZA) Enterprise Directory",
+        "url": "https://www.peza.gov.ph",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the PEZA enterprise directory spreadsheet and search it for the company's registered name.",
+      "found_when": "The company appears in the PEZA enterprise directory with a locator or enterprise entry.",
+      "not_found_when": "The directory contains no row matching the company name.",
+      "couldnt_check_when": "The spreadsheet cannot be opened or the file is too outdated to reflect current registrations.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Philippine Franchise Association (PFA) on its members page?",
+      "why_it_matters": "PFA membership is the industry credential franchisors cite, so absence points to an unaccredited franchise offering.",
+      "source": {
+        "name": "Philippine Franchise Association (PFA)",
+        "url": "https://www.pfa.org.ph",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the PFA members page and scan the member brand and company list for the company name.",
+      "found_when": "The company or its franchise brand appears on the PFA members list.",
+      "not_found_when": "The members list contains no company or brand matching the name.",
+      "couldnt_check_when": "The members page does not load fully or shows brand names only, without company names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the Philippine Competition Commission (PCC) issued a merger clearance, commitment decision or antitrust ruling naming the company?",
+      "why_it_matters": "PCC records show whether the company's deals were cleared or challenged, and any competition finding is a material legal risk.",
+      "source": {
+        "name": "Philippine Competition Commission (PCC)",
+        "url": "https://www.phcc.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search PCC commission issuances and decisions by the company name using the keyword filter on the issuance page.",
+      "found_when": "A PCC issuance or decision names the company as a party or subject.",
+      "not_found_when": "A keyword search on the company name returns no PCC issuance.",
+      "couldnt_check_when": "The issuance search returns nothing even for broad terms or the filings are unreadable PDFs.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded by the Philippine Exporters Confederation (PHILEXPORT) as a member exporter or named as an accredited exporter on its site?",
+      "why_it_matters": "PHILEXPORT listings support export-credentials claims, and their absence questions an exporter's standing.",
+      "source": {
+        "name": "Philippine Exporters Confederation (PHILEXPORT)",
+        "url": "https://www.philexport.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the PHILEXPORT site search with the company name and review any member or news page returned.",
+      "found_when": "A PHILEXPORT page names the company as a member or accredited exporter.",
+      "not_found_when": "The site search returns no page naming the company.",
+      "couldnt_check_when": "The site search is unavailable or returns only unrelated articles.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Philippine Retailers Association (PRA) directory as a member retailer, mall operator or brand?",
+      "why_it_matters": "PRA membership is a public credential for retail operators and its absence contradicts a claimed industry standing.",
+      "source": {
+        "name": "Philippine Retailers Association (PRA)",
+        "url": "https://www.philretailers.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the PRA directory page and scan the member entries for the company's registered name.",
+      "found_when": "The company appears in the PRA directory with a member entry.",
+      "not_found_when": "The directory contains no entry matching the company name.",
+      "couldnt_check_when": "The directory page does not load or lists only brand names without company names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "news_press",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Tech in Asia Philippines report the company's funding rounds, investors or team size in a way that matches the company's own claims?",
+      "why_it_matters": "Independent startup reporting either corroborates or contradicts claimed funding and scale for venture-backed firms.",
+      "source": {
+        "name": "Tech in Asia Philippines",
+        "url": "https://www.techinasia.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Tech in Asia for the company name and compare any funding or headcount reporting with the company's claims.",
+      "found_when": "A Tech in Asia company profile or article names the company with funding or team data.",
+      "not_found_when": "The search returns no article or company profile for the company.",
+      "couldnt_check_when": "Search results are behind a paywall or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the FDA Verification Portal show a valid License to Operate (LTO) or Certificate of Product Registration (CPR) for the company covering the products it sells?",
+      "why_it_matters": "Selling food, cosmetics, drugs or medical devices in the Philippines requires an FDA LTO, so no record means unlicensed trade.",
+      "source": {
+        "name": "Food and Drug Administration (FDA) Verification Portal",
+        "url": "https://verification.fda.gov.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FDA verification portal search with the company's exact registered name and read the licence and product records returned.",
+      "found_when": "The portal returns LTO or CPR records matching the company name and its product lines.",
+      "not_found_when": "A search on the exact company name returns no licence or product record.",
+      "couldnt_check_when": "The verification search does not respond or the name returns too many unrelated records to isolate.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Workabroad.ph show the company as a DMW/POEA-approved overseas employment agency with verified principal employers and approved vacancies?",
+      "why_it_matters": "Overseas recruitment in the Philippines requires a DMW licence, so an agency absent from the database may be operating illegally.",
+      "source": {
+        "name": "Workabroad.ph",
+        "url": "https://www.workabroad.ph",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Workabroad.ph agencies by the company name and open the agency profile.",
+      "found_when": "An agency profile exists for the company with licence details or approved job orders.",
+      "not_found_when": "The agency search returns no profile matching the company name.",
+      "couldnt_check_when": "The agency search is unavailable or the name matches several similarly named agencies.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "PH-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 24 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

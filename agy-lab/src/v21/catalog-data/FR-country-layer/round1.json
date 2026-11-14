@@ -1,0 +1,1207 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the 118000.fr business and telephone directory with a legal contact number and activity classification?",
+      "why_it_matters": "A directory entry shows the company has a verifiable address and a reachable legal contact line.",
+      "source": {
+        "name": "118000.fr",
+        "url": "https://www.118000.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open 118000.fr and enter the company name in the 'Qui' field and the town in 'Où'.",
+      "found_when": "A matching company record is returned with address, phone number and business classification.",
+      "not_found_when": "A clean search on the exact name and town returns no matching listing.",
+      "couldnt_check_when": "The name is too common to single out one record, or the search page and record are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do consumers on the Forum 60 Millions de Consommateurs discuss complaints or unresolved disputes involving this company?",
+      "why_it_matters": "Repeated complaints on the National Consumer Institute forum point to unresolved billing, service or refund problems.",
+      "source": {
+        "name": "Forum 60 Millions de Consommateurs",
+        "url": "https://www.60millions-mag.com/forum/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the forum search box with the company name and read the matching thread titles and posts.",
+      "found_when": "One or more forum threads name the company and describe a consumer complaint or dispute.",
+      "not_found_when": "A clean search on the company name returns no thread referring to it.",
+      "couldnt_check_when": "The forum search is unavailable, or the name is too common to attribute threads to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have entries in the AMF's BDIF database, or is it named in an AMF sanction decision?",
+      "why_it_matters": "AMF filings and sanctions show whether the company is a regulated market participant and whether it has breached market rules.",
+      "source": {
+        "name": "AMF (Autorité des Marchés Financiers) - BDIF Database",
+        "url": "https://www.amf-france.org/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the BDIF documentary search autocomplete on amf-france.org and review the returned documents.",
+      "found_when": "BDIF returns prospectuses, registration documents or other filings, or a sanction decision names the company.",
+      "not_found_when": "A clean search on the exact company name returns no document and no decision.",
+      "couldnt_check_when": "The database is unreachable or the name matches too many unrelated issuers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered on the Ordre des Experts-Comptables' official Tableau de l'Ordre?",
+      "why_it_matters": "Only firms on the statutory roll may lawfully present themselves as chartered accountants in France.",
+      "source": {
+        "name": "Ordre des Experts-Comptables (Tableau de l'Ordre)",
+        "url": "https://annuaire.experts-comptables.org/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the annuaire search and enter the firm name in the 'comptable' field.",
+      "found_when": "The firm appears with a registration entry in the official table.",
+      "not_found_when": "A clean search returns no registered firm under that name.",
+      "couldnt_check_when": "The directory search fails, or several firms share the same name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in ANSES's Ephy records for authorised plant protection products, biocides or veterinary medicines?",
+      "why_it_matters": "ANSES firm records show whether the company holds valid authorisations for the health-sensitive products it sells.",
+      "source": {
+        "name": "ANSES (Agence Nationale de Sécurité Sanitaire)",
+        "url": "https://www.anses.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Ephy firm lookup reachable from anses.fr using the company name as it appears on product labels.",
+      "found_when": "A firm record lists the company with authorised products or assessment notices.",
+      "not_found_when": "A clean name search returns no firm record and no authorisation.",
+      "couldnt_check_when": "Ephy is unavailable, or the name matches several similarly named firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in ANSM search results for marketing authorisations, GMP inspection outcomes, safety warnings or recalls?",
+      "why_it_matters": "ANSM hits reveal regulatory warnings, inspection findings or product recalls attached to the company and its products.",
+      "source": {
+        "name": "ANSM (Agence Nationale de Sécurité du Médicament et des Produits de Santé)",
+        "url": "https://ansm.sante.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ANSM site search with the exact company name and read the result titles and summaries.",
+      "found_when": "Search results name the company in an authorisation, inspection, warning or recall notice.",
+      "not_found_when": "A clean search on the exact name returns no result naming the company.",
+      "couldnt_check_when": "The search returns only unrelated partial matches, or the result pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in ARCOM decisions, formal notices (mises en demeure) or licensed broadcast service records?",
+      "why_it_matters": "ARCOM records show whether the company holds a broadcast or digital service authorisation and whether it has been formally warned or sanctioned.",
+      "source": {
+        "name": "ARCOM (Autorité de Régulation de la Communication Audiovisuelle et Numérique)",
+        "url": "https://www.arcom.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ARCOM site search with the company name and filter the results to decisions and conventions.",
+      "found_when": "A decision, convention or mise en demeure naming the company is returned.",
+      "not_found_when": "A clean search on the exact company name returns no ARCOM document.",
+      "couldnt_check_when": "The search is unavailable or the name returns too many unrelated documents.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in any decision or opinion of the Autorité de la Concurrence, such as a merger clearance, cartel fine or abuse of dominance case?",
+      "why_it_matters": "Antitrust decisions expose fines, binding commitments or merger conditions that shape the company's standing.",
+      "source": {
+        "name": "Autorité de la Concurrence",
+        "url": "https://www.autoritedelaconcurrence.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the decisions and opinions list on autoritedelaconcurrence.fr with the company name.",
+      "found_when": "At least one decision or opinion names the company in its title or text.",
+      "not_found_when": "A clean search returns no decision or opinion naming the company.",
+      "couldnt_check_when": "The search index is unavailable or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a manufacturer or supplier listing with technical data sheets on Batiproduits?",
+      "why_it_matters": "A Batiproduits listing shows the company is recognised as a building-sector supplier with published product data.",
+      "source": {
+        "name": "Batiproduits",
+        "url": "https://www.batiproduits.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Batiproduits for the company name and open any manufacturer fiche that matches.",
+      "found_when": "A manufacturer or supplier fiche exists showing products, technical data sheets and contacts.",
+      "not_found_when": "A clean search returns no manufacturer or product fiche for the company.",
+      "couldnt_check_when": "The site search is blocked or the name matches unrelated product lines.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company been named as a contractor (titulaire) in public tender notices or award notices published on BOAMP?",
+      "why_it_matters": "BOAMP awards show the company wins public contracts and how much public work it holds.",
+      "source": {
+        "name": "BOAMP (Bulletin Officiel des Annonces des Marchés Publics)",
+        "url": "https://www.boamp.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search BOAMP notices on the 'titulaire' contractor field with the company name.",
+      "found_when": "One or more notices list the company as titulaire with a buyer and a publication date.",
+      "not_found_when": "A clean search on the company name returns no notice naming it as contractor.",
+      "couldnt_check_when": "The search endpoint is unavailable or the name is too common to attribute notices.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in BODACC commercial notices, including any collective insolvency proceeding such as safeguard, judicial reorganisation or liquidation?",
+      "why_it_matters": "BODACC publishes creations, statutory changes and insolvency proceedings, showing whether the company is in financial difficulty.",
+      "source": {
+        "name": "BODACC (Bulletin Officiel des Annonces Civiles et Commerciales)",
+        "url": "https://www.bodacc.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Query BODACC's commercial notices search on the merchant/company name field with the legal name.",
+      "found_when": "Notices are returned naming the company, with the notice type and publication date.",
+      "not_found_when": "A clean search on the registered name returns no notice.",
+      "couldnt_check_when": "The dataset query fails or the name matches many unrelated traders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "news_press",
+      "problem_type": [
+        "misinformation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company covered on Boursorama with a listed instrument, financial data or corporate press releases?",
+      "why_it_matters": "Boursorama coverage shows the company's market-facing financial data and the statements it puts to investors.",
+      "source": {
+        "name": "Boursorama",
+        "url": "https://www.boursorama.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in Boursorama's instrument search and open the matching quote or company page.",
+      "found_when": "A quote page, company sheet or press release set exists for the company.",
+      "not_found_when": "A clean search returns no instrument or company page for the name.",
+      "couldnt_check_when": "The search returns several similar instruments, or the pages are paywalled or unreadable.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a valid AFNOR Certification certificate, such as ISO 9001, ISO 14001, ISO 27001, ISO 45001, an NF mark or the Engagé RSE label?",
+      "why_it_matters": "A live AFNOR certificate confirms that claimed quality, environment or CSR certification is real and in force.",
+      "source": {
+        "name": "AFNOR Certification",
+        "url": "https://certification.afnor.org/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AFNOR certificates and attestations search, enter the company name and open any matching certificate.",
+      "found_when": "A certificate is listed with its scope and validity dates.",
+      "not_found_when": "A clean search returns no certificate for the company.",
+      "couldnt_check_when": "The certificate search form fails or the name returns several similarly named holders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the CNAJMJ directory of court-appointed insolvency administrators and judicial liquidators (études)?",
+      "why_it_matters": "Only firms on this national roll may lawfully act as administrateur judiciaire or mandataire judiciaire in France.",
+      "source": {
+        "name": "CNAJMJ (Conseil National des Administrateurs Judiciaires et Mandataires Judiciaires)",
+        "url": "https://www.cnajmj.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the list of études on cnajmj.fr and scan or use the browser's find function for the company name.",
+      "found_when": "The company is listed as a registered étude with its jurisdiction.",
+      "not_found_when": "After a clean scan of the list, no entry matches the company name.",
+      "couldnt_check_when": "The list cannot be loaded or read, or the pages are too fragmented to scan reliably.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 15,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company named in the CNAPS sanctions list against legal persons, or recorded as holding a private security authorisation?",
+      "why_it_matters": "CNAPS sanctions and authorisations show whether a private security, cash-in-transit or surveillance firm is licensed and has been disciplined.",
+      "source": {
+        "name": "CNAPS (Conseil National des Activités Privées de Sécurité)",
+        "url": "https://www.cnaps.interieur.gouv.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the 'Sanctions - Personnes morales' page on the CNAPS site and scan the list for the company name.",
+      "found_when": "The company is named in a sanction decision for a legal person, with a date and decision reference.",
+      "not_found_when": "After a clean scan of the sanctions list, the company does not appear.",
+      "couldnt_check_when": "The sanctions page cannot be loaded or the list cannot be matched to a similarly named entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the CNIL issued a sanction, fine, formal reprimand or compliance order naming this company?",
+      "why_it_matters": "CNIL decisions signal proven GDPR or personal data protection failures and carry reputational weight.",
+      "source": {
+        "name": "CNIL (Commission Nationale de l'Informatique et des Libertés)",
+        "url": "https://www.cnil.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CNIL site search with the company name and read the deliberations and news results.",
+      "found_when": "A CNIL deliberation, sanction decision or press release names the company.",
+      "not_found_when": "A clean search on the exact name returns no CNIL decision naming the company.",
+      "couldnt_check_when": "The search returns only unrelated matches, or the decision text cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company accredited by COFRAC, and if so for which scope of accreditation?",
+      "why_it_matters": "COFRAC accreditation is the recognised proof of competence for French laboratories, inspection bodies and certifiers.",
+      "source": {
+        "name": "COFRAC (Comité Français d'Accréditation)",
+        "url": "https://www.cofrac.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open COFRAC's easysearch tool and search the company name across the accreditation scopes.",
+      "found_when": "The company appears as an accredited entity with its scope and validity.",
+      "not_found_when": "A clean search across scopes returns no accredited entity under that name.",
+      "couldnt_check_when": "The easysearch form fails or the name matches several accredited sites.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a party to any decision published in ArianeWeb, the case law database of the Conseil d'État and the administrative courts?",
+      "why_it_matters": "Administrative court decisions show the company's disputes with public bodies over contracts, permits, tax or licences.",
+      "source": {
+        "name": "ArianeWeb (Conseil d'État et juridictions administratives)",
+        "url": "https://www.conseil-etat.fr/arianeweb/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Run a full-text search in ArianeWeb with the company name and review the list of decisions.",
+      "found_when": "One or more decisions name the company as a party.",
+      "not_found_when": "A clean full-text search returns no decision naming the company.",
+      "couldnt_check_when": "The search endpoint is unavailable or the name produces too many hits to attribute.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in CRE records as an authorised electricity or natural gas supplier, or in a CoRDiS dispute decision?",
+      "why_it_matters": "CRE authorisations and dispute decisions show whether the company may legally supply energy in France and how it treats customers.",
+      "source": {
+        "name": "CRE (Commission de Régulation de l'Énergie)",
+        "url": "https://www.cre.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Search the CRE deliberations and decisions pages for the company name in the supply authorisation documents.",
+      "found_when": "A CRE deliberation authorising supply, a market participant register entry or a CoRDiS decision names the company.",
+      "not_found_when": "A clean search of CRE documents returns no page naming the company.",
+      "couldnt_check_when": "The documents cannot be searched online and the name appears only inside unreadable PDFs.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Custplace page with consumer reviews or complaint cases?",
+      "why_it_matters": "Custplace reviews show how the company handles consumer grievances and how responsive its customer service is.",
+      "source": {
+        "name": "Custplace",
+        "url": "https://www.custplace.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Custplace for the company name and open its review and dispute page.",
+      "found_when": "A company page exists with ratings, reviews or mediation cases.",
+      "not_found_when": "A clean search returns no company page for the name.",
+      "couldnt_check_when": "The search returns several similar brands or the page cannot be loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the E-pro Entreprises directory with a verified address and trade details?",
+      "why_it_matters": "A directory listing shows the company has a published address and trade reference that customers can check.",
+      "source": {
+        "name": "E-pro Entreprises",
+        "url": "https://www.e-pro.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search e-pro.fr with the company name in the 'search_qui' field and the town in 'search_ou'.",
+      "found_when": "A listing is returned with address, activity and legal references.",
+      "not_found_when": "A clean search on the exact name returns no listing.",
+      "couldnt_check_when": "The name is too common to single out one listing, or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Figaro Entreprises profile showing financial data, headcount and leadership?",
+      "why_it_matters": "An independent profile gives financial and headcount data against which the company's own claims can be tested.",
+      "source": {
+        "name": "Figaro Entreprises",
+        "url": "https://entreprises.lefigaro.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search entreprises.lefigaro.fr with the company name and open the resulting company page.",
+      "found_when": "A company page shows financial data, headcount estimates or executives.",
+      "not_found_when": "A clean search returns no company page for the name.",
+      "couldnt_check_when": "The search returns several near-identical legal entities or the page is partly paywalled.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in EUIPO records as owner or applicant of European Union trade marks or registered Community designs?",
+      "why_it_matters": "EUIPO ownership records confirm the company's intellectual property portfolio and the names it actually trades under.",
+      "source": {
+        "name": "EUIPO (European Union Intellectual Property Office)",
+        "url": "https://euipo.europa.eu/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search EUIPO's trade mark and design databases by holder name with the company name.",
+      "found_when": "The company is named as proprietor or applicant of at least one EU trade mark or design.",
+      "not_found_when": "A clean holder-name search returns no EU trade mark or design.",
+      "couldnt_check_when": "The database is unavailable or the name matches many unrelated holders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as an adhering bank on the Fédération Bancaire Française list of member banks?",
+      "why_it_matters": "Membership of the FBF backs a bank's stated compliance with the French banking mediation framework.",
+      "source": {
+        "name": "Fédération Bancaire Française (FBF)",
+        "url": "https://www.fbf.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the 'Banques adhérentes' page on lemediateur.fbf.fr and look the company up in the list.",
+      "found_when": "The bank appears in the list of adhering banks with its mediation arrangements.",
+      "not_found_when": "After scanning the list, the company is absent from the adhering banks.",
+      "couldnt_check_when": "The page cannot be loaded, or the brand name differs from the listed legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a FEVAD member, listed in its merchant site directory?",
+      "why_it_matters": "FEVAD membership shows the e-merchant commits to the federation's code of ethics and consumer mediation.",
+      "source": {
+        "name": "FEVAD (Fédération du e-commerce et de la vente à distance)",
+        "url": "https://www.fevad.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the FEVAD merchant directory with the company or website name.",
+      "found_when": "The company or its e-commerce site appears as a FEVAD member.",
+      "not_found_when": "A clean search returns no member entry.",
+      "couldnt_check_when": "The directory search fails or the trading name differs from the legal name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the French register of licensed crowdfunding service providers (PSFP/CIP) published on financeparticipative.org?",
+      "why_it_matters": "Only licensed platforms may legally run crowdfunding in France, so an absent listing points to an unlicensed operation.",
+      "source": {
+        "name": "Portail du Registre des Intermédiaires en Financement Participatif (FPF)",
+        "url": "https://financeparticipative.org/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the 'agrément PSFP' status list on financeparticipative.org and look up the platform name.",
+      "found_when": "The platform is listed with its licence status in the register.",
+      "not_found_when": "After scanning the list, the company is not among the licensed providers.",
+      "couldnt_check_when": "The list cannot be read, or the brand differs from the licensed legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the FNTP public works contractor directory (RIP)?",
+      "why_it_matters": "A FNTP directory record shows the company is recognised as a public works contractor in its trade and region.",
+      "source": {
+        "name": "FNTP (Fédération Nationale des Travaux Publics)",
+        "url": "https://www.fntp.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the RIP directory on rip.fntp.fr with the company name in the 'raison_sociale' field.",
+      "found_when": "A company record is returned with its trade and activity details.",
+      "not_found_when": "A clean search on the legal name returns no record.",
+      "couldnt_check_when": "The directory search fails or the name matches several contractors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do threads on the Hardware.fr forums discuss this company, for example about working conditions, reliability or a purchase dispute?",
+      "why_it_matters": "Forum threads give unfiltered employee and customer experiences that rarely appear in official sources.",
+      "source": {
+        "name": "Hardware.fr (HFR) Forums",
+        "url": "https://forum.hardware.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the forum search with the company name, restricted to thread titles, and read the relevant threads.",
+      "found_when": "One or more threads name the company and discuss an experience with it.",
+      "not_found_when": "A clean title search returns no thread mentioning the company.",
+      "couldnt_check_when": "The forum search is blocked or the name is too generic to attribute threads.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a valid RGE (Reconnu Garant de l'Environnement) qualification in the France Rénov' directory?",
+      "why_it_matters": "Without a valid RGE label a renovation firm cannot let customers claim state energy transition subsidies.",
+      "source": {
+        "name": "France Rénov' - Annuaire des professionnels RGE",
+        "url": "https://france-renov.gouv.fr/annuaire-rge",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the RGE directory on france-renov.gouv.fr with the company name and check the returned qualifications.",
+      "found_when": "A valid RGE record is returned with its qualification domain and validity dates.",
+      "not_found_when": "A clean search returns no RGE record for the company.",
+      "couldnt_check_when": "The data query fails or the company trades under a different name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed among the members (adhérents) of France Assureurs?",
+      "why_it_matters": "France Assureurs membership ties an insurer to the federation's governance standards and industry data.",
+      "source": {
+        "name": "France Assureurs",
+        "url": "https://www.franceassureurs.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the 'Nos adhérents' page and look the company up in the member list.",
+      "found_when": "The company appears in the list of member insurers.",
+      "not_found_when": "After scanning the list, the company is absent from the members.",
+      "couldnt_check_when": "The member list cannot be loaded or the name is ambiguous against similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on France Compétences as a Qualiopi-certified training provider or as a certifier?",
+      "why_it_matters": "Qualiopi status decides whether a training organisation can be paid with public or mutualised training funds.",
+      "source": {
+        "name": "France Compétences - Qualiopi Register",
+        "url": "https://www.francecompetences.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the France Compétences search with the company name and the 'certification' type filter.",
+      "found_when": "The organisation appears with certifications listed or with a certifier entry.",
+      "not_found_when": "A clean search returns no certification and no certifier record.",
+      "couldnt_check_when": "The search fails or the brand differs from the legal name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "security_exposure",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company operate a classified installation (ICPE) recorded by Géorisques, and is it subject to Seveso classification or pollution findings?",
+      "why_it_matters": "ICPE records expose environmental authorisations, Seveso risk status and contamination findings attached to the company's sites.",
+      "source": {
+        "name": "Géorisques / Installations Classées (ICPE - Ministère de la Transition Écologique)",
+        "url": "https://www.georisques.gouv.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Query the installations classées search on georisques.gouv.fr with the company name in the raison sociale field.",
+      "found_when": "One or more ICPE records name the company with a regime, Seveso status or inspection findings.",
+      "not_found_when": "A clean search returns no installation record for the company.",
+      "couldnt_check_when": "The search or API fails, or the operator name differs from the group name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed on the H2A register of statutory auditors (commissaires aux comptes)?",
+      "why_it_matters": "H2A registration is the legal condition for signing audit reports and for any claimed audit capacity.",
+      "source": {
+        "name": "H2A (Haute Autorité de l'Audit - formerly H3C)",
+        "url": "https://www.h2a-france.org/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search or browse the H2A register list pages for the company or firm name.",
+      "found_when": "The firm appears in the H2A register with its registration details.",
+      "not_found_when": "After a clean search of the register, the firm is absent.",
+      "couldnt_check_when": "The list pages cannot be searched or read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer profile and active job offers on HelloWork?",
+      "why_it_matters": "Hiring activity on a leading French job portal shows the company is active and growing at its stated scale.",
+      "source": {
+        "name": "HelloWork",
+        "url": "https://www.hellowork.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search HelloWork's company directory and job search with the company name.",
+      "found_when": "A company page exists with a description and one or more job offers.",
+      "not_found_when": "A clean search returns no employer profile and no offer.",
+      "couldnt_check_when": "The search fails or several employers share the same name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company profiled on Indexa with its activity lines and executive contacts?",
+      "why_it_matters": "An Indexa profile shows whether the company publishes a consistent B2B identity and reachable decision makers.",
+      "source": {
+        "name": "Indexa",
+        "url": "https://www.indexa.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search indexa.fr for the company name and open its company page.",
+      "found_when": "A company profile exists with activity details and contacts.",
+      "not_found_when": "A clean search returns no profile for the company.",
+      "couldnt_check_when": "The page cannot be loaded or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Jobijoba list active job offers or an employer page for this company?",
+      "why_it_matters": "Aggregated listings show the company's real hiring volume across its own and third-party job sites.",
+      "source": {
+        "name": "Jobijoba",
+        "url": "https://www.jobijoba.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Jobijoba for the company name and open its employer page.",
+      "found_when": "Offers or an employer page are returned for the company.",
+      "not_found_when": "A clean search returns no offer and no employer page.",
+      "couldnt_check_when": "The aggregator returns only unrelated employers with similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company publish mandatory legal notices in the BALO, such as financial reports, shareholder meeting notices or bond issues?",
+      "why_it_matters": "BALO notices show the company makes the mandatory disclosures of a listed or public-offering company.",
+      "source": {
+        "name": "BALO (Bulletin des Annonces Légales Obligatoires)",
+        "url": "https://www.journal-officiel.gouv.fr/pages/balo/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the BALO dataset on journal-officiel.gouv.fr using the company name in the sociétés field.",
+      "found_when": "One or more BALO notices name the company with a category and publication date.",
+      "not_found_when": "A clean search on the exact name returns no notice.",
+      "couldnt_check_when": "The search fails or the name matches many other legal entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the La French Tech Next40/FT120 index or in another official French Tech roster?",
+      "why_it_matters": "An index listing is a state-backed signal of scale and credibility that is easy to verify or refute.",
+      "source": {
+        "name": "La French Tech",
+        "url": "https://lafrenchtech.gouv.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Next40/FT120 page on lafrenchtech.gouv.fr and check the listed companies.",
+      "found_when": "The company appears in the index or in one of the published rosters.",
+      "not_found_when": "After scanning the list, the company is absent from the index.",
+      "couldnt_check_when": "The list page is unavailable or the company appears only in unrelated news posts.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company ranked or rated by Leaders League / Décideurs in its practice or sector rankings?",
+      "why_it_matters": "A Leaders League ranking is a published third-party assessment that supports or contradicts a stated market position.",
+      "source": {
+        "name": "Leaders League / Décideurs Magazine",
+        "url": "https://www.leadersleague.com/fr",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Leaders League firm search with the company name and open its profile.",
+      "found_when": "A firm profile with a ranking or rating is returned.",
+      "not_found_when": "A clean search returns no firm profile.",
+      "couldnt_check_when": "The search API fails or the name matches several firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Maddyness published articles about this company, such as funding rounds, leadership changes, acquisitions or difficulties?",
+      "why_it_matters": "Press coverage dates and corroborates the company's claimed funding, growth and leadership events.",
+      "source": {
+        "name": "Maddyness",
+        "url": "https://www.maddyness.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Maddyness site search with the company name and read the matching articles.",
+      "found_when": "One or more articles name the company and describe an event.",
+      "not_found_when": "A clean search returns no article about the company.",
+      "couldnt_check_when": "The search is unavailable or the name is too common to attribute articles.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Meteojob show a company profile with active vacancies for this company?",
+      "why_it_matters": "A Meteojob profile shows the company hires locally and at what volume, which tests its stated headcount.",
+      "source": {
+        "name": "Meteojob",
+        "url": "https://www.meteojob.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Meteojob's company sheets with the company name.",
+      "found_when": "A company sheet is returned with vacancies or hiring details.",
+      "not_found_when": "A clean search returns no company sheet.",
+      "couldnt_check_when": "The search fails or several similarly named employers are returned.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a member of Numeum, listed in its member directory?",
+      "why_it_matters": "Numeum membership shows the company belongs to the recognised French digital industry body and its salary and ethics frameworks.",
+      "source": {
+        "name": "Numeum (formerly Syntec Numérique / Tech in France)",
+        "url": "https://numeum.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Numeum member directory (annuaire des adhérents) for the company name.",
+      "found_when": "A member page exists for the company.",
+      "not_found_when": "A clean search returns no member page.",
+      "couldnt_check_when": "The directory search fails or the brand differs from the legal name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 43,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an insurer page with consumer reviews on Opinion-Assurances?",
+      "why_it_matters": "Reviews on this insurance-specific platform show claims handling and cancellation experiences policyholders report.",
+      "source": {
+        "name": "Opinion-Assurances",
+        "url": "https://www.opinion-assurances.fr/",
+        "language": "French"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the 'Tous les assureurs' list, locate the company name and open its review page.",
+      "found_when": "An insurer page exists with ratings or consumer reviews.",
+      "not_found_when": "After scanning the list, no page exists for the company.",
+      "couldnt_check_when": "The list cannot be loaded or the brand name differs from the legal entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 44,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the Ordre National des Pharmaciens directory as a pharmacy, wholesaler, laboratory or licensed pharmacist entity?",
+      "why_it_matters": "Pharmacies, wholesalers and pharmaceutical labs may only operate in France if they are on the Ordre roll.",
+      "source": {
+        "name": "Ordre National des Pharmaciens",
+        "url": "https://www.ordre.pharmacien.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the annuaire on ordre.pharmacien.fr by raison sociale with the company name.",
+      "found_when": "An establishment or company record is returned with its registration details.",
+      "not_found_when": "A clean search returns no registered entity under that name.",
+      "couldnt_check_when": "The search form fails or the name matches several pharmacies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a valid Qualibat qualification with the associated RGE label?",
+      "why_it_matters": "Qualibat records verify trade qualifications, decennial insurance validity and workforce size claimed by building contractors.",
+      "source": {
+        "name": "Qualibat",
+        "url": "https://www.qualibat.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search qualibat.com for the company name and open the matching company record.",
+      "found_when": "A Qualibat record shows qualifications, insurance validity and workforce size.",
+      "not_found_when": "A clean search returns no Qualibat record for the company.",
+      "couldnt_check_when": "The search fails or the record cannot be opened.",
+      "confidence": "high"
+    },
+    {
+      "rank": 46,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the REGAFI register of authorised financial agents, credit institutions, payment providers or financing companies?",
+      "why_it_matters": "REGAFI entry is the proof that a firm is authorised to provide financial services in France.",
+      "source": {
+        "name": "REGAFI (Registre des Agents Financiers - ACPR / Banque de France)",
+        "url": "https://www.regafi.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the REGAFI register by denomination with the company name.",
+      "found_when": "A register entry shows the company with its authorised status.",
+      "not_found_when": "A clean search returns no registered entity under that name.",
+      "couldnt_check_when": "The register query fails or the name matches several entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 47,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Societe.com record showing its legal identity, financials and any insolvency alerts?",
+      "why_it_matters": "The record gives turnover, credit risk and court filing history that can confirm or contradict the company's own figures.",
+      "source": {
+        "name": "Societe.com",
+        "url": "https://www.societe.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search societe.com with the full legal name and open the company record.",
+      "found_when": "A company record is returned with SIREN, financial data or procedure alerts.",
+      "not_found_when": "A clean search returns no company record.",
+      "couldnt_check_when": "The search returns several similar entities or the key data sits behind a paywall.",
+      "confidence": "high"
+    },
+    {
+      "rank": 48,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Transparence Santé database as declaring agreements or benefits granted to healthcare professionals?",
+      "why_it_matters": "Transparency declarations show the company's financial links to health professionals, which is a public integrity signal in the health sector.",
+      "source": {
+        "name": "Transparence Santé (Ministère de la Santé)",
+        "url": "https://www.transparence.sante.gouv.fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Query the entreprise dataset on transparence.sante.gouv.fr with the company's raison sociale.",
+      "found_when": "A company record is returned with declared agreements, benefits or remuneration.",
+      "not_found_when": "A clean search returns no declaring company under that name.",
+      "couldnt_check_when": "The dataset query fails or the name is too common to match one declarant.",
+      "confidence": "high"
+    },
+    {
+      "rank": 49,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Viadeo company page or employee profiles tied to it?",
+      "why_it_matters": "Employee profiles corroborate the company's real headcount, locations and the job titles it claims.",
+      "source": {
+        "name": "Viadeo (by JDN / Le Figaro)",
+        "url": "https://viadeo.journaldunet.com/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search viadeo.journaldunet.com for the company name and restrict the results to companies.",
+      "found_when": "A company page or employee profiles naming the company are returned.",
+      "not_found_when": "A clean search returns no company page and no profile.",
+      "couldnt_check_when": "The search fails or the name matches many unrelated profiles.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 50,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a WeLoveDevs company page with developer reviews or culture feedback?",
+      "why_it_matters": "Developer reviews expose engineering culture and management issues that the company's own recruitment pages omit.",
+      "source": {
+        "name": "WeLoveDevs",
+        "url": "https://welovedevs.com/fr/",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the WeLoveDevs company list with the company name and open its page.",
+      "found_when": "A company page exists with reviews, ratings or culture feedback.",
+      "not_found_when": "A clean search returns no company page for the name.",
+      "couldnt_check_when": "The site search fails or the page exists but shows no content.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "FR-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 50 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

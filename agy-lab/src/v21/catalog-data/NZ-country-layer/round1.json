@@ -1,0 +1,731 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Angel Association New Zealand (AANZ) network, either as an angel group member or as an investee company?",
+      "why_it_matters": "Shows whether the company's funding story is tied to a recognised New Zealand early-stage investment network.",
+      "source": {
+        "name": "Angel Association New Zealand (AANZ)",
+        "url": "https://www.angelassociation.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AANZ member and portfolio listings and search them for the company name.",
+      "found_when": "The company, or the investment group backing it, appears in an AANZ member or portfolio listing.",
+      "not_found_when": "A clean search of the AANZ listings returns no match for the company name.",
+      "couldnt_check_when": "The AANZ listing pages cannot be searched or loaded, or the name is too generic to match.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed by the Civil Aviation Authority of New Zealand (CAA) as a certificated organisation, such as a Part 119 or Part 121 air operator certificate holder?",
+      "why_it_matters": "Confirms the company actually holds the aviation approvals needed for any air operation it claims.",
+      "source": {
+        "name": "Civil Aviation Authority of New Zealand (CAA)",
+        "url": "https://www.aviation.govt.nz",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the CAA list of certificated organisations and scan the Part 119 and Part 121 entries for the company name.",
+      "found_when": "The company appears on a CAA certificated organisations list with a certificate number.",
+      "not_found_when": "The company name is absent from the relevant CAA certificated organisation lists after a clean scan.",
+      "couldnt_check_when": "The CAA list pages are unreadable or not loaded in full, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Builderscrack profile showing completed jobs and verified client reviews?",
+      "why_it_matters": "Reveals how the company is rated by paying customers and whether its claimed trade history is backed by records.",
+      "source": {
+        "name": "Builderscrack",
+        "url": "https://builderscrack.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use Builderscrack's trades search and enter the company name as the search term.",
+      "found_when": "The company has a Builderscrack trade profile with jobs, ratings or client reviews.",
+      "not_found_when": "A clean Builderscrack search returns no profile for the company.",
+      "couldnt_check_when": "Builderscrack search is unavailable or returns many similarly named trades that cannot be separated.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has BusinessDesk published any news article naming this company?",
+      "why_it_matters": "Surfaces financial, regulatory or executive news about the company that may contradict its own story.",
+      "source": {
+        "name": "BusinessDesk",
+        "url": "https://businessdesk.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the BusinessDesk site search and enter the company name in quotes.",
+      "found_when": "One or more BusinessDesk articles name the company.",
+      "not_found_when": "A clean BusinessDesk search returns no article naming the company.",
+      "couldnt_check_when": "The search index is unavailable or the name is too common to match reliably.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Canterbury Employers' Chamber of Commerce (The Chamber) member directory?",
+      "why_it_matters": "Shows whether the company is an active, dues-paying member of the South Island's main business body.",
+      "source": {
+        "name": "Canterbury Employers' Chamber of Commerce (The Chamber)",
+        "url": "https://www.cecc.org.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Chamber's member directory search and enter the company name.",
+      "found_when": "The company has a directory listing as a Chamber member.",
+      "not_found_when": "A clean directory search returns no listing for the company.",
+      "couldnt_check_when": "The member directory is unavailable or the name matches too many unrelated listings.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this organisation registered on the Charities Services Register (Ngā Ratonga Kaupapa Atawhai)?",
+      "why_it_matters": "Checks whether any charitable or tax-donee status the organisation claims is real and current.",
+      "source": {
+        "name": "Charities Services Register (Ngā Ratonga Kaupapa Atawhai)",
+        "url": "https://www.charities.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Charities Register search and enter the organisation's legal name.",
+      "found_when": "The organisation appears on the register with a registration number and status.",
+      "not_found_when": "A clean register search returns no entry for the organisation.",
+      "couldnt_check_when": "The register search fails or the organisation name is too generic to match a single entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Commerce Commission New Zealand case register?",
+      "why_it_matters": "Shows whether the company has been investigated, warned or taken to court over fair trading or competition conduct.",
+      "source": {
+        "name": "Commerce Commission New Zealand Registers",
+        "url": "https://comcom.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Commerce Commission case register using the company name.",
+      "found_when": "One or more case register entries name the company.",
+      "not_found_when": "A clean case register search returns no entries for the company.",
+      "couldnt_check_when": "The case register search is unavailable or returns too many unrelated matches to attribute.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on the New Zealand Companies Register (Companies Office), and is its recorded status (registered, removed or in liquidation) confirmed?",
+      "why_it_matters": "Establishes the company's real legal existence, directors and status behind the name used in business.",
+      "source": {
+        "name": "New Zealand Companies Register (Companies Office)",
+        "url": "https://companies-register.companiesoffice.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Companies Register by company name or number and open the company summary page.",
+      "found_when": "The company has a register entry with a company number and a recorded status.",
+      "not_found_when": "A clean register search returns no company with that name.",
+      "couldnt_check_when": "The register is unavailable or several same-named companies cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as a party in any Employment Relations Authority (ERA) determination?",
+      "why_it_matters": "Flags employment disputes, wage arrears or penalty orders that show how the company treats staff.",
+      "source": {
+        "name": "Employment Relations Authority (ERA) Determinations Database",
+        "url": "https://determinations.era.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ERA determinations search and enter the company name in the Parties field.",
+      "found_when": "One or more determinations list the company as a party.",
+      "not_found_when": "A clean determinations search returns no result for the company name.",
+      "couldnt_check_when": "The determinations search is down or the name is too common to match a single employer.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered on the Financial Service Providers Register (FSPR) for the financial services it offers?",
+      "why_it_matters": "Confirming a valid FSPR entry shows the company may legally provide the financial services it advertises.",
+      "source": {
+        "name": "Financial Service Providers Register (FSPR)",
+        "url": "https://fspr.companiesoffice.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FSPR register search and enter the company or trading name.",
+      "found_when": "The company appears as an FSPR-registered provider with listed financial services.",
+      "not_found_when": "A clean FSPR search returns no registered provider with that name.",
+      "couldnt_check_when": "The FSPR search is unavailable or the name matches several unrelated providers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company been the subject of a statutory notice in The New Zealand Gazette (Te Kāhiti o Aotearoa), such as a liquidation, receivership or strike-off notice?",
+      "why_it_matters": "Official insolvency or strike-off notices reveal serious financial or legal trouble the company may not disclose.",
+      "source": {
+        "name": "The New Zealand Gazette (Te Kāhiti o Aotearoa)",
+        "url": "https://gazette.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Gazette keyword search and enter the company name in quotes.",
+      "found_when": "One or more Gazette notices name the company.",
+      "not_found_when": "A clean Gazette keyword search returns no notice for the company.",
+      "couldnt_check_when": "The Gazette search is unavailable or the name is too common to attribute notices confidently.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member or affiliate of Hospitality New Zealand?",
+      "why_it_matters": "Membership supports claims of industry standing and access to the association's compliance guidance.",
+      "source": {
+        "name": "Hospitality New Zealand",
+        "url": "https://www.hospitality.org.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Hospitality New Zealand affiliate and member directory filter and enter the company name.",
+      "found_when": "The company appears in the Hospitality New Zealand member or affiliate listing.",
+      "not_found_when": "A clean member directory search returns no listing for the company.",
+      "couldnt_check_when": "The member directory filter is unavailable or the name is too generic to match.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 13,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Insolvency and Trustee Service public registers of insolvency estates?",
+      "why_it_matters": "Personal insolvency of directors or the company itself is a strong signal of financial risk to counterparties.",
+      "source": {
+        "name": "Insolvency and Trustee Service Public Registers",
+        "url": "https://www.insolvency.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Insolvency and Trustee Service public register search and enter the company or director name.",
+      "found_when": "The company or its named director appears in an insolvency estate record.",
+      "not_found_when": "A clean register search returns no estate record for the company or director.",
+      "couldnt_check_when": "The register search is down or the name is too common to match a person or company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Interest.co.nz published any news or analysis article naming this company?",
+      "why_it_matters": "Financial press coverage can expose liquidation, covenant or funding problems the company does not publicise.",
+      "source": {
+        "name": "Interest.co.nz",
+        "url": "https://www.interest.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Interest.co.nz site search and enter the company name.",
+      "found_when": "One or more Interest.co.nz articles name the company.",
+      "not_found_when": "A clean Interest.co.nz search returns no article naming the company.",
+      "couldnt_check_when": "The site search is unavailable or the name is too common to match reliably.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this organisation registered on the Incorporated Societies and Trusts Register?",
+      "why_it_matters": "Confirms whether a group claiming society or trust status actually exists and is currently registered.",
+      "source": {
+        "name": "Incorporated Societies and Trusts Register",
+        "url": "https://is-register.companiesoffice.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Incorporated Societies and Trusts Register by the society or trust name.",
+      "found_when": "The organisation appears on the register with a registration number and status.",
+      "not_found_when": "A clean register search returns no entry for the organisation.",
+      "couldnt_check_when": "The register search is unavailable or the name is too generic to match one entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company licensed by the Private Security Personnel Licensing Authority (PSPLA) for the security services it offers?",
+      "why_it_matters": "Security work requires a PSPLA licence, so absence points to an unlicensed or misrepresented operator.",
+      "source": {
+        "name": "Private Security Personnel Licensing Authority (PSPLA)",
+        "url": "https://www.justice.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the PSPLA public register on the justice.govt.nz site by company or trading name.",
+      "found_when": "The company appears with an issued permit and licence class on the PSPLA register.",
+      "not_found_when": "A clean PSPLA search returns no licence for the company.",
+      "couldnt_check_when": "The PSPLA register search fails or the trading name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear as an applicant in the Overseas Investment Office (OIO) Decisions Register held by LINZ?",
+      "why_it_matters": "OIO decisions show whether foreign-owned or sensitive acquisitions were consented to, declined or conditioned.",
+      "source": {
+        "name": "Overseas Investment Office (OIO) Decisions Register (LINZ)",
+        "url": "https://www.linz.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the LINZ OIO decisions search and enter the applicant company name.",
+      "found_when": "A decision summary lists the company as applicant with an outcome.",
+      "not_found_when": "A clean OIO decisions search returns no decision for the company.",
+      "couldnt_check_when": "The decisions search is unavailable or the name is too common to attribute a decision.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member on the Registered Master Builders Association 'Check your Builder' search?",
+      "why_it_matters": "Membership backs up builder quality claims and any 10-year guarantee the company offers.",
+      "source": {
+        "name": "Registered Master Builders Association",
+        "url": "https://www.masterbuilder.org.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Registered Master Builders 'Check your Builder' search and enter the company name.",
+      "found_when": "The company appears as a current Registered Master Builder member.",
+      "not_found_when": "A clean 'Check your Builder' search returns no membership for the company.",
+      "couldnt_check_when": "The membership search is unavailable or the name matches several builders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on Medsafe's licensed medicine manufacturers list or in its approved medicines and medical device records?",
+      "why_it_matters": "Shows whether the company may lawfully manufacture, supply or notify therapeutic products in New Zealand.",
+      "source": {
+        "name": "Medsafe (Medicines and Medical Devices Safety Authority)",
+        "url": "https://www.medsafe.govt.nz",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Medsafe licensed organisations page and scan the list for the company name.",
+      "found_when": "The company appears on the Medsafe licensed list or in a product or device record.",
+      "not_found_when": "The company name is absent from the relevant Medsafe lists after a clean scan.",
+      "couldnt_check_when": "The Medsafe list pages are unreadable or not loaded in full.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a NoCowboys profile with customer reviews or recorded disputes?",
+      "why_it_matters": "Independent customer ratings show whether the company's service claims hold up in practice.",
+      "source": {
+        "name": "NoCowboys",
+        "url": "https://www.nocowboys.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use NoCowboys' business search and enter the company name.",
+      "found_when": "The company has a NoCowboys business page with ratings, reviews or disputes.",
+      "not_found_when": "A clean NoCowboys search returns no business page for the company.",
+      "couldnt_check_when": "The site search is unavailable or the name matches several similar businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the New Zealand Certified Builders (NZCB) member directory with a Halo 10-Year guarantee?",
+      "why_it_matters": "Independent verification of trade qualification and guarantee cover supports or contradicts builder marketing claims.",
+      "source": {
+        "name": "New Zealand Certified Builders (NZCB)",
+        "url": "https://nzcb.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the NZCB business directory for the company name.",
+      "found_when": "The company has an NZCB member profile with guarantee information.",
+      "not_found_when": "A clean NZCB directory search returns no profile for the company.",
+      "couldnt_check_when": "The NZCB directory is unavailable or the name matches several member businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the New Zealand Herald Business section published any article naming this company?",
+      "why_it_matters": "National press coverage can reveal litigation, losses or leadership problems behind a company's own account.",
+      "source": {
+        "name": "New Zealand Herald Business",
+        "url": "https://www.nzherald.co.nz/business",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the NZ Herald site search and enter the company name.",
+      "found_when": "One or more NZ Herald articles name the company.",
+      "not_found_when": "A clean NZ Herald search returns no article naming the company.",
+      "couldnt_check_when": "The search index is unavailable or the name is too common to match reliably.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered or accredited by the New Zealand Qualifications Authority (NZQA) as a tertiary education provider?",
+      "why_it_matters": "Only NZQA-accredited providers may legally deliver the courses and credentials they advertise.",
+      "source": {
+        "name": "New Zealand Qualifications Authority (NZQA) Registers",
+        "url": "https://www.nzqa.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the NZQA provider search and enter the organisation name.",
+      "found_when": "The company appears as an NZQA-accredited provider with its approval status shown.",
+      "not_found_when": "A clean NZQA provider search returns no accredited organisation with that name.",
+      "couldnt_check_when": "The provider search is unavailable or the name is too generic to match one provider.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a winery or vineyard in the New Zealand Winegrowers directory?",
+      "why_it_matters": "Directory listing shows the company is a recognised industry participant with export and sustainability records.",
+      "source": {
+        "name": "New Zealand Winegrowers",
+        "url": "https://www.nzwine.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the New Zealand Winegrowers winery directory for the company name.",
+      "found_when": "The company has a winery or vineyard directory entry.",
+      "not_found_when": "A clean directory search returns no winery or vineyard entry for the company.",
+      "couldnt_check_when": "The directory is unavailable or the name matches several similar wine businesses.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company a listed issuer on NZX (New Zealand's Exchange) with market announcements and financial reports on file?",
+      "why_it_matters": "Listed issuers must disclose results, governance and share dealings, giving verifiable facts about the company.",
+      "source": {
+        "name": "NZX (New Zealand's Exchange)",
+        "url": "https://www.nzx.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the NZX company pages by company name or ticker code.",
+      "found_when": "The company has an NZX issuer page with announcements or reports.",
+      "not_found_when": "A clean NZX search returns no listed issuer with that name.",
+      "couldnt_check_when": "The NZX site search is unavailable or the name matches several listed entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a current real estate licence on the Real Estate Authority (REA) public register?",
+      "why_it_matters": "Real estate work requires a current REA licence, and disciplinary decisions reveal conduct problems.",
+      "source": {
+        "name": "Real Estate Authority (REA) Public Register",
+        "url": "https://www.rea.govt.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the REA public register by agency or trading name.",
+      "found_when": "The company appears as a licensed agency or branch with a current licence status.",
+      "not_found_when": "A clean REA register search returns no licence for the company.",
+      "couldnt_check_when": "The public register search is unavailable or the name matches several agencies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer page and job listings on SEEK New Zealand?",
+      "why_it_matters": "Live job ads and employer pages show the company's real hiring activity, scale and staff reviews.",
+      "source": {
+        "name": "SEEK New Zealand",
+        "url": "https://www.seek.co.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search SEEK New Zealand by company name to open its employer page and advertised roles.",
+      "found_when": "The company has a SEEK employer page or current job listings.",
+      "not_found_when": "A clean SEEK search returns no employer page or jobs for the company.",
+      "couldnt_check_when": "SEEK search is unavailable or the name matches several unrelated employers.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 28,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its practitioner listed on the Veterinary Council of New Zealand register of registered veterinary practices?",
+      "why_it_matters": "Register listing confirms the practice may lawfully provide veterinary services and has no disciplinary findings.",
+      "source": {
+        "name": "Veterinary Council of New Zealand (Kāhui Rata Kararehe)",
+        "url": "https://www.vetcouncil.org.nz",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Veterinary Council 'Find a Pract' search and enter the practice or practitioner name.",
+      "found_when": "The practice or practitioner appears on the register with a current scope of practice.",
+      "not_found_when": "A clean register search returns no practitioner or practice with that name.",
+      "couldnt_check_when": "The register search is unavailable or the name matches several practitioners.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Whāriki Māori Business Network directory (Rārangi Pakihi)?",
+      "why_it_matters": "Directory presence supports any Māori-owned business claim the company makes and shows its network standing.",
+      "source": {
+        "name": "Whāriki Māori Business Network (Rārangi Pakihi)",
+        "url": "https://www.whariki.co.nz",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Whāriki Māori business directory pages for the company name.",
+      "found_when": "The company has a listing in the Rārangi Pakihi directory.",
+      "not_found_when": "The company name is absent from the directory pages after a clean scan.",
+      "couldnt_check_when": "The directory pages cannot be loaded or paged through, or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company appeared in WorkSafe New Zealand prosecutions, court summaries or enforceable undertakings?",
+      "why_it_matters": "Health and safety prosecutions or undertakings show serious safety failures and the penalties that followed.",
+      "source": {
+        "name": "WorkSafe New Zealand Prosecution and Enforceable Undertakings Registers",
+        "url": "https://www.worksafe.govt.nz",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the WorkSafe prosecutions and court summaries pages and scan them for the company name.",
+      "found_when": "A prosecution, court summary or enforceable undertaking names the company.",
+      "not_found_when": "The company name is absent from the prosecution and undertaking pages after a clean scan.",
+      "couldnt_check_when": "The WorkSafe pages cannot be loaded or fully scanned, or the name is too common to match.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "NZ-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 30 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

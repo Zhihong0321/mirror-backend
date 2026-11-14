@@ -1,0 +1,1114 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this UK company listed as a member of ADS Group and profiled in its aerospace, defence, security or space supply chain matrices?",
+      "why_it_matters": "Membership of the sector trade body signals the company is recognised in defence and aerospace supply chains.",
+      "source": {
+        "name": "ADS Group",
+        "url": "https://www.adsgroup.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ADS Group members directory search and enter the company name, then open any matching member profile page.",
+      "found_when": "A member profile page for the company appears in the ADS Group member directory with the company name and a capability description.",
+      "not_found_when": "The member directory returns no matching entry for the company name in a clean search.",
+      "couldnt_check_when": "The member directory cannot be searched, the name is too common to match confidently, or the profile page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on the Architects Registration Board (ARB) Register as a registered architect practice or architect?",
+      "why_it_matters": "Only ARB-registered persons may lawfully use the title architect in the UK, so absence is a compliance red flag.",
+      "source": {
+        "name": "Architects Registration Board (ARB) Register",
+        "url": "https://architects-register.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ARB register search and enter the company or practice name in the name field.",
+      "found_when": "The register returns a current entry matching the company or its named architect, with registration status shown.",
+      "not_found_when": "The register returns no entry for the company name after a clean search.",
+      "couldnt_check_when": "The register search is unavailable, returns only partial data, or the name is too common to identify the right entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its named barrister listed in the Bar Standards Board (BSB) Barristers' Register?",
+      "why_it_matters": "The BSB register shows whether practising status and litigation or public access authorisations are current.",
+      "source": {
+        "name": "Bar Standards Board (BSB) Barristers' Register",
+        "url": "https://www.barstandardsboard.org.uk/for-the-public/search-the-register.html",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BSB register search page and search by the barrister surname or the chambers or entity name.",
+      "found_when": "A register record matches the named barrister or entity and shows current practising status.",
+      "not_found_when": "A clean register search for the name returns no matching barrister or authorised entity.",
+      "couldnt_check_when": "The register cannot be queried, the name is too common to match, or the returned records cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on Business Gateway Scotland as a Scottish enterprise case study, supplier or funding directory entry?",
+      "why_it_matters": "Being featured by Scotland's national business advisory service indicates local recognition and access to public support.",
+      "source": {
+        "name": "Business Gateway Scotland",
+        "url": "https://www.bgateway.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search box on bgateway.com with the company name and review any case study or directory results.",
+      "found_when": "A case study, directory listing or advisory page names the company and describes its Scottish operations.",
+      "not_found_when": "The site search returns no page naming the company after a clean query.",
+      "couldnt_check_when": "The site search fails or is rate-limited, results are generic advice pages only, or the company name is too common to attribute.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold an ATOL, an Air Operator Certificate or a drone operator approval recorded in the Civil Aviation Authority (CAA) registers?",
+      "why_it_matters": "ATOL and AOC status are statutory consumer protection and safety credentials for travel and aviation businesses.",
+      "source": {
+        "name": "Civil Aviation Authority (CAA) ATOL & AOC Registers",
+        "url": "https://www.caa.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CAA search for ATOL holders or operators and enter the company name or number.",
+      "found_when": "A CAA register entry shows the company with a current ATOL number, AOC or drone operator authorisation.",
+      "not_found_when": "The relevant CAA register returns no entry for the company after a clean search.",
+      "couldnt_check_when": "The CAA register cannot be searched, the company name is ambiguous, or the licence status shown is not readable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered as a charity on the Charity Commission for Northern Ireland register, and is its record free of regulatory compliance notices?",
+      "why_it_matters": "The NI charity register confirms charitable status and discloses governance or compliance problems.",
+      "source": {
+        "name": "Charity Commission for Northern Ireland",
+        "url": "https://www.charitycommissionni.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the charity search on the Charity Commission for Northern Ireland site with the organisation name.",
+      "found_when": "A charity details page for the organisation appears showing trustees, accounts and any compliance notices.",
+      "not_found_when": "The charity search returns no registered charity matching the name in a clean search.",
+      "couldnt_check_when": "The register cannot be searched, several similar names appear, or the charity details page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Checkatrade listing with verified identity, insurance checks and authenticated customer reviews?",
+      "why_it_matters": "A vetted directory profile with reviews shows whether a trade contractor has passed ID, insurance and customer checks.",
+      "source": {
+        "name": "Checkatrade",
+        "url": "https://www.checkatrade.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Checkatrade by the trading name and location, then open the company profile.",
+      "found_when": "A Checkatrade profile for the company exists with vetting badges and any customer reviews shown.",
+      "not_found_when": "The Checkatrade search returns no profile for the company after a clean search.",
+      "couldnt_check_when": "The search cannot be run, the trading name is shared by several firms, or the profile page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Company Check record showing filed financial accounts, net worth, liabilities and director appointments consistent with its own claims?",
+      "why_it_matters": "Independently aggregated accounts and director data reveal financial weaknesses or inconsistencies in what the company says about itself.",
+      "source": {
+        "name": "Company Check",
+        "url": "https://companycheck.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the full registered company name in the Company Check search box and open the matching company report.",
+      "found_when": "A company report opens with the registered name, accounts history, net worth and director appointments.",
+      "not_found_when": "Company Check returns no matching company record for the name after a clean search.",
+      "couldnt_check_when": "The search is blocked or returns only paid-access teasers, the name matches several entities, or figures are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company been reported in Construction Enquirer in connection with contract wins, insolvencies, site accidents or supply chain problems?",
+      "why_it_matters": "Trade press coverage surfaces contract awards and safety or insolvency problems that company websites omit.",
+      "source": {
+        "name": "Construction Enquirer",
+        "url": "https://www.constructionenquirer.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on constructionenquirer.com with the company name and open any matching news or directory items.",
+      "found_when": "News articles or a directory entry name the company and describe awards, incidents or commercial events.",
+      "not_found_when": "The site search returns no article or directory entry naming the company in a clean search.",
+      "couldnt_check_when": "The site search is unavailable or paywalled, results are unrelated firms, or pages cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered with the Care Quality Commission (CQC) and what inspection rating and regulatory reports does its record show?",
+      "why_it_matters": "CQC ratings and enforcement reports are the primary public signal of compliance for health and social care providers in England.",
+      "source": {
+        "name": "Care Quality Commission (CQC)",
+        "url": "https://www.cqc.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the CQC site for the provider or location name and open the provider page.",
+      "found_when": "A CQC provider or location page lists the company with its registration status and inspection rating.",
+      "not_found_when": "The CQC search returns no registered provider or location matching the company name.",
+      "couldnt_check_when": "The search cannot be completed, several similarly named providers appear, or the provider page fails to display ratings.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Creditsafe UK report with a credit score, recommended credit limit and payment behaviour consistent with its stated financial position?",
+      "why_it_matters": "An independent credit score and payment record show whether the company is a safe counterparty.",
+      "source": {
+        "name": "Creditsafe UK",
+        "url": "https://www.creditsafe.com/gb/en.html",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Creditsafe company search for the company name and open the resulting company report.",
+      "found_when": "A Creditsafe report shows the company with a credit score, credit limit recommendation and payment data.",
+      "not_found_when": "Creditsafe returns no company record matching the name in a clean search.",
+      "couldnt_check_when": "Access requires paid login, the search is blocked, or the name matches multiple entities so the report cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold environmental permits, water discharge consents or waste carrier registrations published in the Environment Agency Public Registers?",
+      "why_it_matters": "Holding or lacking an environmental permit is a direct legal compliance signal for any company handling waste, water or emissions.",
+      "source": {
+        "name": "Environment Agency Public Registers",
+        "url": "https://environment.data.gov.uk/public-register/view/index",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Environment Agency public register name search and enter the company name.",
+      "found_when": "Register results list permits, consents or waste registrations in the company's name.",
+      "not_found_when": "The name search returns no permits or registrations for the company after a clean query.",
+      "couldnt_check_when": "The register search errors out, the name is too common to attribute, or result records cannot be displayed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Food and Drink Federation (FDF) members list?",
+      "why_it_matters": "FDF membership shows the company is recognised within the UK food and drink manufacturing sector.",
+      "source": {
+        "name": "Food and Drink Federation (FDF)",
+        "url": "https://www.fdf.org.uk",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the FDF members list page and scan or page through it for the company name.",
+      "found_when": "The company name appears in the FDF members list.",
+      "not_found_when": "The members list contains no entry for the company after scanning the full list.",
+      "couldnt_check_when": "The members list fails to load, is paginated beyond readable access, or the name is too common to distinguish.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Feefo merchant page with verified customer reviews and what rating does it show?",
+      "why_it_matters": "Invitation-only verified reviews indicate how real customers rate the company's service.",
+      "source": {
+        "name": "Feefo",
+        "url": "https://www.feefo.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Feefo for the company name or browse the Feefo merchant index for a matching merchant page.",
+      "found_when": "A Feefo merchant page exists for the company with a review count and service or product rating.",
+      "not_found_when": "No Feefo merchant page exists for the company after a clean search.",
+      "couldnt_check_when": "The merchant index cannot be searched, several merchants share the name, or review content will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered with FENSA as a competent person installer of windows, doors or rooflights in England and Wales?",
+      "why_it_matters": "FENSA registration shows the installer is authorised to self-certify building regulations compliance.",
+      "source": {
+        "name": "FENSA Register",
+        "url": "https://www.fensa.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FENSA installer search with the company name or postcode and open the matching installer record.",
+      "found_when": "A FENSA installer record shows the company as a registered installer.",
+      "not_found_when": "The FENSA installer search returns no registered company matching the name.",
+      "couldnt_check_when": "The installer search is unavailable, the name is shared by several installers, or the record page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "identity_registration",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company's Companies House record confirm its registration number, incorporation date, registered office, filing status, directors and persons with significant control?",
+      "why_it_matters": "Companies House is the statutory source for legal existence, ownership and filing compliance in the UK.",
+      "source": {
+        "name": "Companies House (Find and update company information)",
+        "url": "https://find-and-update.company-information.service.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Companies House by the full company name and open the matching company overview page.",
+      "found_when": "A company record matches the name and shows a company number, status, registered office, directors and PSC filings.",
+      "not_found_when": "The Companies House search returns no company matching the name in a clean search.",
+      "couldnt_check_when": "The search is unavailable, many near-identical names appear so the right entity cannot be confirmed, or filing pages fail to load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Federation of Master Builders (FMB) vetting directory as a member builder?",
+      "why_it_matters": "FMB membership means the contractor passed vetting on work standards and insurance credentials.",
+      "source": {
+        "name": "Federation of Master Builders (FMB)",
+        "url": "https://www.fmb.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FMB find-a-builder search with the company name or postcode.",
+      "found_when": "An FMB builder profile for the company exists with membership and vetting details.",
+      "not_found_when": "The FMB builder search returns no member profile for the company.",
+      "couldnt_check_when": "The directory search is down, results are location-limited and inconclusive, or the profile cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do LandlordZONE Forums discussions mention this company in connection with letting agent, property management or eviction service complaints?",
+      "why_it_matters": "Landlord forum threads often surface service failures and disputes that are not visible on company websites.",
+      "source": {
+        "name": "LandlordZONE Forums",
+        "url": "https://forums.landlordzone.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the forum's own search box for the company name and read any threads that name it.",
+      "found_when": "Forum threads name the company and describe a tenancy, agency or property management experience.",
+      "not_found_when": "The forum search returns no thread mentioning the company after a clean query.",
+      "couldnt_check_when": "Forum search requires login or fails, the name is too generic to match, or threads are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a FreeIndex profile with customer reviews, and what rating does it show?",
+      "why_it_matters": "FreeIndex reviews give a public view of customer satisfaction for trades and professional services.",
+      "source": {
+        "name": "FreeIndex",
+        "url": "https://www.freeindex.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search FreeIndex for the company name and open the matching business profile.",
+      "found_when": "A FreeIndex profile for the company exists showing review count and average rating.",
+      "not_found_when": "FreeIndex returns no profile for the company after a clean search.",
+      "couldnt_check_when": "The site blocks automated access, several businesses share the name, or the profile will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company been covered by the Financial Times in relation to its finances, governance, ownership or executive conduct?",
+      "why_it_matters": "FT coverage is a high-authority check on corporate governance and financial credibility.",
+      "source": {
+        "name": "Financial Times",
+        "url": "https://www.ft.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the FT site or markets search with the company name and review matching articles and company pages.",
+      "found_when": "FT articles or a markets company page name the company and discuss its business, results or governance.",
+      "not_found_when": "The FT search returns no article or company page for the company in a clean search.",
+      "couldnt_check_when": "Articles are behind a paywall, the search is blocked, or the company name matches unrelated entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "regulator_action",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a Gambling Commission operating licence, and does its public register record show any sanctions, fines or licence suspensions?",
+      "why_it_matters": "Only licensed operators may offer gambling in the UK, and the register discloses enforcement history.",
+      "source": {
+        "name": "Gambling Commission Public Register",
+        "url": "https://www.gamblingcommission.gov.uk/public-register",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Gambling Commission public register business search and enter the company name.",
+      "found_when": "A licence entry for the company appears, with licence status and any regulatory action noted.",
+      "not_found_when": "The public register returns no licensed business matching the company name.",
+      "couldnt_check_when": "The register search is unavailable, the company trades under a different licensed name, or the record cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Glenigan construction pipeline news as a contract winner, tenderer or named subcontractor?",
+      "why_it_matters": "Construction award and pipeline data show whether the company actually wins the work it claims.",
+      "source": {
+        "name": "Glenigan",
+        "url": "https://www.glenigan.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Glenigan site search with the company name and review matching contract and project articles.",
+      "found_when": "Glenigan pages or articles name the company in connection with a contract award, tender or project.",
+      "not_found_when": "The Glenigan search returns no mention of the company in a clean query.",
+      "couldnt_check_when": "Most pipeline data sits behind a paid subscription, the search fails, or the name matches unrelated firms.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 23,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is any director or beneficial owner of this company recorded on the Individual Insolvency Register for bankruptcy, a DRO or an IVA?",
+      "why_it_matters": "Director insolvency history is a serious warning sign when vetting the people behind a company.",
+      "source": {
+        "name": "Individual Insolvency Register",
+        "url": "https://www.insolvencydirect.bis.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Individual Insolvency Register search, enter the director or owner's name from Companies House, and submit the form.",
+      "found_when": "A register record exists for the named director showing bankruptcy, a debt relief order or an IVA.",
+      "not_found_when": "A clean name search returns no insolvency record for the named individual.",
+      "couldnt_check_when": "The register search cannot be submitted, directors cannot be identified, or the name is too common to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this Northern Ireland company profiled in an Invest Northern Ireland supplier or sector directory?",
+      "why_it_matters": "Invest NI directory inclusion shows the company is recognised by the regional development agency and may access its support.",
+      "source": {
+        "name": "Invest Northern Ireland",
+        "url": "https://www.investni.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Invest NI sector supply chain company directories and scan them for the company name.",
+      "found_when": "The company appears in an Invest NI directory or news item with its Northern Ireland operations described.",
+      "not_found_when": "No Invest NI directory or page lists the company after scanning the relevant lists.",
+      "couldnt_check_when": "Directories fail to load, the company sits outside the sectors published, or the name is too common to attribute.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 25,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Law Society of Northern Ireland solicitor directory as an authorised firm or practitioner?",
+      "why_it_matters": "The Law Society directory confirms the firm is authorised to practise as a solicitor in Northern Ireland.",
+      "source": {
+        "name": "Law Society of Northern Ireland - Solicitor Directory",
+        "url": "https://www.lawsoc-ni.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Law Society of Northern Ireland find-a-solicitor search with the firm name.",
+      "found_when": "A directory entry for the firm shows its practising solicitors and contact details.",
+      "not_found_when": "The solicitor directory returns no firm matching the name in a clean search.",
+      "couldnt_check_when": "The directory search is unavailable, only individual names are indexed, or the entry cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered on the Mutuals Public Register as a building society, friendly society, credit union or other society, and are its annual returns filed?",
+      "why_it_matters": "Mutuals register status confirms the entity is properly registered and keeps up its statutory filings.",
+      "source": {
+        "name": "Mutuals Public Register (hosted by FCA)",
+        "url": "https://mutuals.fca.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Mutuals Public Register by the society or company name and open the society record.",
+      "found_when": "A society record for the company appears showing registration number, rules and annual return history.",
+      "not_found_when": "The register returns no society matching the company name in a clean search.",
+      "couldnt_check_when": "The register search is down, the name is too common, or the society record will not display.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold environmental permits, waste exemptions or abstraction licences recorded on the Natural Resources Wales public register?",
+      "why_it_matters": "The Welsh statutory register shows whether a company's environmental activities are authorised and compliant.",
+      "source": {
+        "name": "Natural Resources Wales (NRW) Public Registers",
+        "url": "https://naturalresources.wales",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Natural Resources Wales public register search and enter the company name as the search term.",
+      "found_when": "Register results list permits, exemptions or consents held by the company.",
+      "not_found_when": "The NRW register search returns no records for the company after a clean query.",
+      "couldnt_check_when": "The public register search errors or times out, the name is too common, or results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this Northern Ireland company have an nijobfinder employer profile with current job adverts?",
+      "why_it_matters": "Active Northern Ireland hiring indicates real local operations consistent with the company's stated presence.",
+      "source": {
+        "name": "nijobfinder",
+        "url": "https://www.nijobfinder.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search nijobfinder by the company name as employer and open any employer profile or advert list.",
+      "found_when": "An employer profile or job adverts exist for the company on nijobfinder.",
+      "not_found_when": "The site search returns no employer profile or adverts for the company.",
+      "couldnt_check_when": "The site search is unavailable, results are aggregated recruiters rather than the company, or pages are unreadable.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 29,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold a gas or electricity supply, network or generation licence published on the Ofgem Electronic Public Register, and is it free of investigations or redress orders?",
+      "why_it_matters": "Ofgem licence and enforcement records are the authoritative check for UK energy market participants.",
+      "source": {
+        "name": "Office of Gas and Electricity Markets (Ofgem) Electronic Public Register",
+        "url": "https://www.ofgem.gov.uk/energy-policy-and-regulation/compliance-and-enforcement/public-registers",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Ofgem Electronic Public Register search and enter the company name in quotes.",
+      "found_when": "Register entries show licences held by the company, plus any investigations or enforcement notices.",
+      "not_found_when": "The register returns no licence or enforcement entry for the company in a clean search.",
+      "couldnt_check_when": "The register search is unavailable, the company trades under a group name, or entries cannot be interpreted.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered with the Scottish Charity Regulator (OSCR), and does its record show current charitable status without regulatory decisions against it?",
+      "why_it_matters": "OSCR registration is the legal test of charitable status in Scotland and discloses regulatory findings.",
+      "source": {
+        "name": "Scottish Charity Regulator (OSCR)",
+        "url": "https://www.oscr.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the OSCR search the register tool with the charity or company name.",
+      "found_when": "A charity details record for the organisation appears with status, trustees and income figures.",
+      "not_found_when": "The register returns no charity matching the name after a clean search.",
+      "couldnt_check_when": "The register search fails, multiple similar names appear, or the charity details page cannot be loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Propertymark (NAEA or ARLA) directory as an accredited estate or letting agent?",
+      "why_it_matters": "Propertymark membership evidences client money protection, professional indemnity insurance and redress scheme membership.",
+      "source": {
+        "name": "Propertymark (NAEA & ARLA)",
+        "url": "https://www.propertymark.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use Propertymark's find-a-member search with the company or branch name.",
+      "found_when": "A company page for the firm shows Propertymark membership and its compliance credentials.",
+      "not_found_when": "The member directory returns no accredited company matching the name.",
+      "couldnt_check_when": "The directory search is unavailable, only branch names are indexed, or the company page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company's food establishment have a Food Standards Agency food hygiene rating, and what score and inspection date does it show?",
+      "why_it_matters": "The published 0 to 5 hygiene rating is an official measure of food safety compliance at named premises.",
+      "source": {
+        "name": "Food Standards Agency (FSA) Food Hygiene Ratings",
+        "url": "https://ratings.food.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the FSA food hygiene ratings site by business name and postcode and open the matching establishment.",
+      "found_when": "An establishment record shows the company as operator with a hygiene rating score and inspection date.",
+      "not_found_when": "The ratings search returns no establishment operated by the company in a clean search.",
+      "couldnt_check_when": "The company is not a food establishment, the search is unavailable, or several identical trading names make attribution impossible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Reed.co.uk recruiter directory or have live job adverts on Reed?",
+      "why_it_matters": "Recruitment activity on a major UK job board corroborates the company's scale, locations and current growth claims.",
+      "source": {
+        "name": "Reed.co.uk",
+        "url": "https://www.reed.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Reed.co.uk recruiter directory search with the company name as the keyword.",
+      "found_when": "A recruiter profile or live adverts for the company appear on Reed.co.uk.",
+      "not_found_when": "The directory search returns no recruiter profile or adverts for the company.",
+      "couldnt_check_when": "The search requires login or is blocked, adverts are posted by agencies, or the name is too common to attribute.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 34,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered on the Charity Commission for England and Wales register, and does its record show filed accounts without regulatory inquiries?",
+      "why_it_matters": "The charity register confirms charitable status and publishes accounts and inquiry findings.",
+      "source": {
+        "name": "Charity Commission for England and Wales",
+        "url": "https://register-of-charities.charitycommission.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the charity search on the register with the charity name or number in quotes.",
+      "found_when": "A charity record for the organisation appears with trustees, objects, accounts and any inquiry history.",
+      "not_found_when": "The charity search returns no registered charity matching the name in a clean search.",
+      "couldnt_check_when": "The search service is unavailable, results return many similar names, or the record pages fail to render.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company an Ofsted-registered provider, and what inspection grade and findings do its Ofsted reports show?",
+      "why_it_matters": "Ofsted grades and reports are the official quality and compliance record for English education and training providers.",
+      "source": {
+        "name": "Ofsted Reports",
+        "url": "https://reports.ofsted.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Ofsted reports site with the provider or company name and open the provider page.",
+      "found_when": "A provider page shows the company's registered settings with inspection dates and grades.",
+      "not_found_when": "The Ofsted search returns no registered provider matching the company name.",
+      "couldnt_check_when": "The company is not in a regulated education or care sector, the search is down, or provider records cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Reviews.io profile with verified purchase reviews, and what rating and review volume does it show?",
+      "why_it_matters": "Verified purchase reviews give a comparable measure of customer satisfaction and complaint patterns.",
+      "source": {
+        "name": "Reviews.io",
+        "url": "https://www.reviews.io",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Reviews.io for the company or store name and open the company review page.",
+      "found_when": "A Reviews.io company page exists for the company showing its rating and review count.",
+      "not_found_when": "No Reviews.io company page exists for the company after a clean search.",
+      "couldnt_check_when": "The review pages will not load, several merchants share the name, or ratings are shown without verifiable attribution.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the s1jobs company directory with live Scottish vacancies?",
+      "why_it_matters": "A Scottish job-board presence confirms genuine hiring and operational footprint in Scotland.",
+      "source": {
+        "name": "s1jobs",
+        "url": "https://www.s1jobs.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the s1jobs company directory page for the company's initial letter and scan for the company, then check its vacancies.",
+      "found_when": "The company appears in the s1jobs company directory with a profile or current adverts.",
+      "not_found_when": "The directory contains no entry for the company after scanning the relevant letter page.",
+      "couldnt_check_when": "Directory pages fail to load, the company hires only through agencies, or the name is too generic to identify.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 38,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold environmental authorisations, waste management licences or discharge consents recorded on the SEPA public register?",
+      "why_it_matters": "SEPA authorisations show whether Scottish environmental activity is permitted and who the licence holder is.",
+      "source": {
+        "name": "Scottish Environment Protection Agency (SEPA) Public Register",
+        "url": "https://www.sepa.org.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the SEPA public register by authorisation holder name using the company name.",
+      "found_when": "Register results list authorisations held in the company's name with status and locations.",
+      "not_found_when": "The SEPA register returns no authorisations for the company after a clean search.",
+      "couldnt_check_when": "The register search is unavailable, holder names differ from trading names, or results cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company approved under the Security Industry Authority (SIA) Approved Contractor Scheme, and are its security personnel licences verifiable?",
+      "why_it_matters": "SIA approval and licensing are legal requirements for supplying private security services in the UK.",
+      "source": {
+        "name": "Security Industry Authority (SIA) Approved Contractor Register",
+        "url": "https://services.sia.homeoffice.gov.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SIA approved contractor search with the company name or approval number.",
+      "found_when": "An approved contractor record for the company appears with its approval status and number.",
+      "not_found_when": "The SIA register returns no approved contractor matching the company name.",
+      "couldnt_check_when": "The register lookup is unavailable, the company trades under another name, or the record cannot be verified.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Society of Motor Manufacturers and Traders (SMMT) members directory?",
+      "why_it_matters": "SMMT membership indicates the company is recognised as part of the UK automotive industry.",
+      "source": {
+        "name": "Society of Motor Manufacturers and Traders (SMMT)",
+        "url": "https://www.smmt.co.uk",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SMMT members page and scan the member list for the company name.",
+      "found_when": "The company name appears in the SMMT members directory.",
+      "not_found_when": "The member list contains no entry for the company after scanning it fully.",
+      "couldnt_check_when": "The members page fails to load or is paginated beyond readable access, or the name is too common to confirm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company authorised by the Solicitors Regulation Authority (SRA), and does its register record show current practising status and any disciplinary decisions?",
+      "why_it_matters": "SRA authorisation is required to provide legal services in England and Wales, and the record exposes sanctions.",
+      "source": {
+        "name": "Solicitors Regulation Authority (SRA) - Solicitors Register",
+        "url": "https://www.sra.org.uk/consumers/solicitor-check/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SRA solicitor check with the firm or organisation name and open the organisation record.",
+      "found_when": "An SRA organisation record for the firm shows its authorisation, practice areas and any regulatory decisions.",
+      "not_found_when": "The SRA register returns no authorised organisation matching the name.",
+      "couldnt_check_when": "The register lookup fails, many firms share the name, or the organisation record cannot be displayed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company been featured in Startups.co.uk rankings or award coverage such as the Startups 100?",
+      "why_it_matters": "Independent startup rankings and awards corroborate growth claims and market recognition.",
+      "source": {
+        "name": "Startups.co.uk",
+        "url": "https://startups.co.uk",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Search the Startups.co.uk rankings pages and site for the company name.",
+      "found_when": "A Startups.co.uk ranking entry or article features the company with its profile.",
+      "not_found_when": "The rankings and site search contain no entry for the company.",
+      "couldnt_check_when": "Rankings pages will not load, the current year's list is unpublished, or the name is too common to attribute.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 43,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the techUK members directory as a member technology firm?",
+      "why_it_matters": "techUK membership signals standing in the UK tech sector and access to public sector procurement networks.",
+      "source": {
+        "name": "techUK",
+        "url": "https://www.techuk.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the techUK members page and search or scan the member listing for the company name.",
+      "found_when": "The company appears in the techUK member directory.",
+      "not_found_when": "The techUK members listing contains no entry for the company after a full search.",
+      "couldnt_check_when": "The member list will not render or is filtered beyond readable access, or the name is too common to confirm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 44,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in The Gazette public record with winding-up petitions, liquidation resolutions, administration appointments or striking-off notices?",
+      "why_it_matters": "Statutory insolvency notices in The Gazette are the earliest public warning that a company is failing.",
+      "source": {
+        "name": "The Gazette (Official Public Record)",
+        "url": "https://www.thegazette.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search The Gazette for the company name and filter results to insolvency and company notices.",
+      "found_when": "Gazette notices in the company's name appear, showing the nature and date of the insolvency or strike-off event.",
+      "not_found_when": "A clean Gazette search returns no insolvency or company notices for the name.",
+      "couldnt_check_when": "The Gazette search is unavailable, the name is too common to attribute notices, or notice text is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 45,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company endorsed in the Which? Trusted Traders scheme with a public business profile?",
+      "why_it_matters": "Which? endorsement follows assessment of financial health, trading practices and dispute resolution.",
+      "source": {
+        "name": "Which? Trusted Traders",
+        "url": "https://trustedtraders.which.co.uk",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Which? Trusted Traders business search with the company name or postcode.",
+      "found_when": "A Trusted Traders business profile for the company exists with its endorsement status shown.",
+      "not_found_when": "The Trusted Traders search returns no endorsed business matching the company name.",
+      "couldnt_check_when": "The search is unavailable, the company operates outside the covered trade categories, or the profile will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 46,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in UK Finance's members list as a member of the UK banking and finance industry body?",
+      "why_it_matters": "UK Finance membership shows the firm is recognised within the regulated UK banking and finance community.",
+      "source": {
+        "name": "UK Finance",
+        "url": "https://www.ukfinance.org.uk",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the UK Finance our members page and scan the list, including group entities, for the company name.",
+      "found_when": "The company or its group entity appears in the UK Finance members list.",
+      "not_found_when": "The members list contains no entry for the company or its group after a full scan.",
+      "couldnt_check_when": "The members page fails to load or is filtered beyond readable access, or the name is too common to distinguish.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "GB-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 46 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

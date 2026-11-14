@@ -1,0 +1,726 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the SEC Investment Adviser Public Disclosure (IAPD) database as a registered investment adviser, and does its Form ADV show owners or disciplinary disclosures?",
+      "why_it_matters": "IAPD is the official US record of an adviser's registration, owners and disclosed regulatory history.",
+      "source": {
+        "name": "SEC Investment Adviser Public Disclosure (IAPD)",
+        "url": "https://adviserinfo.sec.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the IAPD firm search and enter the company's legal name, then open any matching Form ADV record.",
+      "found_when": "A firm record with the same legal name appears and its Form ADV or disclosure pages are readable.",
+      "not_found_when": "The firm search returns no match for the company's legal name in any state.",
+      "couldnt_check_when": "The name matches many unrelated firms, or the IAPD search and record pages will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the FDIC BankFind Suite as an FDIC-insured depository institution, and does its record show enforcement orders?",
+      "why_it_matters": "FDIC records confirm whether a bank's deposit insurance and charter claims are genuine.",
+      "source": {
+        "name": "FDIC BankFind Suite",
+        "url": "https://banks.data.fdic.gov/bankfind-suite/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search FDIC BankFind Suite by institution name and review the charter, insurance and enforcement details.",
+      "found_when": "An institution record with the same name appears with FDIC insurance and charter information.",
+      "not_found_when": "The institution search returns no bank under the company's name.",
+      "couldnt_check_when": "The search tool is unavailable, or several banks share the name with different certificates.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Bloomberg carry news coverage or a company credit profile for this company?",
+      "why_it_matters": "Bloomberg coverage shows the company is tracked by financial markets, and its reporting can corroborate or contradict the company's own claims.",
+      "source": {
+        "name": "Bloomberg",
+        "url": "https://www.bloomberg.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Bloomberg site search with the company name and review the resulting news articles and company pages.",
+      "found_when": "Bloomberg search returns company pages or articles naming the company as the subject.",
+      "not_found_when": "The search returns no Bloomberg article or company profile for the name.",
+      "couldnt_check_when": "Bloomberg is blocked by a paywall or bot check, or the name returns only unrelated matches.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered with FINRA and listed on BrokerCheck as a broker-dealer or investment adviser, and does its record show sanctions or customer disputes?",
+      "why_it_matters": "BrokerCheck is the official US record of a financial firm's licensing, arbitrations and disciplinary history.",
+      "source": {
+        "name": "FINRA BrokerCheck",
+        "url": "https://brokercheck.finra.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open BrokerCheck and enter the firm name in the firm search box.",
+      "found_when": "A firm record with the matching name appears with its registrations, disputes or disciplinary disclosures.",
+      "not_found_when": "The firm search returns no broker-dealer or adviser under the company's name.",
+      "couldnt_check_when": "BrokerCheck search or its detail pages are unavailable, or the name matches many similarly named firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Built In profile for one of its US locations, and does that profile match its stated size and technology?",
+      "why_it_matters": "A missing or inconsistent Built In profile weakens the company's recruiting visibility and flags claims that do not line up.",
+      "source": {
+        "name": "Built In",
+        "url": "https://builtin.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search builtin.com for the company name and open the matching company profile.",
+      "found_when": "A company profile appears with locations, headcount or technology details.",
+      "not_found_when": "The company search returns no profile for the name.",
+      "couldnt_check_when": "The search endpoint or profile page is unavailable, or the name is too generic to match uniquely.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does CB Insights carry a company profile for this company, and what does it show about its funding, investors and competitors?",
+      "why_it_matters": "A CB Insights profile gives an independent view of the company's funding and market position that can be compared with its own story.",
+      "source": {
+        "name": "CB Insights",
+        "url": "https://www.cbinsights.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search cbinsights.com for the company name and open the matching company profile page.",
+      "found_when": "A CB Insights company page exists for the company with funding, investor or market details.",
+      "not_found_when": "The site search returns no company profile for the name.",
+      "couldnt_check_when": "The profile is gated or not shown, or the name matches several different companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do IT professionals discuss this company as a vendor in the Spiceworks Community, and what do the vendor pages and threads say about its support and service levels?",
+      "why_it_matters": "Practitioner feedback reveals delivery and support problems that official marketing material hides.",
+      "source": {
+        "name": "Spiceworks Community",
+        "url": "https://community.spiceworks.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Spiceworks Community for the company name and open the vendor pages and discussion threads that mention it.",
+      "found_when": "Vendor pages, reviews or threads naming the company are found and readable.",
+      "not_found_when": "The community search returns no post or vendor page naming the company.",
+      "couldnt_check_when": "The community search is unavailable, or generic company names return only incidental mentions.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Are there consumer complaints filed against this company in the CFPB Consumer Complaint Database, and how does the company respond to them?",
+      "why_it_matters": "Complaint volumes and company responses are a public record of how the company treats its customers.",
+      "source": {
+        "name": "CFPB Consumer Complaint Database",
+        "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CFPB Consumer Complaint Database, enter the company name and review complaint volumes, categories and company responses.",
+      "found_when": "Complaints are returned under the company's name with response details.",
+      "not_found_when": "The complaint search returns no records for the company's name.",
+      "couldnt_check_when": "The complaint API or search page is unavailable, or the name matches several institutions with similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the NAIC Consumer Insurance Search as a licensed insurer, and does its profile show complaint ratios or closed complaints?",
+      "why_it_matters": "NAIC records verify an insurer's licensing and give a public complaint picture by line of insurance.",
+      "source": {
+        "name": "NAIC Consumer Insurance Search (National Association of Insurance Commissioners)",
+        "url": "https://content.naic.org/cis_consumer_information.htm",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NAIC consumer insurance company search and enter the company's insurance entity name.",
+      "found_when": "A company result appears with licensing, financial summary or complaint ratio details.",
+      "not_found_when": "The search returns no insurance company under the company's name.",
+      "couldnt_check_when": "The search dashboard does not load, or the name is shared by several related group entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in EPA ECHO with regulated facilities, permits, inspections or enforcement actions?",
+      "why_it_matters": "Environmental enforcement and penalty history is a material compliance and reputational risk.",
+      "source": {
+        "name": "EPA ECHO (Enforcement and Compliance History Online)",
+        "url": "https://echo.epa.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search EPA ECHO by facility or company name and review compliance status, inspections and penalties.",
+      "found_when": "Facility records under the company's name appear with permits, inspections or enforcement data.",
+      "not_found_when": "The ECHO search returns no regulated facility under the company's name.",
+      "couldnt_check_when": "ECHO search is down or the name returns facilities with no clear ownership link.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the FDA's warning letter and inspection record list this company, for example with a warning letter, Form 483 observations or a recall?",
+      "why_it_matters": "FDA enforcement actions indicate manufacturing or product compliance failures.",
+      "source": {
+        "name": "FDA Warning Letters & Inspections",
+        "url": "https://www.fda.gov/inspections-compliance-enforcement-and-criminal-investigations/compliance-actions-and-activities/warning-letters",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the FDA warning letters datatable, and the inspection and recall databases, for the company's name.",
+      "found_when": "A warning letter, inspection observation or recall naming the company is returned.",
+      "not_found_when": "The FDA searches return no enforcement, inspection or recall record for the company.",
+      "couldnt_check_when": "The FDA search views fail to load, or the name is too generic to tie to one company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Forbes profile this company or rank it on one of its lists, such as America's Largest Private Companies?",
+      "why_it_matters": "A Forbes profile or ranking position is third-party recognition of the company's scale and standing.",
+      "source": {
+        "name": "Forbes",
+        "url": "https://www.forbes.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search forbes.com for the company name and check for a company profile page or ranking entry.",
+      "found_when": "A Forbes company page or ranking entry naming the company is found.",
+      "not_found_when": "The Forbes search returns no profile or ranking entry for the company.",
+      "couldnt_check_when": "Search results or profile pages are gated or unreadable, or the name matches other companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "awards",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Fortune's rankings, such as the Fortune 500 or Global 500, or in its Most Admired Companies list?",
+      "why_it_matters": "Fortune list placement is a widely used public measure of the company's size and standing.",
+      "source": {
+        "name": "Fortune",
+        "url": "https://fortune.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Fortune ranking search page and scan the relevant list for the company name.",
+      "found_when": "The company is named in a Fortune ranking with a rank or revenue figure.",
+      "not_found_when": "The ranking lists contain no entry for the company.",
+      "couldnt_check_when": "The ranking pages do not load or the list year being read is unclear.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the FTC Legal Library contain any case or proceeding involving this company?",
+      "why_it_matters": "FTC actions reveal antitrust or consumer protection problems, such as deceptive advertising, on the public record.",
+      "source": {
+        "name": "FTC Legal Library (Federal Trade Commission)",
+        "url": "https://www.ftc.gov/legal-library/browse/cases-proceedings",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the FTC legal library case browse page with the company name in quotes.",
+      "found_when": "A case or proceeding record naming the company is returned.",
+      "not_found_when": "The FTC search returns no case or proceeding for the company.",
+      "couldnt_check_when": "The search page is unavailable, or the company name is too common to link to one case.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the IRS Tax Exempt Organization Search with an active 501(c)(3) or 501(c)(6) tax-exempt status?",
+      "why_it_matters": "IRS records confirm whether a claimed non-profit status is real and still active.",
+      "source": {
+        "name": "IRS Tax Exempt Organization Search",
+        "url": "https://www.irs.gov/charities-non-profits/tax-exempt-organization-search",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the IRS Tax Exempt Organization Search by organisation name and review the exemption status and filings.",
+      "found_when": "An organisation record appears with an active exemption status and filing history.",
+      "not_found_when": "The search returns no exempt organisation under the company's name.",
+      "couldnt_check_when": "The IRS search tool is unavailable, or the name matches many similarly named charities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on the National Retail Federation's Top 100 Retailers list?",
+      "why_it_matters": "Placement on the NRF list independently confirms the company's size in US retail.",
+      "source": {
+        "name": "National Retail Federation (NRF)",
+        "url": "https://nrf.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the NRF Top 100 Retailers list page and scan the ranked table for the company name.",
+      "found_when": "The ranked table names the company with a rank or revenue figure.",
+      "not_found_when": "The list contains no entry for the company.",
+      "couldnt_check_when": "The list page does not load or the edition being read is not stated.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member on the National Venture Capital Association (NVCA) members page?",
+      "why_it_matters": "NVCA membership is a sign that the firm is an established, recognised participant in the US venture industry.",
+      "source": {
+        "name": "National Venture Capital Association (NVCA)",
+        "url": "https://nvca.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the NVCA members page and scan the directory of member firms for the company name.",
+      "found_when": "The members page lists the company as an NVCA member.",
+      "not_found_when": "The members page contains no listing for the company.",
+      "couldnt_check_when": "The members page does not load or the membership list is not published in full.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 18,
+      "category": "news_press",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company published press releases through PR Newswire, and do those releases support its claims about products, leadership and results?",
+      "why_it_matters": "Timed press releases give a dated record that can confirm or contradict what the company now says about itself.",
+      "source": {
+        "name": "PR Newswire",
+        "url": "https://www.prnewswire.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search prnewswire.com by organisation name and review the company's release history.",
+      "found_when": "Releases attributed to the company are returned with dates and content.",
+      "not_found_when": "The organisation search returns no releases for the company.",
+      "couldnt_check_when": "The search results are unavailable, or several companies share the same name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the ProPublica Nonprofit Explorer hold IRS Form 990 filings for this company, and do the reported finances match what it says publicly?",
+      "why_it_matters": "Digitised Form 990 data shows a non-profit's real revenue, salaries and grants, which often contradicts campaign claims.",
+      "source": {
+        "name": "ProPublica Nonprofit Explorer",
+        "url": "https://projects.propublica.org/nonprofits/",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ProPublica Nonprofit Explorer by the organisation's name or EIN and open its Form 990 filings.",
+      "found_when": "A nonprofit record appears with one or more Form 990 filings and financial figures.",
+      "not_found_when": "The search returns no organisation record for the company's name or EIN.",
+      "couldnt_check_when": "The site is unreachable, or the name matches several unrelated non-profits.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered in SAM.gov as a federal contractor, and does its record show active exclusions or debarments?",
+      "why_it_matters": "SAM.gov confirms a contractor's legal identity, UEI and whether it is barred from federal work.",
+      "source": {
+        "name": "SAM.gov (System for Award Management)",
+        "url": "https://sam.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search sam.gov by legal business name and review the entity registration, UEI and exclusion records.",
+      "found_when": "An entity record appears with a UEI and registration status, and any exclusions are shown.",
+      "not_found_when": "The entity search returns no registration for the company's legal name.",
+      "couldnt_check_when": "SAM.gov requires a login or captcha that blocks the search, or the name returns many similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "security_exposure",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on the OFAC Sanctions List Search as a Specially Designated National or otherwise sanctioned party?",
+      "why_it_matters": "A sanctions hit would make dealings with the company unlawful for US-linked businesses.",
+      "source": {
+        "name": "OFAC Sanctions List Search (U.S. Department of the Treasury)",
+        "url": "https://sanctionssearch.ofac.treas.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the OFAC Sanctions List Search, submit the company name with a low minimum score and review close matches.",
+      "found_when": "A designation record matches the company's name and identifying details.",
+      "not_found_when": "The search returns no designation matching the company name and identifiers.",
+      "couldnt_check_when": "The search form or results page fails, or the name is too generic to separate real matches from noise.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in U.S. Small Business Administration records, for example with an 8(a) or HUBZone certification or an SBA-backed loan?",
+      "why_it_matters": "SBA records verify claimed small-business certifications and reveal the company's access to federal loan programmes.",
+      "source": {
+        "name": "U.S. Small Business Administration (SBA)",
+        "url": "https://www.sba.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the SBA certification search by company name and review any certification or loan records it returns.",
+      "found_when": "A certification or loan record naming the company is returned with its status.",
+      "not_found_when": "The SBA search returns no certification or loan record for the company.",
+      "couldnt_check_when": "The certification API or search page is unavailable, or the name matches several registered entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company file with the SEC in EDGAR, and do its filings support the financial and corporate claims it makes?",
+      "why_it_matters": "EDGAR filings are audited, legally binding disclosures that can be compared directly with the company's own statements.",
+      "source": {
+        "name": "SEC EDGAR (U.S. Securities and Exchange Commission)",
+        "url": "https://www.sec.gov/edgar/searchedgar/companysearch",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SEC EDGAR company search, enter the company name and review its filing history.",
+      "found_when": "A filer entry exists and its filings such as 10-K or 8-K are readable.",
+      "not_found_when": "EDGAR returns no filer under the company's name.",
+      "couldnt_check_when": "EDGAR rate-limits or blocks the request, or the name matches several unrelated filers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does SiteJabber carry a review page for this company, and do reviewers report billing or refund problems?",
+      "why_it_matters": "Repeated consumer complaints about billing and refunds are an early warning of poor commercial conduct.",
+      "source": {
+        "name": "SiteJabber",
+        "url": "https://www.sitejabber.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search sitejabber.com for the company name and open its review page and rating.",
+      "found_when": "A review page for the company exists with ratings and customer comments.",
+      "not_found_when": "The site search returns no review page for the company.",
+      "couldnt_check_when": "The review page is blocked or empty of readable content, or the name matches other merchants.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do employees discuss this company on Blind, and what do the anonymous posts say about layoffs, management or pay?",
+      "why_it_matters": "Verified-employee chatter surfaces internal problems such as layoffs or mismanagement long before they become public.",
+      "source": {
+        "name": "Blind (TeamBlind)",
+        "url": "https://www.teamblind.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search teamblind.com for the company page and read its reviews and discussion posts.",
+      "found_when": "A company page or posts about the company are found and readable.",
+      "not_found_when": "No company page or discussion post about the company is found.",
+      "couldnt_check_when": "The site blocks the request or requires a verified work login to show content.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "news_press",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has TechCrunch reported on this company, for example its funding rounds, launches or setbacks, and do those reports match the company's own claims?",
+      "why_it_matters": "Independent startup reporting dates and verifies funding and product claims the company makes.",
+      "source": {
+        "name": "TechCrunch",
+        "url": "https://techcrunch.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search techcrunch.com for the company name and review the resulting articles and tag pages.",
+      "found_when": "TechCrunch articles naming the company as the subject are returned.",
+      "not_found_when": "The site search returns no article about the company.",
+      "couldnt_check_when": "The search or tag pages are unavailable, or the name matches unrelated subjects.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "security_exposure",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on the Consolidated Screening List as subject to US export restrictions, such as the BIS Entity List or Denied Persons List?",
+      "why_it_matters": "Export restriction listings mean US-linked trade with the company is restricted or prohibited.",
+      "source": {
+        "name": "Consolidated Screening List (U.S. International Trade Administration)",
+        "url": "https://www.trade.gov/consolidated-screening-list",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Download the Consolidated Screening List file and search it for the company's name across the included restriction lists.",
+      "found_when": "An entry matching the company's name and details appears on one of the listed restriction lists.",
+      "not_found_when": "The list contains no entry matching the company's name and identifiers.",
+      "couldnt_check_when": "The download fails or the name is too generic to separate real matches from noise.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company received US federal contracts, grants or loans recorded on USAspending.gov, and how large are the awards?",
+      "why_it_matters": "Federal award data shows the company's real public-sector revenue and can contradict its stated track record.",
+      "source": {
+        "name": "USAspending.gov",
+        "url": "https://www.usaspending.gov",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search usaspending.gov by recipient name and review the awards and total obligations shown.",
+      "found_when": "Award records naming the company as recipient are returned with amounts.",
+      "not_found_when": "The recipient search returns no federal awards for the company.",
+      "couldnt_check_when": "The search or API is unavailable, or the name matches several similarly named recipients.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold registered trademarks or patents at the USPTO, and are any marks it claims abandoned or cancelled?",
+      "why_it_matters": "USPTO records show whether branding and technology ownership claims are actually registered and in force.",
+      "source": {
+        "name": "United States Patent and Trademark Office (USPTO)",
+        "url": "https://www.uspto.gov/trademarks/search",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the USPTO trademark and patent databases by owner name and by the claimed mark, and review each filing status.",
+      "found_when": "Trademark or patent records owned by or naming the company are returned with their status.",
+      "not_found_when": "The USPTO searches return no trademark or patent record for the company or its claimed marks.",
+      "couldnt_check_when": "The USPTO search tool is unavailable, or the name matches many unrelated applicants.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Wellfound profile, and what does it disclose about its funding stage, team size and equity offers?",
+      "why_it_matters": "A Wellfound profile gives a public, comparable statement of the company's stage and hiring terms.",
+      "source": {
+        "name": "Wellfound (formerly AngelList Talent)",
+        "url": "https://wellfound.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search wellfound.com for the company name and open the matching company profile.",
+      "found_when": "A company profile exists with funding stage, headcount or compensation details.",
+      "not_found_when": "The site search returns no profile for the company.",
+      "couldnt_check_when": "The profile requires a login to view, or the name matches several startups.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "US-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 30 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

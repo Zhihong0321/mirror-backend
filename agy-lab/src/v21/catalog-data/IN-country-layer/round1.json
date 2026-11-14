@@ -1,0 +1,1042 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member of the Automotive Component Manufacturers Association of India (ACMA) on acma.in?",
+      "why_it_matters": "ACMA membership backs up claims of being a genuine Indian auto-component manufacturer with OEM-tier supply status.",
+      "source": {
+        "name": "Automotive Component Manufacturers Association of India (ACMA)",
+        "url": "https://www.acma.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ACMA member search page and enter the company name in the member name field.",
+      "found_when": "The company appears in the ACMA member search results with a matching name and location.",
+      "not_found_when": "The member search returns no match for the company name after trying variants and abbreviations.",
+      "couldnt_check_when": "The member search page fails to load or the name is too generic to match a single member record.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company hold a valid Registration-cum-Membership Certificate (RCMC) with the Agricultural & Processed Food Products Export Development Authority (APEDA) as shown on apeda.gov.in?",
+      "why_it_matters": "An APEDA RCMC is the statutory proof an Indian firm may legally export the food products it advertises.",
+      "source": {
+        "name": "Agricultural & Processed Food Products Export Development Authority (APEDA)",
+        "url": "https://apeda.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the APEDA exporter directory and search for the company name.",
+      "found_when": "The company appears in the APEDA exporter directory with registration details.",
+      "not_found_when": "The exporter directory returns no result for the company name or its known registration number.",
+      "couldnt_check_when": "The directory search is down or the company name is too common to identify a single exporter.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have job postings or a company hiring page on the Apna portal (apna.co)?",
+      "why_it_matters": "Hiring activity on Apna shows the company has real field, warehouse or entry-level operations at a claimed scale.",
+      "source": {
+        "name": "Apna",
+        "url": "https://apna.co",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search apna.co for the company name and open its employer job listing page.",
+      "found_when": "A company page or job listings under the company name are visible on apna.co.",
+      "not_found_when": "Searching apna.co returns no company page and no postings for the company name.",
+      "couldnt_check_when": "The site blocks automated access or the company name matches many unrelated recruiters.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded in the member directory of the Associated Chambers of Commerce and Industry of India (ASSOCHAM) on assocham.org?",
+      "why_it_matters": "ASSOCHAM membership confirms the company is a recognised Indian corporate or MSME player rather than an unaffiliated trading name.",
+      "source": {
+        "name": "Associated Chambers of Commerce and Industry of India (ASSOCHAM)",
+        "url": "https://www.assocham.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ASSOCHAM key member lookup on the site and enter the company name.",
+      "found_when": "The company name returns a member record in the ASSOCHAM directory.",
+      "not_found_when": "The member lookup returns no record for the company name or its variants.",
+      "couldnt_check_when": "The member directory is unavailable or the returned record cannot be matched confidently to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Business Standard published reporting on the company, including defaults, court rulings, corporate finance or regulatory action?",
+      "why_it_matters": "Business Standard's coverage surfaces financial distress or litigation that a company would not disclose itself.",
+      "source": {
+        "name": "Business Standard",
+        "url": "https://www.business-standard.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on business-standard.com with the company name in quotes to list all articles.",
+      "found_when": "Articles about the company appear with matching name and business context.",
+      "not_found_when": "The site search returns no articles about the company with a clean name search.",
+      "couldnt_check_when": "Search results are paywalled, error out, or the company name is too generic to attribute articles.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a rated issuer with a published rating or default record in the CARE Ratings database on careratings.com?",
+      "why_it_matters": "A CARE rating or downgrade shows lenders' view of the company's debt and any payment stress.",
+      "source": {
+        "name": "CARE Ratings",
+        "url": "https://www.careratings.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CARE Ratings issuer search and enter the company name.",
+      "found_when": "A rating rationale page or rating record for the company is returned.",
+      "not_found_when": "The issuer search returns no rating record for the company name.",
+      "couldnt_check_when": "The search returns only similarly named entities or the rating page is inaccessible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in any order, investigation report or merger approval of the Competition Commission of India (CCI) published on cci.gov.in?",
+      "why_it_matters": "CCI records reveal antitrust penalties, cartel findings or merger scrutiny involving the company.",
+      "source": {
+        "name": "Competition Commission of India (CCI)",
+        "url": "https://www.cci.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CCI search filter on cci.gov.in and enter the company name.",
+      "found_when": "An order, case or combination approval naming the company is returned.",
+      "not_found_when": "The search returns no CCI order or case mentioning the company.",
+      "couldnt_check_when": "The CCI search returns generic results or the documents are image-only and unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a convergence partner on the National Consumer Helpline (INGRAM) portal at consumerhelpline.gov.in?",
+      "why_it_matters": "Listed partners have a formal grievance channel, so unresolved consumer complaints about them are tracked and pattern-visible.",
+      "source": {
+        "name": "National Consumer Helpline (INGRAM Portal)",
+        "url": "https://consumerhelpline.gov.in",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the convergence partners list page and scan or page-search it for the company name.",
+      "found_when": "The company name appears in the published list of convergence partner enterprises.",
+      "not_found_when": "The full partner list contains no entry matching the company name.",
+      "couldnt_check_when": "The partner list fails to render fully or the name is too common to distinguish from another entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Central Pollution Control Board (CPCB) records as an industrial unit with a pollution category, notice or closure direction on cpcb.nic.in?",
+      "why_it_matters": "CPCB classifications and notices show environmental compliance risk for any company operating a plant.",
+      "source": {
+        "name": "Central Pollution Control Board (CPCB)",
+        "url": "https://cpcb.nic.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CPCB site search and enter the company name to list notices, categorisation or monitoring records.",
+      "found_when": "A CPCB document naming the company as an industrial unit or a notified party is returned.",
+      "not_found_when": "The site search returns no CPCB record naming the company.",
+      "couldnt_check_when": "The search results are mostly PDFs that fail to load or the name matches many unrelated units.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has The Economic Times reported on the company, including earnings, investigations by ED, CBI or SEBI, and governance disputes, on economictimes.indiatimes.com?",
+      "why_it_matters": "Economic Times archives are the fastest way to find enforcement agency or governance news about an Indian company.",
+      "source": {
+        "name": "The Economic Times",
+        "url": "https://economictimes.indiatimes.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search economictimes.indiatimes.com for the company name and review the article list and company page.",
+      "found_when": "Articles or a company page about the company are returned with a matching name.",
+      "not_found_when": "The site search returns no articles about the company.",
+      "couldnt_check_when": "Results are hidden behind a paywall or the name is too generic to attribute any article.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear as a supplier on the ExportersIndia B2B directory with export commodities and markets listed?",
+      "why_it_matters": "A live ExportersIndia profile lets you cross-check claimed export products and destination markets against the company's own statements.",
+      "source": {
+        "name": "ExportersIndia",
+        "url": "https://www.exportersindia.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ExportersIndia company search and enter the company name.",
+      "found_when": "A company profile page appears with the company name, products and location.",
+      "not_found_when": "The directory search returns no company profile for the name.",
+      "couldnt_check_when": "The search returns many look-alike trading names or the profile page is blocked.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the corporate member records of the Federation of Indian Chambers of Commerce & Industry (FICCI) on ficci.in?",
+      "why_it_matters": "FICCI corporate membership corroborates that the company is an established Indian business with recognised standing.",
+      "source": {
+        "name": "Federation of Indian Chambers of Commerce & Industry (FICCI)",
+        "url": "https://ficci.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the FICCI corporate member page and search for the company name.",
+      "found_when": "The company appears in the FICCI corporate member listing.",
+      "not_found_when": "The corporate member search returns no entry for the company name.",
+      "couldnt_check_when": "The member listing does not respond to the search or returns an unreadable page.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Financial Express published company or market coverage of the company, including performance, MSME policy or tender news, on financialexpress.com?",
+      "why_it_matters": "Financial Express coverage helps confirm claimed revenue, contracts and sector positioning with independent reporting.",
+      "source": {
+        "name": "Financial Express",
+        "url": "https://www.financialexpress.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the financialexpress.com search box with the company name and review all returned articles.",
+      "found_when": "Articles or a stock/company page about the company appear with a matching name.",
+      "not_found_when": "The site search returns no article or company page for the name.",
+      "couldnt_check_when": "The search returns only unrelated companies with similar names or the results page fails to load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is there a due-diligence discussion thread about the company on the ValuePickr Forum at forum.valuepickr.com?",
+      "why_it_matters": "ValuePickr threads contain crowdsourced channel checks and promoter-integrity questions that rarely appear in company filings.",
+      "source": {
+        "name": "ValuePickr Forum",
+        "url": "https://forum.valuepickr.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the forum search on forum.valuepickr.com with the company name and open any matching company thread.",
+      "found_when": "A thread dedicated to the company, or posts discussing it in detail, are returned.",
+      "not_found_when": "The forum search returns no thread or post about the company.",
+      "couldnt_check_when": "The forum requires login to search or the name matches unrelated posts.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Insolvency and Bankruptcy Board of India (IBBI) announcements as a corporate debtor or in a liquidation or claims process on ibbi.gov.in?",
+      "why_it_matters": "An IBBI announcement means formal insolvency or liquidation proceedings are against or driven by the company.",
+      "source": {
+        "name": "Insolvency and Bankruptcy Board of India (IBBI)",
+        "url": "https://ibbi.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ibbi.gov.in claims and process announcements for the company name or its CIN.",
+      "found_when": "A claims, CIRP or liquidation announcement naming the company is returned.",
+      "not_found_when": "The IBBI search returns no announcement mentioning the company.",
+      "couldnt_check_when": "The portal search requires a CIN you do not have or the results page errors out.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does ICRA Limited publish a rating rationale or rating record for the company on icra.in?",
+      "why_it_matters": "An ICRA rationale documents the rated facilities, leverage and any downgrade the company has not advertised.",
+      "source": {
+        "name": "ICRA Limited (Moody's Affiliate)",
+        "url": "https://www.icra.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ICRA rating search and enter the company name to open its rating details page.",
+      "found_when": "A rating details page for the company is returned with rated instruments and rationale.",
+      "not_found_when": "The rating search returns no record for the company name.",
+      "couldnt_check_when": "The search returns only similarly named issuers or the rating page will not open.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Indian Drug Manufacturers' Association (IDMA) member company directory on idma-assn.org?",
+      "why_it_matters": "IDMA membership supports claims of being a genuine domestic pharmaceutical manufacturer rather than a trader.",
+      "source": {
+        "name": "Indian Drug Manufacturers' Association (IDMA)",
+        "url": "https://idma-assn.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the IDMA company list and search for the company name.",
+      "found_when": "The company appears in the IDMA member company list with matching details.",
+      "not_found_when": "The member company list returns no entry for the company name.",
+      "couldnt_check_when": "The company list endpoint fails or the name matches several similarly named pharma firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have employer job postings or a careers page on iimjobs (iimjobs.com)?",
+      "why_it_matters": "Senior and MBA-level vacancies show whether the company is really hiring for corporate finance and strategy roles.",
+      "source": {
+        "name": "iimjobs",
+        "url": "https://www.iimjobs.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open iimjobs.com and search the company name to reach its employer careers page.",
+      "found_when": "A company careers page or active postings under the company name are shown.",
+      "not_found_when": "No employer page or postings appear for the company name.",
+      "couldnt_check_when": "The career page is blocked or the company name matches unrelated recruiters.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Inc42 have a company profile or reporting on the company, including funding, cap table or governance issues, on inc42.com?",
+      "why_it_matters": "Inc42's startup coverage exposes funding disputes and governance lapses that private companies keep quiet.",
+      "source": {
+        "name": "Inc42",
+        "url": "https://inc42.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the inc42.com search or company page URL pattern with the company name slug.",
+      "found_when": "A company page or articles about the company are returned.",
+      "not_found_when": "The site search returns nothing for the company name.",
+      "couldnt_check_when": "The company page does not exist and search results are unrelated or the site blocks access.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a supplier profile with TrustSEAL status, business type and reviews on IndiaMART (indiamart.com)?",
+      "why_it_matters": "An IndiaMART profile reveals the company's stated business type, operating years and buyer feedback, which often contradicts marketing claims.",
+      "source": {
+        "name": "IndiaMART",
+        "url": "https://www.indiamart.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search indiamart.com for the company name and open the matching supplier profile.",
+      "found_when": "A supplier profile with the company name, address and product listing is returned.",
+      "not_found_when": "The marketplace search returns no profile for the company name.",
+      "couldnt_check_when": "Results are dominated by similarly named sellers or the profile page is blocked.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does India Ratings and Research publish an issuer rating or surveillance report for the company on indiaratings.co.in?",
+      "why_it_matters": "A Fitch-group rating report gives an independent read on leverage and refinancing risk.",
+      "source": {
+        "name": "India Ratings and Research (Fitch Group)",
+        "url": "https://www.indiaratings.co.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the issuer search on indiaratings.co.in and enter the company name.",
+      "found_when": "An issuer page or rating action for the company is returned.",
+      "not_found_when": "The issuer search returns no record for the company name.",
+      "couldnt_check_when": "The search returns only similarly named issuers or the report will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does InstaFinancials hold a company record for the company with directors, charges and compliance status on instafinancials.com?",
+      "why_it_matters": "Registry-style data on directors, charges and compliance exposes shell-company signals and undisclosed borrowing.",
+      "source": {
+        "name": "InstaFinancials",
+        "url": "https://www.instafinancials.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search instafinancials.com for the company name and open its company data page.",
+      "found_when": "A company page with CIN, directors or financial data is returned.",
+      "not_found_when": "The search returns no company record for the name.",
+      "couldnt_check_when": "Access to the company page is paywalled or the name matches many entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among licensed insurers, brokers, agents or web aggregators in the Insurance Regulatory and Development Authority of India (IRDAI) registers on irdai.gov.in?",
+      "why_it_matters": "Only IRDAI-registered entities may lawfully sell or distribute insurance in India, so absence is a red flag.",
+      "source": {
+        "name": "Insurance Regulatory and Development Authority of India (IRDAI)",
+        "url": "https://irdai.gov.in",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the relevant IRDAI published list of licensed insurers, brokers or agents and scan it for the company name.",
+      "found_when": "The company name appears on the applicable IRDAI registration list.",
+      "not_found_when": "None of the applicable IRDAI registers contains the company name.",
+      "couldnt_check_when": "The lists are PDF-heavy and unreadable or it is unclear which register applies to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Justdial listing with a physical address, phone numbers and ratings at justdial.com?",
+      "why_it_matters": "Justdial listings test whether the company's stated office or factory address and phone contacts are real and current.",
+      "source": {
+        "name": "Justdial",
+        "url": "https://www.justdial.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search justdial.com in the claimed city for the company name and open the matching listing.",
+      "found_when": "A listing with the company name, address and contact numbers is shown.",
+      "not_found_when": "No listing for the company name appears in the claimed city.",
+      "couldnt_check_when": "The site shows a captcha or multiple look-alike listings make attribution impossible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Moneycontrol hold a company page for the company showing financials, share data or board details on moneycontrol.com?",
+      "why_it_matters": "A Moneycontrol profile gives independent financial figures and management details to test the company's own claims.",
+      "source": {
+        "name": "Moneycontrol",
+        "url": "https://www.moneycontrol.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Moneycontrol search or autosuggest with the company name and open the matching company page.",
+      "found_when": "A company page with financial or board data for the company is returned.",
+      "not_found_when": "Search returns no company page for the name.",
+      "couldnt_check_when": "Only similarly named listed companies are returned or the page is inaccessible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Are there consumer reviews or ratings of the company on MouthShut (mouthshut.com)?",
+      "why_it_matters": "MouthShut reviews show recurring customer complaints about products, refunds or service quality.",
+      "source": {
+        "name": "MouthShut",
+        "url": "https://www.mouthshut.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the MouthShut search with the company name and open the matching product or company page.",
+      "found_when": "A review page for the company with user ratings is returned.",
+      "not_found_when": "The search returns no review page for the company name.",
+      "couldnt_check_when": "The search returns look-alike brand names or the review page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the NASSCOM member directory on nasscom.in?",
+      "why_it_matters": "NASSCOM membership validates that the company is a recognised Indian IT or tech-BPM firm rather than an unaffiliated vendor.",
+      "source": {
+        "name": "NASSCOM",
+        "url": "https://nasscom.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the NASSCOM members listing and search for the company name.",
+      "found_when": "The company appears in the NASSCOM members listing.",
+      "not_found_when": "The members listing returns no entry for the company name.",
+      "couldnt_check_when": "The members listing does not load or returns too many partial name matches.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a party to any appeal or judgment recorded at the National Company Law Appellate Tribunal (NCLAT) on nclat.gov.in?",
+      "why_it_matters": "NCLAT appeals reveal insolvency, CCI or NCLT disputes that reached the appellate stage against the company.",
+      "source": {
+        "name": "National Company Law Appellate Tribunal (NCLAT)",
+        "url": "https://nclat.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the NCLAT case display board or case search and enter the company name as party.",
+      "found_when": "A case, cause list entry or judgment naming the company as a party is returned.",
+      "not_found_when": "The case search returns no matter involving the company.",
+      "couldnt_check_when": "The case search requires a case number you do not have or the board is not rendering.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company named in any petition, order or cause list of the National Company Law Tribunal (NCLT) on nclt.gov.in, including CIRP, liquidation, merger or oppression matters?",
+      "why_it_matters": "NCLT filings show active corporate law and insolvency proceedings that materially affect the company's standing.",
+      "source": {
+        "name": "National Company Law Tribunal (NCLT)",
+        "url": "https://nclt.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the NCLT case history search and enter the company name as petitioner or respondent.",
+      "found_when": "A case, order or cause list entry naming the company is returned.",
+      "not_found_when": "The case history search returns no case for the company name.",
+      "couldnt_check_when": "The e-filing case history portal is down or demands a case number to proceed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed entity with disclosures on the National Stock Exchange (NSE) or BSE India, including shareholding, results and regulatory notices?",
+      "why_it_matters": "Exchange filings give audited numbers and penalty notices that contradict inflated private claims.",
+      "source": {
+        "name": "National Stock Exchange of India (NSE) & BSE India",
+        "url": "https://www.nseindia.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the NSE symbol search with the company name and open its equity company page.",
+      "found_when": "A listed security page with filings for the company is returned.",
+      "not_found_when": "The symbol search returns no listed security for the company name.",
+      "couldnt_check_when": "The exchange API blocks the request or the name matches several listed subsidiaries.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is there investor discussion or company analysis about the company on the Trade Brains community portal (portal.tradebrains.in)?",
+      "why_it_matters": "Retail investor threads flag financial red flags and sentiment that formal filings leave out.",
+      "source": {
+        "name": "Trade Brains Community",
+        "url": "https://portal.tradebrains.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Trade Brains company search endpoint or portal search with the company name.",
+      "found_when": "A company page or discussion thread about the company is returned.",
+      "not_found_when": "The search returns no company page or discussion for the name.",
+      "couldnt_check_when": "The portal requires login or returns only unrelated companies with similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in Securities and Exchange Board of India (SEBI) enforcement actions, adjudication orders, the banned entities list or the unregistered advisers list on sebi.gov.in?",
+      "why_it_matters": "SEBI records show market bans, insider trading penalties or fraudulent advisory status that disqualify a company from securities activity.",
+      "source": {
+        "name": "Securities and Exchange Board of India (SEBI)",
+        "url": "https://www.sebi.gov.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SEBI site search and enter the company name to list orders, bans and advisories.",
+      "found_when": "An order, ban or advisory naming the company is returned.",
+      "not_found_when": "The SEBI search returns no order or listing for the company name.",
+      "couldnt_check_when": "The search returns generic market documents or the order PDFs are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have job postings or a company page on Shine.com?",
+      "why_it_matters": "Shine postings show which functions the company is really expanding and whether it recruits at the scale it claims.",
+      "source": {
+        "name": "Shine.com",
+        "url": "https://www.shine.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Shine.com job search for the company name and review the employer listing.",
+      "found_when": "A company openings page or active postings for the company are shown.",
+      "not_found_when": "The job search returns no postings or company page for the name.",
+      "couldnt_check_when": "The site blocks the request or results mix in unrelated third-party recruiters.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among the members of the Society of Indian Automobile Manufacturers (SIAM) on siam.in?",
+      "why_it_matters": "SIAM membership confirms the company is a recognised vehicle or engine manufacturer, not a reseller.",
+      "source": {
+        "name": "Society of Indian Automobile Manufacturers (SIAM)",
+        "url": "https://www.siam.in",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SIAM members page and scan the member list for the company name.",
+      "found_when": "The company name appears on the SIAM members list.",
+      "not_found_when": "The SIAM members list contains no entry for the company name.",
+      "couldnt_check_when": "The members page does not render or the name matches a group company instead.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has The Ken published investigative reporting on the company, including governance, internal rifts or business model scrutiny, on the-ken.com?",
+      "why_it_matters": "The Ken's forensic reporting often surfaces conflicts and governance flaws before they become public disputes.",
+      "source": {
+        "name": "The Ken",
+        "url": "https://the-ken.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the company search on the-ken.com and enter the company name to list tagged articles.",
+      "found_when": "One or more articles tagged with the company name are returned.",
+      "not_found_when": "The search returns no articles for the company name.",
+      "couldnt_check_when": "Articles are paywalled so only headlines can be read, or the search returns unrelated parties.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a corporate profile or active job postings on TimesJobs (timesjobs.com)?",
+      "why_it_matters": "TimesJobs activity indicates real middle-to-senior hiring and a verifiable corporate presence.",
+      "source": {
+        "name": "TimesJobs",
+        "url": "https://www.timesjobs.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the TimesJobs company search API or site with the company name and open the company profile.",
+      "found_when": "A company profile or postings under the company name are returned.",
+      "not_found_when": "The company search returns no profile or postings for the name.",
+      "couldnt_check_when": "The search endpoint fails or returns only similarly named employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Tofler hold a company record for the company with financials, directors, related entities and court cases on tofler.in?",
+      "why_it_matters": "Tofler links directors, related parties and litigation, exposing thin or interlinked corporate structures.",
+      "source": {
+        "name": "Tofler",
+        "url": "https://www.tofler.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search tofler.in for the company name and open the matching company page.",
+      "found_when": "A company page with CIN, directors or financial data is returned.",
+      "not_found_when": "No company record matching the name is returned.",
+      "couldnt_check_when": "The record is paywalled or the name matches many similarly named entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company tracked in the Tracxn legal-entity database with funding, investors or cap table data for India?",
+      "why_it_matters": "Tracxn data checks claimed funding rounds, investors and valuations against a structured venture database.",
+      "source": {
+        "name": "Tracxn",
+        "url": "https://tracxn.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Tracxn legal entity search with the company name restricted to India.",
+      "found_when": "An entity page with funding, investor or profile details is returned.",
+      "not_found_when": "The search returns no entity for the company name.",
+      "couldnt_check_when": "Access requires a paid login or results are limited to similarly named entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a supplier listing with certifications, turnover claims and client feedback on TradeIndia (tradeindia.com)?",
+      "why_it_matters": "TradeIndia listings let you compare claimed certifications, turnover and buyer feedback against the company's own material.",
+      "source": {
+        "name": "TradeIndia",
+        "url": "https://www.tradeindia.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the TradeIndia search API or site search with the company name and open the matching listing.",
+      "found_when": "A company listing with the name, products and location is returned.",
+      "not_found_when": "The search returns no listing for the company name.",
+      "couldnt_check_when": "The listing endpoint fails or results are dominated by similarly named traders.",
+      "confidence": "high"
+    },
+    {
+      "rank": 40,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Are there public discussion threads mentioning the company on TradingQ&A at tradingqna.com?",
+      "why_it_matters": "TradingQ&A threads reveal broker or issuer controversies and investor concerns circulating in public.",
+      "source": {
+        "name": "TradingQ&A (by Zerodha)",
+        "url": "https://tradingqna.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open tradingqna.com search and search the company name in quotation marks.",
+      "found_when": "Threads or posts naming the company are returned.",
+      "not_found_when": "The search returns no thread mentioning the company.",
+      "couldnt_check_when": "The search is rate-limited or the name matches unrelated tickers and jargon.",
+      "confidence": "high"
+    },
+    {
+      "rank": 41,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does VCCircle have a company page or reporting on the company covering funding, debt or stressed asset resolution on vccircle.com?",
+      "why_it_matters": "VCCircle coverage ties the company to actual deal activity, PE or debt backers and distressed-sale processes.",
+      "source": {
+        "name": "VCCircle",
+        "url": "https://www.vccircle.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search vccircle.com or open the company page using the company name slug.",
+      "found_when": "A company page or articles about the company are returned.",
+      "not_found_when": "The search returns no page or article for the company name.",
+      "couldnt_check_when": "Articles are paywalled or the company page does not exist and results are unrelated.",
+      "confidence": "high"
+    },
+    {
+      "rank": 42,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Are there public consumer complaints or legal notice copies against the company on Voxya (voxya.com)?",
+      "why_it_matters": "Voxya complaints show unresolved defects, billing disputes and contract breaches that escalate to legal notices.",
+      "source": {
+        "name": "Voxya",
+        "url": "https://voxya.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Voxya company lookup with the company name and open its complaint page.",
+      "found_when": "A company complaint page or complaint records naming the company are returned.",
+      "not_found_when": "The company lookup returns no complaint page for the name.",
+      "couldnt_check_when": "The lookup returns look-alike brand names or the page requires login.",
+      "confidence": "high"
+    },
+    {
+      "rank": 43,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have blue-collar job postings on WorkIndia (workindia.in)?",
+      "why_it_matters": "WorkIndia postings show real ground-level staffing at local wage levels, testing claims of a large operating footprint.",
+      "source": {
+        "name": "WorkIndia",
+        "url": "https://www.workindia.in",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open workindia.in and search the company name to reach its company job openings page.",
+      "found_when": "A company page or job postings under the company name are shown.",
+      "not_found_when": "No company page or postings appear for the company name.",
+      "couldnt_check_when": "The site blocks access or the company name matches unrelated local employers.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "IN-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 43 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

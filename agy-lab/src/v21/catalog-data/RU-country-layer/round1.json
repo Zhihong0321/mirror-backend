@@ -1,0 +1,806 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a verifiable 2GIS listing showing its offices, retail or warehouse locations, opening hours and direct phone numbers?",
+      "why_it_matters": "A mapped card with photos and reviews shows the company has a real physical presence and reachable contacts.",
+      "source": {
+        "name": "2GIS",
+        "url": "https://2gis.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the 2GIS search box for the relevant city and open the matching organisation card.",
+      "found_when": "A card under the company's name exists with an address, hours or phone and matches the company being checked.",
+      "not_found_when": "The search returns no card for the company name in its stated city or region.",
+      "couldnt_check_when": "The name is too common to isolate, several unrelated brands share it, or the map page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Agroinvestor's company A-Z directory or in its agribusiness rankings and coverage?",
+      "why_it_matters": "Presence in this trade press indicates the company is a recognised player in Russian agribusiness and food production.",
+      "source": {
+        "name": "Agroinvestor",
+        "url": "https://agroinvestor.ru",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Agroinvestor company A-Z list and site search for the company name.",
+      "found_when": "The company has its own profile entry or is named in a ranking or article on the site.",
+      "not_found_when": "The A-Z list and site search return nothing for the company name.",
+      "couldnt_check_when": "The list cannot be browsed, the site search fails, or the name matches many unrelated farms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member in the ARPP 'Domestic Software' member directory or software catalog?",
+      "why_it_matters": "Membership is an industry credential often quoted in claims of being a domestic software producer.",
+      "source": {
+        "name": "ARPP 'Domestic Software'",
+        "url": "https://arppsoft.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the ARPP member directory search and enter the company name.",
+      "found_when": "A member card or catalog entry for the company exists in the directory.",
+      "not_found_when": "A clean search returns no member card or catalog entry.",
+      "couldnt_check_when": "The directory search is unavailable, or the name returns too many similar software firms to confirm a match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "security_exposure",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Seldon Basis hold a company record showing credit risk, insolvency signals, arbitration disputes or procurement activity for this company?",
+      "why_it_matters": "Risk indexes and litigation records reveal financial and legal exposure a counterparty should know about.",
+      "source": {
+        "name": "Seldon Basis",
+        "url": "https://basis.myseldon.com",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Seldon Basis search and enter the full legal name or INN of the company.",
+      "found_when": "A company profile opens with risk index, court or procurement data attached to the entity.",
+      "not_found_when": "The search returns no matching legal entity for the name or INN.",
+      "couldnt_check_when": "The lookup requires a paid account, the name returns multiple similar entities, or the page is unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "register",
+      "problem_type": [
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company filed annual statutory financial statements in the GIR BO accounting statements resource?",
+      "why_it_matters": "Filing shows the entity reports officially and lets claimed revenue or size be checked against filed figures.",
+      "source": {
+        "name": "State Information Resource of Accounting (Financial) Statements (GIR BO)",
+        "url": "https://bo.nalog.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the GIR BO organisation search by the company's name or INN and open its statements page.",
+      "found_when": "An organisation record exists with at least one year of filed balance sheet or profit and loss data.",
+      "not_found_when": "A clean search finds no organisation record for the name or INN.",
+      "couldnt_check_when": "The search service is down, the name is ambiguous, or the entity is exempt from filing and cannot be confirmed either way.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "licence",
+      "problem_type": [
+        "legal",
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Bank of Russia registers of financial market participants, or on the CBR Warning List of entities with signs of illegal financial activity?",
+      "why_it_matters": "A licence entry confirms the company may legally offer financial services and a warning entry is a serious red flag.",
+      "source": {
+        "name": "Bank of Russia (CBR) - Registers of Financial Market Participants",
+        "url": "https://cbr.ru",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the relevant CBR register list and the Warning List for the company's full legal name.",
+      "found_when": "The company is named in a CBR register, or named on the Warning List, in the current published list.",
+      "not_found_when": "The name appears in neither the registers nor the Warning List after checking the relevant lists.",
+      "couldnt_check_when": "The lists cannot be opened, the entity type is unclear so the right register is unknown, or the name is too generic to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has CNews published articles, rankings or contract reports naming this company?",
+      "why_it_matters": "Coverage in this IT business portal shows how visible the company is and what claims the press has made about it.",
+      "source": {
+        "name": "CNews",
+        "url": "https://cnews.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CNews site search and enter the company name.",
+      "found_when": "Search results list at least one article, ranking or contract report naming the company.",
+      "not_found_when": "A clean search returns no article mentioning the company.",
+      "couldnt_check_when": "The search page fails, or the company name is a common word producing results that cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its leadership listed on Delovaya Rossiya's published list of members and persons?",
+      "why_it_matters": "Membership links the company to a national business association and its advocacy activity.",
+      "source": {
+        "name": "Delovaya Rossiya (Business Russia)",
+        "url": "https://deloros.ru",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the Delovaya Rossiya persons and members pages for the company name and its executives.",
+      "found_when": "A person or company page names this company as the organisation represented in Delovaya Rossiya.",
+      "not_found_when": "Scanning the published lists finds neither the company nor a named executive tied to it.",
+      "couldnt_check_when": "The list is only partly published, cannot be searched, or the person name is too common to attribute.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer profile with ratings and employee reviews on DreamJob?",
+      "why_it_matters": "Employer ratings reveal how staff rate management, pay fairness and working conditions.",
+      "source": {
+        "name": "DreamJob",
+        "url": "https://dreamjob.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the DreamJob company search and open the matching employer page.",
+      "found_when": "An employer page exists for the company with a rating or at least one published review.",
+      "not_found_when": "The search returns no employer page for the company name.",
+      "couldnt_check_when": "The search cannot be run, the name matches several employers, or review content is behind a login.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the FNS EGRUL/EGRIP registry, and does its official extract show active status, matching name, INN, OGRN and legal address?",
+      "why_it_matters": "The official register extract is the baseline proof that the entity legally exists and that its stated details match.",
+      "source": {
+        "name": "Federal Tax Service (FNS) - EGRUL / EGRIP Registry",
+        "url": "https://egrul.nalog.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company's name or OGRN/INN in the EGRUL search and download the generated extract.",
+      "found_when": "An extract is issued for the entity and its name, INN, OGRN, address and status are readable.",
+      "not_found_when": "A clean search by name and INN returns no matching record in the register.",
+      "couldnt_check_when": "The service is unavailable, the captcha blocks the query, or the name returns many similar entities so the extract cannot be tied to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Fedresurs with published legally significant facts such as pledges, reorganisations, capital reductions or bankruptcy notices?",
+      "why_it_matters": "Mandatory disclosure events expose asset pledges, restructuring and insolvency risk that are not advertised on company websites.",
+      "source": {
+        "name": "Fedresurs - Unified Federal Register of Legally Significant Facts",
+        "url": "https://fedresurs.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Fedresurs by the company's name or OGRN/INN and open the entity's published messages.",
+      "found_when": "The entity page lists at least one published message of a legally significant fact.",
+      "not_found_when": "The entity is found but has no published messages, or no entity record matches the search.",
+      "couldnt_check_when": "The search requires a login or captcha that blocks access, or the name is too common to match a single entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "security_exposure",
+      "problem_type": [
+        "legal",
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Kontur.Focus hold a counterparty dossier for this company with risk signals, ownership chain, sanctions status or customs activity?",
+      "why_it_matters": "Aggregated risk signals and beneficial owner tracing expose counterparty exposure that is hard to see elsewhere.",
+      "source": {
+        "name": "Kontur.Focus",
+        "url": "https://focus.kontur.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name or INN in the Kontur.Focus search and open the resulting dossier.",
+      "found_when": "A dossier opens for the entity showing risk indicators, owners or activity data.",
+      "not_found_when": "The search returns no entity matching the name or INN.",
+      "couldnt_check_when": "Full data requires a paid subscription, the name returns many similar entities, or the page cannot be read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the Rosselkhoznadzor FSIS Vetrf / Cerberus registry of enterprises certified for animal product handling?",
+      "why_it_matters": "Only registered enterprises may legally process, store or transport animal products, so presence or absence is decisive for that activity.",
+      "source": {
+        "name": "Rosselkhoznadzor - FSIS Vetrf / Cerberus Registry",
+        "url": "https://fsvps.gov.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Cerberus public certified-enterprise list by the company name.",
+      "found_when": "The company appears as a certified enterprise with a registry record.",
+      "not_found_when": "A clean search by company name returns no certified enterprise record.",
+      "couldnt_check_when": "The registry search is down or requires credentials, or the company does not operate in this sector so the registry does not apply.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 14,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a corporate blog or a substantial body of articles and comments about it on Habr?",
+      "why_it_matters": "Habr shows technical reputation and staff experience that engineers check before joining or buying.",
+      "source": {
+        "name": "Habr",
+        "url": "https://habr.com",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Habr companies and articles for the company name.",
+      "found_when": "A company profile, corporate blog or several articles naming the company are found.",
+      "not_found_when": "A clean search returns no company profile and no article about the company.",
+      "couldnt_check_when": "The search cannot be completed or the name is a generic term returning unrelated technical posts.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the NOSTROY unified register of SRO members with active construction membership and a valid contract price limit?",
+      "why_it_matters": "Construction work in Russia requires SRO membership, so a missing or suspended entry means the company cannot legally take such contracts.",
+      "source": {
+        "name": "National Association of Builders (NOSTROY) - Unified Register of SRO Members",
+        "url": "https://nostroy.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the NOSTROY SRO member register by the company's name or OGRN/INN.",
+      "found_when": "A member record exists showing active membership and a permitted contract price limit.",
+      "not_found_when": "A clean search returns no member record for the company.",
+      "couldnt_check_when": "The register search is unavailable, or the company is not a construction firm so the register does not apply.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in OPORA Russia's published list of members?",
+      "why_it_matters": "Membership signals the company is an accepted SME-sector participant with access to the association's support network.",
+      "source": {
+        "name": "OPORA Russia",
+        "url": "https://opora.ru",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan OPORA Russia's published member list for the company name.",
+      "found_when": "The company name appears in the published member list.",
+      "not_found_when": "Scanning the member list finds no entry for the company.",
+      "couldnt_check_when": "The list is incomplete or unreadable, or the name is too generic to identify the right member.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have employee reviews on Pravda Sotrudnikov alleging problems such as salary delays, shadow accounting or management misconduct?",
+      "why_it_matters": "Anonymous staff accounts can surface labour and pay problems the company would not disclose.",
+      "source": {
+        "name": "Pravda Sotrudnikov",
+        "url": "https://pravda-sotrudnikov.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Pravda Sotrudnikov search and open the company's review page.",
+      "found_when": "A company page exists with at least one review attributed to the employer.",
+      "not_found_when": "The search returns no company page or no reviews for the company.",
+      "couldnt_check_when": "The site is unreachable, or the name matches several employers so reviews cannot be attributed.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has RB.ru (Rusbase) published company data or articles naming this company, such as investment deals or founder coverage?",
+      "why_it_matters": "Coverage here documents funding, founders and partnerships that support or undercut the company's own story.",
+      "source": {
+        "name": "RB.ru (Rusbase)",
+        "url": "https://rb.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search RB.ru for the company name and open any matching company profile or article.",
+      "found_when": "A company record or article naming the company is returned.",
+      "not_found_when": "A clean search returns no company record and no article about it.",
+      "couldnt_check_when": "The search cannot be run or the name returns unrelated results.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 19,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Retail.ru host a company page or articles naming this company in retail, FMCG or supply chain coverage?",
+      "why_it_matters": "Trade coverage shows whether the company is a recognised supplier or retail partner in its market.",
+      "source": {
+        "name": "Retail.ru",
+        "url": "https://retail.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Retail.ru by the company name and open any company card or article.",
+      "found_when": "A company page or an article naming the company is found.",
+      "not_found_when": "A clean search returns no company page and no article mentioning it.",
+      "couldnt_check_when": "The site search fails or the name returns unrelated retail vocabulary matches.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 20,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company hold state registration certificates or sanitary-epidemiological conclusions listed in Rospotrebnadzor's registers?",
+      "why_it_matters": "Consumer-protection registration is a legal prerequisite for many products and shows compliance history.",
+      "source": {
+        "name": "Rospotrebnadzor - Federal Service for Surveillance on Consumer Rights Protection",
+        "url": "https://rospotrebnadzor.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Rospotrebnadzor register pages by the company name or OGRN/INN.",
+      "found_when": "At least one certificate or conclusion is registered to the company.",
+      "not_found_when": "A clean search by name and INN returns no registration record.",
+      "couldnt_check_when": "The register search is unavailable, or the company's products fall outside these registers so nothing can be concluded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in RSPP's published registries of members?",
+      "why_it_matters": "RSPP membership indicates the company is recognised among major Russian industrial enterprises.",
+      "source": {
+        "name": "Russian Union of Industrialists and Entrepreneurs (RSPP)",
+        "url": "https://rspp.ru",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the RSPP registries page and search the member lists for the company name.",
+      "found_when": "The company name appears in an RSPP member registry.",
+      "not_found_when": "The registries contain no entry for the company.",
+      "couldnt_check_when": "The registry files cannot be opened or searched, or the name matches several similar entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Rusprofile hold a dossier for this company showing its reliability rating, revenue history, court cases, government contracts and affiliates?",
+      "why_it_matters": "A consolidated dossier lets claimed size, history and good standing be tested against official data.",
+      "source": {
+        "name": "Rusprofile",
+        "url": "https://rusprofile.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name or INN in the Rusprofile search and open the matching entity page.",
+      "found_when": "A dossier page opens for the entity with financial, court or contract data.",
+      "not_found_when": "The search returns no entity matching the name or INN.",
+      "couldnt_check_when": "The site blocks automated queries, the name returns many similar entities, or full data needs a paid plan.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in RUSSOFT's member directory of Russian software development and engineering companies?",
+      "why_it_matters": "RUSSOFT membership supports claims of software engineering capability and export experience.",
+      "source": {
+        "name": "RUSSOFT Association",
+        "url": "https://russoft.org",
+        "language": "Russian"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Scan the RUSSOFT members page for the company name.",
+      "found_when": "A member profile for the company appears in the directory.",
+      "not_found_when": "The member directory contains no entry for the company.",
+      "couldnt_check_when": "The members page cannot be loaded or filtered, or the name matches several IT firms.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company run a corporate channel or have notable video content on Rutube?",
+      "why_it_matters": "A corporate video presence shows the company publishes its own material on Russian platforms and is visible to domestic audiences.",
+      "source": {
+        "name": "Rutube",
+        "url": "https://rutube.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Rutube by the company name and check for an official channel or videos about it.",
+      "found_when": "An official-looking corporate channel or several videos clearly about the company are found.",
+      "not_found_when": "A clean search returns no channel and no video about the company.",
+      "couldnt_check_when": "The search fails, or results are dominated by unrelated videos using the same words.",
+      "confidence": "low"
+    },
+    {
+      "rank": 25,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company or its founders published material or been covered on Spark.ru?",
+      "why_it_matters": "Spark.ru posts show how the company presents its product and funding story to the startup community.",
+      "source": {
+        "name": "Spark.ru",
+        "url": "https://spark.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Spark.ru search and review matching posts and profiles.",
+      "found_when": "At least one post or profile about the company is found.",
+      "not_found_when": "A clean search returns nothing about the company.",
+      "couldnt_check_when": "The search is unavailable or the name returns unrelated posts.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 26,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a product page with user ratings or reviews on Sravni.ru?",
+      "why_it_matters": "Verified customer feedback shows how the company's financial or insurance products are actually rated.",
+      "source": {
+        "name": "Sravni.ru",
+        "url": "https://sravni.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Sravni.ru for the company name and open any matching product or provider page.",
+      "found_when": "A provider or product page for the company exists with reviews or a rating.",
+      "not_found_when": "The search returns no page carrying the company's reviews.",
+      "couldnt_check_when": "The company offers no comparable product on the site, or the search cannot be completed.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 27,
+      "category": "complaints",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do court decisions naming this company appear in the SudAct database?",
+      "why_it_matters": "Published judgments reveal lawsuits, consumer claims and labour or administrative penalties against the company and its executives.",
+      "source": {
+        "name": "SudAct - Judicial and Regulatory Acts of the Russian Federation",
+        "url": "https://sudact.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Run a full-text search on SudAct for the company's name and review the decisions listed.",
+      "found_when": "Search results list decisions in which the company is a named party.",
+      "not_found_when": "A clean full-text search returns no decisions naming the company.",
+      "couldnt_check_when": "The search page fails, or the name is too common to tell which decisions concern this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does TAdviser hold a corporate profile for this company with IT projects, state contracts, revenue rankings or management biographies?",
+      "why_it_matters": "The profile lets claimed IT projects, customers and revenue be compared with a documented record.",
+      "source": {
+        "name": "TAdviser",
+        "url": "https://tadviser.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search TAdviser by the company name and open the matching company article.",
+      "found_when": "A company article exists with profile data, projects or contracts.",
+      "not_found_when": "A clean search returns no company article.",
+      "couldnt_check_when": "The wiki search times out or the name matches several IT entities.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company posted vacancies on TrudVsem, the state Work in Russia portal?",
+      "why_it_matters": "Statutory vacancy postings confirm the company actively operates and hires in the regions it names.",
+      "source": {
+        "name": "TrudVsem (Work in Russia)",
+        "url": "https://trudvsem.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search TrudVsem vacancies by the company name and open its employer page.",
+      "found_when": "Vacancies or an employer record for the company are returned.",
+      "not_found_when": "A clean search returns no vacancy and no employer record.",
+      "couldnt_check_when": "The portal or open-data API is unavailable, or the name is too generic to isolate the employer.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does VC.ru carry company-authored posts about this company or user posts complaining about it?",
+      "why_it_matters": "VC.ru mixes self-published company material with customer complaints, so it shows both the company's story and disputes.",
+      "source": {
+        "name": "VC.ru",
+        "url": "https://vc.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search VC.ru by the company name and review matching articles and complaint posts.",
+      "found_when": "At least one post about the company or authored by it is found.",
+      "not_found_when": "A clean search returns no post about the company.",
+      "couldnt_check_when": "The search API is unavailable or the name returns many unrelated posts.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Vedomosti have a company page or articles about this company's results, ownership or corporate conflicts?",
+      "why_it_matters": "Reporting in a leading business daily is an independent record of financial performance and corporate disputes.",
+      "source": {
+        "name": "Vedomosti",
+        "url": "https://vedomosti.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Vedomosti for the company name and open its company page or relevant articles.",
+      "found_when": "A company page or at least one article about the company is found.",
+      "not_found_when": "A clean search returns no company page and no article naming it.",
+      "couldnt_check_when": "Articles are behind a paywall or the name returns unrelated results.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a verified organisation card on Yandex Maps with addresses, hours, ratings and customer reviews?",
+      "why_it_matters": "The card confirms a real branch footprint and shows what customers publicly say about the locations.",
+      "source": {
+        "name": "Yandex Maps and Business Directory",
+        "url": "https://yandex.ru/maps",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in Yandex Maps search and open the matching organisation card.",
+      "found_when": "An organisation card exists with an address and either a rating or reviews.",
+      "not_found_when": "The search returns no organisation card for the company.",
+      "couldnt_check_when": "The name matches many unrelated organisations, or the map search cannot be loaded.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an employer profile with open vacancies on Zarplata.ru?",
+      "why_it_matters": "A regional employer profile confirms hiring activity and a local presence in the regions it claims to serve.",
+      "source": {
+        "name": "Zarplata.ru",
+        "url": "https://zarplata.ru",
+        "language": "Russian"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Zarplata.ru employers and vacancies by the company name.",
+      "found_when": "An employer profile or vacancies for the company are returned.",
+      "not_found_when": "A clean search returns no employer profile and no vacancies.",
+      "couldnt_check_when": "The site search is unavailable or the name is too generic to isolate the employer.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "RU-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 33 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

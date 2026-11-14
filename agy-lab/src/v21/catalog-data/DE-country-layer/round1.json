@@ -1,0 +1,929 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Bundesagentur für Arbeit Verzeichnis der Verleiherbetriebe as holding a valid permit under the AÜG?",
+      "why_it_matters": "Lending staff without a valid AÜG permit is unlawful, so the register shows whether the company may legally supply temporary workers.",
+      "source": {
+        "name": "Bundesagentur für Arbeit - Verzeichnis der Verleiherbetriebe (AÜG)",
+        "url": "https://www.arbeitsagentur.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the AÜG Verleiherverzeichnis published via the Arbeitsagentur and scan the listed licensed firms for the company name.",
+      "found_when": "The company appears in the Verleiherverzeichnis with an active permit entry.",
+      "not_found_when": "A clean scan of the register shows no entry under the company name or its location.",
+      "couldnt_check_when": "The register list cannot be opened, or the name is too generic to match a single licensed firm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a profile or quality seal with client reviews on Ausgezeichnet.org?",
+      "why_it_matters": "The portal shows whether customers publicly rate the company and whether its seal of quality is authentic.",
+      "source": {
+        "name": "Ausgezeichnet.org",
+        "url": "https://www.ausgezeichnet.org",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Ausgezeichnet.org business search and enter the company name together with its city.",
+      "found_when": "A profile for the company appears with a seal status or customer ratings.",
+      "not_found_when": "The search returns no profile for the company under a clean name and city search.",
+      "couldnt_check_when": "The search page is unreadable, or the name matches too many unrelated businesses to identify one profile.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its named lawyer listed in the Bundesweites Amtliches Anwaltsverzeichnis (BRAK) as admitted to practise?",
+      "why_it_matters": "Only lawyers and law corporations entered in the BRAK register are legally admitted to provide legal services in Germany.",
+      "source": {
+        "name": "Bundesweites Amtliches Anwaltsverzeichnis (BRAK)",
+        "url": "https://www.bea-brak.de/bravsearch",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the BRAK bravsearch register and enter the firm name or the individual lawyer's name.",
+      "found_when": "The company or lawyer appears with an admission entry and, where shown, specialist titles and practice address.",
+      "not_found_when": "A clean search by name returns no admission entry for the firm or lawyer.",
+      "couldnt_check_when": "The register search fails, or the name is too common to tell which entry belongs to the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in the Berlin Partner network directory?",
+      "why_it_matters": "A listing signals that the Berlin economic development agency counts the company among the region's visible businesses.",
+      "source": {
+        "name": "Berlin Partner für Wirtschaft und Technologie",
+        "url": "https://www.berlin-partner.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the search field on the Berlin Partner network pages and enter the company name.",
+      "found_when": "A network or company entry for the company appears in the Berlin Partner directory.",
+      "not_found_when": "The directory search returns no entry for the company name.",
+      "couldnt_check_when": "The directory search cannot be run, or the name returns only unrelated hits.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member in the bevh Mitgliederliste?",
+      "why_it_matters": "Membership in the German e-commerce association indicates the company is recognised in the distance-selling sector.",
+      "source": {
+        "name": "Bundesverband E-Commerce und Versandhandel (bevh)",
+        "url": "https://www.bevh.org",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the bevh Mitgliederliste and scan the published member names for the company.",
+      "found_when": "The company appears in the bevh member list.",
+      "not_found_when": "The full member list shows no entry for the company name.",
+      "couldnt_check_when": "The member list cannot be loaded, or it is only partly published.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Bitkom Mitgliederliste?",
+      "why_it_matters": "Bitkom membership shows the company belongs to the recognised German digital and tech industry network.",
+      "source": {
+        "name": "Bitkom",
+        "url": "https://www.bitkom.org",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Bitkom member list and browse the letter matching the company's initial.",
+      "found_when": "The company appears as a member under the matching letter.",
+      "not_found_when": "No entry for the company appears in the member list under any letter.",
+      "couldnt_check_when": "The member list pages do not load, or the name is too generic to confirm a match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have an official company master profile or listed security on Börse Frankfurt (Deutsche Börse AG)?",
+      "why_it_matters": "The exchange profile confirms whether claims about a stock listing, bonds or shareholder structure can be verified.",
+      "source": {
+        "name": "Börse Frankfurt (Deutsche Börse AG)",
+        "url": "https://www.boerse-frankfurt.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Börse Frankfurt company and securities pages for the company name.",
+      "found_when": "A master profile or listed security for the company appears on the exchange portal.",
+      "not_found_when": "No company profile or security is found for the name, indicating the company is not listed there.",
+      "couldnt_check_when": "The portal search does not respond, or several similarly named issuers make the match uncertain.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Börsen-Zeitung reported on this company, for example on its bonds, banking relations or regulatory issues?",
+      "why_it_matters": "Coverage in the specialist financial press shows how capital-market journalists view the company's finances and standing.",
+      "source": {
+        "name": "Börsen-Zeitung",
+        "url": "https://www.boersen-zeitung.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Börsen-Zeitung site search or its company search and enter the company name.",
+      "found_when": "One or more articles or company entries mention the company.",
+      "not_found_when": "A clean search returns no article or company entry for the name.",
+      "couldnt_check_when": "The search is paywalled or unreachable, or hits cannot be opened to confirm the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Boersennews Community discussions about its management credibility or share performance?",
+      "why_it_matters": "Retail investor threads show how the market publicly perceives the company's management and prospects.",
+      "source": {
+        "name": "Boersennews Community",
+        "url": "https://www.boersennews.de/community",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Boersennews search and enter the company name to list community threads and posts.",
+      "found_when": "Company pages or forum threads discussing the company appear in the results.",
+      "not_found_when": "The search returns no thread or company page for the name.",
+      "couldnt_check_when": "The community search is unavailable, or hits are unrelated companies with a similar name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its named tax advisor registered in the Bundessteuerberaterkammer Steuerberaterverzeichnis?",
+      "why_it_matters": "Only registered tax advisors and firms may legally offer tax advisory services in Germany.",
+      "source": {
+        "name": "Bundessteuerberaterkammer Steuerberaterverzeichnis (BStBK)",
+        "url": "https://www.bstbk.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Steuerberaterverzeichnis search and enter the company or advisor name with its place.",
+      "found_when": "The company or advisor appears with a register entry confirming the professional title.",
+      "not_found_when": "A clean search by name and place returns no register entry.",
+      "couldnt_check_when": "The register search does not return results, or the name is too common to identify one entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has this company published financial statements, capital changes, merger or liquidation notices in the Bundesanzeiger?",
+      "why_it_matters": "The Federal Gazette is the statutory record of a company's filed accounts and structural changes, so gaps or warnings matter.",
+      "source": {
+        "name": "Bundesanzeiger (Federal Gazette)",
+        "url": "https://www.bundesanzeiger.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Bundesanzeiger search and enter the company name, then scan the published notices.",
+      "found_when": "One or more published notices or filed financial statements name the company.",
+      "not_found_when": "The search returns no publication for the company name.",
+      "couldnt_check_when": "The search interface fails, or many similarly named entities make the correct company unclear.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Bundeskartellamt decisions, merger control proceedings or the Wettbewerbsregister?",
+      "why_it_matters": "Cartel office records reveal antitrust cases, merger reviews and public procurement exclusions against the company.",
+      "source": {
+        "name": "Bundeskartellamt (Wettbewerbsregister & Fusionskontrolle)",
+        "url": "https://www.bundeskartellamt.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the Bundeskartellamt decision database for the company name.",
+      "found_when": "A decision, proceeding or register entry naming the company is returned.",
+      "not_found_when": "A clean search of the decision database returns no case involving the company.",
+      "couldnt_check_when": "The database search does not run, or the name is too generic to attribute a case.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company entered in a Bundesnetzagentur provider register, such as the Post Anbieterverzeichnis?",
+      "why_it_matters": "Providers of postal, telecom or energy services need a register entry, so absence points to an unlicensed operation.",
+      "source": {
+        "name": "Bundesnetzagentur",
+        "url": "https://www.bundesnetzagentur.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the relevant Bundesnetzagentur Anbieterverzeichnis for the sector and scan the list for the company name.",
+      "found_when": "The company appears in the applicable provider register with its licence or registration data.",
+      "not_found_when": "The applicable register list contains no entry for the company name.",
+      "couldnt_check_when": "It is unclear which register applies, or the list cannot be opened or filtered by name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Gründerszene (Business Insider) published a profile, funding report or critical story about this company?",
+      "why_it_matters": "Startup press coverage shows whether funding, founders and setbacks reported by the company have been independently checked.",
+      "source": {
+        "name": "Gründerszene (Business Insider)",
+        "url": "https://www.businessinsider.de/gruenderszene",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site search on the Gründerszene section and enter the company name.",
+      "found_when": "One or more articles about the company are found.",
+      "not_found_when": "A clean search returns no article about the company.",
+      "couldnt_check_when": "The search is blocked or paywalled, or hits cannot be opened to confirm the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a member profile in the BVMW network directory?",
+      "why_it_matters": "A BVMW profile shows the company is connected to Germany's main SME business association.",
+      "source": {
+        "name": "Bundesverband mittelständische Wirtschaft (BVMW)",
+        "url": "https://www.bvmw.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the BVMW member pages for the company name.",
+      "found_when": "A member profile page for the company exists on the BVMW site.",
+      "not_found_when": "No member profile is found for the company name.",
+      "couldnt_check_when": "The member search is unavailable, or only partial member data is published.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 16,
+      "category": "register",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Creditreform hold a business report on this company showing a credit rating or payment default warning?",
+      "why_it_matters": "Credit agency data flags payment behaviour and default risk that the company itself may not disclose.",
+      "source": {
+        "name": "Creditreform",
+        "url": "https://www.creditreform.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Creditreform site search and enter the company name.",
+      "found_when": "A company record or report offer for the company is returned, with rating information where visible.",
+      "not_found_when": "The search returns no company record for the name.",
+      "couldnt_check_when": "Only a paid report would confirm details, or the name is too common to isolate the company.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 17,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the DAkkS database as an accredited testing laboratory, certification body or inspection body?",
+      "why_it_matters": "Only DAkkS-accredited bodies may issue recognised test reports and certificates, so unlisted claims of accreditation are misleading.",
+      "source": {
+        "name": "Deutsche Akkreditierungsstelle (DAkkS)",
+        "url": "https://www.dakks.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the DAkkS database of accredited bodies and search for the company name.",
+      "found_when": "An accreditation entry for the company appears with its scope and validity.",
+      "not_found_when": "A clean search returns no accreditation entry for the company.",
+      "couldnt_check_when": "The database search fails, or the company name matches only unrelated accredited bodies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Das Örtliche with a matching address and phone number?",
+      "why_it_matters": "Directory entries confirm whether the company's stated address and phone number match a real local presence.",
+      "source": {
+        "name": "Das Örtliche",
+        "url": "https://www.dasoertliche.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Das Örtliche search and compare the listed address and phone with the company's own details.",
+      "found_when": "A listing for the company appears with an address or phone number that matches the company's stated details.",
+      "not_found_when": "No listing appears for the company name in the relevant location.",
+      "couldnt_check_when": "Multiple unrelated entries appear, or the directory cannot be searched for that location.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the Deutsche Startups startup directory (Startups A-Z)?",
+      "why_it_matters": "The directory shows whether the company is recognised as a startup and gives an independent view of its funding and founders.",
+      "source": {
+        "name": "Deutsche Startups",
+        "url": "https://www.deutsche-startups.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Startups A-Z list on Deutsche Startups and scan the entries for the company name.",
+      "found_when": "A directory entry for the company appears with its profile data.",
+      "not_found_when": "The A-Z list contains no entry for the company name.",
+      "couldnt_check_when": "The list is incomplete or will not load, or the name is too generic to confirm an entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "register",
+      "problem_type": [
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its site registered in the EMAS-Register Deutschland as validated under EMAS?",
+      "why_it_matters": "The public register verifies whether a claim of audited environmental management is actually registered.",
+      "source": {
+        "name": "EMAS-Register Deutschland (DIHK / Umweltgutachterausschuss)",
+        "url": "https://www.emas-register.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the EMAS register search and enter the company name in the company field.",
+      "found_when": "A register entry for the organisation or site appears with its EMAS registration number.",
+      "not_found_when": "A clean search returns no EMAS entry for the company.",
+      "couldnt_check_when": "The register search does not respond, or the company name matches several sites ambiguously.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "news_press",
+      "problem_type": [
+        "legal",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company publish ad-hoc releases, directors' dealings or voting rights notices on EQS News (DGAP)?",
+      "why_it_matters": "Mandatory disclosures reveal insider transactions and events the company might otherwise not publicise.",
+      "source": {
+        "name": "EQS News (DGAP)",
+        "url": "https://www.eqs-news.com",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the EQS News company search and enter the company name.",
+      "found_when": "A company page or disclosure list for the company appears.",
+      "not_found_when": "No company entry or disclosure is found for the name.",
+      "couldnt_check_when": "The search is unavailable, or the name returns only unrelated issuers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a company profile on Experteer Deutschland showing senior or executive vacancies?",
+      "why_it_matters": "Executive job profiles indicate whether the company is actively hiring at board or senior management level.",
+      "source": {
+        "name": "Experteer Deutschland",
+        "url": "https://www.experteer.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Experteer for the company name and open any matching company profile.",
+      "found_when": "A company profile with senior or executive positions appears.",
+      "not_found_when": "No company profile is found for the name.",
+      "couldnt_check_when": "The profile is behind a login, or the name matches several unrelated employers.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 23,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on Freelancermap as a client, and do contractors review its payment reliability?",
+      "why_it_matters": "Contractor feedback shows whether freelancers report the company as a reliable, prompt payer.",
+      "source": {
+        "name": "Freelancermap",
+        "url": "https://www.freelancermap.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Freelancermap company search and enter the company name.",
+      "found_when": "A company profile appears, with contractor reviews or ratings where available.",
+      "not_found_when": "No company profile is found for the name.",
+      "couldnt_check_when": "The company search fails, or the company has no review content to read.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear in Gelbe Seiten with matching branch addresses and contact details?",
+      "why_it_matters": "Yellow Pages entries confirm the operating sector, branch locations and contact data the company claims.",
+      "source": {
+        "name": "Gelbe Seiten",
+        "url": "https://www.gelbeseiten.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Gelbe Seiten for the company name nationwide and compare the listed branches and contacts.",
+      "found_when": "One or more entries for the company appear with addresses and phone numbers.",
+      "not_found_when": "No entry appears for the company name.",
+      "couldnt_check_when": "Many similarly named entries appear, or the directory cannot be searched nationwide.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Handelsblatt reported on this company, for example on litigation, management scandals or its financial results?",
+      "why_it_matters": "Coverage in Germany's leading business daily shows whether serious journalists have examined the company's conduct and numbers.",
+      "source": {
+        "name": "Handelsblatt",
+        "url": "https://www.handelsblatt.com",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Handelsblatt search and enter the company name.",
+      "found_when": "One or more articles naming the company are returned.",
+      "not_found_when": "A clean search returns no article about the company.",
+      "couldnt_check_when": "The search is paywalled or blocked, or hits cannot be opened to confirm the company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a Jobware company profile with current specialist or management vacancies?",
+      "why_it_matters": "The profile shows the company's recruitment priorities and whether it is expanding its teams.",
+      "source": {
+        "name": "Jobware",
+        "url": "https://www.jobware.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Jobware for the company name and open any company profile.",
+      "found_when": "A company profile page with vacancies appears.",
+      "not_found_when": "No company profile or vacancy is found for the name.",
+      "couldnt_check_when": "The search is unavailable, or the name matches several unrelated employers.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 27,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed on Munich Startup as part of the Munich or Bavarian startup ecosystem?",
+      "why_it_matters": "The portal shows whether the company is recognised locally and gives independent detail on its funding and founders.",
+      "source": {
+        "name": "Munich Startup",
+        "url": "https://www.munich-startup.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Browse the Munich Startup startup listings and scan for the company name.",
+      "found_when": "A startup entry for the company appears on the portal.",
+      "not_found_when": "The listings contain no entry for the company name.",
+      "couldnt_check_when": "The listings are only partly published or will not load, or the name is too generic to confirm.",
+      "confidence": "high"
+    },
+    {
+      "rank": 28,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does North Data hold commercial register data on this company, including legal form, managing directors and parent or subsidiary links?",
+      "why_it_matters": "Register data exposes ownership chains and director changes that contradict or confirm what the company presents.",
+      "source": {
+        "name": "North Data",
+        "url": "https://www.northdata.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search North Data for the company name and open the matching company page.",
+      "found_when": "A company page appears with register filings, officers or ownership links.",
+      "not_found_when": "No company page is found for the name in the German register data.",
+      "couldnt_check_when": "Several similarly named companies appear and cannot be told apart.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does Onvista list this company with corporate fundamentals or bond issuer data?",
+      "why_it_matters": "Financial portal data allows a check of stated market values, bonds and key figures against an independent source.",
+      "source": {
+        "name": "Onvista",
+        "url": "https://www.onvista.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Onvista instrument search and enter the company name.",
+      "found_when": "A company or bond entry appears with fundamentals data.",
+      "not_found_when": "The search returns no instrument for the company name.",
+      "couldnt_check_when": "The search returns several similar instruments and the company cannot be identified.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 30,
+      "category": "reviews",
+      "problem_type": [
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have a ProvenExpert profile with a client satisfaction score and reviews?",
+      "why_it_matters": "Aggregated client scores show whether customers publicly vouch for the company's service quality.",
+      "source": {
+        "name": "ProvenExpert",
+        "url": "https://www.provenexpert.com/de-de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ProvenExpert for the company name and open any matching profile.",
+      "found_when": "A profile with ratings or reviews appears for the company.",
+      "not_found_when": "No profile is found for the company name.",
+      "couldnt_check_when": "The profile exists but has no ratings yet, or the name matches several unrelated providers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company appear on Shopvote with merchant ratings and a verified legal web store check?",
+      "why_it_matters": "Merchant ratings and legal checks show whether the online shop is independently verified and how buyers rate it.",
+      "source": {
+        "name": "Shopvote",
+        "url": "https://www.shopvote.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Shopvote search and enter the shop domain or the company name.",
+      "found_when": "A merchant entry appears with ratings or a completed legal verification.",
+      "not_found_when": "No merchant entry is found for the shop or company.",
+      "couldnt_check_when": "The search cannot be run, or several shops use similar names and cannot be distinguished.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company registered in the Stiftung EAR Herstellerverzeichnis with a WEEE registration number for its brands?",
+      "why_it_matters": "Selling electrical equipment in Germany requires an EAR registration, so absence points to a compliance gap.",
+      "source": {
+        "name": "Stiftung Elektro-Altgeräte Register (Stiftung EAR)",
+        "url": "https://www.stiftung-ear.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the EAR Herstellerverzeichnis search and enter the company or brand name.",
+      "found_when": "A manufacturer entry with a WEEE registration number appears for the company or its brand.",
+      "not_found_when": "A clean search returns no manufacturer or brand entry for the company.",
+      "couldnt_check_when": "The register search fails, or the brand name is too generic to match one entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 33,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company's online shop certified by Trusted Shops and does it carry verified buyer reviews?",
+      "why_it_matters": "Certification and buyer reviews show whether delivery reliability and dispute handling have been independently audited.",
+      "source": {
+        "name": "Trusted Shops",
+        "url": "https://www.trustedshops.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Trusted Shops shop search and enter the shop domain or company name.",
+      "found_when": "A certified shop entry appears with a valid seal and reviews.",
+      "not_found_when": "No certified shop is found for the domain or company.",
+      "couldnt_check_when": "The shop search is unavailable, or the seal status cannot be verified on the site.",
+      "confidence": "high"
+    },
+    {
+      "rank": 34,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed as a member company of the Verband der Chemischen Industrie (VCI)?",
+      "why_it_matters": "VCI membership shows the company is recognised within the German chemical and pharmaceutical industry.",
+      "source": {
+        "name": "Verband der Chemischen Industrie (VCI)",
+        "url": "https://www.vci.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the VCI member company lists and browse the letter matching the company's initial.",
+      "found_when": "The company appears in the VCI member company list.",
+      "not_found_when": "No entry for the company appears in the member lists.",
+      "couldnt_check_when": "The member pages do not load, or only part of the membership is published.",
+      "confidence": "high"
+    },
+    {
+      "rank": 35,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the VDA member list (unsere Mitglieder)?",
+      "why_it_matters": "VDA membership shows the company is recognised among German automotive manufacturers and suppliers.",
+      "source": {
+        "name": "Verband der Automobilindustrie (VDA)",
+        "url": "https://www.vda.de",
+        "language": "German"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the VDA member pages and scan the member group lists for the company name.",
+      "found_when": "The company appears in a VDA member group list.",
+      "not_found_when": "No VDA member list contains the company name.",
+      "couldnt_check_when": "The member pages cannot be opened, or it is unclear which member group applies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 36,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the VDMA member directory?",
+      "why_it_matters": "VDMA membership shows the company belongs to the recognised German mechanical engineering association.",
+      "source": {
+        "name": "Verband Deutscher Maschinen- und Anlagenbau (VDMA)",
+        "url": "https://www.vdma.org",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the VDMA member search and enter the company name.",
+      "found_when": "A member entry for the company appears in the VDMA directory.",
+      "not_found_when": "The member search returns no entry for the company name.",
+      "couldnt_check_when": "The member search does not respond, or the name returns only unrelated members.",
+      "confidence": "high"
+    },
+    {
+      "rank": 37,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does this company have discussion threads on the Wallstreet:Online Community about its management, debt or restructuring?",
+      "why_it_matters": "Investor forum threads surface public doubts about solvency and management that formal filings may not show.",
+      "source": {
+        "name": "Wallstreet:Online Community",
+        "url": "https://www.wallstreet-online.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Wallstreet:Online search and enter the company name to list threads.",
+      "found_when": "One or more threads or company pages discuss the company.",
+      "not_found_when": "A clean search returns no thread for the company name.",
+      "couldnt_check_when": "The search is unavailable, or hits refer to other companies with a similar name.",
+      "confidence": "high"
+    },
+    {
+      "rank": 38,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company or its named auditor registered in the Wirtschaftsprüferkammer Berufsregister (WPK)?",
+      "why_it_matters": "Only auditors and auditing firms in the WPK register may lawfully sign audit opinions in Germany.",
+      "source": {
+        "name": "Wirtschaftsprüferkammer Berufsregister (WPK)",
+        "url": "https://www.wpk.de",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the WPK Berufsregister search and enter the firm name, auditor name or register number.",
+      "found_when": "A register entry for the firm or auditor appears with an active licence.",
+      "not_found_when": "A clean search by name returns no Berufsregister entry.",
+      "couldnt_check_when": "The register search fails, or the name is too common to identify a single entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 39,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is this company listed in the ZVEI member list (Our Members)?",
+      "why_it_matters": "ZVEI membership shows the company is recognised within the German electrical and digital industry association.",
+      "source": {
+        "name": "ZVEI e. V. (Elektro- und Digitalindustrie)",
+        "url": "https://www.zvei.org",
+        "language": "German"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ZVEI Our Members list and filter by the company's initial letter.",
+      "found_when": "The company appears in the ZVEI member list.",
+      "not_found_when": "No entry for the company appears in the member list.",
+      "couldnt_check_when": "The member list cannot be loaded or filtered, or the name is too generic to confirm.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "DE-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 39 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

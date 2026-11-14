@@ -1,0 +1,772 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in an ABEI licensing registry (online social network, general news website, or G1-G4 game licence) or in a public penalty notice on abei.gov.vn?",
+      "why_it_matters": "Holding the right media or game licence, and avoiding published penalties, shows the business is legally allowed to operate online in Vietnam.",
+      "source": {
+        "name": "Authority of Broadcasting and Electronic Information (Cục Phát thanh, Truyền hình và Thông tin Điện tử - ABEI)",
+        "url": "https://abei.gov.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open ABEI's licence lookup on abei.gov.vn and search the licence registries and penalty notices by the company's full Vietnamese name.",
+      "found_when": "The company's name appears in a licence registry entry or in a public penalty notice.",
+      "not_found_when": "A clean search on the exact company name returns no licence entry and no penalty notice.",
+      "couldnt_check_when": "The lookup is unavailable, or the abbreviated name matches many unrelated licensed companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the AmCham Vietnam member directory on amchamvietnam.com?",
+      "why_it_matters": "Chamber membership signals a US-linked or international business that has passed a peer vetting step and can be reached through the chamber.",
+      "source": {
+        "name": "American Chamber of Commerce in Vietnam (AmCham Vietnam)",
+        "url": "https://www.amchamvietnam.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the AmCham Vietnam members page and search the directory for the company name.",
+      "found_when": "The company appears as an AmCham Vietnam member with a directory listing.",
+      "not_found_when": "The directory search returns no member record for that name.",
+      "couldnt_check_when": "The members directory is behind a login, unreadable, or the name is too generic to single out.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the AusCham Vietnam corporate membership directory on auschamvn.org?",
+      "why_it_matters": "Membership shows an Australian or international business affiliation and a verifiable chamber contact route.",
+      "source": {
+        "name": "Australian Chamber of Commerce in Vietnam (AusCham Vietnam)",
+        "url": "https://auschamvn.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the corporate membership directory page on auschamvn.org and scan the list for the company name.",
+      "found_when": "The company is present in the corporate member list.",
+      "not_found_when": "The full member list contains no entry matching the company name.",
+      "couldnt_check_when": "The directory page fails to load or the list is paginated beyond readable access.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Báo Đấu Thầu reported on the company in connection with bidding, procurement disputes, or contractor penalties?",
+      "why_it_matters": "Coverage in the public bidding press can reveal bid-rigging allegations, sanctions, or project disputes that other sources miss.",
+      "source": {
+        "name": "Báo Đấu Thầu (Public Bidding Newspaper)",
+        "url": "https://baodauthau.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the site's search box on baodauthau.vn and enter the company's full Vietnamese name.",
+      "found_when": "Articles naming the company appear in the search results.",
+      "not_found_when": "The search returns no article naming the company.",
+      "couldnt_check_when": "The search is blocked or the name is too generic to attribute articles to this company.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the BritCham Vietnam membership directory on britchamvn.com?",
+      "why_it_matters": "A BritCham listing confirms a British or international business affiliation and a named chamber contact.",
+      "source": {
+        "name": "British Chamber of Commerce Vietnam (BritCham Vietnam)",
+        "url": "https://britchamvn.com",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the BritCham membership directory and browse or scan the member entries for the company name.",
+      "found_when": "A member profile page or member list entry names the company.",
+      "not_found_when": "No member entry matches the company name.",
+      "couldnt_check_when": "The directory is down or member entries are only reachable by an unknown slug.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an enterprise profile on CafeF whose leadership, ownership, and reported financials match what the company claims?",
+      "why_it_matters": "Independent financial data exposes gaps between what a company says about its size and leadership and what the market records.",
+      "source": {
+        "name": "CafeF Enterprise & Equity Database",
+        "url": "https://cafef.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the CafeF company search and enter the company's Vietnamese name or ticker to open its enterprise profile.",
+      "found_when": "A CafeF enterprise page exists and its leadership, ownership, or financial figures can be compared with the company's claims.",
+      "not_found_when": "No CafeF enterprise profile matches the company name.",
+      "couldnt_check_when": "The profile exists but the financial figures are missing or too aggregated to compare.",
+      "confidence": "high"
+    },
+    {
+      "rank": 7,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the CanCham Vietnam member listings on canchamvietnam.org?",
+      "why_it_matters": "A CanCham listing shows a Canadian or international business tie and a reachable chamber contact.",
+      "source": {
+        "name": "Canadian Chamber of Commerce in Vietnam (CanCham Vietnam)",
+        "url": "https://canchamvietnam.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the CanCham listings section and scan the member listing pages for the company name.",
+      "found_when": "A member listing page names the company.",
+      "not_found_when": "No listing on the site matches the company name.",
+      "couldnt_check_when": "The listings are unreadable or only reachable through an unknown direct link.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have an employer profile with current job postings on CareerLink Vietnam?",
+      "why_it_matters": "Active postings show the company is really hiring and operating at the scale it describes.",
+      "source": {
+        "name": "CareerLink Vietnam",
+        "url": "https://www.careerlink.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search CareerLink's employer section for the company's full name to find its company profile page.",
+      "found_when": "A company profile page exists, with or without open job postings.",
+      "not_found_when": "The employer search returns no profile for that name.",
+      "couldnt_check_when": "The employer search is blocked, or the name returns only similarly named companies.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a registered employer page and live job ads on CareerViet?",
+      "why_it_matters": "A maintained employer page with openings indicates an operating business and shows its hiring footprint by region.",
+      "source": {
+        "name": "CareerViet (formerly CareerBuilder Vietnam)",
+        "url": "https://careerviet.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use CareerViet's employer search and enter the company's full Vietnamese name.",
+      "found_when": "An employer page for the company is returned, with company details or job ads.",
+      "not_found_when": "No employer page matches the company name.",
+      "couldnt_check_when": "The search is unavailable or returns only unrelated employers with similar names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the CCIFV online member directory (annuaire en ligne) on ccifv.org?",
+      "why_it_matters": "A CCIFV listing confirms a French or francophone business affiliation and provides a chamber contact route.",
+      "source": {
+        "name": "French Chamber of Commerce and Industry in Vietnam (CCIFV)",
+        "url": "https://www.ccifv.org",
+        "language": "French"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the CCIFV annuaire en ligne and enter the company name in its search filter.",
+      "found_when": "The directory returns a member record for the company.",
+      "not_found_when": "The directory search returns no member record for that name.",
+      "couldnt_check_when": "The directory search page errors out or the results are unreadable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "directory",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company run a seller storefront with listings on Chợ Tốt, and does its storefront identity match the company's official name?",
+      "why_it_matters": "Storefronts show real trading activity but can also be run under names that do not match the registered company.",
+      "source": {
+        "name": "Chợ Tốt (Chotot.com)",
+        "url": "https://www.chotot.com",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Chợ Tốt search box with the company name and review the seller or storefront results.",
+      "found_when": "Listings or a seller storefront under the company's name are returned.",
+      "not_found_when": "No listing or seller page matches the company name.",
+      "couldnt_check_when": "Search results are location-gated or the name matches too many private sellers.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 12,
+      "category": "identity_registration",
+      "problem_type": [
+        "legal",
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the National Business Registration Portal with an active enterprise code whose registered name, legal representative, and address match the company's own claims?",
+      "why_it_matters": "The national register is the authoritative test of whether the entity legally exists and who may sign for it.",
+      "source": {
+        "name": "National Business Registration Portal (Cổng thông tin quốc gia về đăng ký doanh nghiệp)",
+        "url": "https://dangkykinhdoanh.gov.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the portal's enterprise name lookup with the company's Vietnamese name and open the registration record.",
+      "found_when": "A registration record is returned showing the enterprise code, legal representative, and active status.",
+      "not_found_when": "The name lookup returns no enterprise record for the company.",
+      "couldnt_check_when": "The lookup service is down or the name is too common to isolate one enterprise code.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member in the EuroCham Vietnam directory on eurochamvn.org?",
+      "why_it_matters": "EuroCham membership indicates a European business link and gives a policy-community contact route.",
+      "source": {
+        "name": "European Chamber of Commerce in Vietnam (EuroCham Vietnam)",
+        "url": "https://eurochamvn.org",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the EuroCham members page and use its search field with the company name.",
+      "found_when": "A member entry for the company is returned.",
+      "not_found_when": "The member search returns nothing for that name.",
+      "couldnt_check_when": "The member search is unavailable or the name matches multiple unrelated members.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "register",
+      "problem_type": [
+        "contradiction",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a listed or UPCoM-registered issuer with a security page and disclosures on the Hanoi Stock Exchange (hnx.vn)?",
+      "why_it_matters": "Exchange registration means public disclosure duties and verifiable filings on ownership and results.",
+      "source": {
+        "name": "Hanoi Stock Exchange (Sở Giao dịch Chứng khoán Hà Nội - HNX)",
+        "url": "https://hnx.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the HNX listed securities lookup and search by the company's name or ticker.",
+      "found_when": "A security detail page for the company exists with filings or disclosures.",
+      "not_found_when": "The listed securities lookup returns no security for the company.",
+      "couldnt_check_when": "The lookup is down or the company is known only by a name that does not map to a ticker.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a recruiter page and open hospitality job ads on Hoteljob.vn?",
+      "why_it_matters": "Hospitality hiring activity reveals the properties a company actually operates or manages.",
+      "source": {
+        "name": "Hoteljob.vn",
+        "url": "https://www.hoteljob.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Hoteljob's recruiter listings by the company's full name to reach its recruiter page.",
+      "found_when": "A recruiter page exists, with or without current job ads.",
+      "not_found_when": "No recruiter page matches the company name.",
+      "couldnt_check_when": "The recruiter search is unavailable or the name returns only similar brand names.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a corporate member of InCham Vietnam on incham.vn?",
+      "why_it_matters": "InCham membership confirms an Indian business affiliation and a route to the company through the chamber.",
+      "source": {
+        "name": "Indian Chamber of Commerce in Vietnam (InCham)",
+        "url": "https://incham.vn",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the InCham corporate member listings on incham.vn for the company name.",
+      "found_when": "A corporate member record names the company.",
+      "not_found_when": "The member listings contain no record for that name.",
+      "couldnt_check_when": "The member listing endpoint is unavailable or the name is too generic to match one record.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company page on ITviec with employee reviews or ratings, and what do they say about management and working conditions?",
+      "why_it_matters": "Anonymous employee reviews give an unfiltered read on culture and management that marketing pages never show.",
+      "source": {
+        "name": "ITviec",
+        "url": "https://itviec.com",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search ITviec's company directory for the company name and open its company page.",
+      "found_when": "A company page exists, with or without reviews.",
+      "not_found_when": "The company directory returns no page for that name.",
+      "couldnt_check_when": "The company page exists but reviews are locked or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "tenders_partnerships",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on the national e-procurement system (e-GP) as a contractor with bid history, and does it appear on the sanctioned or banned contractor list?",
+      "why_it_matters": "Public tender records show whether the company wins state work and whether it has been barred for tender violations.",
+      "source": {
+        "name": "National E-Procurement System (Hệ thống mạng đấu thầu quốc gia - e-GP)",
+        "url": "https://muasamcong.mpi.gov.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the e-GP contractor database and the organisations-violators list with the company's full Vietnamese name.",
+      "found_when": "A contractor record with bid or contract history is returned, and any sanctioned entry is noted.",
+      "not_found_when": "No contractor record and no sanctioned entry match the company name.",
+      "couldnt_check_when": "The system requires a login, is unavailable, or the name is too common to isolate one contractor.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "awards",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Nhịp Cầu Đầu Tư Top 50 ranking of listed companies on nhipcaudautu.vn?",
+      "why_it_matters": "Placement in this ranking is a third-party credibility signal that can confirm or undercut a company's market claims.",
+      "source": {
+        "name": "Nhịp Cầu Đầu Tư Magazine",
+        "url": "https://nhipcaudautu.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Top 50 list page on nhipcaudautu.vn and scan the ranked entries for the company name.",
+      "found_when": "The company appears in the published Top 50 ranking.",
+      "not_found_when": "The ranking list contains no entry for the company.",
+      "couldnt_check_when": "The ranking page is unreadable, only covers a past year, or the list is not published in full.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "complaints",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do Otofun forum threads mention the company in connection with service complaints, fraud warnings, or dealer disputes?",
+      "why_it_matters": "Forum threads surface customer disputes and fraud alerts that never reach official channels.",
+      "source": {
+        "name": "Otofun (Otofun.net)",
+        "url": "https://www.otofun.net",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the forum search with the company name as keywords and sort by relevance.",
+      "found_when": "Forum threads naming the company are returned.",
+      "not_found_when": "The forum search returns no thread mentioning the company.",
+      "couldnt_check_when": "The search requires a member login, or the name is too common and returns unrelated chatter.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 21,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the SingCham Vietnam company list on singchamvietnam.org?",
+      "why_it_matters": "A SingCham listing confirms a Singaporean business affiliation and a chamber contact route.",
+      "source": {
+        "name": "Singapore Chamber of Commerce Vietnam (SingCham Vietnam)",
+        "url": "https://singchamvietnam.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the SingCham company list page and scan the member entries for the company name.",
+      "found_when": "The company appears in the member company list.",
+      "not_found_when": "No company in the list matches that name.",
+      "couldnt_check_when": "The list page is unavailable or the member list is not published in full.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has the State Securities Commission of Vietnam issued an administrative penalty or disclosure enforcement decision naming the company, or does the company appear as a registered public company on ssc.gov.vn?",
+      "why_it_matters": "Securities enforcement actions are official findings of disclosure or trading violations that carry real legal weight.",
+      "source": {
+        "name": "State Securities Commission of Vietnam (Ủy ban Chứng khoán Nhà nước - SSC)",
+        "url": "https://ssc.gov.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the SSC site search with the company's full Vietnamese name and review penalty decisions, prospectus approvals, and public company registrations.",
+      "found_when": "A penalty decision, registration record, or prospectus approval naming the company is returned.",
+      "not_found_when": "The search returns no document naming the company.",
+      "couldnt_check_when": "The search engine returns unrelated documents, or results are only partially readable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "directory",
+      "problem_type": [
+        "misinformation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a registered wholesale shop profile on Thị Trường Sỉ with matching supplier details and minimum order terms?",
+      "why_it_matters": "Wholesale profiles show whether the company really supplies at scale and whether its stated trading identity is consistent.",
+      "source": {
+        "name": "Thị Trường Sỉ (Thitruongsi.com)",
+        "url": "https://thitruongsi.com",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the marketplace's shop directory for the company's full name.",
+      "found_when": "A shop profile matching the company name is returned with supplier contact details.",
+      "not_found_when": "No shop profile matches the company name.",
+      "couldnt_check_when": "The shop directory is unavailable or the name matches only unrelated resellers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company operate an official or verified storefront on Tiki, and what are its customer ratings and dispute feedback?",
+      "why_it_matters": "Marketplace badges and buyer ratings are a fast test of whether a consumer brand is genuine and how it treats customers.",
+      "source": {
+        "name": "Tiki",
+        "url": "https://tiki.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search Tiki for the company or brand name and open the resulting store page.",
+      "found_when": "A store page under the company or brand name exists, with badges, ratings, or reviews.",
+      "not_found_when": "No store page on Tiki matches the company name.",
+      "couldnt_check_when": "The store page is unreachable or the brand name is used by unrelated sellers.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 25,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a member manufacturer on the VAMA member page (cac-thanh-vien-nsx) at vama.org.vn?",
+      "why_it_matters": "VAMA membership confirms an automaker is a recognised assembler or importer and appears in official sales statistics.",
+      "source": {
+        "name": "Vietnam Automobile Manufacturers Association (VAMA)",
+        "url": "https://vama.org.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the VAMA member manufacturers page and scan the member list for the company name.",
+      "found_when": "The company appears in the VAMA member manufacturers list.",
+      "not_found_when": "The member list contains no entry for the company.",
+      "couldnt_check_when": "The member page is unreadable or the site is unreachable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the VASEP member directory with a seafood processor profile and export approval codes?",
+      "why_it_matters": "A VASEP member profile with approval codes shows the company is a recognised seafood exporter cleared for key markets.",
+      "source": {
+        "name": "Vietnam Association of Seafood Exporters and Producers (VASEP)",
+        "url": "https://vasep.com.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open VASEP's member information section and scan member profiles for the company name, or search the site for it.",
+      "found_when": "A VASEP member profile page for the company exists.",
+      "not_found_when": "No member profile matches the company name.",
+      "couldnt_check_when": "The member directory is unreachable or the name matches several similarly named processors.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company post job ads as an employer on Việc Làm Tốt, and do the postings match the operating locations the company claims?",
+      "why_it_matters": "Mass-market hiring ads reveal warehouse, factory, or retail operations the company may not advertise elsewhere.",
+      "source": {
+        "name": "Việc Làm Tốt (formerly Chợ Tốt Việc Làm)",
+        "url": "https://www.vieclamtot.com",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the job listings on vieclamtot.com by the company's full name.",
+      "found_when": "Job ads from the company are returned.",
+      "not_found_when": "No job ad names the company.",
+      "couldnt_check_when": "The search is location-gated or ads are posted under a brand name that differs from the legal name.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 28,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a company profile with executive or mid-senior job postings on VietnamWorks?",
+      "why_it_matters": "Senior hiring activity and office locations show whether the company operates at the scale and level it presents.",
+      "source": {
+        "name": "VietnamWorks",
+        "url": "https://www.vietnamworks.com",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search VietnamWorks company profiles for the company's full name.",
+      "found_when": "A company profile page exists, with or without current postings.",
+      "not_found_when": "The company profile search returns no match.",
+      "couldnt_check_when": "The company search endpoint is unavailable or the name matches several employers.",
+      "confidence": "high"
+    },
+    {
+      "rank": 29,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in VIETRADE's verified export enterprise directory, and does it appear among Vietnam Value national brand winners?",
+      "why_it_matters": "Government trade-promotion listings and national brand awards corroborate export claims and market standing.",
+      "source": {
+        "name": "Vietnam Trade Promotion Agency (Cục Xúc tiến Thương mại - VIETRADE)",
+        "url": "https://vietrade.gov.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the VIETRADE enterprise directory and the Vietnam Value award lists with the company's full Vietnamese name.",
+      "found_when": "A verified enterprise entry or an award listing names the company.",
+      "not_found_when": "Neither the enterprise directory nor the award lists contain the company name.",
+      "couldnt_check_when": "The directory is unavailable or the name is too generic to confirm the exact entity.",
+      "confidence": "high"
+    },
+    {
+      "rank": 30,
+      "category": "claims_check",
+      "problem_type": [
+        "contradiction",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a Vietstock Finance page whose balance sheet, charter capital, ownership structure, and dividend history match the figures the company presents?",
+      "why_it_matters": "Standardised financial statements are the quickest way to test inflated revenue or capital claims.",
+      "source": {
+        "name": "Vietstock Finance",
+        "url": "https://vietstock.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Search Vietstock Finance for the company name or ticker and open its financial profile page.",
+      "found_when": "A Vietstock company page exists with financials or ownership data to compare.",
+      "not_found_when": "No Vietstock page matches the company name.",
+      "couldnt_check_when": "The page exists but financial data is behind a subscription or left blank.",
+      "confidence": "high"
+    },
+    {
+      "rank": 31,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed as a VINASA member, and has it received a Sao Khue Award, according to vinasa.org.vn?",
+      "why_it_matters": "VINASA membership and Sao Khue recognition confirm the company is an accredited software or IT services provider.",
+      "source": {
+        "name": "Vietnam Software and IT Services Association (VINASA)",
+        "url": "https://www.vinasa.org.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the VINASA member list pages and scan them for the company name, then check the Sao Khue award listings.",
+      "found_when": "The company appears in a VINASA member list or Sao Khue award list.",
+      "not_found_when": "Neither the member lists nor the award lists contain the company name.",
+      "couldnt_check_when": "The member pages are unreachable or the lists cover only some provinces.",
+      "confidence": "high"
+    },
+    {
+      "rank": 32,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Vietnam Logistics Business Association member directory (danh-ba-hoi-vien) on vla.com.vn?",
+      "why_it_matters": "VLA membership confirms the company is a recognised freight forwarder, warehouse operator, or 3PL provider rather than just claiming logistics work.",
+      "source": {
+        "name": "Vietnam Logistics Business Association (VLA)",
+        "url": "https://vla.com.vn",
+        "language": "Vietnamese"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the VLA member directory and enter the company's full name in its keyword search field.",
+      "found_when": "A member directory entry names the company.",
+      "not_found_when": "The directory keyword search returns no entry for the company.",
+      "couldnt_check_when": "The directory search is unavailable or the name returns only similar trading names.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "VN-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 32 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}

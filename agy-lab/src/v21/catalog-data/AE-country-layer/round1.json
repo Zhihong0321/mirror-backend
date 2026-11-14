@@ -1,0 +1,649 @@
+{
+  "prompts": [
+    {
+      "rank": 1,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the ADGM Financial Services Regulatory Authority (FSRA) public register as a regulated or approved financial firm?",
+      "why_it_matters": "FSRA registration is the licence to act as a financial firm in ADGM, so a missing or revoked entry signals an unlicensed operator.",
+      "source": {
+        "name": "ADGM Financial Services Regulatory Authority (FSRA) Register",
+        "url": "https://www.adgm.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the ADGM public registers page, choose the FSRA register and enter the company name.",
+      "found_when": "A register entry matches the company name and shows a licence status with permitted financial activities.",
+      "not_found_when": "A clean search of the FSRA register returns no entry for the company name.",
+      "couldnt_check_when": "The register search is unavailable or the company name is too generic to match a single entry.",
+      "confidence": "high"
+    },
+    {
+      "rank": 2,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Abu Dhabi Investment Office (ADIO) partner and ecosystem directory?",
+      "why_it_matters": "An ADIO listing signals government-backed partnership or incentive status that adds credibility to the company's claims.",
+      "source": {
+        "name": "Abu Dhabi Investment Office (ADIO)",
+        "url": "https://www.adio.gov.ae",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the ADIO ecosystem directory and look for the company name among the listed partners and ventures.",
+      "found_when": "The company has a listing in the ADIO ecosystem directory.",
+      "not_found_when": "A clean scan of the directory shows no listing under the company name.",
+      "couldnt_check_when": "The directory cannot be searched or filtered, or the name is too common to identify a single listing.",
+      "confidence": "high"
+    },
+    {
+      "rank": 3,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Al Bayan (البيان) business coverage mentioned the company in connection with agreements, disputes or announcements?",
+      "why_it_matters": "Arabic-language press surfaces local commercial agreements and legal disputes that English outlets often miss.",
+      "source": {
+        "name": "Al Bayan - Business (البيان)",
+        "url": "https://www.albayan.ae",
+        "language": "Arabic"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the Al Bayan site search with the company name, trying the Arabic form of the name as well.",
+      "found_when": "At least one Al Bayan article names the company.",
+      "not_found_when": "The Al Bayan search returns no article naming the company.",
+      "couldnt_check_when": "The search returns unrelated articles because the name is too common, or the search page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 4,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Al Ittihad (الاتحاد) reported on the company in relation to contracts, ventures or leadership?",
+      "why_it_matters": "The Abu Dhabi national daily is a strong record of government contracts and sovereign-backed corporate activity.",
+      "source": {
+        "name": "Al Ittihad - Business (الاتحاد)",
+        "url": "https://www.alittihad.ae",
+        "language": "Arabic"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name on Al Ittihad, including the Arabic form, and read any matching business coverage.",
+      "found_when": "One or more Al Ittihad articles name the company.",
+      "not_found_when": "The site search returns no article naming the company.",
+      "couldnt_check_when": "Results are dominated by unrelated items using the same words, or the search does not respond.",
+      "confidence": "high"
+    },
+    {
+      "rank": 5,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company have a merchant storefront or customer reviews on Amazon.ae?",
+      "why_it_matters": "Storefront pages tie a trade name behind a seller and expose fulfilment or dispute complaints from real buyers.",
+      "source": {
+        "name": "Amazon.ae",
+        "url": "https://www.amazon.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Enter the company name in the Amazon.ae search box and look for a seller or storefront page tied to it.",
+      "found_when": "A storefront, seller page or product listing linked to the company name is returned.",
+      "not_found_when": "The search returns only unrelated third-party products with no storefront or seller link to the company.",
+      "couldnt_check_when": "Results are ambiguous because the name is a common product term, or the site blocks the search.",
+      "confidence": "high"
+    },
+    {
+      "rank": 6,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear on Argaam UAE discussion boards or company pages with investor commentary?",
+      "why_it_matters": "Investor forum chatter can reveal governance concerns or sentiment that official filings never state.",
+      "source": {
+        "name": "Argaam UAE Discussion Boards",
+        "url": "https://www.argaam.com",
+        "language": "Arabic"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name on Argaam's UAE section and open any company page or thread that names it.",
+      "found_when": "A company page or forum thread on Argaam mentions the company by name.",
+      "not_found_when": "Searches return no company page or thread naming the company.",
+      "couldnt_check_when": "Only anonymous posts of unclear authorship match, or the Arabic name variants cannot be linked.",
+      "confidence": "medium"
+    },
+    {
+      "rank": 7,
+      "category": "regulator_action",
+      "problem_type": [
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the DIFC Courts registry of judgments and orders?",
+      "why_it_matters": "Recorded judgments, winding-up petitions and enforcement orders are hard evidence of commercial litigation.",
+      "source": {
+        "name": "DIFC Courts Registry of Judgments and Orders",
+        "url": "https://www.difccourts.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the DIFC Courts judgments and orders keyword search with the company's full legal name.",
+      "found_when": "One or more judgments or orders name the company as a party.",
+      "not_found_when": "A clean keyword search returns no judgment or order naming the company.",
+      "couldnt_check_when": "The search index is unavailable or the case records use abbreviations that cannot be matched.",
+      "confidence": "high"
+    },
+    {
+      "rank": 8,
+      "category": "register",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Dubai Multi Commodities Centre (DMCC) member directory with an active licence?",
+      "why_it_matters": "The DMCC directory confirms free zone licence status, so a suspended or absent entry points to a credential problem.",
+      "source": {
+        "name": "Dubai Multi Commodities Centre (DMCC) Member Directory",
+        "url": "https://www.dmcc.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the DMCC business directory and search the company's registered name.",
+      "found_when": "A member record shows the company with its licence status and licensed activities.",
+      "not_found_when": "The DMCC directory returns no member record for the company name.",
+      "couldnt_check_when": "The directory search fails or the name matches several unrelated members.",
+      "confidence": "high"
+    },
+    {
+      "rank": 9,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Dubai Land Department / RERA Trakheesi lookup show the company as a licensed developer, broker or permitted advertiser?",
+      "why_it_matters": "Unlicensed brokerage or development activity is a common legal and credential risk in Dubai real estate.",
+      "source": {
+        "name": "Dubai Land Department (DLD) / RERA Trakheesi System",
+        "url": "https://www.dubailand.gov.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the DLD broker and real estate licence lookup and search the company or office name.",
+      "found_when": "A licence or Trakheesi permit record matches the company with an office or permit number.",
+      "not_found_when": "A clean lookup returns no licence or permit record for the company.",
+      "couldnt_check_when": "The lookup service is down, or the company does no real estate activity so there is nothing to match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 10,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered in the Dubai South (DWC) free zone company directory?",
+      "why_it_matters": "A directory entry validates the free zone registration and licensed activities the company claims.",
+      "source": {
+        "name": "Dubai South (Dubai World Central - DWC)",
+        "url": "https://www.dubaisouth.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the Dubai South company directory.",
+      "found_when": "A directory record lists the company as a Dubai South registered entity.",
+      "not_found_when": "The directory returns no record for the company name.",
+      "couldnt_check_when": "The directory query fails or the name is too generic to isolate one record.",
+      "confidence": "high"
+    },
+    {
+      "rank": 11,
+      "category": "professional_membership",
+      "problem_type": [
+        "missed_advantage",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a corporate member of the Emirates Green Building Council?",
+      "why_it_matters": "Membership is a public sustainability credential that can corroborate or contradict green marketing claims.",
+      "source": {
+        "name": "Emirates Green Building Council",
+        "url": "https://www.emiratesgbc.org",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the Emirates GBC corporate industry partner page and scan the member list for the company name.",
+      "found_when": "The company appears in the Emirates GBC corporate member listing.",
+      "not_found_when": "The member listing contains no company matching the searched name.",
+      "couldnt_check_when": "The member list is image based or paginated, or the name is too generic to distinguish.",
+      "confidence": "high"
+    },
+    {
+      "rank": 12,
+      "category": "reviews",
+      "problem_type": [
+        "reputation",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Do Expat.com UAE forum threads discuss the company in relation to employment, visas or landlord disputes?",
+      "why_it_matters": "Employee and tenant posts often surface unpaid wages, visa problems or blacklist claims before official sources do.",
+      "source": {
+        "name": "Expat.com UAE Network",
+        "url": "https://www.expat.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the Expat.com UAE search and read any matching forum threads.",
+      "found_when": "A forum thread mentions the company by name in a work, visa or tenancy context.",
+      "not_found_when": "Searches return no thread mentioning the company name.",
+      "couldnt_check_when": "Only vague references without the company name appear, or the forum search is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 13,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Gulf News business coverage reported on the company in connection with disputes, restructuring or performance?",
+      "why_it_matters": "Gulf News is a mainstream record of commercial disputes and corporate developments in the UAE.",
+      "source": {
+        "name": "Gulf News - Business",
+        "url": "https://www.gulfnews.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name on Gulf News and review the business and companies results.",
+      "found_when": "One or more Gulf News business articles name the company.",
+      "not_found_when": "The site search returns no article naming the company.",
+      "couldnt_check_when": "Results are dominated by unrelated articles using the same words, or the search page will not load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 14,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed among Hub71 Abu Dhabi's accepted startups or portfolio companies?",
+      "why_it_matters": "Hub71 acceptance is a public credibility signal often used in funding and incentive claims.",
+      "source": {
+        "name": "Hub71 Abu Dhabi",
+        "url": "https://www.hub71.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Hub71 startups directory and search the company name.",
+      "found_when": "The company has a profile in the Hub71 startup directory.",
+      "not_found_when": "The directory returns no profile for the company.",
+      "couldnt_check_when": "The directory cannot be filtered by name or the page fails to load.",
+      "confidence": "high"
+    },
+    {
+      "rank": 15,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the KHDA education directory list the company as a licensed school, university or training provider?",
+      "why_it_matters": "Only KHDA licensed providers may operate education in Dubai, so absence is a credential red flag.",
+      "source": {
+        "name": "Knowledge and Human Development Authority (KHDA)",
+        "url": "https://www.khda.gov.ae",
+        "language": "English"
+      },
+      "query_type": "static_list",
+      "query_url": "",
+      "how_to_query": "Open the KHDA education directory for the relevant provider type and scan for the company name.",
+      "found_when": "A KHDA directory entry lists the company with a licence or rating.",
+      "not_found_when": "The KHDA directory has no entry for the company.",
+      "couldnt_check_when": "The directory only covers Dubai education providers, so other company types cannot be checked.",
+      "confidence": "high"
+    },
+    {
+      "rank": 16,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential",
+        "misinformation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the Ministry of Industry and Advanced Technology (MoIAT) list the company for an industrial licence, ECAS certificate or Halal mark?",
+      "why_it_matters": "Product certification and industrial licences are federal credentials that unregistered firms sometimes claim.",
+      "source": {
+        "name": "Ministry of Industry and Advanced Technology (MoIAT)",
+        "url": "https://www.moiat.gov.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Use the MoIAT conformity and industrial licence lookup and search the company name.",
+      "found_when": "A certificate or licence record under the company name is returned.",
+      "not_found_when": "A clean MoIAT search returns no certificate or licence record for the company.",
+      "couldnt_check_when": "The lookup times out, or the company holds no product certificates so no match is possible.",
+      "confidence": "high"
+    },
+    {
+      "rank": 17,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential",
+        "reputation"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company shown on Property Finder UAE as a licensed brokerage or verified agent?",
+      "why_it_matters": "The portal exposes RERA and Trakheesi permit references so unlicensed agencies stand out.",
+      "source": {
+        "name": "Property Finder UAE",
+        "url": "https://www.propertyfinder.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in Property Finder's brokerage directory.",
+      "found_when": "A brokerage profile shows the company with a licensing or permit reference.",
+      "not_found_when": "The brokerage directory returns no profile for the company.",
+      "couldnt_check_when": "The search returns many similarly named agencies or the directory blocks the query.",
+      "confidence": "high"
+    },
+    {
+      "rank": 18,
+      "category": "directory",
+      "problem_type": [
+        "contact_mess",
+        "contradiction"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the company appear in the Reach UAE business directory?",
+      "why_it_matters": "Third-party listings carry address, phone and activity data that can confirm or contradict the company's own claims.",
+      "source": {
+        "name": "Reach UAE",
+        "url": "https://www.reachuae.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the Reach UAE business keyword search.",
+      "found_when": "A directory listing matches the company name with contact details or activities.",
+      "not_found_when": "The keyword search returns no listing for the company name.",
+      "couldnt_check_when": "The search returns only similarly named firms or the directory is unavailable.",
+      "confidence": "high"
+    },
+    {
+      "rank": 19,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company registered in the Sharjah Airport International Free Zone (SAIF Zone) tenant directory?",
+      "why_it_matters": "A tenant record confirms free zone registration and the trading activity the company states.",
+      "source": {
+        "name": "Sharjah Airport International Free Zone (SAIF Zone) Directory",
+        "url": "https://www.saif-zone.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the SAIF Zone business directory.",
+      "found_when": "A tenant record lists the company in SAIF Zone.",
+      "not_found_when": "The directory returns no tenant record for the company.",
+      "couldnt_check_when": "The directory search does not respond or the name matches several unrelated tenants.",
+      "confidence": "high"
+    },
+    {
+      "rank": 20,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company recorded in the Securities and Commodities Authority (SCA) registry of public joint stock companies or licensed financial firms?",
+      "why_it_matters": "SCA registration is mandatory for public companies and brokers, and the registry also carries penalties.",
+      "source": {
+        "name": "Securities and Commodities Authority (SCA)",
+        "url": "https://www.sca.gov.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the SCA licensed companies register and enter the company name.",
+      "found_when": "An SCA register entry lists the company with a licence or public company status.",
+      "not_found_when": "A clean SCA register search returns no entry for the company.",
+      "couldnt_check_when": "The register query fails, or the company is of a type the SCA does not license so nothing can match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 21,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Sharjah Media City (Shams) company directory?",
+      "why_it_matters": "A Shams entry confirms free zone registration for a claimed media, tech or service business.",
+      "source": {
+        "name": "Sharjah Media City (Shams) Directory",
+        "url": "https://www.shams.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Shams company directory and search the company name.",
+      "found_when": "A directory profile lists the company as a Shams registered entity.",
+      "not_found_when": "The directory returns no profile for the company.",
+      "couldnt_check_when": "The directory search fails or the company name is too generic to isolate a profile.",
+      "confidence": "high"
+    },
+    {
+      "rank": 22,
+      "category": "directory",
+      "problem_type": [
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has Sheraa (Sharjah Entrepreneurship Center) listed the company as an incubated or funded startup?",
+      "why_it_matters": "Sheraa backing is a government-linked credibility signal that supports claims of funding or support.",
+      "source": {
+        "name": "Sheraa (Sharjah Entrepreneurship Center)",
+        "url": "https://www.sheraa.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the Sheraa startups page and search the company name.",
+      "found_when": "A Sheraa startup profile names the company.",
+      "not_found_when": "The startups listing contains no profile for the company.",
+      "couldnt_check_when": "The page shows only a partial portfolio or the search returns no usable match.",
+      "confidence": "high"
+    },
+    {
+      "rank": 23,
+      "category": "licence",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Does the TDRA list the company as a licensed telecom provider, approved equipment vendor, .ae registrar or digital trust provider?",
+      "why_it_matters": "These TDRA registers are the federal approvals behind claims to supply telecom or digital trust services.",
+      "source": {
+        "name": "Telecommunications and Digital Government Regulatory Authority (TDRA)",
+        "url": "https://www.tdra.gov.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the relevant TDRA register, such as approved equipment or licensed providers, and search the company name.",
+      "found_when": "A TDRA register entry matches the company name with an approval or licence.",
+      "not_found_when": "The TDRA registers contain no entry for the company.",
+      "couldnt_check_when": "The register form requires filters that do not apply or it does not respond.",
+      "confidence": "high"
+    },
+    {
+      "rank": 24,
+      "category": "news_press",
+      "problem_type": [
+        "reputation",
+        "legal"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Has The National reported on the company in connection with operations, regulatory changes or litigation?",
+      "why_it_matters": "The National covers corporate litigation and state-linked ventures that shape a company's public standing.",
+      "source": {
+        "name": "The National - Business",
+        "url": "https://www.thenationalnews.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name on The National and read the business results.",
+      "found_when": "At least one The National article names the company.",
+      "not_found_when": "The site search returns no article naming the company.",
+      "couldnt_check_when": "Results are too broad because the name is common, or the search page fails.",
+      "confidence": "high"
+    },
+    {
+      "rank": 25,
+      "category": "directory",
+      "problem_type": [
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company listed in the Twofour54 Abu Dhabi media free zone partner directory?",
+      "why_it_matters": "A partner profile confirms media free zone registration behind claims to be an established media business.",
+      "source": {
+        "name": "Twofour54 Abu Dhabi Media Free Zone",
+        "url": "https://www.twofour54.com",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the Twofour54 partner directory.",
+      "found_when": "A partner profile lists the company in Twofour54.",
+      "not_found_when": "The partner directory returns no profile for the company.",
+      "couldnt_check_when": "The directory query fails or the name matches several unrelated partners.",
+      "confidence": "high"
+    },
+    {
+      "rank": 26,
+      "category": "professional_membership",
+      "problem_type": [
+        "missing_credential",
+        "missed_advantage"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company a registered member of the Umm Al Quwain Chamber of Commerce and Industry?",
+      "why_it_matters": "Chamber membership is expected for licensed businesses in the emirate and supports the company's local standing.",
+      "source": {
+        "name": "Umm Al Quwain Chamber of Commerce and Industry",
+        "url": "https://www.uaqchamber.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Search the company name in the UAQ Chamber member and directory lookup.",
+      "found_when": "A chamber membership or directory record matches the company.",
+      "not_found_when": "The chamber lookup returns no membership record for the company.",
+      "couldnt_check_when": "The lookup does not respond, or the company is registered outside Umm Al Quwain so no record can exist.",
+      "confidence": "high"
+    },
+    {
+      "rank": 27,
+      "category": "register",
+      "problem_type": [
+        "legal",
+        "missing_credential"
+      ],
+      "sub_segment": "all",
+      "applies_when": "always",
+      "question": "Is the company on the VARA public register of licensed virtual asset service providers, or on its public warning list?",
+      "why_it_matters": "VARA registration is mandatory for crypto activity in Dubai, and the warning list flags unlicensed operators.",
+      "source": {
+        "name": "Virtual Assets Regulatory Authority (VARA) Public Register",
+        "url": "https://www.vara.ae",
+        "language": "English"
+      },
+      "query_type": "site_search",
+      "query_url": "",
+      "how_to_query": "Open the VARA public register and search the company name, then check the warning list.",
+      "found_when": "A VARA register entry lists the company with an authorised activity, or the warning list names it.",
+      "not_found_when": "Neither the register nor the warning list contains the company name.",
+      "couldnt_check_when": "The register page will not load or the name is too generic to match a single entry.",
+      "confidence": "high"
+    }
+  ],
+  "_pair": "AE-country-layer",
+  "_round": 1,
+  "_written_by": "pi (DeepSeek) via multi-cli-subagent, one call per country, from the verified-handler list in research-tracker/data/probe",
+  "_received_at": "2026-11-14T02:32:50Z",
+  "_source_bundle": "research-tracker/data/probe (verified found handlers, 27 sources)",
+  "_schema": 1,
+  "_fixed_problem_type_values": 0
+}
