@@ -9,8 +9,10 @@ import * as store from './store.ts';
 // Each lane starts as soon as the lanes it reads have finished (done, partial or failed), not when a whole stage has.
 // On 2026-11-11 fixed stages held contacts, assets and brand (2 minutes of work) 44 minutes behind the ChatGPT questions,
 // which none of them read. The third item is what the lane reads; a lane must come after everything it reads.
-// H-web and C-merged read H-maps (its trade and town plan, its listings); G-recommend reuses G-search's company profile.
+// H-web and C-merged read H-maps (its trade and town plan, its listings). G-recommend (ChatGPT and Gemini questions) reads
+// nothing from another lane: it builds its trade and town from the preview rows, so it starts first, at 0:00 (owner, 2026-11-14).
 export const V21_DEEPER_LANES = [
+  ['G', 'recommend', []],
   ['H', 'maps', []],
   ['G', 'search', []],
   ['K', 'credibility', []],
@@ -18,7 +20,6 @@ export const V21_DEEPER_LANES = [
   ['D', 'registry', []],
   ['H', 'web', ['H-maps']],
   ['C', 'merged', ['H-maps']],
-  ['G', 'recommend', ['G-search']],
   ['R', 'contacts', ['C-merged', 'H-maps']],
   ['A', 'assets', ['C-merged']],
   ['B', 'brand', ['C-merged', 'G-search', 'H-web']],

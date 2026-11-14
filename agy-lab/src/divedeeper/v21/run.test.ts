@@ -78,7 +78,7 @@ test('three failed attempts: the writing stages still run, the report is built, 
   assert.equal(f.attempts.length, 3);
   assert.equal(f.row.status, 'incomplete');
   assert.match(f.row.error!, /H-maps: worker offline/);
-  assert.deepEqual(f.started, ['H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry', 'H-maps', 'G-recommend', 'H-maps', 'H-web', 'C-merged', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
+  assert.deepEqual(f.started, ['G-recommend', 'H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry', 'H-maps', 'H-maps', 'H-web', 'C-merged', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
   assert.equal(f.savedAll.length, 14 + writing.length);
   assert.ok(f.row.report_html, 'a lane failing never stops the report');
 }));
@@ -91,7 +91,7 @@ test('recovery restores a successful lane and its plan without another Maps call
   assert.deepEqual(f.files, [{ id: 'v21-report', name: 'H-plan', data: plan }]);
   assert.deepEqual(f.events, ['staged']);
   assert.equal(f.row.status, 'done');
-  assert.deepEqual(f.started, ['G-search', 'K-credibility', 'N-news', 'D-registry', 'H-web', 'C-merged', 'G-recommend', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
+  assert.deepEqual(f.started, ['G-recommend', 'G-search', 'K-credibility', 'N-news', 'D-registry', 'H-web', 'C-merged', 'R-contacts', 'A-assets', 'B-brand', ...writing]);
 }));
 
 test('recovery retries a failed lane while keeping its saved trade and town plan', async () => switchedOn(async () => {
@@ -162,10 +162,10 @@ test('each lane starts when the lanes it reads are done: a slow ChatGPT lane hol
   };
   f.runtime.store.saveLane = async (_row, lane) => { saved.push(`${lane.section}-${lane.lane}`); };
   const running = executeRun('run', f.runtime);
-  for (const n of ['H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry']) await startedNow(n);
-  assert.deepEqual(started.sort(), ['D-registry', 'G-search', 'H-maps', 'K-credibility', 'N-news']);
+  for (const n of ['G-recommend', 'H-maps', 'G-search', 'K-credibility', 'N-news', 'D-registry']) await startedNow(n);
+  // G-recommend reads no other lane: it starts at once, beside the first lanes (owner, 2026-11-14).
+  assert.deepEqual(started.sort(), ['D-registry', 'G-recommend', 'G-search', 'H-maps', 'K-credibility', 'N-news']);
   finish.get('G-search')!();
-  await startedNow('G-recommend');
   finish.get('H-maps')!();
   await startedNow('C-merged');
   await startedNow('H-web');

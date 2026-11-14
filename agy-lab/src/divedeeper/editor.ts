@@ -255,7 +255,9 @@ export function resolve(dive: any, L: Record<string, any>) {
     if (short(n).length < v.name.length) v.name = short(n);
     recShare.set(k, v);
   }
-  const rates = grAnswers.filter((a) => a.kind === 'rate');
+  // Old runs asked separate rate and pick questions; since 2026-11-14 one prompt that names the company carries both.
+  const grHas = (k: string) => grAnswers.some((x) => x.kind === k);
+  const rates = grAnswers.filter((a) => a.kind === (grHas('rate') ? 'rate' : grHas('named') ? 'named' : 'find'));
   const rateRows = new Map<string, { name: string; by: Record<string, number[]> }>();
   for (const a of rates) for (const s of a.scores ?? []) {
     const k = nameKey(s.name);
@@ -264,7 +266,7 @@ export function resolve(dive: any, L: Record<string, any>) {
     (v.by[a.assistant] ??= []).push(Number(s.score));
     rateRows.set(k, v);
   }
-  const picks = grAnswers.filter((a) => a.kind === 'pick');
+  const picks = grAnswers.filter((a) => a.kind === (grHas('pick') ? 'pick' : grHas('named') ? 'named' : 'find'));
   const rec = gr ? {
     assistants: grWho, repeat: gr.repeat ?? null, asked_on: L['G-recommend']?.ran_at ?? null, method: gr.method ?? '', profile: gr.profile ?? null,
     find: recFind, by_ask: recByAsk,

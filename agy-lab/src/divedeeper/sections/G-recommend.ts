@@ -16,22 +16,22 @@ import { chat } from '../v21/myworker.ts';
 import { liveHub, runJobs, type Hub } from './G-search.ts';
 import { profileOf, type Profile } from './G-shared.ts';
 
-const REPEAT = Math.max(1, Number(process.env.DD_R_REPEAT ?? 2) || 1);
+// Two prompts, each asked once per assistant (owner, 2026-11-14): 12 ways of asking the same thing took 80% of the run.
+const REPEAT = Math.max(1, Number(process.env.DD_R_REPEAT ?? 1) || 1);
 export const CHATGPT = 'ChatGPT';
 export const GEMINI = 'Gemini';
 export const ASSISTANTS = [CHATGPT, GEMINI] as const;
 
-export type Ask = { id: string; kind: 'find' | 'rate' | 'pick'; text: string };
+// find: the company is not named. named: the company is named (score and pick). rate / pick: old runs' separate questions.
+export type Ask = { id: string; kind: 'find' | 'named' | 'rate' | 'pick'; text: string };
 
 const WEB = ' Please check the web for current information.';
 export function asks(p: Profile): Ask[] {
+  // Two prompts (owner, 2026-11-14). Prompt 1 never names the company, so whether the assistant names it is a fair test.
+  // Prompt 2 names it: its score against the competitors, and whether the assistant would pick it or another company.
   return [
-    { id: 'best', kind: 'find', text: `Who are the best ${p.trades} in ${p.area}? Please name specific companies.${WEB}` },
-    { id: 'hire', kind: 'find', text: `I live in ${p.area}, ${p.state} and I want to ${p.job}. Which companies should I contact?${WEB}` },
-    { id: 'top5', kind: 'find', text: `I'm getting quotes from ${p.trades} in ${p.area}. Give me your top 5 companies, ranked, with one reason for each.${WEB}` },
-    { id: 'trust', kind: 'find', text: `Which ${p.trades} in ${p.state} have the best reputation? I want one I can trust.${WEB}` },
-    { id: 'rate', kind: 'rate', text: `Rate ${p.name} in ${p.area} as a ${p.trade} out of 10. Then rate its closest competitors out of 10 the same way, and explain the scores briefly.${WEB}` },
-    { id: 'pick', kind: 'pick', text: `I'm considering ${p.name} to ${p.job} in ${p.area}. Would you recommend them, or is there a better company I should choose instead? Tell me the one company you would pick.${WEB}` },
+    { id: 'recommend', kind: 'find', text: `I live in ${p.area}, ${p.state} and I want to ${p.job}. Which ${p.trades} would you recommend? Give me your top 5, ranked, with a score out of 10 and one reason for each, and tell me the one company you would pick.${WEB}` },
+    { id: 'named', kind: 'named', text: `I'm considering ${p.name} to ${p.job} in ${p.area}. Rate ${p.name} as a ${p.trade} out of 10, then rate its closest competitors out of 10 the same way, with one reason for each score. Would you recommend ${p.name}, or is there a better company I should choose instead? Tell me the one company you would pick.${WEB}` },
   ];
 }
 
@@ -189,12 +189,16 @@ export async function run(ctx: Ctx, dive: any, deps: Deps = {}): Promise<{ findi
     const top = [...rivals.values()].sort((a, b) => b.n - a.n).slice(0, 4).map((v) => `${v.name} (${v.n})`);
     findings.push({
       title: `Asked for a ${profile.trade} in ${profile.area} without your name, ${parts.join(' and ')} answers`,
-      detail: `${top.length ? `Named most often instead: ${top.join(', ')}.` : 'No other company was named either.'} ${list.filter((x) => x.kind === 'find').length} customer questions, asked ${REPEAT === 1 ? 'once' : `${REPEAT} times`} each to each assistant with a web search, on ${day}.`,
+      detail: `${top.length ? `Named most often instead: ${top.join(', ')}.` : 'No other company was named either.'} ${((n) => `${n} customer question${n === 1 ? '' : 's'}`)(list.filter((x) => x.kind === 'find').length)}, asked ${REPEAT === 1 ? 'once' : `${REPEAT} times`} each to each assistant with a web search, on ${day}.`,
       severity: total === 0 ? 'high' : total * 2 < of ? 'medium' : 'info', source: null, checked_at: now,
       evidence: answers.filter((x) => x.kind === 'find').map((x) => `${x.assistant} ${x.id}#${x.sample}: ${x.named ? `named, place ${x.position ?? '?'}` : 'not named'} | ${x.companies.join('; ')}`).join('\n'),
     });
   }
-  const rate = answers.filter((x) => x.kind === 'rate' && x.target_score != null);
+  // Old runs asked separate rate and pick questions; the one question carries both, read from the same answers.
+  const has = (k: Ask['kind']) => answers.some((x) => x.kind === k);
+  const rateKind: Ask['kind'] = has('rate') ? 'rate' : has('named') ? 'named' : 'find';
+  const pickKind: Ask['kind'] = has('pick') ? 'pick' : has('named') ? 'named' : 'find';
+  const rate = answers.filter((x) => x.kind === rateKind && x.target_score != null);
   if (rate.length) {
     const avg = (xs: number[]) => Math.round((xs.reduce((s, v) => s + v, 0) / xs.length) * 10) / 10;
     const ours = ASSISTANTS.map((a) => { const s = rate.filter((x) => x.assistant === a).map((x) => x.target_score!); return s.length ? `${a} ${avg(s)}/10` : ''; }).filter(Boolean);
@@ -202,13 +206,13 @@ export async function run(ctx: Ctx, dive: any, deps: Deps = {}): Promise<{ findi
     const us = avg(rate.map((x) => x.target_score!));
     const them = theirs.length ? avg(theirs) : null;
     findings.push({
-      title: `Asked to rate you out of 10: ${ours.join(', ')}`,
+      title: `${rateKind === 'find' ? 'Your score' : 'Asked to rate you'} out of 10: ${ours.join(', ')}`,
       detail: them != null ? `The competitors it chose to compare you with averaged ${them}/10.` : 'It named no competitor scores.',
       severity: them != null && us < them ? 'medium' : 'info', source: null, checked_at: now,
       evidence: rate.map((x) => `${x.assistant} #${x.sample}: you ${x.target_score}; ${x.scores.map((s) => `${s.name} ${s.score}`).join(', ')}`).join('\n'),
     });
   }
-  const pick = answers.filter((x) => x.kind === 'pick');
+  const pick = answers.filter((x) => x.kind === pickKind);
   if (pick.length) {
     const words = ASSISTANTS.map((a) => {
       const xs = pick.filter((x) => x.assistant === a);
@@ -219,7 +223,7 @@ export async function run(ctx: Ctx, dive: any, deps: Deps = {}): Promise<{ findi
     }).filter(Boolean);
     const yes = pick.filter(overOthers).length;
     findings.push({
-      title: `Asked whether to choose you or another company, ${words.join('; ')}`,
+      title: `${pickKind === 'find' ? 'Asked which company it would pick' : 'Asked whether to choose you or another company'}, ${words.join('; ')}`,
       detail: pick.find((x) => x.summary)?.summary ?? '',
       severity: yes === 0 ? 'high' : yes * 2 < pick.length ? 'medium' : 'info', source: null, checked_at: now,
       evidence: pick.map((x) => `${x.assistant} #${x.sample}: ${x.recommends}; pick ${x.pick ?? '-'}; ${x.summary}`).join('\n'),
