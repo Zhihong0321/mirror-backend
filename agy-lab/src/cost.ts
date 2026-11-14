@@ -101,6 +101,25 @@ export function callUsd(c: Pick<ApiCall, 'api' | 'ok' | 'model' | 'tokensIn' | '
   }
 }
 
+/** Every outside call this process made, per tool: counts and the last success and failure, for the /tools page.
+ *  Kept in memory since the hub started; it only records, it never changes what a call does. */
+export type CallTally = { api: ApiName; provider: string | null; calls: number; failed: number; lastOkAt: string | null; lastFailAt: string | null; lastError: string | null };
+const tallies = new Map<string, CallTally>();
+function tally(c: ApiCall): void {
+  try {
+    const k = `${c.api}|${c.provider ?? ''}`;
+    const t = tallies.get(k) ?? { api: c.api, provider: c.provider ?? null, calls: 0, failed: 0, lastOkAt: null, lastFailAt: null, lastError: null };
+    t.calls++;
+    const end = new Date(Date.parse(c.at) + c.ms).toISOString();
+    if (c.ok) t.lastOkAt = end;
+    else { t.failed++; t.lastFailAt = end; t.lastError = String(c.note ?? c.what ?? '').slice(0, 300) || null; }
+    tallies.set(k, t);
+  } catch { /* the tally never affects the call */ }
+}
+export function callTallies(): CallTally[] {
+  return [...tallies.values()].map((t) => ({ ...t }));
+}
+
 /** Start timing a call; `done` returns its record with the time taken and the cost (list price unless `usd` is given). */
 export function startCall(api: ApiName, what: string, extra: Partial<ApiCall> = {}): { done: (end: Partial<ApiCall> & { ok: boolean }) => ApiCall } {
   const started = Date.now();
@@ -109,6 +128,7 @@ export function startCall(api: ApiName, what: string, extra: Partial<ApiCall> = 
     done: (end) => {
       const c: ApiCall = { at, api, what: what.slice(0, 300), ...extra, ...end, ms: Date.now() - started, usd: null };
       c.usd = end.usd !== undefined ? end.usd : callUsd(c);
+      tally(c);
       return c;
     },
   };

@@ -29,4 +29,5 @@ export * as smartlead from './smartlead.ts';
 export * as scrapertech from './scrapertech.ts';
 export * as secrets from './secrets.ts';
 export * as search from './search.ts';
+export * as health from './health.ts';
 export { startCall, type ApiCall, type ApiName } from '../cost.ts';
