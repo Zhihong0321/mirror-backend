@@ -31,21 +31,21 @@ const when = (iso: string | null | undefined) => (iso ? iso.replace('T', ' ').sl
 /** The hub's own key pool (in this process): how many keys it holds and how many it is resting. */
 function poolRow(group: string, tool: string, stats: Array<Record<string, any>>, api: string): Row {
   const keys = stats.filter((k) => !proxy.isProxy(String(k.secret ?? '')));
-  const viaProxy = stats.length > keys.length;
+  const viaProxy = stats.length - keys.length;
   const resting = stats.filter((k) => k.resting || k.cooling);
   const state: State = !stats.length ? 'unknown' : resting.length === stats.length ? 'down' : resting.length ? 'warn' : 'ok';
   const summary = !stats.length
     ? 'the hub has not loaded these keys since it started (they load on first use)'
-    : `${stats.length - resting.length} of ${stats.length} sources usable by the hub${viaProxy ? ' (the proxy counts as one source)' : ''}${resting.length ? `, ${resting.length} resting` : ''}`;
+    : `${stats.length - resting.length} of ${stats.length} sources usable by the hub${viaProxy ? ` (each of the ${viaProxy} prox${viaProxy === 1 ? 'y' : 'ies'} counts as one source)` : ''}${resting.length ? `, ${resting.length} resting` : ''}`;
   const details = stats.filter((k) => k.resting || k.cooling || k.usageError).map((k) =>
-    `${proxy.isProxy(String(k.secret ?? '')) ? 'proxy' : k.tail ?? 'key'}: ${k.resting ? 'resting (out of credit)' : k.cooling ? 'cooling down' : 'ok'}${k.usageError ? ` · ${k.usageError}` : ''}`);
+    `${proxy.isProxy(String(k.secret ?? '')) ? String(k.secret) : k.tail ?? 'key'}: ${k.resting ? 'resting (out of credit)' : k.cooling ? 'cooling down' : 'ok'}${k.usageError ? ` · ${k.usageError}` : ''}`);
   return { group, tool, state, summary, details, match: { api } };
 }
 
 /** What the proxy reports about the keys it holds (GET /usage, /usage/tavily). */
-async function proxyRow(group: string, tool: string, api: 'exa' | 'tavily'): Promise<Row[]> {
-  if (!proxy.proxy()) return [{ group, tool, state: 'off', summary: 'no proxy saved on /workers', details: [] }];
-  const u = await proxy.usage(api);
+async function proxyRow(group: string, tool: string, api: 'exa' | 'tavily', which: proxy.ProxyConfig | null = proxy.proxy()): Promise<Row[]> {
+  if (!which) return [{ group, tool, state: 'off', summary: 'no proxy saved on /workers', details: [] }];
+  const u = await proxy.usage(api, fetch, which);
   const t = u?.totals ?? {};
   const keys = Number(t.keys ?? 0), usable = Number(t.usable ?? 0);
   const state: State = !keys ? 'down' : usable === 0 ? 'down' : usable * 4 < keys ? 'warn' : 'ok';
@@ -63,10 +63,14 @@ export async function snapshot(): Promise<Row[]> {
   try { await exa.loadKeys(); } catch { /* shown as unknown below */ }
   try { if (!exa.pool.stats().length) await exa.refresh(); } catch { /* shown as unknown below */ }
   try { if (!tavily.pool.stats().length) tavily.pool.setKeys(proxy.withProxy(await tavily.loadKeys())); } catch { /* shown as unknown below */ }
+  try { await exa.loadKeys(); } catch { /* the proxy list is read again after Tavily's load */ }
   const parts = await Promise.all([
-    guard('Web search', 'Exa (keys the proxy holds)', () => proxyRow('Web search', 'Exa (keys the proxy holds)', 'exa')),
+    ...(proxy.proxies().length ? proxy.proxies() : [null]).map((p, i) => {
+      const name = p ? `Exa (keys the ${i === 0 ? 'US proxy' : proxy.sourceOf(p, i).slice('proxy:'.length)} holds)` : 'Exa (keys the proxy holds)';
+      return guard('Web search', name, () => proxyRow('Web search', name, 'exa', p));
+    }),
     guard('Web search', 'Exa (hub key pool)', () => [poolRow('Web search', 'Exa (hub key pool)', exa.pool.stats(), 'exa')]),
-    guard('Web search', 'Tavily (keys the proxy holds)', () => proxyRow('Web search', 'Tavily (keys the proxy holds)', 'tavily')),
+    guard('Web search', 'Tavily (keys the US proxy holds)', () => proxyRow('Web search', 'Tavily (keys the US proxy holds)', 'tavily')),
     guard('Web search', 'Tavily (hub key pool)', () => [poolRow('Web search', 'Tavily (hub key pool)', tavily.pool.stats(), 'tavily')]),
     guard('Web search', 'Brave', async () => {
       const keys = await brave.current();

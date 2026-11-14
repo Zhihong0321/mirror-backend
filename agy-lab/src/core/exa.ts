@@ -25,10 +25,10 @@ function exaAsked(path: string, body: Record<string, unknown>): unknown {
   return path;
 }
 import { createKeyPool, type Lease, type SearchHit } from './tavily.ts';
-import { isProxy, noKeyRestMs, parseProxy, proxy, setProxy, usage, withProxy } from './proxy.ts';
+import { configFor, isProxy, noKeyRestMs, parseProxy, proxy, setProxies, usage, withProxies } from './proxy.ts';
 import * as vault from './vault.ts';
 
-export { PROXY_SOURCE, isProxy, parseProxy, proxy, setProxy, type ProxyConfig } from './proxy.ts';
+export { PROXY_SOURCE, configFor, isProxy, parseProxy, proxies, proxy, setProxy, sourceOf, type ProxyConfig } from './proxy.ts';
 
 export const KEY_CONCURRENCY = 2;
 // An hour, not a day: Exa's free credit comes back each month, and on
@@ -78,15 +78,17 @@ export async function flush(): Promise<void> {
 export const PROXY_PREFIX = 'us:';
 const DIRECT_API = 'https://api.exa.ai';
 
-export function via(secret: string): 'us' | 'direct' {
-  return isProxy(secret) || secret.startsWith(PROXY_PREFIX) ? 'us' : 'direct';
+/** 'direct', 'us' (the first proxy, or a "us:" key), or the other proxy's name (e.g. 'sg-proxy'). */
+export function via(secret: string): string {
+  if (secret.startsWith(PROXY_PREFIX)) return 'us';
+  return isProxy(secret) ? secret.slice('proxy:'.length) : 'direct';
 }
 
 /** Where one key's call goes, with its headers. A proxy call with no proxy saved gets a 'quota' error, so only that source rests. */
 export function endpoint(secret: string, path: string): { url: string; headers: Record<string, string> } {
   if (via(secret) === 'direct') return { url: `${DIRECT_API}/${path}`, headers: { 'x-api-key': secret, 'content-type': 'application/json' } };
-  const saved = proxy();
-  if (!saved) throw Object.assign(new Error('exa proxy is not saved: POST exaProxy {url, token} to /api/contact-keys'), { code: 'quota', provider: 'exa' });
+  const saved = isProxy(secret) ? configFor(secret) : proxy();
+  if (!saved) throw Object.assign(new Error(`exa proxy ${secret.startsWith(PROXY_PREFIX) ? 'us' : secret} is not saved: POST exaProxy {url, token} to /api/contact-keys`), { code: 'quota', provider: 'exa' });
   return {
     url: `${saved.url}/${path}`,
     headers: { ...(isProxy(secret) ? {} : { 'x-api-key': secret.slice(PROXY_PREFIX.length) }), 'x-proxy-token': saved.token, 'content-type': 'application/json' },
@@ -103,7 +105,7 @@ export async function loadKeys(env: NodeJS.ProcessEnv = process.env): Promise<st
   try {
     const rows = await db.listGeminiContactKeys();
     keys = rows.filter((row) => row.kind === 'exa').map((row) => row.secret);
-    setProxy(parseProxy(rows.find((row) => row.kind === 'exa_proxy')?.secret ?? ''));
+    setProxies(rows.filter((row) => row.kind === 'exa_proxy').map((row) => parseProxy(row.secret)));
   } catch { /* database table created on migrate; caller without db uses env */ }
   if (!keys.length) {
     keys = String(env.EXA_API_KEYS ?? env.EXA_API_KEY ?? vault.secret('EXA_API_KEY')).split(/[,\n]/).map((k) => k.trim()).filter(Boolean);
@@ -114,7 +116,7 @@ export async function loadKeys(env: NodeJS.ProcessEnv = process.env): Promise<st
 /** Reload the keys into the shared pool, with the US proxy as one more source, and return the saved keys. */
 export async function refresh(env: NodeJS.ProcessEnv = process.env): Promise<string[]> {
   const keys = await loadKeys(env);
-  pool.setKeys(withProxy(keys));
+  pool.setKeys(withProxies(keys));
   // This month's spend per key (saved, plus what is counted but not saved yet) against its $10 a month.
   // A key Exa itself refuses still rests an hour (releaseFor): Exa's answer wins over this count.
   try {

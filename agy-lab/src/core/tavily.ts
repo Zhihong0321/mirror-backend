@@ -32,7 +32,7 @@ function tavilyAsked(body: Record<string, unknown>): unknown {
   if (typeof body.url === 'string') return body.url;
   return null;
 }
-import { isProxy, noKeyRestMs, parseProxy, proxy, setProxy, usage, withProxy } from './proxy.ts';
+import { isProxy, noKeyRestMs, parseProxy, proxy, setProxies, usage, withProxy } from './proxy.ts';
 import * as vault from './vault.ts';
 
 const DIRECT_API = 'https://api.tavily.com';
@@ -250,7 +250,7 @@ export async function loadKeys(env: NodeJS.ProcessEnv = process.env): Promise<st
   try {
     const rows = await db.listGeminiContactKeys();
     keys = rows.filter((row) => row.kind === 'tavily').map((row) => row.secret);
-    setProxy(parseProxy(rows.find((row) => row.kind === 'exa_proxy')?.secret ?? ''));
+    setProxies(rows.filter((row) => row.kind === 'exa_proxy').map((row) => parseProxy(row.secret)));
     if (!keys.length) keys = rows.filter((row) => row.secret.startsWith('tvly-')).map((row) => row.secret);
   } catch { /* database table created on migrate; caller without db uses env */ }
   if (!keys.length) {

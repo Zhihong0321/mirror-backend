@@ -52,6 +52,8 @@ export async function handleKeys(req: { method?: string }, res: unknown, url: UR
       exaKeys,
       exa: exa.pool.stats(),
       exaProxy: exa.proxy() ? { url: exa.proxy()!.url, tokenSet: true } : null,
+      // Every saved proxy, first (US) first; V2.1 sends Exa searches to each of them after the direct keys.
+      exaProxies: exa.proxies().map((p, i) => ({ source: exa.sourceOf(p, i), url: p.url, token: p.token })),
       step1Slots: tavily.pool.slots(),
       exaSlots: exa.pool.slots(),
     });
@@ -75,6 +77,15 @@ export async function handleKeys(req: { method?: string }, res: unknown, url: UR
       for (const [kind, value] of Object.entries(body.secrets as Record<string, unknown>)) {
         if (kind in secrets.KINDS && typeof value === 'string') await db.replaceGeminiContactKeys(kind as secrets.Kind, value.trim() ? [value] : []);
       }
+    }
+    // {addExaProxy: {url, token}}: one more proxy, added beside the saved ones; nothing is removed.
+    if (body.addExaProxy !== undefined) {
+      const extra = exa.parseProxy(body.addExaProxy);
+      if (!extra) {
+        ctx.json(res, 400, { error: 'addExaProxy needs {url: "https://...", token: "..."}' });
+        return true;
+      }
+      added.exa_proxy = await db.addGeminiContactKeys('exa_proxy', [JSON.stringify(extra)]);
     }
     // The US proxy that "us:" Exa keys go through: {url, token}, or null to remove it.
     if (body.exaProxy !== undefined) {

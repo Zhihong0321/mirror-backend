@@ -23,6 +23,8 @@ type CloudKeys = {
   braveKeys: string[];
   tavilyKeys: string[];
   exaKeys: string[];
+  /** Every proxy saved on the hub (US first, then e.g. SG), for Exa. */
+  exaProxies: { url: string; token: string }[];
 };
 
 type LlmLane = {
@@ -50,6 +52,7 @@ export async function getCloudKeys(): Promise<CloudKeys> {
     braveKeys: (data.braveKeys ?? []).filter(Boolean),
     tavilyKeys: (data.tavilyKeys ?? []).filter(Boolean),
     exaKeys: (data.exaKeys ?? []).filter(Boolean),
+    exaProxies: (Array.isArray(data.exaProxies) ? data.exaProxies : []).filter((p: any) => p?.url && p?.token).map((p: any) => ({ url: String(p.url).replace(/\/+$/, ''), token: String(p.token) })),
   };
   keysLoadedAt = Date.now();
   return cachedKeys;
@@ -120,7 +123,7 @@ export async function braveSearch(query: string, options: { count?: number; coun
 /** Where one Exa or Tavily call can go, in order: each direct hub key, then the US proxy (it holds its own 20 Exa and
  *  20 Tavily keys, rests a spent one and retries on the next) when EXA_PROXY_URL and EXA_PROXY_TOKEN are in .env. */
 type Target = { url: string; headers: Record<string, string> };
-function apiTargets(api: 'exa' | 'tavily', path: string, directKeys: string[]): Target[] {
+function apiTargets(api: 'exa' | 'tavily', path: string, directKeys: string[], hubProxies: { url: string; token: string }[] = []): Target[] {
   const out: Target[] = directKeys.map((key) => api === 'exa'
     ? { url: `https://api.exa.ai/${path}`, headers: { 'Content-Type': 'application/json', 'x-api-key': key } }
     : { url: `https://api.tavily.com/${path}`, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` } });
@@ -128,6 +131,13 @@ function apiTargets(api: 'exa' | 'tavily', path: string, directKeys: string[]): 
   const proxyToken = envValue('EXA_PROXY_TOKEN');
   if (proxyUrl && proxyToken) {
     out.push({ url: `${proxyUrl}/${api === 'tavily' ? 'tavily/' : ''}${path}`, headers: { 'Content-Type': 'application/json', 'x-proxy-token': proxyToken } });
+  }
+  // Exa only: every other proxy saved on the hub (the SG one holds 50 more Exa keys); the US one is not tried twice.
+  if (api === 'exa') {
+    for (const p of hubProxies) {
+      if (p.url === proxyUrl) continue;
+      out.push({ url: `${p.url}/${path}`, headers: { 'Content-Type': 'application/json', 'x-proxy-token': p.token } });
+    }
   }
   return out;
 }
@@ -180,7 +190,7 @@ export async function exaSearch(query: string, options: { num_results?: number }
   const keys = await getCloudKeys();
   let lastErr: Error | null = null;
 
-  for (const target of apiTargets('exa', 'search', keys.exaKeys)) {
+  for (const target of apiTargets('exa', 'search', keys.exaKeys, keys.exaProxies)) {
     try {
       const res = await fetch(target.url, {
         method: 'POST',
@@ -343,7 +353,7 @@ export async function linkedinCompanyExa(url: string): Promise<{ status: string;
   let lastErr = '';
   try {
     const keys = await getCloudKeys();
-    for (const target of apiTargets('exa', 'contents', keys.exaKeys)) {
+    for (const target of apiTargets('exa', 'contents', keys.exaKeys, keys.exaProxies)) {
       const res = await fetch(target.url, {
         method: 'POST',
         headers: target.headers,

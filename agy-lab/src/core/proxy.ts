@@ -12,6 +12,10 @@ export const PROXY_SOURCE = 'proxy:us';
 const NO_KEY_REST_MS = 10 * 60_000;
 
 export type ProxyConfig = { url: string; token: string };
+// Every saved proxy, in the order saved (the US one first). Since 2026-11-14 more than one can be saved (the SG proxy
+// holds 50 more Exa keys); each is its own source in the Exa pool. Tavily uses only the first (the US one holds the
+// Tavily keys). Saving one more never removes another.
+let configs: ProxyConfig[] = [];
 let config: ProxyConfig | null = null;
 
 export function parseProxy(saved: unknown): ProxyConfig | null {
@@ -27,22 +31,51 @@ export function proxy(): ProxyConfig | null {
 }
 
 export function setProxy(next: ProxyConfig | null): void {
-  config = next;
+  setProxies(next ? [next] : []);
+}
+
+/** Every saved proxy, first one first. */
+export function setProxies(list: Array<ProxyConfig | null>): void {
+  configs = list.filter((c): c is ProxyConfig => !!c).filter((c, i, all) => all.findIndex((d) => d.url === c.url) === i);
+  config = configs[0] ?? null;
+}
+
+export function proxies(): ProxyConfig[] {
+  return [...configs];
+}
+
+/** The pool source name of a proxy: the first is PROXY_SOURCE (US), each other one "proxy:<its host's first label>". */
+export function sourceOf(c: ProxyConfig, index: number): string {
+  if (index === 0) return PROXY_SOURCE;
+  let label = c.url;
+  try { label = new URL(c.url).hostname.split('.')[0]; } catch { /* keep the url */ }
+  return `proxy:${label}`;
+}
+
+/** The proxy a pool source stands for, else null. */
+export function configFor(source: string): ProxyConfig | null {
+  const i = configs.findIndex((c, k) => sourceOf(c, k) === source);
+  return i >= 0 ? configs[i] : null;
 }
 
 export function isProxy(secret: string): boolean {
-  return secret === PROXY_SOURCE;
+  return secret.startsWith('proxy:');
 }
 
-/** The pool's keys plus the proxy as one more source, when a proxy is saved. */
+/** The pool's keys plus the first (US) proxy as one more source: Tavily's pool. */
 export function withProxy(keys: string[]): string[] {
   return config ? [...keys, PROXY_SOURCE] : keys;
 }
 
-/** The proxy's report on the keys it holds: GET /usage (Exa) or /usage/tavily. */
-export async function usage(api: 'exa' | 'tavily', fetchImpl: typeof fetch = fetch): Promise<Record<string, any> | null> {
-  if (!config) return null;
-  const res = await fetchImpl(`${config.url}/usage${api === 'tavily' ? '/tavily' : ''}`, { headers: { 'x-proxy-token': config.token }, signal: AbortSignal.timeout(10_000) });
+/** The pool's keys plus every saved proxy, each one more source: Exa's pool. */
+export function withProxies(keys: string[]): string[] {
+  return [...keys, ...configs.map(sourceOf)];
+}
+
+/** A proxy's report on the keys it holds: GET /usage (Exa) or /usage/tavily. The first proxy unless one is given. */
+export async function usage(api: 'exa' | 'tavily', fetchImpl: typeof fetch = fetch, which: ProxyConfig | null = config): Promise<Record<string, any> | null> {
+  if (!which) return null;
+  const res = await fetchImpl(`${which.url}/usage${api === 'tavily' ? '/tavily' : ''}`, { headers: { 'x-proxy-token': which.token }, signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`proxy /usage${api === 'tavily' ? '/tavily' : ''} answered ${res.status}`);
   return res.json();
 }
