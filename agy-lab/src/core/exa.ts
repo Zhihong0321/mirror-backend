@@ -38,7 +38,10 @@ const RATE_LIMIT_REST_MS = 60_000;
 
 type FetchImpl = typeof fetch;
 
-export const pool = createKeyPool({ concurrency: KEY_CONCURRENCY });
+/** Every Exa key gets this much credit each calendar month (UTC); a new month starts every key at zero spent. */
+export const MONTHLY_USD = 10;
+// A key rests when less than 5 cents of its month is left (one search costs about half a cent).
+export const pool = createKeyPool({ concurrency: KEY_CONCURRENCY, reserve: 0.05 });
 
 export function available(): boolean {
   return pool.slots() > 0;
@@ -55,7 +58,7 @@ export function record(apiKey: string, outcome: { dollars?: number; error?: stri
   const t = tallies.get(apiKey) ?? { calls: 0, dollars: 0, failures: 0, lastOkAt: null, lastError: null, lastErrorAt: null };
   t.calls++;
   if (outcome.error) { t.failures++; t.lastError = outcome.error.slice(0, 300); t.lastErrorAt = new Date().toISOString(); }
-  else { t.dollars += outcome.dollars ?? 0; t.lastOkAt = new Date().toISOString(); }
+  else { t.dollars += outcome.dollars ?? 0; t.lastOkAt = new Date().toISOString(); pool.spend(apiKey, outcome.dollars ?? 0); }
   tallies.set(apiKey, t);
   flushTimer ??= setInterval(() => { void flush(); }, 60_000).unref();
 }
@@ -112,6 +115,12 @@ export async function loadKeys(env: NodeJS.ProcessEnv = process.env): Promise<st
 export async function refresh(env: NodeJS.ProcessEnv = process.env): Promise<string[]> {
   const keys = await loadKeys(env);
   pool.setKeys(withProxy(keys));
+  // This month's spend per key (saved, plus what is counted but not saved yet) against its $10 a month.
+  // A key Exa itself refuses still rests an hour (releaseFor): Exa's answer wins over this count.
+  try {
+    const month = await db.monthKeySpend('exa');
+    for (const key of keys) pool.setUsage(key, (month.get(key) ?? 0) + (tallies.get(key)?.dollars ?? 0), MONTHLY_USD);
+  } catch (e) { console.warn('[exa] could not read the key spend for this month; keys stay usable: ' + (e as Error).message); }
   keysLoadedAt = Date.now();
   return keys;
 }

@@ -67,12 +67,15 @@ export type Lease = { secret: string; release: (coolMs?: number, quotaExceeded?:
 
 export type KeyPoolOptions = {
   concurrency?: number;
+  /** A key rests when less than this is left (Tavily credits by default; Exa counts dollars). */
+  reserve?: number;
 };
 
 type Usage = { used: number; limit: number | null; spent: number; checkedAt: number };
 
 export function createKeyPool(options: KeyPoolOptions = {}) {
   const concurrency = options.concurrency ?? KEY_CONCURRENCY;
+  const reserve = options.reserve ?? RESERVE_CREDITS;
   const state = {
     keys: [] as string[],
     inflight: new Map<string, number>(),
@@ -92,7 +95,7 @@ export function createKeyPool(options: KeyPoolOptions = {}) {
 
   function resting(key: string): boolean {
     const left = remaining(key);
-    return left !== null && left < RESERVE_CREDITS;
+    return left !== null && left < reserve;
   }
 
   function usable(key: string): boolean {

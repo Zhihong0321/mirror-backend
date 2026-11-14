@@ -59,6 +59,14 @@ export async function handleKeys(req: { method?: string }, res: unknown, url: UR
   }
   if (method === 'POST') {
     const body = await ctx.readJson(req);
+    // {add: {exa: [...], tavily: [...], brave: [...]}}: adds keys and deletes nothing; a key already saved is left as it is.
+    const added: Record<string, number> = {};
+    if (body.add && typeof body.add === 'object') {
+      for (const kind of ['exa', 'tavily', 'brave'] as const) {
+        const list = (body.add as Record<string, unknown>)[kind];
+        if (Array.isArray(list)) added[kind] = await db.addGeminiContactKeys(kind, list.map(String));
+      }
+    }
     if (Array.isArray(body.tavily)) await db.replaceGeminiContactKeys('tavily', body.tavily.map(String));
     if (Array.isArray(body.exa)) await db.replaceGeminiContactKeys('exa', body.exa.map(String));
     if (Array.isArray(body.brave)) await db.replaceGeminiContactKeys('brave', body.brave.map(String));
@@ -78,7 +86,7 @@ export async function handleKeys(req: { method?: string }, res: unknown, url: UR
       await db.replaceGeminiContactKeys('exa_proxy', proxy ? [JSON.stringify(proxy)] : []);
     }
     await Promise.all([tavily.refresh(), exa.refresh(), brave.refresh(), secrets.refresh()]);
-    ctx.json(res, 200, { ok: true, step1Slots: tavily.pool.slots(), exaSlots: exa.pool.slots() });
+    ctx.json(res, 200, { ok: true, added, step1Slots: tavily.pool.slots(), exaSlots: exa.pool.slots() });
     return true;
   }
   ctx.json(res, 405, { error: 'method not allowed' });

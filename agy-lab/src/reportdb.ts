@@ -118,6 +118,18 @@ export async function listGeminiContactKeys(): Promise<Array<{ id: number; kind:
   }));
 }
 
+/** Adds keys and never deletes or changes one: a key already saved is left as it is. Returns how many were new. */
+export async function addGeminiContactKeys(kind: GeminiKeyKind, secrets: string[]): Promise<number> {
+  await migrate();
+  const clean = [...new Set(secrets.map((secret) => secret.trim()).filter((secret) => secret.length >= 6))];
+  let added = 0;
+  for (const secret of clean) {
+    const out = await sql(`insert into gemini_contact_key (kind, secret) values ($1, $2) on conflict (kind, secret) do nothing`, [kind, secret]);
+    added += out.rowCount ?? 0;
+  }
+  return added;
+}
+
 export async function replaceGeminiContactKeys(kind: GeminiKeyKind, secrets: string[]): Promise<void> {
   await migrate();
   const clean = [...new Set(secrets.map((secret) => secret.trim()).filter((secret) => secret.length >= 6))];
@@ -593,6 +605,15 @@ export function migrate(): Promise<void> {
         primary key (kind, secret)
       );
       comment on table search_key_spend is 'What each search key spent, counted by the hub from each answer (Exa has no usage endpoint); apart from gemini_contact_key so saving keys does not reset it';
+
+      create table if not exists search_key_month (
+        kind text not null,
+        secret text not null,
+        month text not null,
+        dollars numeric not null default 0,
+        primary key (kind, secret, month)
+      );
+      comment on table search_key_month is 'What each search key spent per calendar month (UTC, YYYY-MM): an Exa key gets $10 a month, so a new month starts every key at zero';
 
       create table if not exists territory_discovered (
         id bigserial primary key,
@@ -5138,6 +5159,21 @@ export async function addSearchKeySpend(kind: string, secret: string, t: {
        last_error_at = coalesce(excluded.last_error_at, search_key_spend.last_error_at)`,
     [kind, secret, t.calls, t.dollars, t.failures, t.lastOkAt, t.lastError, t.lastErrorAt],
   );
+  if (t.dollars > 0) {
+    await sql(
+      `insert into search_key_month (kind, secret, month, dollars) values ($1, $2, to_char(now() at time zone 'utc', 'YYYY-MM'), $3)
+       on conflict (kind, secret, month) do update set dollars = search_key_month.dollars + excluded.dollars`,
+      [kind, secret, t.dollars],
+    );
+  }
+}
+
+/** Each key's spend in the current calendar month (UTC). A key with no row has spent nothing this month. */
+export async function monthKeySpend(kind: string): Promise<Map<string, number>> {
+  if (!configured()) return new Map();
+  await migrate();
+  const out = await sql(`select secret, dollars from search_key_month where kind = $1 and month = to_char(now() at time zone 'utc', 'YYYY-MM')`, [kind]);
+  return new Map(out.rows.map((r: any) => [String(r.secret), Number(r.dollars) || 0]));
 }
 
 export async function listSearchKeySpend(kind: string): Promise<Array<{
