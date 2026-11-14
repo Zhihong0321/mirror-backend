@@ -58,6 +58,11 @@ async function proxyRow(group: string, tool: string, api: 'exa' | 'tavily'): Pro
 
 /** Every tool core/ owns. */
 export async function snapshot(): Promise<Row[]> {
+  // The proxy setting and the keys load on a tool's first use after a restart; load them here so the page never
+  // says "no proxy" or "not loaded" only because no search has run yet. Loading changes no key's state.
+  try { await exa.loadKeys(); } catch { /* shown as unknown below */ }
+  try { if (!exa.pool.stats().length) await exa.refresh(); } catch { /* shown as unknown below */ }
+  try { if (!tavily.pool.stats().length) tavily.pool.setKeys(proxy.withProxy(await tavily.loadKeys())); } catch { /* shown as unknown below */ }
   const parts = await Promise.all([
     guard('Web search', 'Exa (keys the proxy holds)', () => proxyRow('Web search', 'Exa (keys the proxy holds)', 'exa')),
     guard('Web search', 'Exa (hub key pool)', () => [poolRow('Web search', 'Exa (hub key pool)', exa.pool.stats(), 'exa')]),

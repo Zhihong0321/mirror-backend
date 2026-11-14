@@ -36,7 +36,11 @@ async function agyRows(): Promise<Row[]> {
   const list: any[] = (jobs?.jobs ?? []).slice().sort((a: any, b: any) => (b.finished ?? b.created ?? 0) - (a.finished ?? a.created ?? 0));
   const rows: Row[] = Object.entries(status?.accounts ?? {}).map(([name, a]: [string, any]) => {
     if (a?.enabled === false) return { group: 'Gemini (agy hub)', tool: name, state: 'off', summary: 'switched off on the hub', details: [] };
-    const mine = list.filter((j) => j.account === name && (j.status === 'done' || j.status === 'failed'));
+    // Before the hub's 401 fix (2026-11-14 05:06 UTC) a full answer that quoted a 401xx postcode was marked a login
+    // failure; exit 0 with a JSON answer in the error field is an answer, so it counts as one.
+    const answered = (j: any) => j.status === 'done' || (j.exit === 0 && /^\s*\{/.test(String(j.error ?? '')));
+    const mine = list.filter((j) => j.account === name && (j.status === 'done' || j.status === 'failed'))
+      .map((j) => (answered(j) && j.status !== 'done' ? { ...j, status: 'done', error: null } : j));
     const last = mine[0];
     const lastOk = mine.find((j) => j.status === 'done');
     const isQuota = (j: any) => /quota reached|RESOURCE_EXHAUSTED/i.test(String(j?.error ?? ''));
