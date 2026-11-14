@@ -1,0 +1,38 @@
+[
+ {
+  "id": "best",
+  "seconds": 89.1,
+  "ok": false,
+  "error": "the prompt did not start: {\"url\":\"https://chatgpt.com/\",\"chat\":{\"fresh\":true,\"temporary\":false,\"unpersonalized\":false},\"intro\":false,\"input\":\"mobile-composer-prompt:Who are the best Solar PV companys "
+ },
+ {
+  "id": "hire",
+  "seconds": 242.5,
+  "ok": false,
+  "error": "ChatGPT web timed out after 240 s"
+ },
+ {
+  "id": "top5",
+  "seconds": 57.5,
+  "ok": false,
+  "error": "the prompt did not start: {\"url\":\"https://chatgpt.com/\",\"chat\":{\"fresh\":true,\"temporary\":false,\"unpersonalized\":false},\"intro\":false,\"input\":\"mobile-composer-prompt:I'm getting quotes from Solar PV co"
+ },
+ {
+  "id": "trust",
+  "seconds": 60,
+  "ok": false,
+  "error": "the prompt did not start: {\"url\":\"https://chatgpt.com/\",\"chat\":{\"fresh\":true,\"temporary\":false,\"unpersonalized\":false},\"intro\":false,\"input\":\"mobile-composer-prompt:Which Solar PV companys in 81100 Jo"
+ },
+ {
+  "id": "rate",
+  "seconds": 60,
+  "ok": false,
+  "error": "the prompt did not start: {\"url\":\"https://chatgpt.com/\",\"chat\":{\"fresh\":true,\"temporary\":false,\"unpersonalized\":false},\"intro\":false,\"input\":\"mobile-composer-prompt:Rate Eternalgy Sdn Bhd in Johor Bah"
+ },
+ {
+  "id": "pick",
+  "seconds": 1.7,
+  "ok": false,
+  "error": "no active ChatGPT tab connected to local worker on https://chatgpt.com"
+ }
+]

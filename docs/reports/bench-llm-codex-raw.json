@@ -1,0 +1,163 @@
+{
+ "at": "2026-11-13T14:11:41.420Z",
+ "prompt_chars": 23843,
+ "company": "Eternalgy Sdn Bhd",
+ "results": [
+  {
+   "round": 1,
+   "ok": true,
+   "seconds": 28.3,
+   "service_ms": 27261,
+   "problem": null,
+   "usage": {
+    "input_tokens": 21833,
+    "cached_input_tokens": 12032,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1285,
+    "reasoning_output_tokens": 124
+   },
+   "model": "gpt-6.1-terra",
+   "effort": "high",
+   "answer_chars": 4828,
+   "quality": {
+    "scored": true,
+    "summary": {
+     "written": 3,
+     "kept": 3
+    },
+    "email": {
+     "subject_kept": true,
+     "body_written": 2,
+     "body_kept": 2
+    },
+    "titles": {
+     "written": 24,
+     "kept": 24
+    },
+    "proof": {
+     "picked": "f1",
+     "valid": "f1"
+    },
+    "rejected": [],
+    "rejected_count": 0,
+    "text": {
+     "summary": [
+      "A domain you use for your published email is approaching expiry; if it lapses, quote requests and bank letters sent there will bounce.",
+      "Your strong customer rating helps householders shortlist you, yet an unanswered low review leaves them unable to tell whether the problem was resolved.",
+      "Your contractor grade also differs across public sources, potentially limiting the contract value a tender panel lets you bid for."
+     ],
+     "subject": "Your published email depends on a domain approaching expiry",
+     "body": [
+      "A domain you use for your published email is approaching expiry. If it lapses, quote requests and bank letters sent to that address will bounce.",
+      "Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unsure whether the problem was resolved. Your contractor grade also differs across public sources, potentially limiting the contracts you can bid for."
+     ],
+     "titles": {
+      "f1": "A domain you use for email is approaching expiry, putting quote requests and bank letters at risk.",
+      "f2": "Forged payment-change emails could reach your clients, suppliers or bank under your name.",
+      "f3": "Your contractor portfolio is empty, leaving tender panels without projects to score.",
+      "f4": "Your company profile's broken phone field leaves buyers unable to reach you by tapping call.",
+      "f5": "An unanswered low review leaves householders unsure whether the problem was resolved.",
+      "f6": "A search check flags your site's robots file, which can keep new pages out of search results.",
+      "f7": "Missing security headers can expose visitors on untrusted networks and trigger client IT checks.",
+      "f8": "Missing company and authorship signals may send assistants to outdated directories.",
+      "f9": "Missing contact and privacy links can weaken your credibility with banks and procurement officers.",
+      "f10": "Your pages give AI assistants little to quote when buyers seek solar contractors.",
+      "f14": "Missing structured details make competitors easier for search engines and AI assistants to quote.",
+      "c1": "Your head office unit differs across 3 sources, risking customers and couriers going to the wrong door.",
+      "c2": "Your main phone number differs across 3 sources, leaving buyers unsure which line reaches your office.",
+      "c3": "Your email address differs across 4 sources, so quote requests or bank letters may miss their recipient.",
+      "c4": "Your staff count differs across 2 sources, leaving tender panels and banks unsure of your capacity.",
+      "c5": "Your office lists differ across 2 sources, so customers may assume you cannot serve them.",
+      "c6": "Your project totals differ across 2 sources, potentially weakening the experience a panel scores.",
+      "c7": "Your legal form differs across 2 sources, leaving clients and banks seeing different entities.",
+      "c8": "Your contractor grade differs across 2 sources, potentially limiting the contracts you can bid for.",
+      "c9": "Your energy totals differ across 2 sources, leaving customers and tender panels unsure which is current.",
+      "n1": "A cluster of high ratings on one day may be worth checking.",
+      "n2": "Your site's limited archive record may be worth checking.",
+      "n3": "Your published capacity and revenue claims may be worth checking against outside sources.",
+      "n4": "An office listed without a street address or phone number may be worth checking."
+     }
+    }
+   },
+   "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"A domain you use for your published email is approaching expiry; if it lapses, quote requests and bank letters sent there will bounce.\",\n      \"cites\": [\"f1\"]\n    },\n    {\n      \"text\": \"Your strong customer rating helps householders shortlist you, yet an unanswered low review leaves them unable to tell whether the problem was resolved.\",\n      \"cites\": [\"f12\", \"f5\"]\n    },\n    {\n      \"text\": \"Your contractor grade also differs across public sources, potentially limiting the contract value a tender panel lets you bid for.\",\n      \"cites\": [\"c8\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your published email depends on a domain approaching expiry\",\n      \"cites\": [\"f1\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"A domain you use for your published email is approaching expiry. If it lapses, quote requests and bank letters sent to that address will bounce.\",\n        \"cites\": [\"f1\"]\n      },\n      {\n        \"text\": \"Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unsure whether the problem was resolved. Your contractor grade also differs across public sources, potentially limiting the contracts you can bid for.\",\n        \"cites\": [\"f12\", \"f5\", \"c8\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"A domain you use for email is approaching expiry, putting quote requests and bank letters at risk.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged payment-change emails could reach your clients, suppliers or bank under your name.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your contractor portfolio is empty, leaving tender panels without projects to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your company profile's broken phone field leaves buyers unable to reach you by tapping call.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"An unanswered low review leaves householders unsure whether the problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"A search check flags your site's robots file, which can keep new pages out of search results.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Missing security headers can expose visitors on untrusted networks and trigger client IT checks.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Missing company and authorship signals may send assistants to outdated directories.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Missing contact and privacy links can weaken your credibility with banks and procurement officers.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your pages give AI assistants little to quote when buyers seek solar contractors.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Missing structured details make competitors easier for search engines and AI assistants to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office unit differs across 3 sources, risking customers and couriers going to the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your main phone number differs across 3 sources, leaving buyers unsure which line reaches your office.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your email address differs across 4 sources, so quote requests or bank letters may miss their recipient.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your staff count differs across 2 sources, leaving tender panels and banks unsure of your capacity.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your office lists differ across 2 sources, so customers may assume you cannot serve them.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your project totals differ across 2 sources, potentially weakening the experience a panel scores.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your legal form differs across 2 sources, leaving clients and banks seeing different entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your contractor grade differs across 2 sources, potentially limiting the contracts you can bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your energy totals differ across 2 sources, leaving customers and tender panels unsure which is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A cluster of high ratings on one day may be worth checking.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your site's limited archive record may be worth checking.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your published capacity and revenue claims may be worth checking against outside sources.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"An office listed without a street address or phone number may be worth checking.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f1\",\n    \"why\": \"The published email and domain expiry can be checked quickly; the expiry is approaching, and resolving it leaves the other findings untouched.\"\n  }\n}"
+  },
+  {
+   "round": 2,
+   "ok": true,
+   "seconds": 25.6,
+   "service_ms": 25115,
+   "problem": null,
+   "usage": {
+    "input_tokens": 21835,
+    "cached_input_tokens": 14720,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1222,
+    "reasoning_output_tokens": 106
+   },
+   "model": "gpt-6.1-terra",
+   "effort": "high",
+   "answer_chars": 4591,
+   "quality": {
+    "scored": true,
+    "summary": {
+     "written": 3,
+     "kept": 3
+    },
+    "email": {
+     "subject_kept": true,
+     "body_written": 2,
+     "body_kept": 2
+    },
+    "titles": {
+     "written": 24,
+     "kept": 24
+    },
+    "proof": {
+     "picked": "f4",
+     "valid": "f4"
+    },
+    "rejected": [],
+    "rejected_count": 0,
+    "text": {
+     "summary": [
+      "Your contractor grade differs across public sources, and a tender panel may cap the contract value you can bid for.",
+      "Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unable to tell whether the problem was resolved.",
+      "A buyer checking your company can also find a broken phone field and reach nothing when they tap call."
+     ],
+     "subject": "Your contractor grade differs across public sources",
+     "body": [
+      "Your contractor grade differs across public sources. A tender panel checking it may cap the contract value you can bid for.",
+      "Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unable to tell whether the problem was resolved."
+     ],
+     "titles": {
+      "f1": "A domain used by your published email is due to expire, risking bounced enquiries",
+      "f2": "Forged payment-change emails could reach your clients, suppliers or bank",
+      "f3": "Your empty contractor portfolio leaves tender panels with nothing to score",
+      "f4": "Your broken phone field leaves buyers unable to call",
+      "f5": "An unanswered low review leaves householders unsure whether the problem was resolved",
+      "f6": "Your invalid robots file can keep new pages out of search results",
+      "f7": "Missing security headers can trigger a client's IT review and expose visitors to an insecure page",
+      "f8": "Missing business, author and date signals can leave assistants relying on outdated directories",
+      "f9": "Missing homepage links can make your business look like a shell to banks and procurement officers",
+      "f10": "Your site gives AI assistants little to quote when buyers ask for solar contractors",
+      "f14": "Missing structured details make competitors easier for search engines and AI assistants to quote",
+      "c1": "Your head office unit number differs across 3 sources, risking misdirected customers and couriers",
+      "c2": "Your main phone number differs across 3 sources, leaving buyers unsure which line handles quotes",
+      "c3": "Your email addresses differ across 4 sources, so quote requests or bank letters may miss their recipient",
+      "c4": "Your staff count differs across sources, prompting questions from tender panels and banks",
+      "c5": "Your office lists differ across sources, so customers may assume you cannot serve them",
+      "c6": "Your published project totals differ, leaving tender panels to choose which experience figure to score",
+      "c7": "Your legal form differs across sources, leaving clients and banks seeing different entities",
+      "c8": "Your contractor grade differs across sources, potentially limiting the contract value you can bid for",
+      "c9": "Your energy totals differ across sources, leaving customers and tender panels unsure which is current",
+      "n1": "A cluster of reviews is worth checking; it may reflect a real event",
+      "n2": "Your thin archive record is worth checking; it does not establish when your site was built",
+      "n3": "Your capacity and customer revenue claims are worth checking for outside confirmation",
+      "n4": "An office listed without contact details is worth checking; it may be a serviced desk or new office"
+     }
+    }
+   },
+   "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your contractor grade differs across public sources, and a tender panel may cap the contract value you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unable to tell whether the problem was resolved.\",\n      \"cites\": [\"f12\", \"f5\"]\n    },\n    {\n      \"text\": \"A buyer checking your company can also find a broken phone field and reach nothing when they tap call.\",\n      \"cites\": [\"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your contractor grade differs across public sources\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your contractor grade differs across public sources. A tender panel checking it may cap the contract value you can bid for.\",\n        \"cites\": [\"c8\"]\n      },\n      {\n        \"text\": \"Your strong customer rating helps householders shortlist you, but an unanswered low review leaves them unable to tell whether the problem was resolved.\",\n        \"cites\": [\"f12\", \"f5\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"A domain used by your published email is due to expire, risking bounced enquiries\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged payment-change emails could reach your clients, suppliers or bank\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your empty contractor portfolio leaves tender panels with nothing to score\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken phone field leaves buyers unable to call\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"An unanswered low review leaves householders unsure whether the problem was resolved\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your invalid robots file can keep new pages out of search results\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Missing security headers can trigger a client's IT review and expose visitors to an insecure page\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Missing business, author and date signals can leave assistants relying on outdated directories\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Missing homepage links can make your business look like a shell to banks and procurement officers\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your site gives AI assistants little to quote when buyers ask for solar contractors\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Missing structured details make competitors easier for search engines and AI assistants to quote\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office unit number differs across 3 sources, risking misdirected customers and couriers\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your main phone number differs across 3 sources, leaving buyers unsure which line handles quotes\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your email addresses differ across 4 sources, so quote requests or bank letters may miss their recipient\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your staff count differs across sources, prompting questions from tender panels and banks\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your office lists differ across sources, so customers may assume you cannot serve them\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your published project totals differ, leaving tender panels to choose which experience figure to score\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your legal form differs across sources, leaving clients and banks seeing different entities\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your contractor grade differs across sources, potentially limiting the contract value you can bid for\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your energy totals differ across sources, leaving customers and tender panels unsure which is current\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"A cluster of reviews is worth checking; it may reflect a real event\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your thin archive record is worth checking; it does not establish when your site was built\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and customer revenue claims are worth checking for outside confirmation\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"An office listed without contact details is worth checking; it may be a serviced desk or new office\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"The owner can check the phone field in a minute; a buyer who taps call reaches nothing; correcting it leaves the other problems and contradictions unresolved.\"\n  }\n}"
+  }
+ ]
+}

@@ -1,0 +1,510 @@
+{
+  "id": "05668d61-2bed-4fb4-84d5-634af6ad7a68",
+  "status": "done",
+  "started_at": "2026-11-13T13:44:56.101Z",
+  "finished_at": "2026-11-13T13:49:21.520Z",
+  "plan": {
+    "report_ids": [
+      "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4"
+    ],
+    "rounds": 3,
+    "effort": "high",
+    "models": [
+      "gpt-6.1-sol (vectide token plan)",
+      "gpt-6.1-sol (lingsuan)"
+    ]
+  },
+  "results": [
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 1,
+      "model": "gpt-6.1-sol (vectide token plan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 112.7,
+      "first_byte_s": 15.9,
+      "first_reasoning_s": 77.4,
+      "first_answer_s": 93.9,
+      "tokens_in": 10805,
+      "tokens_out": 4862,
+      "finish": "stop",
+      "tokens_per_s": 43.1,
+      "answer_chars": 4844,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 3,
+          "kept": 3
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your public contractor grades disagree, and a tender panel may cap the contract value you can bid for.",
+            "Your company identity has independent confirmation, yet clients, suppliers and banks can receive forged payment-change emails that appear to come from you.",
+            "Your broken public phone field also leaves buyers unable to reach you when they tap to call."
+          ],
+          "subject": "Your conflicting contractor grades could limit the work you can bid for",
+          "body": [
+            "Your company identity has independent confirmation, giving banks, customers and tender panels a match against your site. Yet your public contractor grades disagree, which may limit the contract value you can bid for.",
+            "The report shows a broken LinkedIn phone field you can check yourself: buyers who tap to call reach nothing. It also flags how payment-change emails can appear to come from you when they do not."
+          ],
+          "titles": {
+            "f1": "Your published email depends on an expiring domain; a lapse would stop quote requests and bank letters.",
+            "f2": "Your clients, suppliers and banks can receive forged payment-change emails that appear to come from you.",
+            "f3": "Your empty contractor portfolio leaves tender panels with no project record to score.",
+            "f4": "Your broken phone field stops buyers reaching you when they tap to call.",
+            "f5": "Your unanswered low review leaves households unsure whether the problem was resolved.",
+            "f6": "Your invalid search access file may keep new pages out of search results when customers look for you.",
+            "f7": "Your missing website security protections expose visitors and raise flags in clients' IT checks.",
+            "f8": "Your missing company and page details leave AI assistants relying on potentially outdated directories.",
+            "f9": "Your missing contact and privacy links can make banks and procurement officers doubt your business.",
+            "f10": "Your pages give AI assistants little to quote, so buyers may be shown another contractor.",
+            "f14": "Your incomplete structured details make competitors easier for search engines and AI assistants to quote.",
+            "c1": "Your conflicting office unit numbers can send customers, couriers and site surveys to the wrong door.",
+            "c2": "Your conflicting phone numbers leave buyers unsure which line reaches the office handling their quote.",
+            "c3": "Your conflicting email addresses may keep quote requests and bank letters from the right person.",
+            "c4": "Your conflicting team sizes leave tender panels and banks questioning your capacity to carry the work.",
+            "c5": "Your conflicting office lists may lead customers to assume you cannot serve their area.",
+            "c6": "Your conflicting project totals can leave tender panels scoring the lower figure.",
+            "c7": "Your conflicting company names leave clients and banks seeing different legal entities.",
+            "c8": "Your conflicting contractor grades may limit the contract value tender panels let you bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure which performance record is current.",
+            "n1": "Your clustered reviews may need checking before you draw conclusions from the pattern.",
+            "n2": "Your limited archive history may need checking before you use it to establish your site's age.",
+            "n3": "Your capacity and revenue claims may need checking for confirmation beyond your own pages.",
+            "n4": "Your office listing may need checking for missing contact details."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your public contractor grades disagree, and a tender panel may cap the contract value you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your company identity has independent confirmation, yet clients, suppliers and banks can receive forged payment-change emails that appear to come from you.\",\n      \"cites\": [\"f11\", \"f2\"]\n    },\n    {\n      \"text\": \"Your broken public phone field also leaves buyers unable to reach you when they tap to call.\",\n      \"cites\": [\"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your conflicting contractor grades could limit the work you can bid for\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your company identity has independent confirmation, giving banks, customers and tender panels a match against your site. Yet your public contractor grades disagree, which may limit the contract value you can bid for.\",\n        \"cites\": [\"f11\", \"c8\"]\n      },\n      {\n        \"text\": \"The report shows a broken LinkedIn phone field you can check yourself: buyers who tap to call reach nothing. It also flags how payment-change emails can appear to come from you when they do not.\",\n        \"cites\": [\"f4\", \"f2\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"Your published email depends on an expiring domain; a lapse would stop quote requests and bank letters.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Your clients, suppliers and banks can receive forged payment-change emails that appear to come from you.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your empty contractor portfolio leaves tender panels with no project record to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken phone field stops buyers reaching you when they tap to call.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves households unsure whether the problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your invalid search access file may keep new pages out of search results when customers look for you.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your missing website security protections expose visitors and raise flags in clients' IT checks.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Your missing company and page details leave AI assistants relying on potentially outdated directories.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Your missing contact and privacy links can make banks and procurement officers doubt your business.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your pages give AI assistants little to quote, so buyers may be shown another contractor.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Your incomplete structured details make competitors easier for search engines and AI assistants to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your conflicting office unit numbers can send customers, couriers and site surveys to the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your conflicting phone numbers leave buyers unsure which line reaches the office handling their quote.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your conflicting email addresses may keep quote requests and bank letters from the right person.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting team sizes leave tender panels and banks questioning your capacity to carry the work.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists may lead customers to assume you cannot serve their area.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals can leave tender panels scoring the lower figure.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting company names leave clients and banks seeing different legal entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may limit the contract value tender panels let you bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure which performance record is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your clustered reviews may need checking before you draw conclusions from the pattern.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your limited archive history may need checking before you use it to establish your site's age.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and revenue claims may need checking for confirmation beyond your own pages.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your office listing may need checking for missing contact details.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can inspect the LinkedIn phone field in a minute; it blocks buyer calls now, while separate contractor-grade and email risks remain.\"\n  }\n}"
+    },
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 1,
+      "model": "gpt-6.1-sol (lingsuan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 74.5,
+      "first_byte_s": 3.5,
+      "first_reasoning_s": 13,
+      "first_answer_s": 64.2,
+      "tokens_in": 7886,
+      "tokens_out": 2530,
+      "finish": "stop",
+      "tokens_per_s": 33.9,
+      "answer_chars": 4499,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 2,
+          "kept": 2
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your published contractor grades disagree, and a tender panel checking them may cap the contract value you can bid for.",
+            "Your award recognition gives customers outside confirmation, but a broken public phone field leaves buyers unable to call."
+          ],
+          "subject": "Your contractor grade mismatch could limit the work you can bid for",
+          "body": [
+            "A tender panel checking your public contractor records sees conflicting grades and may cap the value of work you can bid for.",
+            "Your award recognition gives customers outside confirmation, yet buyers checking that your company is real and current face a broken phone field that cannot connect their call."
+          ],
+          "titles": {
+            "f1": "An expiry on a domain you use could cut off quote requests and bank letters.",
+            "f2": "Forged email using your business name can mislead clients, suppliers and banks about payments.",
+            "f3": "Your empty contractor portfolio gives tender panels no project evidence to score.",
+            "f4": "Your broken phone field leaves buyers unable to call when checking your company.",
+            "f5": "Your unanswered low review leaves householders unsure whether a customer's problem was resolved.",
+            "f6": "Your invalid robots file may keep new pages out of customers' search results.",
+            "f7": "Your missing website safeguards risk insecure browsing and flags in client IT checks.",
+            "f8": "Your missing company, author and date signals leave AI assistants relying on possibly outdated listings.",
+            "f9": "Your missing homepage trust links can make banks and procurement officers doubt your business.",
+            "f10": "Your site gives AI assistants little to quote, so buyers may hear a competitor's name instead.",
+            "f14": "Your incomplete structured details make competitors easier for search engines and AI assistants to quote.",
+            "c1": "Your conflicting office unit details can send customers and couriers to the wrong door.",
+            "c2": "Your conflicting main phone numbers leave buyers unsure which line reaches the quoting office.",
+            "c3": "Your conflicting email addresses may keep quote requests and bank letters from reaching the right person.",
+            "c4": "Your conflicting team sizes leave tender panels and banks questioning your capacity.",
+            "c5": "Your conflicting office lists may make customers assume you cannot serve them.",
+            "c6": "Your conflicting project totals can leave tender panels scoring the lower figure.",
+            "c7": "Your conflicting legal identity can make clients and banks see different contracting entities.",
+            "c8": "Your conflicting contractor grades may lead tender panels to cap the work you can bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure of your performance.",
+            "n1": "Your clustered top reviews may be worth checking before relying on them as customer proof.",
+            "n2": "Your sparse archived history may limit what you can verify about your website's past.",
+            "n3": "Your capacity and customer-revenue claims may be harder to substantiate outside your own pages.",
+            "n4": "Your branch contact details may be worth checking before relying on that office listing."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your published contractor grades disagree, and a tender panel checking them may cap the contract value you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your award recognition gives customers outside confirmation, but a broken public phone field leaves buyers unable to call.\",\n      \"cites\": [\"f13\", \"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your contractor grade mismatch could limit the work you can bid for\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"A tender panel checking your public contractor records sees conflicting grades and may cap the value of work you can bid for.\",\n        \"cites\": [\"c8\"]\n      },\n      {\n        \"text\": \"Your award recognition gives customers outside confirmation, yet buyers checking that your company is real and current face a broken phone field that cannot connect their call.\",\n        \"cites\": [\"f13\", \"f4\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"An expiry on a domain you use could cut off quote requests and bank letters.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged email using your business name can mislead clients, suppliers and banks about payments.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your empty contractor portfolio gives tender panels no project evidence to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken phone field leaves buyers unable to call when checking your company.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves householders unsure whether a customer's problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your invalid robots file may keep new pages out of customers' search results.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your missing website safeguards risk insecure browsing and flags in client IT checks.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Your missing company, author and date signals leave AI assistants relying on possibly outdated listings.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Your missing homepage trust links can make banks and procurement officers doubt your business.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your site gives AI assistants little to quote, so buyers may hear a competitor's name instead.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Your incomplete structured details make competitors easier for search engines and AI assistants to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your conflicting office unit details can send customers and couriers to the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your conflicting main phone numbers leave buyers unsure which line reaches the quoting office.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your conflicting email addresses may keep quote requests and bank letters from reaching the right person.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting team sizes leave tender panels and banks questioning your capacity.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists may make customers assume you cannot serve them.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals can leave tender panels scoring the lower figure.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting legal identity can make clients and banks see different contracting entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may lead tender panels to cap the work you can bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure of your performance.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your clustered top reviews may be worth checking before relying on them as customer proof.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your sparse archived history may limit what you can verify about your website's past.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and customer-revenue claims may be harder to substantiate outside your own pages.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your branch contact details may be worth checking before relying on that office listing.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can inspect the broken phone field in a minute; buyers cannot call through it now, and correcting it leaves the contractor-grade disagreement unresolved.\"\n  }\n}"
+    },
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 2,
+      "model": "gpt-6.1-sol (vectide token plan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 79.8,
+      "first_byte_s": 21.9,
+      "first_reasoning_s": 26.5,
+      "first_answer_s": 78.8,
+      "tokens_in": 10805,
+      "tokens_out": 4567,
+      "finish": "stop",
+      "tokens_per_s": 57.2,
+      "answer_chars": 4559,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 2,
+          "kept": 2
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your published contractor grades disagree, so a tender panel may cap the value of work you can bid for.",
+            "Your 4.7 rating from 32 reviews gives householders a reason to call, yet buyers tapping your broken public phone field reach nothing."
+          ],
+          "subject": "Your conflicting contractor grades may limit your bids",
+          "body": [
+            "Your published contractor grades disagree. A tender panel checking your record may cap the value of work you can bid for.",
+            "Your 4.7 rating from 32 reviews gives householders a reason to call, yet buyers tapping your broken public phone field reach nothing. See the phone-field evidence alongside the grade disagreement."
+          ],
+          "titles": {
+            "f1": "A domain you use for email could lapse, cutting off quote requests and bank letters.",
+            "f2": "Forged email in your name can send clients, suppliers and banks false payment instructions.",
+            "f3": "Your contractor portfolio leaves tender panels without project evidence to score.",
+            "f4": "Your broken public phone field leaves buyers unable to reach you by tapping call.",
+            "f5": "Your unanswered low review leaves householders unsure whether the problem was resolved.",
+            "f6": "Your site's search-access problem may keep new pages out of results when customers look for you.",
+            "f7": "Your missing site safeguards expose visitors to insecure pages and draw flags from clients' IT reviewers.",
+            "f8": "Your missing company and authorship signals leave AI assistants relying on potentially outdated listings.",
+            "f9": "Your missing homepage links can make procurement officers and banks question whether you are established.",
+            "f10": "Your site gives AI assistants little to quote, so buyers asking for installers may hear a rival's name.",
+            "f14": "Your incomplete machine-readable details make competitors easier for search engines and AI to quote.",
+            "c1": "Your conflicting office unit details can send customers, couriers and site surveys to the wrong door.",
+            "c2": "Your conflicting phone numbers leave buyers unsure which line reaches the office that quotes.",
+            "c3": "Your conflicting email addresses may leave quote requests and bank letters short of the right person.",
+            "c4": "Your conflicting team sizes leave tender panels and banks asking whether you can carry the work.",
+            "c5": "Your conflicting office lists can make customers assume you cannot serve their area.",
+            "c6": "Your conflicting project totals leave tender panels scoring the lower experience claim.",
+            "c7": "Your conflicting company identities leave clients and banks seeing different entities.",
+            "c8": "Your conflicting contractor grades may cap the value of work a tender panel lets you bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure which performance claim is current.",
+            "n1": "Your clustered positive reviews may be worth checking for context.",
+            "n2": "Your limited archive history may warrant checking before drawing conclusions about your site's past.",
+            "n3": "Your capacity and revenue claims may warrant checking for outside confirmation.",
+            "n4": "Your office listing may be worth checking for missing contact details."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your published contractor grades disagree, so a tender panel may cap the value of work you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your 4.7 rating from 32 reviews gives householders a reason to call, yet buyers tapping your broken public phone field reach nothing.\",\n      \"cites\": [\"f12\", \"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your conflicting contractor grades may limit your bids\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your published contractor grades disagree. A tender panel checking your record may cap the value of work you can bid for.\",\n        \"cites\": [\"c8\"]\n      },\n      {\n        \"text\": \"Your 4.7 rating from 32 reviews gives householders a reason to call, yet buyers tapping your broken public phone field reach nothing. See the phone-field evidence alongside the grade disagreement.\",\n        \"cites\": [\"f12\", \"f4\", \"c8\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"A domain you use for email could lapse, cutting off quote requests and bank letters.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged email in your name can send clients, suppliers and banks false payment instructions.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your contractor portfolio leaves tender panels without project evidence to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken public phone field leaves buyers unable to reach you by tapping call.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves householders unsure whether the problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your site's search-access problem may keep new pages out of results when customers look for you.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your missing site safeguards expose visitors to insecure pages and draw flags from clients' IT reviewers.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Your missing company and authorship signals leave AI assistants relying on potentially outdated listings.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Your missing homepage links can make procurement officers and banks question whether you are established.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your site gives AI assistants little to quote, so buyers asking for installers may hear a rival's name.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Your incomplete machine-readable details make competitors easier for search engines and AI to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your conflicting office unit details can send customers, couriers and site surveys to the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your conflicting phone numbers leave buyers unsure which line reaches the office that quotes.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your conflicting email addresses may leave quote requests and bank letters short of the right person.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting team sizes leave tender panels and banks asking whether you can carry the work.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists can make customers assume you cannot serve their area.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals leave tender panels scoring the lower experience claim.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting company identities leave clients and banks seeing different entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may cap the value of work a tender panel lets you bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure which performance claim is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your clustered positive reviews may be worth checking for context.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your limited archive history may warrant checking before drawing conclusions about your site's past.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and revenue claims may warrant checking for outside confirmation.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your office listing may be worth checking for missing contact details.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can inspect the public phone field in a minute; buyers tapping call reach nothing now, and correcting it leaves the contractor-grade disagreement unresolved.\"\n  }\n}"
+    },
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 2,
+      "model": "gpt-6.1-sol (lingsuan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 67.1,
+      "first_byte_s": 2.7,
+      "first_reasoning_s": 43.6,
+      "first_answer_s": 54.9,
+      "tokens_in": 7886,
+      "tokens_out": 2444,
+      "finish": "stop",
+      "tokens_per_s": 36.4,
+      "answer_chars": 4785,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 3,
+          "kept": 3
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your published contractor grades disagree, so a tender panel may cap the contract value you can bid for.",
+            "Your registered identity checks out, but conflicting public email addresses may keep quote requests and bank letters from reaching the right person.",
+            "Your LinkedIn call field is also broken, stopping buyers from reaching you when they check that your business is real and current."
+          ],
+          "subject": "Your contractor grade mismatch may limit your bids",
+          "body": [
+            "Your registered identity checks out, yet your published contractor grades disagree; a tender panel may cap the contract value you can bid for.",
+            "The report shows a broken call field that stops buyers reaching you, alongside conflicting public email addresses that may keep quote requests and bank letters from the right person."
+          ],
+          "titles": {
+            "f1": "A domain you use faces expiry; a lapse could stop quote requests and bank letters reaching you.",
+            "f2": "Forged emails using your name could expose clients, suppliers and banks to payment redirection.",
+            "f3": "Your empty contractor portfolio leaves tender panels with no project record to score.",
+            "f4": "Your broken call field stops buyers reaching you when they check your company.",
+            "f5": "Your unanswered low review leaves householders unsure whether a customer's problem was resolved.",
+            "f6": "A crawl-file error may hide your new pages when customers search for you.",
+            "f7": "Your missing website protections expose visitors and raise flags in clients' security checks.",
+            "f8": "Missing identity and authorship signals push AI assistants towards possibly outdated accounts of you.",
+            "f9": "Missing trust-page links can make your business look like a shell to procurement officers and banks.",
+            "f10": "Your site gives AI assistants little to quote, leaving buyers to hear competitors' names instead.",
+            "f14": "Missing machine-readable details make competitors easier for search engines and AI assistants to quote.",
+            "c1": "Your head office location differs across 3 sources, risking customers and couriers reaching the wrong unit.",
+            "c2": "Your main phone differs across 3 sources, leaving buyers unsure which line reaches your quoting office.",
+            "c3": "Your conflicting email addresses may keep quote requests and bank letters from the right person.",
+            "c4": "Your conflicting team sizes leave tender panels and banks questioning your capacity to carry the work.",
+            "c5": "Your conflicting office lists may lead customers to assume you cannot serve their area.",
+            "c6": "Your conflicting project totals leave tender panels scoring the lower version of your experience.",
+            "c7": "Your conflicting company identities leave clients and banks seeing different entities.",
+            "c8": "Your conflicting contractor grades may lead tender panels to cap the contract value you can bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure which performance record is current.",
+            "n1": "Your clustered reviews may merit checking; the pattern alone does not prove a problem.",
+            "n2": "Your sparse website archive may warrant checking, but it does not establish downtime.",
+            "n3": "Your capacity and customer-revenue claims may merit outside verification; they are not proven false.",
+            "n4": "Your office's missing contact details are worth checking; they do not prove it is absent."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your published contractor grades disagree, so a tender panel may cap the contract value you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your registered identity checks out, but conflicting public email addresses may keep quote requests and bank letters from reaching the right person.\",\n      \"cites\": [\"f11\", \"c3\"]\n    },\n    {\n      \"text\": \"Your LinkedIn call field is also broken, stopping buyers from reaching you when they check that your business is real and current.\",\n      \"cites\": [\"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your contractor grade mismatch may limit your bids\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"Your registered identity checks out, yet your published contractor grades disagree; a tender panel may cap the contract value you can bid for.\",\n        \"cites\": [\"f11\", \"c8\"]\n      },\n      {\n        \"text\": \"The report shows a broken call field that stops buyers reaching you, alongside conflicting public email addresses that may keep quote requests and bank letters from the right person.\",\n        \"cites\": [\"f4\", \"c3\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"A domain you use faces expiry; a lapse could stop quote requests and bank letters reaching you.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged emails using your name could expose clients, suppliers and banks to payment redirection.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your empty contractor portfolio leaves tender panels with no project record to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken call field stops buyers reaching you when they check your company.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves householders unsure whether a customer's problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"A crawl-file error may hide your new pages when customers search for you.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your missing website protections expose visitors and raise flags in clients' security checks.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Missing identity and authorship signals push AI assistants towards possibly outdated accounts of you.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Missing trust-page links can make your business look like a shell to procurement officers and banks.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your site gives AI assistants little to quote, leaving buyers to hear competitors' names instead.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Missing machine-readable details make competitors easier for search engines and AI assistants to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office location differs across 3 sources, risking customers and couriers reaching the wrong unit.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your main phone differs across 3 sources, leaving buyers unsure which line reaches your quoting office.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your conflicting email addresses may keep quote requests and bank letters from the right person.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting team sizes leave tender panels and banks questioning your capacity to carry the work.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists may lead customers to assume you cannot serve their area.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals leave tender panels scoring the lower version of your experience.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting company identities leave clients and banks seeing different entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may lead tender panels to cap the contract value you can bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure which performance record is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your clustered reviews may merit checking; the pattern alone does not prove a problem.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your sparse website archive may warrant checking, but it does not establish downtime.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and customer-revenue claims may merit outside verification; they are not proven false.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your office's missing contact details are worth checking; they do not prove it is absent.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can check the broken call field in a minute; it already blocks buyer calls, while grade and email contradictions remain.\"\n  }\n}"
+    },
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 3,
+      "model": "gpt-6.1-sol (vectide token plan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 61.1,
+      "first_byte_s": 14.3,
+      "first_reasoning_s": 47.3,
+      "first_answer_s": 47.3,
+      "tokens_in": 10805,
+      "tokens_out": 2160,
+      "finish": "stop",
+      "tokens_per_s": 35.3,
+      "answer_chars": 4730,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 3,
+          "kept": 3
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your published contractor grades disagree, so a tender panel may cap the value of work you can bid for.",
+            "An independent register confirms your company identity, yet conflicting project totals leave a tender panel scoring the lower figure.",
+            "A broken phone field also stops buyers calling from a public page they use to check that your company is real and current."
+          ],
+          "subject": "Your conflicting contractor grades may limit your bids",
+          "body": [
+            "An independent register confirms your company identity, but your published contractor grades disagree. A tender panel checking those records may cap the contract value you can bid for.",
+            "Your public project totals also disagree, leaving a panel to score the lower figure. Buyers checking that your company is real and current encounter a broken phone field that stops them calling."
+          ],
+          "titles": {
+            "f1": "An expiry on a domain you use puts quote requests and bank letters at risk of bouncing.",
+            "f2": "Forged emails in your name can mislead clients, suppliers or banks about payments.",
+            "f3": "Your contractor portfolio leaves tender panels without project evidence to score.",
+            "f4": "Your broken phone field stops buyers calling while they check your company.",
+            "f5": "Your unanswered low review leaves householders unsure whether the problem was resolved.",
+            "f6": "Your search access problem may keep new pages out of results when customers search your name.",
+            "f7": "Your site's security gaps expose visitors to insecure pages and trigger client IT concerns.",
+            "f8": "Gaps in your page details leave AI assistants relying on potentially outdated directories.",
+            "f9": "Missing homepage links can make your business look like a shell to procurement officers and banks.",
+            "f10": "Your pages give AI assistants little to quote, leaving other contractors to win their recommendations.",
+            "f14": "Gaps in your structured business details make competitors easier for search engines and AI to quote.",
+            "c1": "Your conflicting office details can send customers, couriers and site surveys to the wrong door.",
+            "c2": "Your conflicting phone details leave buyers unsure which line reaches the office that quotes.",
+            "c3": "Your conflicting email details put quote requests and bank verification letters at risk of going unseen.",
+            "c4": "Your conflicting team sizes leave tender panels and banks asking which capacity claim is true.",
+            "c5": "Your conflicting office lists can make customers assume you cannot serve their area.",
+            "c6": "Your conflicting project totals leave tender panels scoring the lower figure.",
+            "c7": "Your conflicting company identities leave clients and banks seeing different legal entities.",
+            "c8": "Your conflicting contractor grades may limit the contract value a tender panel lets you bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure which performance is current.",
+            "n1": "Your review pattern may be worth checking before you rely on it.",
+            "n2": "Your archived site history may need checking before you draw conclusions about its age or availability.",
+            "n3": "Your capacity and revenue claims may be worth checking for outside support.",
+            "n4": "Your office contact details may be worth checking for gaps."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your published contractor grades disagree, so a tender panel may cap the value of work you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"An independent register confirms your company identity, yet conflicting project totals leave a tender panel scoring the lower figure.\",\n      \"cites\": [\"f11\", \"c6\"]\n    },\n    {\n      \"text\": \"A broken phone field also stops buyers calling from a public page they use to check that your company is real and current.\",\n      \"cites\": [\"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your conflicting contractor grades may limit your bids\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"An independent register confirms your company identity, but your published contractor grades disagree. A tender panel checking those records may cap the contract value you can bid for.\",\n        \"cites\": [\"f11\", \"c8\"]\n      },\n      {\n        \"text\": \"Your public project totals also disagree, leaving a panel to score the lower figure. Buyers checking that your company is real and current encounter a broken phone field that stops them calling.\",\n        \"cites\": [\"c6\", \"f4\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"An expiry on a domain you use puts quote requests and bank letters at risk of bouncing.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged emails in your name can mislead clients, suppliers or banks about payments.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your contractor portfolio leaves tender panels without project evidence to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken phone field stops buyers calling while they check your company.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves householders unsure whether the problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your search access problem may keep new pages out of results when customers search your name.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your site's security gaps expose visitors to insecure pages and trigger client IT concerns.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Gaps in your page details leave AI assistants relying on potentially outdated directories.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Missing homepage links can make your business look like a shell to procurement officers and banks.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your pages give AI assistants little to quote, leaving other contractors to win their recommendations.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Gaps in your structured business details make competitors easier for search engines and AI to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your conflicting office details can send customers, couriers and site surveys to the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your conflicting phone details leave buyers unsure which line reaches the office that quotes.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your conflicting email details put quote requests and bank verification letters at risk of going unseen.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting team sizes leave tender panels and banks asking which capacity claim is true.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists can make customers assume you cannot serve their area.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals leave tender panels scoring the lower figure.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting company identities leave clients and banks seeing different legal entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may limit the contract value a tender panel lets you bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure which performance is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your review pattern may be worth checking before you rely on it.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your archived site history may need checking before you draw conclusions about its age or availability.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and revenue claims may be worth checking for outside support.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your office contact details may be worth checking for gaps.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can inspect the LinkedIn phone field in a minute; it currently stops buyers calling, and resolving it leaves the contractor-grade and project-total conflicts unresolved.\"\n  }\n}"
+    },
+    {
+      "report_id": "8ded6f62-921f-46ed-a3db-c21c9bd0c3c4",
+      "company": "Eternalgy Sdn Bhd",
+      "country": "Malaysia",
+      "round": 3,
+      "model": "gpt-6.1-sol (lingsuan)",
+      "effort": "high",
+      "prompt_chars": 23836,
+      "ok": true,
+      "error": null,
+      "seconds": 72.8,
+      "first_byte_s": 3.8,
+      "first_reasoning_s": 27.8,
+      "first_answer_s": 63,
+      "tokens_in": 7886,
+      "tokens_out": 2633,
+      "finish": "stop",
+      "tokens_per_s": 36.2,
+      "answer_chars": 4503,
+      "quality": {
+        "scored": true,
+        "summary": {
+          "written": 2,
+          "kept": 2
+        },
+        "email": {
+          "subject_kept": true,
+          "body_written": 2,
+          "body_kept": 2
+        },
+        "titles": {
+          "written": 24,
+          "kept": 24
+        },
+        "proof": {
+          "picked": "f4",
+          "valid": "f4"
+        },
+        "rejected": [],
+        "rejected_count": 0,
+        "text": {
+          "summary": [
+            "Your contractor grade differs across public pages, so a tender panel may cap the contract value you can bid for.",
+            "Your strong customer rating gives buyers a reason to call, but a broken public phone field stops them reaching you when they check your company."
+          ],
+          "subject": "Your conflicting contractor grades could limit your bids",
+          "body": [
+            "A tender panel checking your published contractor grade finds conflicting claims and may cap the contract value you can bid for.",
+            "Your strong customer rating gives people a reason to call, yet a broken public phone field sends buyers nowhere when they check your company."
+          ],
+          "titles": {
+            "f1": "Your published email relies on an expiring registration; a lapse would stop quote requests.",
+            "f2": "Forged emails in your name could mislead clients, suppliers or banks over payments.",
+            "f3": "Your empty contractor portfolio leaves tender panels with no project record to score.",
+            "f4": "Your broken public phone field stops buyers reaching you when they check your company.",
+            "f5": "Your unanswered low review leaves householders unsure whether a customer problem was resolved.",
+            "f6": "Your search crawl error could keep new pages out of customers' search results.",
+            "f7": "Your missing site security protections expose visitors and invite flags in clients' IT checks.",
+            "f8": "Your company pages leave AI assistants relying on directories that may be out of date.",
+            "f9": "Your missing trust-page links can make banks and procurement officers doubt your legitimacy.",
+            "f10": "Your site gives AI assistants little to quote, leaving buyers to hear about competitors.",
+            "f14": "Your incomplete machine-readable details make competitors easier for search engines and AI to quote.",
+            "c1": "Your head office unit differs across 3 sources; customers and couriers could reach the wrong door.",
+            "c2": "Your main phone differs across 3 sources; buyers cannot tell which line reaches your quoting office.",
+            "c3": "Your published emails differ, so quote requests and bank letters may miss the right person.",
+            "c4": "Your conflicting staff counts leave tender panels and banks questioning your team capacity.",
+            "c5": "Your conflicting office lists may make customers assume you cannot serve them.",
+            "c6": "Your conflicting project totals give tender panels a lower experience figure to score.",
+            "c7": "Your conflicting company identity leaves clients and banks seeing different legal entities.",
+            "c8": "Your conflicting contractor grades may lead tender panels to cap the value you can bid for.",
+            "c9": "Your conflicting energy totals leave customers and tender panels unsure which performance record is current.",
+            "n1": "Your clustered reviews are worth checking before relying on the pattern as evidence either way.",
+            "n2": "Your limited archived history may warrant checking, but does not establish downtime or site age.",
+            "n3": "Your capacity and customer revenue claims may need outside support before you rely on them.",
+            "n4": "Your branch contact details may be incomplete, leaving its location unclear."
+          }
+        }
+      },
+      "answer": "{\n  \"summary\": [\n    {\n      \"text\": \"Your contractor grade differs across public pages, so a tender panel may cap the contract value you can bid for.\",\n      \"cites\": [\"c8\"]\n    },\n    {\n      \"text\": \"Your strong customer rating gives buyers a reason to call, but a broken public phone field stops them reaching you when they check your company.\",\n      \"cites\": [\"f12\", \"f4\"]\n    }\n  ],\n  \"email\": {\n    \"subject\": {\n      \"text\": \"Your conflicting contractor grades could limit your bids\",\n      \"cites\": [\"c8\"]\n    },\n    \"body\": [\n      {\n        \"text\": \"A tender panel checking your published contractor grade finds conflicting claims and may cap the contract value you can bid for.\",\n        \"cites\": [\"c8\"]\n      },\n      {\n        \"text\": \"Your strong customer rating gives people a reason to call, yet a broken public phone field sends buyers nowhere when they check your company.\",\n        \"cites\": [\"f12\", \"f4\"]\n      }\n    ]\n  },\n  \"titles\": [\n    {\n      \"id\": \"f1\",\n      \"text\": \"Your published email relies on an expiring registration; a lapse would stop quote requests.\"\n    },\n    {\n      \"id\": \"f2\",\n      \"text\": \"Forged emails in your name could mislead clients, suppliers or banks over payments.\"\n    },\n    {\n      \"id\": \"f3\",\n      \"text\": \"Your empty contractor portfolio leaves tender panels with no project record to score.\"\n    },\n    {\n      \"id\": \"f4\",\n      \"text\": \"Your broken public phone field stops buyers reaching you when they check your company.\"\n    },\n    {\n      \"id\": \"f5\",\n      \"text\": \"Your unanswered low review leaves householders unsure whether a customer problem was resolved.\"\n    },\n    {\n      \"id\": \"f6\",\n      \"text\": \"Your search crawl error could keep new pages out of customers' search results.\"\n    },\n    {\n      \"id\": \"f7\",\n      \"text\": \"Your missing site security protections expose visitors and invite flags in clients' IT checks.\"\n    },\n    {\n      \"id\": \"f8\",\n      \"text\": \"Your company pages leave AI assistants relying on directories that may be out of date.\"\n    },\n    {\n      \"id\": \"f9\",\n      \"text\": \"Your missing trust-page links can make banks and procurement officers doubt your legitimacy.\"\n    },\n    {\n      \"id\": \"f10\",\n      \"text\": \"Your site gives AI assistants little to quote, leaving buyers to hear about competitors.\"\n    },\n    {\n      \"id\": \"f14\",\n      \"text\": \"Your incomplete machine-readable details make competitors easier for search engines and AI to quote.\"\n    },\n    {\n      \"id\": \"c1\",\n      \"text\": \"Your head office unit differs across 3 sources; customers and couriers could reach the wrong door.\"\n    },\n    {\n      \"id\": \"c2\",\n      \"text\": \"Your main phone differs across 3 sources; buyers cannot tell which line reaches your quoting office.\"\n    },\n    {\n      \"id\": \"c3\",\n      \"text\": \"Your published emails differ, so quote requests and bank letters may miss the right person.\"\n    },\n    {\n      \"id\": \"c4\",\n      \"text\": \"Your conflicting staff counts leave tender panels and banks questioning your team capacity.\"\n    },\n    {\n      \"id\": \"c5\",\n      \"text\": \"Your conflicting office lists may make customers assume you cannot serve them.\"\n    },\n    {\n      \"id\": \"c6\",\n      \"text\": \"Your conflicting project totals give tender panels a lower experience figure to score.\"\n    },\n    {\n      \"id\": \"c7\",\n      \"text\": \"Your conflicting company identity leaves clients and banks seeing different legal entities.\"\n    },\n    {\n      \"id\": \"c8\",\n      \"text\": \"Your conflicting contractor grades may lead tender panels to cap the value you can bid for.\"\n    },\n    {\n      \"id\": \"c9\",\n      \"text\": \"Your conflicting energy totals leave customers and tender panels unsure which performance record is current.\"\n    },\n    {\n      \"id\": \"n1\",\n      \"text\": \"Your clustered reviews are worth checking before relying on the pattern as evidence either way.\"\n    },\n    {\n      \"id\": \"n2\",\n      \"text\": \"Your limited archived history may warrant checking, but does not establish downtime or site age.\"\n    },\n    {\n      \"id\": \"n3\",\n      \"text\": \"Your capacity and customer revenue claims may need outside support before you rely on them.\"\n    },\n    {\n      \"id\": \"n4\",\n      \"text\": \"Your branch contact details may be incomplete, leaving its location unclear.\"\n    }\n  ],\n  \"proof\": {\n    \"id\": \"f4\",\n    \"why\": \"You can check the public phone field in a minute; buyers cannot call through it now, and correcting it leaves the contractor-grade and contact contradictions unresolved.\"\n  }\n}"
+    }
+  ],
+  "notes": [
+    "Eternalgy Sdn Bhd round 1: gpt-6.1-sol (lingsuan) answered in 74.5s",
+    "Eternalgy Sdn Bhd round 1: gpt-6.1-sol (vectide token plan) answered in 112.7s",
+    "Eternalgy Sdn Bhd round 2: gpt-6.1-sol (lingsuan) answered in 67.1s",
+    "Eternalgy Sdn Bhd round 2: gpt-6.1-sol (vectide token plan) answered in 79.8s",
+    "Eternalgy Sdn Bhd round 3: gpt-6.1-sol (vectide token plan) answered in 61.1s",
+    "Eternalgy Sdn Bhd round 3: gpt-6.1-sol (lingsuan) answered in 72.8s"
+  ]
+}
