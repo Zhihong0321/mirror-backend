@@ -22,14 +22,16 @@ test('the 12 prompts: 9 company, 2 trade, 1 comparison; the trade and comparison
   assert.ok(!/Rival|Trexon|Solana/.test(promptC(qs)), 'prompt C names no competitor');
 });
 
-test('replies are read as JSON, fenced or not, and anything short of the full set is rejected', () => {
+test('replies are read as JSON, fenced or not; a missing or empty answer drops only that question', () => {
   const ids = qs.filter((q) => q.kind === 'company').map((q) => q.id);
   assert.equal(Object.keys(readAnswers(A(), ids)!).length, 9);
   assert.equal(Object.keys(readAnswers('```json\n' + A() + '\n```', ids)!).length, 9);
   assert.equal(readAnswers('Sure! Eternalgy is a solar company.', ids), null, 'prose is not JSON');
   const missing = JSON.parse(A()); delete missing.phone;
-  assert.equal(readAnswers(JSON.stringify(missing), ids), null, 'a missing question id is rejected');
-  assert.equal(readAnswers(JSON.stringify({ ...JSON.parse(A()), phone: { answer: '  ', sources: [] } }), ids), null, 'an empty answer is rejected');
+  // Zero kill gates (owner, 2026-11-14): the other 8 answers are kept, only the missing one is absent.
+  assert.deepEqual(Object.keys(readAnswers(JSON.stringify(missing), ids)!), ids.filter((id) => id !== 'phone'), 'a missing question id drops only that question');
+  assert.deepEqual(Object.keys(readAnswers(JSON.stringify({ ...JSON.parse(A()), phone: { answer: '  ', sources: [] } }), ids)!), ids.filter((id) => id !== 'phone'), 'an empty answer drops only that question');
+  assert.equal(readAnswers(JSON.stringify({ other: { answer: 'x' } }), ids), null, 'a reply that answers none of the questions is not an answer');
   assert.equal(readCompare(C)?.closest_competitors.length, 2);
   assert.equal(readCompare(JSON.stringify({ ...JSON.parse(C), closest_competitors: [] })), null);
   assert.equal(readCompare(JSON.stringify({ ...JSON.parse(C), weakest: '' })), null);

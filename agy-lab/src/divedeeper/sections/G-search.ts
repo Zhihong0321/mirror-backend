@@ -60,12 +60,13 @@ export function readAnswers(text: string, ids: string[]): Record<string, { answe
   const j = parseJson<Record<string, any>>(text);
   if (!j || Array.isArray(j)) return null;
   const out: Record<string, { answer: string; sources: string[]; companies: string[] }> = {};
+  // Keep every question that was answered; one empty answer never throws away the others (zero kill gates).
+  // Null only when the reply answers none of them, so the next worker is tried.
   for (const id of ids) {
     const answer = String(j[id]?.answer ?? '').trim();
-    if (!answer) return null;
-    out[id] = { answer, sources: strings(j[id]?.sources), companies: strings(j[id]?.companies) };
+    if (answer) out[id] = { answer, sources: strings(j[id]?.sources), companies: strings(j[id]?.companies) };
   }
-  return out;
+  return Object.keys(out).length ? out : null;
 }
 
 const COMPARE_KEYS = ['reputation', 'services', 'credentials', 'price_signals', 'recommend', 'weakest'] as const;
@@ -237,6 +238,8 @@ export async function run(ctx: Ctx, dive: any, deps: { hub?: Hub; profile?: Prof
     if (!j.done) { ctx.warn(`prompt ${key} failed on every worker: ${j.errors.join(' | ')}`); continue; }
     runs[part].ok++;
     if (part === 'C') { compare.push({ sample, worker: j.done.account, ...j.done.value }); continue; }
+    const missing = (part === 'A' ? aIds : bIds).filter((id) => !(id in j.done!.value));
+    if (missing.length) ctx.warn(`${key}: no answer to ${missing.join(', ')}; the other answers are kept`);
     for (const [id, a] of Object.entries(j.done.value as Record<string, { answer: string; sources: string[]; companies: string[] }>)) {
       const named = kindOf.get(id) === 'trade' ? [a.answer, ...a.companies].some((t) => norm(t).includes(brand)) : null;
       answers.push({ id, sample, model: ASSISTANT, worker: j.done.account, answer: a.answer, sources: a.sources, searched: a.sources.length > 0, ...(named === null ? {} : { companies: a.companies, named }) });
