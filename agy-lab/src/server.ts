@@ -37,6 +37,7 @@ import * as v21Step2 from './v21-step2-http.ts';
 import * as v21Store from './v21-store.ts';
 import * as v21Step3 from './v21-step3-http.ts';
 import * as v21DeeperHttp from './v21-deeper-http.ts';
+import * as competitorSites from './competitor-sites-http.ts';
 import * as v21DeeperRun from './divedeeper/v21/run.ts';
 import * as companyDive from './companydive.ts';
 import * as companyDivePeople from './companydive-people.ts';
@@ -451,6 +452,8 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   if (await v21Step2.handle(req, res, url, { json, readJson })) return;
   if (await v21Step3.handle(req, res, url, { json, readJson })) return;
   if (await v21DeeperHttp.handle(req, res, url, { json, readJson })) return;
+  // Competitor official site analysis (test stage, file output). Behind the token only, no switch.
+  if (await competitorSites.handle(req, res, url, { json, readJson })) return;
   if (await v21Store.handle(req, res, url, { json })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
