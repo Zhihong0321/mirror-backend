@@ -1,16 +1,19 @@
-// GET /api/workers/health: every worker the hub knows about, in two sources, with its state and what it does.
+// GET /api/workers/health: every worker the hub knows about, in two sources, plus the ChatGPT bridge, with its state.
 //   source "hub":      workers that poll this hub's job queue (jobs.ts). Passive: a worker reports itself by polling.
 //                       Online within 90 s, cooling while its quota group rests, offline otherwise. In memory, so a
 //                       hub restart clears it until each worker polls again.
 //   source "myworker": the worker PCs of the myworker service (page reads, Google Maps, ChatGPT tabs), read from its
 //                       GET /api/workers. Online within 5 min (the same rule /api/tools-health uses).
+//   bridge:            the ChatGPT bridge: the myworker PCs that take chat.ask jobs, whether each has a ChatGPT tab
+//                       connected, and how the hub's own calls to the bridge have gone since it started.
 // It only READS. It never stops, skips or blocks a job. A source that cannot be read is reported as unknown with its
-// error; the other source is still shown.
+// error; the other sources are still shown.
 //   GET /api/workers/health   (behind the operator token, like /api/tools-health)
 import type http from 'node:http';
 import * as jobs from './jobs.ts';
 import { secrets } from './core/index.ts';
 import { secret } from './divedeeper/lib.ts';
+import { chatTally } from './chat-bridge-tally.ts';
 
 type Ctx = { json: (res: http.ServerResponse, status: number, body: unknown) => void };
 type State = 'ok' | 'warn' | 'down' | 'unknown';
@@ -41,6 +44,14 @@ export interface WorkerRow {
   cooldownReason: string | null;
 }
 
+export interface ChatPc {
+  name: string;
+  status: Status;
+  state: State;
+  tabs: string[];
+  summary: string;
+}
+
 function hubRow(w: jobs.WorkerInfo, at: number): WorkerRow {
   const seen = Date.parse(w.lastSeenAt);
   const secondsSinceSeen = Number.isFinite(seen) ? Math.max(0, Math.round((at - seen) / 1000)) : null;
@@ -63,42 +74,70 @@ function hubRow(w: jobs.WorkerInfo, at: number): WorkerRow {
 }
 
 /** The myworker service's worker PCs, same reading and thresholds as /api/tools-health. Never throws. */
-async function myworkerRows(at: number): Promise<{ rows: WorkerRow[]; error: string | null }> {
+async function myworkerRows(at: number): Promise<{ rows: WorkerRow[]; chatPcs: ChatPc[]; error: string | null }> {
   try {
     await secrets.load();
     const base = (process.env.V21_DEEPER_WORKER_URL ?? process.env.GMAP_API_URL ?? 'https://myworker.up.railway.app').replace(/\/+$/, '');
     const key = secret('GMAP_API_KEY');
-    if (!key) return { rows: [], error: 'GMAP_API_KEY is missing: the worker PCs cannot be read' };
+    if (!key) return { rows: [], chatPcs: [], error: 'GMAP_API_KEY is missing: the worker PCs cannot be read' };
     const res = await fetch(`${base}/api/workers`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) });
     const text = await res.text();
-    if (!res.ok) return { rows: [], error: `HTTP ${res.status}: ${text.slice(0, 160)}` };
+    if (!res.ok) return { rows: [], chatPcs: [], error: `HTTP ${res.status}: ${text.slice(0, 160)}` };
     const parsed = JSON.parse(text);
     const list: any[] = Array.isArray(parsed?.workers) ? parsed.workers : [];
-    const rows = list.map((w: any): WorkerRow => {
+    const rows: WorkerRow[] = [];
+    const chatPcs: ChatPc[] = [];
+    for (const w of list) {
       const seenMin = minutesAgo(w.lastSeen, at);
       const cooling = typeof w.coolUntil === 'string' && Date.parse(w.coolUntil) > at;
       const types: string[] = Array.isArray(w.types) ? w.types.map(String) : [];
-      const chat = Array.isArray(w.chatBrowsers) && w.chatBrowsers.length > 0;
+      const tabs: string[] = Array.isArray(w.chatBrowsers) ? w.chatBrowsers.map(String) : [];
+      const chat = tabs.length > 0;
       const status: Status = seenMin === null || seenMin > 5 ? 'offline' : cooling ? 'cooldown' : 'online';
       const state: State = status === 'offline' ? 'down'
         : status === 'cooldown' || types.length === 0 || (types.includes('chat.ask') && !chat) ? 'warn' : 'ok';
+      const name = String(w.name ?? 'unnamed');
       const summary = [
         status === 'offline' ? `not seen for ${seenMin ?? '?'} min` : status === 'cooldown' ? `cooling until ${when(w.coolUntil)}${w.coolReason ? ` (${w.coolReason})` : ''}` : 'online',
         types.length === 0 ? 'has not declared any job type yet' : '',
-        types.includes('chat.ask') ? (chat ? `ChatGPT tab ready (${w.chatBrowsers.join(', ')})` : 'takes ChatGPT jobs but has NO ChatGPT tab connected') : '',
+        types.includes('chat.ask') ? (chat ? `ChatGPT tab ready (${tabs.join(', ')})` : 'takes ChatGPT jobs but has NO ChatGPT tab connected') : '',
       ].filter(Boolean).join(' · ');
-      return {
-        source: 'myworker', name: String(w.name ?? 'unnamed'), state, status, summary,
+      rows.push({
+        source: 'myworker', name, state, status, summary,
         lastSeenAt: typeof w.lastSeen === 'string' ? w.lastSeen : null,
         secondsSinceSeen: seenMin === null ? null : seenMin * 60, ip: null, types,
         taken: 0, done: Number(w.done ?? 0) || 0, failed: Number(w.failed ?? 0) || 0,
         cooldownGroup: null, cooldownUntil: cooling ? w.coolUntil : null, cooldownReason: cooling ? (w.coolReason ?? null) : null,
-      };
-    });
-    return { rows, error: null };
+      });
+      if (types.includes('chat.ask')) {
+        chatPcs.push({ name, status, state, tabs, summary: status === 'online' ? (chat ? `ChatGPT tab connected (${tabs.join(', ')})` : 'no ChatGPT tab connected') : summary });
+      }
+    }
+    return { rows, chatPcs, error: null };
   } catch (e) {
-    return { rows: [], error: `could not read the worker PCs: ${String(e).slice(0, 200)}` };
+    return { rows: [], chatPcs: [], error: `could not read the worker PCs: ${String(e).slice(0, 200)}` };
   }
+}
+
+/** The ChatGPT bridge: PCs that take chat.ask with a tab connected, and the hub's own call record. */
+function bridge(mw: { chatPcs: ChatPc[]; error: string | null }) {
+  const t = chatTally();
+  const withTab = mw.chatPcs.filter((p) => p.status === 'online' && p.tabs.length > 0);
+  const failedLast = t.lastFailAt !== null && (t.lastOkAt === null || t.lastFailAt > t.lastOkAt);
+  const state: State = mw.error !== null ? 'unknown'
+    : withTab.length === 0 ? 'down'
+    : mw.chatPcs.some((p) => p.state !== 'ok') || failedLast ? 'warn'
+    : 'ok';
+  const summary = mw.error !== null ? 'the worker PCs could not be read, so the ChatGPT bridge cannot be checked'
+    : mw.chatPcs.length === 0 ? 'no worker PC takes ChatGPT (chat.ask) jobs'
+    : `${withTab.length} of ${mw.chatPcs.length} ChatGPT PC(s) online with a ChatGPT tab connected`;
+  return {
+    state,
+    summary,
+    pcs: mw.chatPcs,
+    hubCalls: { since: t.since, calls: t.calls, failed: t.failed, lastOkAt: t.lastOkAt, lastFailAt: t.lastFailAt, lastError: t.lastError },
+    note: 'hubCalls counts this hub\'s calls to the bridge since it started. Zero means nothing has asked since then.',
+  };
 }
 
 export async function rows() {
@@ -128,15 +167,17 @@ export async function rows() {
       byType.set(t, row);
     }
   }
+  const chat = bridge(mw);
   const anySourceUnread = sources.some((s) => !s.ok);
   const overall: State = counts.online === 0 ? 'down'
-    : anySourceUnread || workers.some((w) => w.state !== 'ok') ? 'warn' : 'ok';
+    : anySourceUnread || chat.state !== 'ok' || workers.some((w) => w.state !== 'ok') ? 'warn' : 'ok';
   return {
     at: new Date(at).toISOString(),
     hubUptimeSeconds: Math.round(process.uptime()),
     overall,
     sources,
     summary: { total: workers.length, ...counts },
+    bridge: chat,
     types: [...byType.values()].sort((a, b) => a.type.localeCompare(b.type)),
     workers: workers.sort((a, b) => (a.source === b.source ? a.name.localeCompare(b.name) : a.source.localeCompare(b.source))),
     note: 'Hub workers are passive: they report by polling the hub, and a hub restart clears them until each polls again.',
@@ -148,7 +189,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
   try {
     ctx.json(res, 200, await rows());
   } catch (e) {
-    // Something failed outside the two sources: say so in the answer, never answer with nothing.
+    // Something failed outside the sources: say so in the answer, never answer with nothing.
     ctx.json(res, 200, {
       at: new Date().toISOString(),
       hubUptimeSeconds: Math.round(process.uptime()),
@@ -156,6 +197,7 @@ export async function handle(req: http.IncomingMessage, res: http.ServerResponse
       sources: [],
       error: `could not build the worker list: ${String(e).slice(0, 200)}`,
       summary: { total: 0, online: 0, cooldown: 0, offline: 0 },
+      bridge: null,
       types: [],
       workers: [],
     });

@@ -1,5 +1,6 @@
 import { workerIdentification } from '../../v21/worker-identification.ts';
 import { secret, type MapsRow } from '../lib.ts';
+import { noteChat } from '../../chat-bridge-tally.ts';
 
 export type WorkerRow = MapsRow & { place_id: string | null };
 type Options = { baseUrl?: string; apiKey?: string };
@@ -76,8 +77,9 @@ export async function chat(prompt: string, opts: Options & { timeoutMs?: number 
   try {
     const out = await job('/api/chat', { prompt, timeoutMs: opts.timeoutMs ?? 240_000 }, opts);
     if (typeof out.answer !== 'string' || !out.answer.trim()) throw new Error('ChatGPT returned no answer');
+    noteChat(true, null);
     return { answer: out.answer, tookMs: typeof out.tookMs === 'number' ? out.tookMs : null, worker: out.worker };
-  } catch (err) { return { error: reason(err) }; }
+  } catch (err) { noteChat(false, reason(err)); return { error: reason(err) }; }
 }
 
 export async function shot(ask: ShotAsk, opts: Options = {}): Promise<Shot | Failed> {
