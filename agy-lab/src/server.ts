@@ -56,6 +56,7 @@ import { page as portalPage } from './portal.ts';
 import { page as guidePage } from './guide.ts';
 import { page as workersPage } from './workers.ts';
 import * as toolsHealth from './tools-health.ts';
+import * as workerHealth from './worker-health.ts';
 import * as autoQueuePage from './autoqueue.ts';
 import { missingPage } from './nav.ts';
 
@@ -461,6 +462,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse): Prom
   // Competitor official site analysis (test stage, file output). Behind the token only, no switch.
   if (await competitorSites.handle(req, res, url, { json, readJson })) return;
   if (await toolsHealth.handle(req, res, url, { json })) return;
+  if (await workerHealth.handle(req, res, url, { json })) return;
   if (await v21Store.handle(req, res, url, { json })) return;
 
   if (p === '/api/contact-keys' || p === '/api/gemini-contact-keys' || p === '/api/contact-stats' || p === '/api/llm-lanes') {
